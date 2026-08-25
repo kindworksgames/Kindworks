@@ -136,6 +136,14 @@ export const BEACH_CLEANUP = Object.freeze({
   interactionRadius: 118,
 });
 
+export const PLAYGROUND_POWERWASH = Object.freeze({
+  id: "commons-playground",
+  title: "Commons Playground",
+  marker: Object.freeze({ x: 1940, y: 1090 }),
+  approach: Object.freeze({ x: 1940, y: 1180 }),
+  interactionRadius: 118,
+});
+
 export const COLLISION_RECTS = Object.freeze([
   // The river is blocked between bridge openings.
   { x: 2445, y: 0, width: 235, height: 480 },

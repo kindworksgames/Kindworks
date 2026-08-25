@@ -122,3 +122,19 @@ Active boards, finds, coins, challenge flags, and the exact town return point
 resume from schema 16 saves. Beach Cleanup requires landscape on mobile, so
 River Clear-Out remains the only portrait-friendly migrated mini-game. The
 protected HTML remains unchanged.
+
+Milestone 20 completes Playground Power Wash. The protected payload's actual
+`1.1.0-kindworks-soap-restored` build and `v33-pixel-soap-stains` visual
+revision are pinned alongside the source, payload, approved master-art, and
+reference-dirt hashes. Phaser now runs all 750 seeded difficulty levels with
+the exact three nozzle profiles, water/soap supplies, five-to-ten resistant
+stain zones, soap-then-water rule, progressive cleaning strength, and original
+97-percent completion tolerance. The native canvas reconstructs the approved
+playground composition without modifying the embedded artwork. Campaign first
+clears award the shared level-band reward once and replays pay zero. A dirty
+Commons Playground instead launches a recurring town occurrence, awards the
+native projected reward up to 170 coins, removes its visible grime, and returns
+after a deterministic two or three game days. Exact active grime, soap, tool,
+supply, and return-position state resumes from schema 17 saves. Playground
+Power Wash requires landscape on mobile, so River Clear-Out remains the only
+portrait-friendly migrated mini-game. The protected HTML remains unchanged.

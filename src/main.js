@@ -9,6 +9,7 @@ import { TownScene } from "./scenes/TownScene.js";
 import { WasteCollectionScene } from "./scenes/WasteCollectionScene.js";
 import { LawnCareScene } from "./scenes/LawnCareScene.js";
 import { BeachCleanupScene } from "./scenes/BeachCleanupScene.js";
+import { PlaygroundPowerwashScene } from "./scenes/PlaygroundPowerwashScene.js";
 import { FishingScene } from "./scenes/FishingScene.js";
 import { bootstrapState } from "./state/bootstrapState.js";
 import { GAME_STATE_SCHEMA_VERSION } from "./state/constants.js";
@@ -27,6 +28,7 @@ import { RiverClearoutService } from "./systems/RiverClearoutService.js";
 import { HouseRescueService } from "./systems/HouseRescueService.js";
 import { LawnCareService } from "./systems/LawnCareService.js";
 import { BeachCleanupService } from "./systems/BeachCleanupService.js";
+import { PlaygroundPowerwashService } from "./systems/PlaygroundPowerwashService.js";
 import { EconomyHudController } from "./ui/EconomyHudController.js";
 import { SaveStatusController } from "./ui/SaveStatusController.js";
 import { ShopController } from "./ui/ShopController.js";
@@ -54,6 +56,8 @@ const houseRescue = new HouseRescueService(stateRuntime.gameState, stateRuntime.
 const lawnCare = new LawnCareService(stateRuntime.gameState, stateRuntime.repository);
 const beachCleanup = new BeachCleanupService(stateRuntime.gameState, stateRuntime.repository);
 beachCleanup.refresh();
+const playgroundPowerwash = new PlaygroundPowerwashService(stateRuntime.gameState, stateRuntime.repository);
+playgroundPowerwash.refresh();
 
 const config = {
   type: Phaser.AUTO,
@@ -67,7 +71,7 @@ const config = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene, TownScene, BakeryScene, CafeScene, RiverClearoutScene, HouseRescueScene, WasteCollectionScene, LawnCareScene, BeachCleanupScene, FishingScene],
+  scene: [BootScene, TownScene, BakeryScene, CafeScene, RiverClearoutScene, HouseRescueScene, WasteCollectionScene, LawnCareScene, BeachCleanupScene, PlaygroundPowerwashScene, FishingScene],
 };
 
 const game = new Phaser.Game(config);
@@ -85,6 +89,7 @@ game.registry.set("river", river);
 game.registry.set("houseRescue", houseRescue);
 game.registry.set("lawnCare", lawnCare);
 game.registry.set("beachCleanup", beachCleanup);
+game.registry.set("playgroundPowerwash", playgroundPowerwash);
 const economy = new EconomyService(stateRuntime.gameState, stateRuntime.repository);
 game.registry.set("economy", economy);
 const cleanupService = new CleanupJobService(stateRuntime.gameState, stateRuntime.repository);

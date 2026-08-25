@@ -24,7 +24,7 @@
           <button id="custom-resident-button" class="economy-hud-button resident-hud-button" type="button" aria-label="Create your personal resident">💚 Create resident</button>
           <button id="animal-friends-button" class="economy-hud-button animal-hud-button" type="button" aria-label="Open Animal Friends">🐾 Animal Friends</button>
           <button id="save-status-button" class="save-status-button" type="button" data-status="new">Save not started</button>
-          <div class="milestone-badge">PHASER TOWN · MILESTONE 19</div>
+          <div class="milestone-badge">PHASER TOWN · MILESTONE 20</div>
         </div>
       </section>
       <section id="interaction-prompt" class="interaction-prompt hidden" aria-label="Nearby interaction" aria-hidden="true">
@@ -262,6 +262,30 @@
         <h2 id="landscape-required-title">Rotate your phone</h2>
         <p id="landscape-required-message">This activity is designed for landscape play. Turn your phone sideways to continue.</p>
       </aside>
+      <section id="powerwash-hud" class="powerwash-hud hidden" aria-labelledby="powerwash-title">
+        <header class="powerwash-header">
+          <div><p>MILESTONE 20 · ORIGINAL 750-LEVEL CAMPAIGN</p><h2 id="powerwash-title">💦 Playground Power Wash</h2><small id="powerwash-summary">0 playgrounds restored · 0 stars · Level 1 next</small></div>
+          <span id="powerwash-balance">🪙 100</span><button id="powerwash-exit" type="button">Save &amp; exit</button>
+        </header>
+        <section id="powerwash-picker" class="powerwash-picker" aria-label="Choose a Playground Power Wash level">
+          <div><strong>Restore all 750 original playgrounds</strong><small>Wash away at least 97% of the grime. Dark green resistant stains need soap before water.</small></div>
+          <label for="powerwash-level-select">Power-wash challenge<select id="powerwash-level-select"><option value="1">Level 1</option></select></label>
+          <button id="powerwash-level-start" type="button">Start Level 1</button>
+        </section>
+        <section id="powerwash-gameplay" class="powerwash-gameplay hidden" aria-label="Active Playground Power Wash level">
+          <div class="powerwash-heading"><div><small id="powerwash-level-name">Level 1 of 750</small><strong id="powerwash-level-band">5 soap stains</strong></div><span>Clean<strong id="powerwash-clean">0%</strong></span><span>Water<strong id="powerwash-water">100%</strong></span><span>Soap<strong id="powerwash-soap">100%</strong></span><span>Coins<strong id="powerwash-reward">+100</strong></span></div>
+          <div class="powerwash-play-area">
+            <div class="powerwash-board-frame"><canvas id="powerwash-board" width="960" height="480" role="img" aria-label="Playground Power Wash board"></canvas></div>
+            <aside class="powerwash-side">
+              <article><small>SUPPLIES</small><label>Water <span class="powerwash-meter"><i id="powerwash-water-fill"></i></span></label><label>Soap <span class="powerwash-meter soap"><i id="powerwash-soap-fill"></i></span></label></article>
+              <article><small>TOOLS · KEYS 1–4</small><button id="powerwash-soap-tool" type="button">1 · Soap</button><button id="powerwash-precision" type="button">2 · Precision</button><button id="powerwash-standard" type="button">3 · Standard</button><button id="powerwash-wide" type="button">4 · Wide</button></article>
+              <button id="powerwash-retry" type="button">↻ Restart playground</button><button id="powerwash-qa-complete" class="hidden" type="button">✓ Certified QA completion</button>
+            </aside>
+          </div>
+        </section>
+        <p id="powerwash-status" class="powerwash-status" data-status="neutral" role="status" aria-live="assertive">Choose a Playground Power Wash level to begin.</p>
+        <section id="powerwash-result" class="powerwash-result hidden" aria-labelledby="powerwash-result-title"><h3 id="powerwash-result-title">Playground restored!</h3><div class="powerwash-result-sparkle">💦 ✨ 🛝</div><p id="powerwash-result-message">The grime is gone.</p><div class="powerwash-result-stats"><span>Clean<strong id="powerwash-result-clean">100%</strong></span><span>Tolerance<strong id="powerwash-result-tolerance">97%</strong></span><span>Strokes<strong id="powerwash-result-strokes">0</strong></span><span>Coins<strong id="powerwash-result-coins">+100</strong></span></div><div class="powerwash-result-actions"><button id="powerwash-replay" type="button">Replay</button><button id="powerwash-next" type="button">Next playground</button><button id="powerwash-return" type="button">Return to Willowmere</button></div></section>
+      </section>
       <section id="beach-cleanup-hud" class="beach-cleanup-hud hidden" aria-labelledby="beach-cleanup-title">
         <header class="beach-header">
           <div><p>MILESTONE 19 · ORIGINAL 750-LEVEL CAMPAIGN</p><h2 id="beach-cleanup-title">🏖️ Beach Cleanup</h2><small id="beach-summary">0 beaches cleared · 0 stars · Level 1 next</small></div>

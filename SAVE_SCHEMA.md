@@ -1,8 +1,8 @@
 # Kindworks Phaser save contract
 
-> Current migration status: Milestone 19 uses game-state and envelope schema
-> 16. Schemas 1 through 15 upgrade in order, with schema 16 adding the complete
-> persistent Beach Cleanup campaign described below. The historical schema-3
+> Current migration status: Milestone 20 uses game-state and envelope schema
+> 17. Schemas 1 through 16 upgrade in order, with schema 17 adding the complete
+> persistent Playground Power Wash campaign described below. The historical schema-3
 > foundation notes are retained for traceability.
 
 Milestone 3 introduced the protected save foundation alongside the preserved HTML game. Milestone 4 added the shared item catalogue, inventory, KindlyCoin ledger, and atomic economy transactions. Milestone 6 adds the first persistent cleanup session, exact-target result, and job reward. NPC, animal, farming, dynamic cleanup, and the remaining mini-games stay staged for later milestones.
@@ -22,14 +22,14 @@ The Phaser build owns only:
 - `kindworks_phaser_v1_backup`
 - `kindworks_phaser_v1_recovery`
 
-## Current Phaser envelope schema 16
+## Current Phaser envelope schema 17
 
 Every current and backup save is a JSON envelope:
 
 ```json
 {
   "format": "kindworks-phaser",
-  "schemaVersion": 16,
+  "schemaVersion": 17,
   "writtenAt": "2026-08-25T00:00:00.000Z",
   "appVersion": "0.1.0",
   "data": {},
@@ -37,7 +37,7 @@ Every current and backup save is a JSON envelope:
 }
 ```
 
-The checksum covers every envelope field except the checksum itself. A save is accepted only when its format, schema, timestamp, checksum, and inner game state all validate. Valid schemas 1 through 15 upgrade to schema 16, and the original verified envelope becomes the Phaser backup before replacement.
+The checksum covers every envelope field except the checksum itself. A save is accepted only when its format, schema, timestamp, checksum, and inner game state all validate. Valid schemas 1 through 16 upgrade to schema 17, and the original verified envelope becomes the Phaser backup before replacement.
 
 ## Historical game-state schema 3 foundation
 
@@ -154,6 +154,25 @@ The checksum covers every envelope field except the checksum itself. A save is a
 - Every step, undo, restart, cancellation, completion, reward, town effect, and
   litter return validates through the shared repository. Failed persistence
   restores the exact beach, wallet, campaign, and town checkpoint.
+
+## Playground Power Wash schema-17 contract
+
+- `playgroundPowerwash.progress` stores the next selected level, derived
+  completion count, and best `{ stars, percent }` result for all 750
+  deterministic levels.
+- One resumable `activeSession` stores campaign or Commons Playground town-job
+  mode, the exact level, normal-grime strengths, resistant and soaped cell IDs,
+  water and soap supply, active tool/nozzle, stroke count, and town return point.
+- A raw result of at least 97 percent is committed as a 100-percent clear.
+  Campaign first clears award the shared level-band reward capped at 170;
+  campaign replays pay zero.
+- A Commons Playground occurrence awards the original projected native reward
+  capped at 170, removes town grime, increments the shared occurrence count,
+  and schedules the next dirty day two or three game days later.
+- Every tool change, spray, restart, cancellation, completion, reward, town
+  effect, and recurrence validates through the shared repository. Failed
+  persistence restores the exact board, supplies, wallet, campaign, and town
+  checkpoint.
 
 ## Legacy compatibility map
 
