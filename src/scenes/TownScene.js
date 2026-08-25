@@ -15,6 +15,7 @@ import {
   WORLD,
 } from "../data/town.js";
 import { PlayerCharacter } from "../entities/PlayerCharacter.js";
+import { FRESH_MARKET } from "../data/shops.js";
 import { InteractionSystem } from "../systems/InteractionSystem.js";
 import { MovementController } from "../systems/MovementController.js";
 
@@ -53,33 +54,55 @@ export class TownScene extends Phaser.Scene {
 
   create() {
     this.gameState = this.registry.get("gameState");
+    this.shopController = this.registry.get("shopController");
     const savedState = this.gameState?.getSnapshot();
     this.cameras.main.setBounds(0, 0, WORLD.width, WORLD.height);
     this.drawTown();
 
-    const qaAtBakery = import.meta.env.DEV
-      && new URLSearchParams(window.location.search).get("qa") === "bakery";
+    const qaTarget = import.meta.env.DEV
+      ? new URLSearchParams(window.location.search).get("qa")
+      : null;
+    const qaSpawn = qaTarget === "bakery"
+      ? LITTLE_BAKERY.approach
+      : qaTarget === "fresh-market"
+        ? FRESH_MARKET.approach
+        : null;
     const savedTownPosition = savedState?.player?.scene === "TownScene" ? savedState.player : null;
     const spawn = this.entryData.returnPosition
-      || (qaAtBakery ? LITTLE_BAKERY.approach : savedTownPosition || PLAYER_START);
-    const direction = this.entryData.returnFacing || "down";
+      || qaSpawn
+      || savedTownPosition
+      || PLAYER_START;
+    const direction = this.entryData.returnFacing || (qaTarget ? "up" : "down");
     this.shadow = this.add.ellipse(spawn.x, spawn.y + 18, 31, 12, 0x24442f, 0.28).setDepth(190);
     this.player = new PlayerCharacter(this, spawn.x, spawn.y, { direction }).setDepth(200);
     this.movement = new MovementController(this, {
       onTouchStep: (dx, dy) => this.movePlayer(dx, dy, 38),
     });
     this.interactions = new InteractionSystem({
-      interactables: [{
-        id: "little-bakery-door",
-        kind: "door",
-        x: LITTLE_BAKERY.door.x,
-        y: LITTLE_BAKERY.door.y,
-        radius: LITTLE_BAKERY.interactionRadius,
-        icon: "🥐",
-        label: "Enter Little Bakery",
-        detail: "Freshly baked, made to order",
-        onActivate: () => this.enterBakery(),
-      }],
+      interactables: [
+        {
+          id: "little-bakery-door",
+          kind: "door",
+          x: LITTLE_BAKERY.door.x,
+          y: LITTLE_BAKERY.door.y,
+          radius: LITTLE_BAKERY.interactionRadius,
+          icon: "🥐",
+          label: "Enter Little Bakery",
+          detail: "Freshly baked, made to order",
+          onActivate: () => this.enterBakery(),
+        },
+        {
+          id: "fresh-market-door",
+          kind: "shop",
+          x: FRESH_MARKET.door.x,
+          y: FRESH_MARKET.door.y,
+          radius: FRESH_MARKET.interactionRadius,
+          icon: FRESH_MARKET.icon,
+          label: `Enter ${FRESH_MARKET.name}`,
+          detail: "Fresh fish, meat and pond food",
+          onActivate: () => this.openFreshMarket(),
+        },
+      ],
       onChange: (interaction) => this.renderInteractionPrompt(interaction),
     });
     this.stateSyncElapsed = 0;
@@ -305,7 +328,7 @@ export class TownScene extends Phaser.Scene {
     document.body.dataset.gameScene = this.scene.key;
     const badge = document.querySelector(".milestone-badge");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 4";
+    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 5";
     if (hint) hint.textContent = "Arrow keys or WASD to walk · E or Space to interact · Shift to run";
   }
 
@@ -339,6 +362,12 @@ export class TownScene extends Phaser.Scene {
       });
     });
     return { ok: true, targetScene: "BakeryScene" };
+  }
+
+  openFreshMarket() {
+    if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
+    if (!this.shopController) return { ok: false, reason: "The shop interface is not ready." };
+    return this.shopController.open(FRESH_MARKET.id);
   }
 
   setOverlayOpen(open) {

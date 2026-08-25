@@ -16,7 +16,7 @@ export class EconomyService {
     this.inventory = new InventoryService(catalog);
   }
 
-  appendLedger(state, { amount, kind, reason, itemId = null, quantity = null }) {
+  appendLedger(state, { amount, kind, reason, itemId = null, quantity = null, shopId = null }) {
     const serial = state.economy.nextTransactionId;
     const entry = {
       id: `coin-${String(serial).padStart(6, "0")}`,
@@ -25,6 +25,7 @@ export class EconomyService {
       reason: String(reason || kind),
       itemId,
       quantity,
+      shopId,
       occurredAt: new Date(this.now()).toISOString(),
     };
     state.economy.nextTransactionId += 1;
@@ -81,7 +82,7 @@ export class EconomyService {
     });
   }
 
-  purchase(itemId, requestedQuantity = 1) {
+  purchase(itemId, requestedQuantity = 1, { shopId = null, reason = null } = {}) {
     const item = this.catalog[itemId];
     const quantity = Number(requestedQuantity);
     if (!item) return { ok: false, code: "unknown-item", message: `Unknown item: ${itemId}` };
@@ -96,7 +97,14 @@ export class EconomyService {
       const before = state.economy.coins;
       state.economy.coins -= cost;
       state.economy.lifetimeCoinsSpent += cost;
-      const ledger = this.appendLedger(state, { amount: -cost, kind: "purchase", reason: `Bought ${item.name}`, itemId, quantity });
+      const ledger = this.appendLedger(state, {
+        amount: -cost,
+        kind: "purchase",
+        reason: reason || `Bought ${item.name}`,
+        itemId,
+        quantity,
+        shopId,
+      });
       return { ok: true, code: "purchased", itemId, quantity, cost, before, after: state.economy.coins, inventory: inventoryResult, ledger };
     });
   }

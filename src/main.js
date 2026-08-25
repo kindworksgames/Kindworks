@@ -6,8 +6,10 @@ import { TownScene } from "./scenes/TownScene.js";
 import { bootstrapState } from "./state/bootstrapState.js";
 import { GAME_STATE_SCHEMA_VERSION } from "./state/constants.js";
 import { EconomyService } from "./systems/EconomyService.js";
+import { ShopService } from "./systems/ShopService.js";
 import { EconomyHudController } from "./ui/EconomyHudController.js";
 import { SaveStatusController } from "./ui/SaveStatusController.js";
+import { ShopController } from "./ui/ShopController.js";
 
 const stateRuntime = bootstrapState(window.localStorage);
 
@@ -31,6 +33,7 @@ game.registry.set("gameState", stateRuntime.gameState);
 game.registry.set("saveRepository", stateRuntime.repository);
 const economy = new EconomyService(stateRuntime.gameState, stateRuntime.repository);
 game.registry.set("economy", economy);
+const shopService = new ShopService(economy);
 const openModals = new Set();
 function setModalOpen(name, open) {
   if (open) openModals.add(name);
@@ -50,6 +53,12 @@ const economyHud = new EconomyHudController(stateRuntime, {
     setModalOpen("economy", open);
   },
 });
+const shopController = new ShopController(shopService, stateRuntime, {
+  onModalChange(open) {
+    setModalOpen("shop", open);
+  },
+});
+game.registry.set("shopController", shopController);
 
 window.__KINDWORKS_PHASER__ = {
   game,
@@ -85,5 +94,8 @@ window.__KINDWORKS_PHASER__ = {
       catalogueEntries: 76,
       schemaVersion: state.schemaVersion,
     };
+  },
+  getShopDiagnostics() {
+    return shopController.getDiagnostics();
   },
 };
