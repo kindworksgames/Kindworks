@@ -57,6 +57,8 @@ export class TownScene extends Phaser.Scene {
     this.gameState = this.registry.get("gameState");
     this.shopController = this.registry.get("shopController");
     this.cleanupService = this.registry.get("cleanupService");
+    this.worldSimulation = this.registry.get("worldSimulation");
+    this.worldSimulation?.setPaused("activity", false);
     const savedState = this.gameState?.getSnapshot();
     this.cameras.main.setBounds(0, 0, WORLD.width, WORLD.height);
     this.drawTown();
@@ -373,7 +375,7 @@ export class TownScene extends Phaser.Scene {
     document.body.dataset.gameScene = this.scene.key;
     const badge = document.querySelector(".milestone-badge");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 6";
+    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 7";
     if (hint) hint.textContent = "Arrow keys or WASD to walk · E or Space to interact · Shift to run";
   }
 
@@ -477,6 +479,7 @@ export class TownScene extends Phaser.Scene {
   }
 
   update(_time, delta) {
+    this.worldSimulation?.tick(delta);
     const { dx, dy, sprinting } = this.movement.getVector();
     const speed = sprinting ? SPRINT_SPEED : WALK_SPEED;
     const moving = this.movePlayer(dx, dy, speed * Math.min(delta, 50) / 1000);
@@ -519,7 +522,7 @@ export class TownScene extends Phaser.Scene {
       camera: { zoom: Number(this.cameras.main.zoom.toFixed(2)), followingPlayer: true },
       controls: { keyboard: true, touch: true, wheelZoom: true },
       interaction: this.interactions.getState(),
-      migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job"],
+      migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job", "world-time-weather-lighting"],
       sharedState: {
         schemaVersion: this.gameState?.getSnapshot().schemaVersion || null,
         source: this.gameState?.getSnapshot().source.kind || null,

@@ -9,11 +9,15 @@ import { GAME_STATE_SCHEMA_VERSION } from "./state/constants.js";
 import { EconomyService } from "./systems/EconomyService.js";
 import { ShopService } from "./systems/ShopService.js";
 import { CleanupJobService } from "./systems/CleanupJobService.js";
+import { WorldSimulationService } from "./systems/WorldSimulationService.js";
 import { EconomyHudController } from "./ui/EconomyHudController.js";
 import { SaveStatusController } from "./ui/SaveStatusController.js";
 import { ShopController } from "./ui/ShopController.js";
+import { WorldHudController } from "./ui/WorldHudController.js";
 
 const stateRuntime = bootstrapState(window.localStorage);
+const worldSimulation = new WorldSimulationService(stateRuntime.gameState, stateRuntime.repository);
+const offlineResolution = worldSimulation.resolveOffline();
 
 const config = {
   type: Phaser.AUTO,
@@ -33,6 +37,7 @@ const config = {
 const game = new Phaser.Game(config);
 game.registry.set("gameState", stateRuntime.gameState);
 game.registry.set("saveRepository", stateRuntime.repository);
+game.registry.set("worldSimulation", worldSimulation);
 const economy = new EconomyService(stateRuntime.gameState, stateRuntime.repository);
 game.registry.set("economy", economy);
 const cleanupService = new CleanupJobService(stateRuntime.gameState, stateRuntime.repository);
@@ -43,6 +48,7 @@ function setModalOpen(name, open) {
   if (open) openModals.add(name);
   else openModals.delete(name);
   const anyOpen = openModals.size > 0;
+  worldSimulation.setPaused("modal", anyOpen);
   document.body.dataset.modalOpen = String(anyOpen);
   const activeScene = game.scene.getScenes(true)[0];
   activeScene?.setOverlayOpen?.(anyOpen);
@@ -57,12 +63,20 @@ const economyHud = new EconomyHudController(stateRuntime, {
     setModalOpen("economy", open);
   },
 });
+const worldHud = new WorldHudController(stateRuntime.gameState);
 const shopController = new ShopController(shopService, stateRuntime, {
   onModalChange(open) {
     setModalOpen("shop", open);
   },
 });
 game.registry.set("shopController", shopController);
+
+function handleVisibilityChange() {
+  if (document.hidden) worldSimulation.pause("background", { persist: true });
+  else worldSimulation.resume("background", { resolveOffline: true });
+}
+document.addEventListener("visibilitychange", handleVisibilityChange);
+window.addEventListener("pagehide", () => worldSimulation.persist());
 
 window.__KINDWORKS_PHASER__ = {
   game,
@@ -104,5 +118,12 @@ window.__KINDWORKS_PHASER__ = {
   },
   getCleanupDiagnostics() {
     return cleanupService.getDiagnostics();
+  },
+  getWorldDiagnostics() {
+    return {
+      ...worldSimulation.getDiagnostics(),
+      presentation: worldHud.getDiagnostics(),
+      initialOfflineResolution: offlineResolution,
+    };
   },
 };

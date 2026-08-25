@@ -21,6 +21,8 @@ export class WasteCollectionScene extends Phaser.Scene {
       this.scene.start("TownScene");
       return;
     }
+    this.worldSimulation = this.registry.get("worldSimulation");
+    this.worldSimulation?.setPaused("activity", true);
 
     this.itemObjects = new Map();
     this.collected = new Set();
@@ -160,7 +162,7 @@ export class WasteCollectionScene extends Phaser.Scene {
     const badge = document.querySelector(".milestone-badge");
     const status = document.querySelector("#location-status");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = "WASTE COLLECTION · MILESTONE 6";
+    if (badge) badge.textContent = "WASTE COLLECTION · MILESTONE 7";
     if (status) status.textContent = `${this.job.title} · Level ${this.session.assignedLevel}`;
     if (hint) hint.textContent = "Tap rubbish to collect · Arrow keys choose · Enter or Space collects · Escape exits safely";
     this.hud?.classList.remove("hidden");
@@ -262,6 +264,7 @@ export class WasteCollectionScene extends Phaser.Scene {
   }
 
   shutdownScene() {
+    this.worldSimulation?.setPaused("activity", false);
     window.removeEventListener("keydown", this.onKeyDown);
     this.itemList?.removeEventListener("click", this.onItemClick);
     this.finishButton?.removeEventListener("click", this.onFinish);

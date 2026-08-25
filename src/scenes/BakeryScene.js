@@ -55,6 +55,8 @@ export class BakeryScene extends Phaser.Scene {
       onChange: (interaction) => this.renderInteractionPrompt(interaction),
     });
     this.gameState = this.registry.get("gameState");
+    this.worldSimulation = this.registry.get("worldSimulation");
+    this.worldSimulation?.setPaused("activity", false);
     this.stateSyncElapsed = 0;
 
     this.interactionButton = document.querySelector("#interaction-action");
@@ -170,7 +172,7 @@ export class BakeryScene extends Phaser.Scene {
     const badge = document.querySelector(".milestone-badge");
     const status = document.querySelector("#location-status");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = "LITTLE BAKERY · MILESTONE 6";
+    if (badge) badge.textContent = "LITTLE BAKERY · MILESTONE 7";
     if (status) status.textContent = "Inside Little Bakery";
     if (hint) hint.textContent = "Walk with arrows or WASD · E or Space to leave";
   }
@@ -262,6 +264,7 @@ export class BakeryScene extends Phaser.Scene {
   }
 
   update(_time, delta) {
+    this.worldSimulation?.tick(delta);
     const { dx, dy, sprinting } = this.movement.getVector();
     const speed = sprinting ? SPRINT_SPEED : WALK_SPEED;
     const moving = this.movePlayer(dx, dy, speed * Math.min(delta, 50) / 1000);

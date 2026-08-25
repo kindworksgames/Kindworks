@@ -9,6 +9,7 @@ import {
   validateInventoryState,
 } from "./economyState.js";
 import { createFreshCleanupState, normalizeCleanupState, validateCleanupState } from "./cleanupState.js";
+import { createFreshWorldState, normalizeWorldState, validateWorldState } from "./worldState.js";
 
 const DIRECTIONS = new Set(["up", "down", "left", "right"]);
 
@@ -45,7 +46,7 @@ export function createFreshGameState({ now = Date.now() } = {}) {
       warnings: [],
     },
     identity: { townName: "Willowmere" },
-    world: { day: 1, clockMinutes: 480 },
+    world: createFreshWorldState({ now }),
     player: {
       scene: "TownScene",
       x: PLAYER_START.x,
@@ -73,6 +74,7 @@ export function createGameStateFromLegacy(legacy, report, { now = Date.now() } =
   state.identity.townName = safeTownName(legacy.playerSetup?.townName);
   state.world.day = safeInteger(legacy.worldDay, 1);
   state.world.clockMinutes = safeInteger(legacy.worldClockMinutes, 0, 1439);
+  state.world = normalizeWorldState(state.world, { now });
   state.progress.completedJobCount = safeInteger(legacy.completedJobCount, 0);
   state.economy = projectLegacyEconomy(legacy.economy, { now });
   state.inventory = projectLegacyInventory({
@@ -99,7 +101,11 @@ export function upgradeGameState(value, { now = Date.now() } = {}) {
   if (state.schemaVersion === 2) {
     if (!state.progress || typeof state.progress !== "object") state.progress = { completedJobCount: 0 };
     state.progress.cleanup = normalizeCleanupState(state.progress.cleanup);
-    state.schemaVersion = GAME_STATE_SCHEMA_VERSION;
+    state.schemaVersion = 3;
+  }
+  if (state.schemaVersion === 3) {
+    state.world = normalizeWorldState(state.world, { now });
+    state.schemaVersion = 4;
   }
   return state;
 }
@@ -114,8 +120,7 @@ export function validateGameState(value) {
   if (!isoTime(value.updatedAt)) errors.push("updatedAt must be an ISO-compatible timestamp.");
   if (!value.source || !["new", "legacy-import"].includes(value.source.kind)) errors.push("State source is invalid.");
   if (!value.identity || typeof value.identity.townName !== "string" || !value.identity.townName.trim()) errors.push("Town name is missing.");
-  if (!Number.isInteger(value.world?.day) || value.world.day < 1) errors.push("World day must be a positive integer.");
-  if (!Number.isInteger(value.world?.clockMinutes) || value.world.clockMinutes < 0 || value.world.clockMinutes > 1439) errors.push("World clock must be between 0 and 1439 minutes.");
+  errors.push(...validateWorldState(value.world).errors);
   if (!value.player || !Number.isFinite(value.player.x) || !Number.isFinite(value.player.y)) errors.push("Player position is invalid.");
   else if (value.player.x < 0 || value.player.x > WORLD.width || value.player.y < 0 || value.player.y > WORLD.height) errors.push("Player position is outside the authored world.");
   if (!DIRECTIONS.has(value.player?.facing)) errors.push("Player facing direction is invalid.");

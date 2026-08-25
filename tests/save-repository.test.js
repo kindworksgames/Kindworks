@@ -10,6 +10,7 @@ import { createFreshGameState } from "../src/state/GameState.js";
 import { SaveRepository, validateSaveEnvelope } from "../src/state/SaveRepository.js";
 import { checksumValue } from "../src/state/checksum.js";
 import { MemoryStorage } from "./helpers/MemoryStorage.js";
+import { advanceWorldState } from "../src/state/worldState.js";
 
 test("writes and reloads a checksummed Phaser envelope", () => {
   const storage = new MemoryStorage();
@@ -38,7 +39,7 @@ test("loads and upgrades a valid Milestone 3 schema-1 envelope", () => {
   const loaded = new SaveRepository(storage).load();
   assert.equal(loaded.ok, true);
   assert.equal(loaded.needsMigration, true);
-  assert.equal(loaded.state.schemaVersion, 3);
+  assert.equal(loaded.state.schemaVersion, 4);
   assert.equal(loaded.state.economy.coins, 100);
 });
 
@@ -49,7 +50,7 @@ test("backs up the last valid save before replacing it", () => {
   repository.save(first, { now: 1000 });
   const firstRaw = storage.getItem(PHASER_SAVE_KEY);
   const second = structuredClone(first);
-  second.world.day = 2;
+  second.world = advanceWorldState(second.world, 1440, { now: 2000 }).world;
   second.updatedAt = new Date(2000).toISOString();
   repository.save(second, { now: 2000 });
   assert.equal(storage.getItem(PHASER_BACKUP_KEY), firstRaw);

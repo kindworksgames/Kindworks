@@ -56,10 +56,100 @@ body {
 .economy-panel,
 .shop-panel,
 .cleanup-hud,
-.cleanup-result {
+.cleanup-result,
+.world-lighting-overlay,
+.weather-effects {
   position: absolute;
   z-index: 10;
   user-select: none;
+}
+
+.world-lighting-overlay,
+.weather-effects {
+  inset: 0;
+  pointer-events: none;
+}
+
+.world-lighting-overlay {
+  z-index: 5;
+  transition: background-color 900ms linear;
+}
+
+.weather-effects {
+  z-index: 6;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 500ms ease;
+}
+
+.weather-effects::before,
+.weather-effects::after {
+  content: "";
+  position: absolute;
+  inset: -30%;
+  opacity: 0;
+}
+
+.weather-effects[data-weather="rain"] {
+  opacity: 0.55;
+  background: rgb(45 74 88 / 13%);
+}
+
+.weather-effects[data-weather="rain"]::before,
+.weather-effects[data-weather="rain"]::after {
+  opacity: 0.7;
+  background-image: repeating-linear-gradient(112deg, transparent 0 23px, rgb(206 232 239 / 55%) 24px 26px, transparent 27px 43px);
+  animation: kindworks-rain 900ms linear infinite;
+}
+
+.weather-effects[data-weather="rain"]::after {
+  opacity: 0.35;
+  animation-duration: 1400ms;
+  transform: scale(1.2);
+}
+
+.weather-effects[data-weather="snow"] {
+  opacity: 0.72;
+  background: rgb(230 241 246 / 10%);
+}
+
+.weather-effects[data-weather="snow"]::before,
+.weather-effects[data-weather="snow"]::after {
+  opacity: 0.8;
+  background-image: radial-gradient(circle, rgb(255 255 255 / 90%) 0 2px, transparent 3px);
+  background-size: 54px 54px;
+  animation: kindworks-snow 7s linear infinite;
+}
+
+.weather-effects[data-weather="snow"]::after {
+  background-size: 89px 89px;
+  opacity: 0.45;
+  animation-duration: 11s;
+}
+
+.weather-effects[data-weather="windy"] {
+  opacity: 0.42;
+  background-image: repeating-linear-gradient(170deg, transparent 0 55px, rgb(240 235 176 / 30%) 57px 59px, transparent 61px 120px);
+  animation: kindworks-wind 4s linear infinite;
+}
+
+body[data-game-scene="BakeryScene"] .world-lighting-overlay,
+body[data-game-scene="BakeryScene"] .weather-effects,
+body[data-game-scene="WasteCollectionScene"] .world-lighting-overlay,
+body[data-game-scene="WasteCollectionScene"] .weather-effects {
+  display: none;
+}
+
+@keyframes kindworks-rain {
+  to { transform: translate(-7%, 28%); }
+}
+
+@keyframes kindworks-snow {
+  to { transform: translate(4%, 24%); }
+}
+
+@keyframes kindworks-wind {
+  to { background-position: 320px 60px; }
 }
 
 .hud-actions {
@@ -72,7 +162,8 @@ body {
 }
 
 .save-status-button,
-.economy-hud-button {
+.economy-hud-button,
+.world-status-pill {
   min-height: 36px;
   padding: 8px 12px;
   border: 1px solid rgb(255 255 255 / 30%);
@@ -83,6 +174,27 @@ body {
   font: 800 11px/1 system-ui, sans-serif;
   cursor: pointer;
   backdrop-filter: blur(8px);
+}
+
+.world-status-pill {
+  min-width: 112px;
+  cursor: default;
+  text-align: center;
+}
+
+.weather-status {
+  min-width: 118px;
+  background: rgb(67 91 96 / 92%);
+}
+
+.weather-status[data-weather="clear"] { background: rgb(121 102 42 / 92%); }
+.weather-status[data-weather="rain"] { background: rgb(48 84 103 / 94%); }
+.weather-status[data-weather="snow"] { background: rgb(91 111 122 / 94%); }
+.weather-status[data-weather="windy"] { background: rgb(80 96 57 / 94%); }
+
+.weather-status small {
+  color: rgb(255 255 255 / 72%);
+  font-size: 9px;
 }
 
 .economy-hud-button {
@@ -955,7 +1067,7 @@ body[data-game-scene="BakeryScene"] .zoom-controls {
   }
 
   .zoom-controls {
-    top: max(76px, calc(env(safe-area-inset-top) + 62px));
+    top: max(150px, calc(env(safe-area-inset-top) + 136px));
     bottom: auto;
   }
 
@@ -1278,6 +1390,25 @@ body[data-game-scene="BakeryScene"] .zoom-controls {
     margin-top: 5px;
     padding: 5px 7px;
     font-size: 9px;
+  }
+}
+
+@media (max-width: 720px) {
+  .world-status-pill {
+    min-width: 0;
+    padding-inline: 9px;
+  }
+
+  .weather-status small {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .weather-effects::before,
+  .weather-effects::after,
+  .weather-effects[data-weather="windy"] {
+    animation: none;
   }
 }
 

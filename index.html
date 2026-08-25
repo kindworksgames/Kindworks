@@ -12,13 +12,17 @@
   <body>
     <main class="game-shell" aria-label="Kindworks Phaser game">
       <div id="game"></div>
+      <div id="world-lighting-overlay" class="world-lighting-overlay" data-phase="day" aria-hidden="true"></div>
+      <div id="weather-effects" class="weather-effects" data-weather="clear" aria-hidden="true"></div>
       <section class="town-hud" aria-label="Town information">
         <div class="town-title"><strong>KINDWORKS</strong><span id="location-status">Willowmere</span></div>
         <div class="hud-actions">
+          <div id="world-clock-status" class="world-status-pill" aria-label="Day 1, 07:00">Day 1 · 07:00</div>
+          <div id="weather-status" class="world-status-pill weather-status" data-weather="clear" aria-label="Clear weather"><span aria-hidden="true">☀️</span> Clear <small>20°C</small></div>
           <button id="coin-status-button" class="economy-hud-button" type="button" aria-label="Open wallet">🪙 100</button>
           <button id="inventory-button" class="economy-hud-button" type="button" aria-label="Open inventory">🎒 2</button>
           <button id="save-status-button" class="save-status-button" type="button" data-status="new">Save not started</button>
-          <div class="milestone-badge">PHASER TOWN · MILESTONE 6</div>
+          <div class="milestone-badge">PHASER TOWN · MILESTONE 7</div>
         </div>
       </section>
       <section id="interaction-prompt" class="interaction-prompt hidden" aria-label="Nearby interaction" aria-hidden="true">
