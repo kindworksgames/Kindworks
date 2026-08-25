@@ -3,6 +3,10 @@ import "./style.css";
 import { BootScene } from "./scenes/BootScene.js";
 import { BakeryScene } from "./scenes/BakeryScene.js";
 import { TownScene } from "./scenes/TownScene.js";
+import { bootstrapState } from "./state/bootstrapState.js";
+import { SaveStatusController } from "./ui/SaveStatusController.js";
+
+const stateRuntime = bootstrapState(window.localStorage);
 
 const config = {
   type: Phaser.AUTO,
@@ -20,6 +24,15 @@ const config = {
 };
 
 const game = new Phaser.Game(config);
+game.registry.set("gameState", stateRuntime.gameState);
+game.registry.set("saveRepository", stateRuntime.repository);
+const saveStatus = new SaveStatusController(stateRuntime, {
+  onModalChange(open) {
+    document.body.dataset.modalOpen = String(open);
+    const activeScene = game.scene.getScenes(true)[0];
+    activeScene?.setOverlayOpen?.(open);
+  },
+});
 
 window.__KINDWORKS_PHASER__ = {
   game,
@@ -28,5 +41,18 @@ window.__KINDWORKS_PHASER__ = {
     return activeScene?.player && typeof activeScene.getMilestoneState === "function"
       ? activeScene.getMilestoneState()
       : { scene: activeScene?.scene?.key || "loading" };
+  },
+  getSaveDiagnostics() {
+    const status = saveStatus.getStatus();
+    return {
+      namespace: status.namespace,
+      hasCurrent: status.hasCurrent,
+      hasBackup: status.hasBackup,
+      hasRecovery: status.hasRecovery,
+      legacyAvailable: status.legacyAvailable,
+      legacyVersion: status.legacyVersion,
+      legacyUntouched: true,
+      schemaVersion: 1,
+    };
   },
 };

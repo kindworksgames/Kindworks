@@ -54,6 +54,8 @@ export class BakeryScene extends Phaser.Scene {
       }],
       onChange: (interaction) => this.renderInteractionPrompt(interaction),
     });
+    this.gameState = this.registry.get("gameState");
+    this.stateSyncElapsed = 0;
 
     this.interactionButton = document.querySelector("#interaction-action");
     this.onInteraction = () => this.interactions.activateCurrent();
@@ -168,7 +170,7 @@ export class BakeryScene extends Phaser.Scene {
     const badge = document.querySelector(".milestone-badge");
     const status = document.querySelector("#location-status");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = "LITTLE BAKERY · INTERIOR SHELL";
+    if (badge) badge.textContent = "LITTLE BAKERY · MILESTONE 3";
     if (status) status.textContent = "Inside Little Bakery";
     if (hint) hint.textContent = "Walk with arrows or WASD · E or Space to leave";
   }
@@ -214,6 +216,13 @@ export class BakeryScene extends Phaser.Scene {
     this.movement.setEnabled(false);
     this.interactions.setEnabled(false);
     this.player.setMovement(0, 0, false);
+    const returnPosition = this.entryData.returnPosition;
+    this.gameState?.updatePlayer({
+      scene: "TownScene",
+      x: returnPosition?.x,
+      y: returnPosition?.y,
+      facing: this.entryData.returnFacing || "down",
+    });
     document.querySelector("#game")?.setAttribute("data-transition", "leaving-bakery");
     this.cameras.main.fadeOut(220, 58, 35, 25);
     this.time.delayedCall(240, () => {
@@ -224,6 +233,13 @@ export class BakeryScene extends Phaser.Scene {
       });
     });
     return { ok: true, targetScene: "TownScene" };
+  }
+
+  setOverlayOpen(open) {
+    if (this.transitioning) return;
+    this.movement?.setEnabled(!open);
+    this.interactions?.setEnabled(!open);
+    if (open) this.player?.setMovement(0, 0, false);
   }
 
   shutdownScene() {
@@ -250,6 +266,16 @@ export class BakeryScene extends Phaser.Scene {
     const speed = sprinting ? SPRINT_SPEED : WALK_SPEED;
     const moving = this.movePlayer(dx, dy, speed * Math.min(delta, 50) / 1000);
     this.player.setMovement(dx, dy, moving);
+    this.stateSyncElapsed += delta;
+    if (this.stateSyncElapsed >= 250) {
+      this.stateSyncElapsed = 0;
+      this.gameState?.updatePlayer({
+        scene: this.scene.key,
+        x: this.player.x,
+        y: this.player.y,
+        facing: this.player.direction,
+      });
+    }
     this.interactions.update(this.player.x, this.player.y);
     if (this.movement.consumeInteractPress()) this.interactions.activateCurrent();
     this.shadow.setPosition(this.player.x, this.player.y + 18);
@@ -271,6 +297,11 @@ export class BakeryScene extends Phaser.Scene {
       returnPosition: this.entryData.returnPosition,
       transitionCount: Number(this.entryData.transitionCount || 0),
       gameplayConnected: false,
+      sharedState: {
+        schemaVersion: this.gameState?.getSnapshot().schemaVersion || null,
+        source: this.gameState?.getSnapshot().source.kind || null,
+        legacySaveUntouched: true,
+      },
     };
   }
 }

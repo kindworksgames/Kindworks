@@ -51,10 +51,47 @@ body {
 .touch-controls,
 .zoom-controls,
 .interaction-prompt,
-.control-hint {
+.control-hint,
+.save-panel {
   position: absolute;
   z-index: 10;
   user-select: none;
+}
+
+.hud-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.save-status-button {
+  min-height: 36px;
+  padding: 8px 12px;
+  border: 1px solid rgb(255 255 255 / 30%);
+  border-radius: 999px;
+  background: rgb(28 58 42 / 90%);
+  color: #e7f2e2;
+  box-shadow: 0 7px 22px rgb(10 29 20 / 30%);
+  font: 800 11px/1 system-ui, sans-serif;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+}
+
+.save-status-button[data-status="healthy"] {
+  background: rgb(47 105 66 / 94%);
+  color: #f3ffef;
+}
+
+.save-status-button[data-status="legacy"] {
+  background: rgb(123 91 45 / 94%);
+  color: #fff4d6;
+}
+
+.save-status-button:focus-visible,
+.save-panel button:focus-visible {
+  outline: 3px solid #ffe66d;
+  outline-offset: 3px;
 }
 
 .town-hud {
@@ -135,6 +172,111 @@ body {
 }
 
 body[data-game-scene="BakeryScene"] .zoom-controls {
+  display: none;
+}
+
+.save-panel {
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(13 31 22 / 70%);
+  backdrop-filter: blur(7px);
+}
+
+.save-panel.hidden {
+  display: none;
+}
+
+.save-panel-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 58px 1fr auto;
+  gap: 8px 14px;
+  width: min(520px, calc(100vw - 32px));
+  padding: 23px;
+  border: 1px solid rgb(255 255 255 / 34%);
+  border-radius: 24px;
+  background: linear-gradient(155deg, #fffdf3, #eaf5e8);
+  color: #294c38;
+  box-shadow: 0 24px 80px rgb(5 18 11 / 46%);
+}
+
+.save-panel-icon {
+  grid-row: 1 / 3;
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
+  background: #dcefd9;
+  font-size: 30px;
+}
+
+.save-panel-eyebrow {
+  margin: 0 0 5px;
+  color: #69816f;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+.save-panel h2 {
+  margin: 0;
+  color: #214832;
+  font-size: 23px;
+  line-height: 1.08;
+}
+
+.save-panel-close {
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: 13px;
+  background: #e0ebdd;
+  color: #355943;
+  font-size: 17px;
+  cursor: pointer;
+}
+
+#save-panel-message,
+.save-panel-details {
+  grid-column: 1 / -1;
+  margin: 6px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.save-panel-details {
+  margin-top: 0;
+  padding: 11px 13px;
+  border-radius: 13px;
+  background: #e2efe0;
+  color: #4c6654;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.save-panel-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+
+.save-panel-actions button {
+  min-height: 46px;
+  padding: 12px 18px;
+  border: 0;
+  border-radius: 13px;
+  background: #377849;
+  color: white;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.save-panel-actions button.hidden {
   display: none;
 }
 
@@ -234,6 +376,15 @@ body[data-game-scene="BakeryScene"] .zoom-controls {
     display: none;
   }
 
+  .save-status-button {
+    max-width: 180px;
+    min-height: 34px;
+    padding: 7px 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   .touch-controls {
     grid-template: repeat(2, 48px) / repeat(3, 48px);
   }
@@ -265,6 +416,23 @@ body[data-game-scene="BakeryScene"] .zoom-controls {
   .zoom-controls {
     top: max(76px, calc(env(safe-area-inset-top) + 62px));
     bottom: auto;
+  }
+
+  .save-panel-card {
+    grid-template-columns: 48px 1fr auto;
+    padding: 18px;
+    border-radius: 19px;
+  }
+
+  .save-panel-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    font-size: 25px;
+  }
+
+  .save-panel h2 {
+    font-size: 19px;
   }
 }
 

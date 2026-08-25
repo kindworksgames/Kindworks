@@ -46,3 +46,11 @@ proximity-interaction, and scene-transition foundations. The Little Bakery now
 has a safe enter/exit interior shell that returns the player to its authored
 door position. Bakery gameplay, economy, inventory, saves, NPCs, and
 progression remain intentionally unmigrated.
+
+Milestone 3 establishes shared state and safe persistence. Phaser uses a new
+`kindworks_phaser_v1` current/backup/recovery namespace, validates checksummed
+schema-1 envelopes, and can inspect legacy versions 12 through 82 without
+writing to any `kindworks_living_town_*` key. A legacy copy is created only
+after explicit confirmation and retains the complete source snapshot for later
+domain-by-domain migration. Economy, inventory, NPCs, animals, shops, farming,
+rewards, and mini-game behavior remain intentionally unmigrated.
