@@ -108,7 +108,7 @@ test("schema-2 saves gain fresh cleanup state without losing prior progress", ()
   oldState.progress.completedJobCount = 17;
   delete oldState.progress.cleanup;
   const upgraded = upgradeGameState(oldState, { now: 1000 });
-  assert.equal(upgraded.schemaVersion, 7);
+  assert.equal(upgraded.schemaVersion, 8);
   assert.equal(upgraded.progress.completedJobCount, 17);
   assert.equal(upgraded.progress.cleanup.targets[COMMONS_RUBBISH_JOB.id].status, "available");
   assert.equal(validateGameState(upgraded).ok, true);

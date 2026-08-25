@@ -1837,6 +1837,93 @@ body[data-resident-control="true"] #control-hint { display: none; }
   }
 }
 
+/* Milestone 11 — animals, friendship, adoption and companions */
+.animal-hud-button { background: rgba(255, 248, 218, 0.94); }
+.animal-friends-panel {
+  position: absolute;
+  inset: 0;
+  z-index: 43;
+  display: grid;
+  place-items: center;
+  padding: clamp(12px, 3vw, 34px);
+  background: rgba(20, 39, 29, 0.7);
+  backdrop-filter: blur(7px);
+}
+.animal-friends-panel.hidden { display: none; }
+.animal-friends-card {
+  width: min(980px, 100%);
+  max-height: min(690px, calc(100vh - 24px));
+  overflow: hidden;
+  color: #294637;
+  background: linear-gradient(145deg, #fffdf2, #edf6db);
+  border: 3px solid #315e3f;
+  border-radius: 24px;
+  box-shadow: 0 22px 70px rgba(9, 28, 17, 0.45);
+}
+.animal-friends-header {
+  display: grid;
+  grid-template-columns: 1fr auto 44px;
+  align-items: center;
+  gap: 14px;
+  padding: 17px 20px;
+  color: #fffdf2;
+  background: linear-gradient(115deg, #315e3f, #527f4c);
+}
+.animal-friends-header p, .animal-friends-header h2, .animal-detail h3, .animal-detail p { margin: 0; }
+.animal-friends-header p { font-size: 11px; font-weight: 850; letter-spacing: 1.3px; opacity: .82; }
+.animal-friends-header h2 { margin-top: 3px; font-size: clamp(21px, 3vw, 29px); }
+.animal-friends-header > span { padding: 8px 11px; border-radius: 999px; background: rgba(255,255,255,.16); font-size: 13px; font-weight: 800; }
+.animal-friends-header > button { width: 42px; height: 42px; border: 0; border-radius: 50%; color: #294637; background: #fffdf2; font-weight: 900; }
+.animal-friends-layout { display: grid; grid-template-columns: minmax(255px, .9fr) minmax(0, 1.6fr); min-height: 470px; max-height: 555px; }
+.animal-friends-list { overflow: auto; padding: 13px; background: rgba(213, 232, 190, .65); border-right: 1px solid #b8ce9e; }
+.animal-list-card { width: 100%; display: grid; grid-template-columns: 42px 1fr auto; align-items: center; gap: 8px; margin-bottom: 7px; padding: 9px; text-align: left; color: #294637; border: 2px solid transparent; border-radius: 14px; background: rgba(255,255,255,.76); }
+.animal-list-card.selected { border-color: #4f8556; background: #fffdf2; box-shadow: 0 5px 16px rgba(47,87,49,.13); }
+.animal-list-card > span { font-size: 28px; text-align: center; }
+.animal-list-card div { display: grid; gap: 2px; min-width: 0; }
+.animal-list-card small { overflow: hidden; color: #627565; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.animal-list-card em { color: #6c7b55; font-size: 10px; font-style: normal; font-weight: 850; text-transform: uppercase; }
+.animal-detail { overflow: auto; padding: 18px 20px; }
+.animal-detail-heading { display: flex; align-items: center; gap: 14px; }
+.animal-detail-heading > span { display: grid; place-items: center; width: 68px; height: 68px; border-radius: 50%; background: #e6f0cd; font-size: 42px; }
+.animal-detail-heading h3 { font-size: 26px; }
+.animal-detail-heading p, .animal-habitat { color: #607264; }
+.animal-trust-row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px; margin: 15px 0 10px; }
+.animal-trust-row progress { width: 100%; height: 14px; accent-color: #4f8556; }
+.animal-habitat { min-height: 38px; line-height: 1.4; }
+.animal-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 13px 0 16px; }
+.animal-actions button, .animal-foods button { min-height: 42px; padding: 8px 12px; color: #315e3f; border: 2px solid #9fbb82; border-radius: 12px; background: #f8faeb; font-weight: 800; }
+.animal-actions button.primary { color: #fff; border-color: #4f8556; background: #4f8556; }
+.animal-actions button:disabled, .animal-foods button:disabled { opacity: .44; cursor: not-allowed; }
+.animal-detail h4 { margin: 0 0 8px; }
+.animal-foods { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 7px; }
+.animal-foods button { display: grid; grid-template-columns: 30px 1fr; text-align: left; }
+.animal-foods button span { grid-row: 1 / span 2; align-self: center; font-size: 23px; }
+.animal-foods button small { color: #66786a; }
+.animal-meadow-card { display: flex; align-items: center; gap: 11px; margin-top: 13px; padding: 11px; border: 1px solid #bbcf9f; border-radius: 14px; background: #edf6da; }
+.animal-meadow-card > span { font-size: 27px; }
+.animal-meadow-card div { display: grid; gap: 2px; }
+.animal-meadow-card small { color: #607264; }
+.animal-friends-status { margin: 0; padding: 11px 18px 14px; color: #4f6653; border-top: 1px solid #cad8b7; background: rgba(255,255,255,.62); }
+.animal-friends-status[data-status="success"] { color: #23613a; }
+.animal-friends-status[data-status="error"] { color: #9a3030; }
+
+@media (max-width: 720px) {
+  .animal-friends-panel { padding: 8px; align-items: end; }
+  .animal-friends-card { max-height: 91vh; border-radius: 20px 20px 0 0; overflow: auto; }
+  .animal-friends-header { position: sticky; top: 0; z-index: 2; grid-template-columns: 1fr 42px; padding: 12px 13px; }
+  .animal-friends-header p, .animal-friends-header > span { display: none; }
+  .animal-friends-layout { display: block; max-height: none; }
+  .animal-friends-list { display: flex; gap: 7px; overflow-x: auto; padding: 10px; border-right: 0; border-bottom: 1px solid #b8ce9e; }
+  .animal-list-card { flex: 0 0 150px; grid-template-columns: 34px 1fr; margin: 0; }
+  .animal-list-card > span { font-size: 24px; }
+  .animal-list-card em { grid-column: 2; }
+  .animal-detail { overflow: visible; padding: 13px; }
+  .animal-detail-heading > span { width: 55px; height: 55px; font-size: 34px; }
+  .animal-detail-heading h3 { font-size: 22px; }
+  .animal-foods { grid-template-columns: 1fr; }
+  .animal-friends-status { position: static; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .weather-effects::before,
   .weather-effects::after,

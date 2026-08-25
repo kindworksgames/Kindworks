@@ -13,12 +13,14 @@ import { WorldSimulationService } from "./systems/WorldSimulationService.js";
 import { NpcTownLifeService } from "./systems/NpcTownLifeService.js";
 import { CustomResidentService } from "./systems/CustomResidentService.js";
 import { FarmingService } from "./systems/FarmingService.js";
+import { AnimalService } from "./systems/AnimalService.js";
 import { EconomyHudController } from "./ui/EconomyHudController.js";
 import { SaveStatusController } from "./ui/SaveStatusController.js";
 import { ShopController } from "./ui/ShopController.js";
 import { WorldHudController } from "./ui/WorldHudController.js";
 import { CustomResidentController } from "./ui/CustomResidentController.js";
 import { FarmingController } from "./ui/FarmingController.js";
+import { AnimalFriendsController } from "./ui/AnimalFriendsController.js";
 import { ITEM_IDS } from "./data/items.js";
 
 const stateRuntime = bootstrapState(window.localStorage);
@@ -28,6 +30,8 @@ const npcTownLife = new NpcTownLifeService(stateRuntime.gameState, stateRuntime.
 const customResident = new CustomResidentService(stateRuntime.gameState, stateRuntime.repository);
 const farming = new FarmingService(stateRuntime.gameState, stateRuntime.repository);
 farming.refresh({ persist: true });
+const animals = new AnimalService(stateRuntime.gameState, stateRuntime.repository);
+animals.refresh({ persist: true, offline: offlineResolution?.advancedGameMinutes > 0 });
 
 const config = {
   type: Phaser.AUTO,
@@ -51,6 +55,7 @@ game.registry.set("worldSimulation", worldSimulation);
 game.registry.set("npcTownLife", npcTownLife);
 game.registry.set("customResident", customResident);
 game.registry.set("farming", farming);
+game.registry.set("animals", animals);
 const economy = new EconomyService(stateRuntime.gameState, stateRuntime.repository);
 game.registry.set("economy", economy);
 const cleanupService = new CleanupJobService(stateRuntime.gameState, stateRuntime.repository);
@@ -90,6 +95,12 @@ const farmingController = new FarmingController(farming, {
   },
 });
 game.registry.set("farmingController", farmingController);
+const animalFriendsController = new AnimalFriendsController(animals, {
+  onModalChange(open) {
+    setModalOpen("animal-friends", open);
+  },
+});
+game.registry.set("animalFriendsController", animalFriendsController);
 const activeTownScene = () => game.scene.getScene("TownScene")?.scene?.isActive?.()
   ? game.scene.getScene("TownScene")
   : null;
@@ -112,12 +123,16 @@ game.registry.set("customResidentController", customResidentController);
 function handleVisibilityChange() {
   npcTownLife.setPaused("background", document.hidden);
   if (document.hidden) worldSimulation.pause("background", { persist: true });
-  else worldSimulation.resume("background", { resolveOffline: true });
+  else {
+    const result = worldSimulation.resume("background", { resolveOffline: true });
+    animals.refresh({ persist: true, offline: (result?.advancedGameMinutes || 0) > 0 });
+  }
 }
 document.addEventListener("visibilitychange", handleVisibilityChange);
 window.addEventListener("pagehide", () => {
   customResident.persistLocation();
   farming.refresh({ persist: true });
+  animals.refresh({ persist: true });
   worldSimulation.persist();
 });
 
@@ -177,5 +192,8 @@ window.__KINDWORKS_PHASER__ = {
   },
   getFarmingDiagnostics() {
     return { ...farming.getDiagnostics(), interface: farmingController.getDiagnostics() };
+  },
+  getAnimalDiagnostics() {
+    return { ...animals.getDiagnostics(), interface: animalFriendsController.getDiagnostics() };
   },
 };

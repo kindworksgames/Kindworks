@@ -23,6 +23,12 @@ import {
   projectLegacyFarming,
   validateFarmingState,
 } from "./farmingState.js";
+import {
+  createFreshAnimalState,
+  normalizeAnimalState,
+  projectLegacyAnimals,
+  validateAnimalState,
+} from "./animalState.js";
 
 const DIRECTIONS = new Set(["up", "down", "left", "right"]);
 
@@ -47,6 +53,7 @@ function safeInteger(value, minimum = 0, maximum = Number.MAX_SAFE_INTEGER) {
 
 export function createFreshGameState({ now = Date.now() } = {}) {
   const timestamp = isoTime(now) || new Date(0).toISOString();
+  const world = createFreshWorldState({ now });
   return {
     schemaVersion: GAME_STATE_SCHEMA_VERSION,
     createdAt: timestamp,
@@ -59,7 +66,7 @@ export function createFreshGameState({ now = Date.now() } = {}) {
       warnings: [],
     },
     identity: { townName: "Willowmere" },
-    world: createFreshWorldState({ now }),
+    world,
     player: {
       scene: "TownScene",
       x: PLAYER_START.x,
@@ -71,7 +78,8 @@ export function createFreshGameState({ now = Date.now() } = {}) {
     inventory: createFreshInventoryState(),
     npcs: createFreshNpcState(),
     customResident: createFreshCustomResidentState(),
-    farming: createFreshFarmingState(createFreshWorldState({ now })),
+    farming: createFreshFarmingState(world),
+    animals: createFreshAnimalState(world),
     legacySnapshot: null,
   };
 }
@@ -99,6 +107,7 @@ export function createGameStateFromLegacy(legacy, report, { now = Date.now() } =
   });
   state.customResident = projectLegacyCustomResident(legacy);
   state.farming = projectLegacyFarming(legacy, state.world);
+  state.animals = projectLegacyAnimals(legacy.animals, state.world);
   const legacySeeds = legacy.farmingFoundation?.seedInventory || {};
   for (const id of ["carrot-seeds", "fresh-greens-seeds", "wild-berry-starters"]) {
     const quantity = safeInteger(legacySeeds[id], 0, 99);
@@ -147,6 +156,10 @@ export function upgradeGameState(value, { now = Date.now() } = {}) {
     if (!state.inventory?.consumables?.["carrot-seeds"] && !state.farming.allotment.beds.some((bed) => bed.cropId)) state.inventory.consumables["carrot-seeds"] = 1;
     state.schemaVersion = 7;
   }
+  if (state.schemaVersion === 7) {
+    state.animals = normalizeAnimalState(state.animals, state.world);
+    state.schemaVersion = 8;
+  }
   return state;
 }
 
@@ -172,6 +185,7 @@ export function validateGameState(value) {
   errors.push(...validateNpcState(value.npcs).errors);
   errors.push(...validateCustomResidentState(value.customResident).errors);
   errors.push(...validateFarmingState(value.farming, value.world).errors);
+  errors.push(...validateAnimalState(value.animals, value.world).errors);
   if (value.source?.kind === "legacy-import") {
     if (!Number.isInteger(value.source.legacyVersion)) errors.push("Imported legacy version is missing.");
     if (typeof value.source.legacySourceKey !== "string") errors.push("Imported legacy source key is missing.");

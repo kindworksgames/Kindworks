@@ -20,6 +20,7 @@ import { FRESH_MARKET } from "../data/shops.js";
 import { InteractionSystem } from "../systems/InteractionSystem.js";
 import { MovementController } from "../systems/MovementController.js";
 import { NpcCharacter } from "../entities/NpcCharacter.js";
+import { AnimalCharacter } from "../entities/AnimalCharacter.js";
 import {
   PERSONAL_HOME_RENDER_HOUSE_ID,
   PERSONAL_HOME_OPTIONS,
@@ -31,6 +32,7 @@ import {
   ORCHARD_CONFIG,
   lawnNeedsCare,
 } from "../data/farming.js";
+import { ANIMAL_DEFINITIONS, SOUTH_MEADOW } from "../data/animals.js";
 
 const PLAYER_RADIUS = 17;
 const WALK_SPEED = 270;
@@ -79,6 +81,8 @@ export class TownScene extends Phaser.Scene {
     this.customResidentController = this.registry.get("customResidentController");
     this.farming = this.registry.get("farming");
     this.farmingController = this.registry.get("farmingController");
+    this.animals = this.registry.get("animals");
+    this.animalFriendsController = this.registry.get("animalFriendsController");
     this.worldSimulation?.setPaused("activity", false);
     const savedState = this.gameState?.getSnapshot();
     this.cameras.main.setBounds(0, 0, WORLD.width, WORLD.height);
@@ -86,6 +90,9 @@ export class TownScene extends Phaser.Scene {
 
     const qaTarget = import.meta.env.DEV
       ? new URLSearchParams(window.location.search).get("qa")
+      : null;
+    const animalQaPresentation = qaTarget === "animals"
+      ? this.animals?.getWorldPresentations?.().find((entry) => entry.visible && !entry.definition.rare)
       : null;
     const qaSpawn = qaTarget === "bakery"
       ? LITTLE_BAKERY.approach
@@ -98,7 +105,9 @@ export class TownScene extends Phaser.Scene {
               : qaTarget === "orchard"
                 ? ORCHARD_CONFIG.interaction
                 : qaTarget === "lawn"
-                  ? { x: LAWN_PLOTS[0].x, y: LAWN_PLOTS[0].y + 110 }
+                ? { x: LAWN_PLOTS[0].x, y: LAWN_PLOTS[0].y + 110 }
+                : qaTarget === "animals" && animalQaPresentation?.position
+                  ? { x: animalQaPresentation.position.x, y: animalQaPresentation.position.y + 72 }
           : null;
     const savedTownPosition = savedState?.player?.scene === "TownScene" ? savedState.player : null;
     const spawn = this.entryData.returnPosition
@@ -112,6 +121,7 @@ export class TownScene extends Phaser.Scene {
     for (const resident of this.npcTownLife?.getResidents?.() || []) {
       this.npcCharacters.set(resident.id, new NpcCharacter(this, resident));
     }
+    this.animalCharacters = new Map(ANIMAL_DEFINITIONS.map((definition) => [definition.id, new AnimalCharacter(this, definition)]));
     this.customResidentCharacter = null;
     this.refreshCustomResident();
     this.unsubscribeCustomResident = this.customResident?.subscribe?.(() => this.refreshCustomResident());
@@ -173,6 +183,23 @@ export class TownScene extends Phaser.Scene {
         onActivate: () => this.openFarming("lawns", plot.id),
       });
     }
+    this.animalInteractables = new Map();
+    for (const definition of ANIMAL_DEFINITIONS) {
+      const interaction = {
+        id: `friend-${definition.id}`,
+        kind: "animal-friend",
+        x: definition.route[0].x,
+        y: definition.route[0].y,
+        radius: 82,
+        enabled: false,
+        icon: "🐾",
+        label: `Meet ${definition.name}`,
+        detail: "Greet, feed, build trust or adopt",
+        onActivate: () => this.openAnimalFriends(definition.id),
+      };
+      this.animalInteractables.set(definition.id, interaction);
+      interactables.push(interaction);
+    }
     if (this.cleanupService?.isAvailable(COMMONS_RUBBISH_JOB.id)) {
       interactables.push({
         id: COMMONS_RUBBISH_JOB.id,
@@ -193,6 +220,8 @@ export class TownScene extends Phaser.Scene {
     this.stateSyncElapsed = 0;
     this.farmingSyncElapsed = 0;
     this.unsubscribeFarming = this.farming?.subscribe?.(() => this.drawFarmingAreas());
+    this.unsubscribeAnimals = this.animals?.subscribe?.(() => this.refreshAnimalPresentations(0));
+    this.refreshAnimalPresentations(0);
 
     const preferredZoom = window.matchMedia("(max-width: 720px)").matches ? 0.72 : 0.88;
     this.cameras.main.startFollow(this.player, true, 0.12, 0.12);
@@ -268,6 +297,7 @@ export class TownScene extends Phaser.Scene {
     SHOPS.forEach((shop) => this.drawShop(shop));
     this.drawLandmarks();
     this.drawFarmingAreas();
+    this.drawSouthMeadow();
     this.drawCleanupTarget();
     this.drawLabels();
 
@@ -449,6 +479,23 @@ export class TownScene extends Phaser.Scene {
     }
   }
 
+  drawSouthMeadow() {
+    const { bounds } = SOUTH_MEADOW;
+    const meadow = this.add.graphics().setDepth(14);
+    meadow.fillStyle(0x9dce73, 0.5);
+    meadow.fillRoundedRect(bounds.x, bounds.y, bounds.width, bounds.height, 34);
+    meadow.lineStyle(7, 0xf1e3b5, 0.92);
+    meadow.strokeRoundedRect(bounds.x, bounds.y, bounds.width, bounds.height, 34);
+    meadow.lineStyle(3, 0x6d9256, 0.82);
+    meadow.strokeRoundedRect(bounds.x + 9, bounds.y + 9, bounds.width - 18, bounds.height - 18, 26);
+    const flowers = [[270, 2190], [470, 2260], [760, 2185], [805, 2470], [530, 2510], [330, 2450]];
+    for (const [x, y] of flowers) this.add.text(x, y, "🌼", { fontSize: "20px" }).setOrigin(0.5).setDepth(15);
+    this.add.text(bounds.x + bounds.width / 2, bounds.y + 30, "🌿 SOUTH MEADOW · ADOPTED COMPANIONS", {
+      color: "#315e3f", fontFamily: "system-ui, sans-serif", fontSize: "15px", fontStyle: "bold",
+      backgroundColor: "rgba(255,249,223,.88)", padding: { x: 9, y: 5 },
+    }).setOrigin(0.5).setDepth(46);
+  }
+
   drawCleanupTarget() {
     if (!this.cleanupService?.isAvailable(COMMONS_RUBBISH_JOB.id)) return;
     const { x, y } = COMMONS_RUBBISH_JOB.world;
@@ -586,6 +633,7 @@ export class TownScene extends Phaser.Scene {
     this.movement?.destroy();
     this.unsubscribeCustomResident?.();
     this.unsubscribeFarming?.();
+    this.unsubscribeAnimals?.();
     this.zoomIn?.removeEventListener("click", this.onZoomIn);
     this.zoomOut?.removeEventListener("click", this.onZoomOut);
     this.interactionButton?.removeEventListener("click", this.onInteraction);
@@ -597,7 +645,7 @@ export class TownScene extends Phaser.Scene {
     document.body.dataset.gameScene = this.scene.key;
     const badge = document.querySelector(".milestone-badge");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 10";
+    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 11";
     if (hint) hint.textContent = "Arrow keys or WASD to walk · E or Space to interact · Shift to run";
   }
 
@@ -646,6 +694,12 @@ export class TownScene extends Phaser.Scene {
     if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before starting this activity." };
     if (!this.farmingController) return { ok: false, reason: "The farming interface is not ready." };
     return this.farmingController.open(tab, targetId);
+  }
+
+  openAnimalFriends(animalId = null) {
+    if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
+    if (!this.animalFriendsController) return { ok: false, reason: "The Animal Friends interface is not ready." };
+    return this.animalFriendsController.open(animalId);
   }
 
   startWasteCollection() {
@@ -716,6 +770,22 @@ export class TownScene extends Phaser.Scene {
     status.textContent = `${prefix}${label} · ${Math.round(position.x)}, ${Math.round(position.y)}`;
   }
 
+  refreshAnimalPresentations(delta = 0) {
+    if (!this.animalCharacters || !this.player) return;
+    const playerPosition = this.activePosition();
+    for (const presentation of this.animals?.getWorldPresentations?.() || []) {
+      const character = this.animalCharacters.get(presentation.definition.id);
+      character?.applyPresentation(presentation, delta, playerPosition);
+      const interaction = this.animalInteractables?.get(presentation.definition.id);
+      if (!interaction || !character) continue;
+      interaction.enabled = presentation.visible && presentation.location !== "following";
+      interaction.x = character.x;
+      interaction.y = character.y;
+      interaction.label = presentation.state.adopted ? `Visit ${presentation.state.name}` : `Meet ${presentation.state.name}`;
+      interaction.detail = presentation.state.adopted ? `Roaming safely in ${SOUTH_MEADOW.label}` : "Greet, feed, build trust or adopt";
+    }
+  }
+
   update(_time, delta) {
     this.worldSimulation?.tick(delta);
     this.npcTownLife?.update(delta, this.gameState?.getSnapshot().world);
@@ -738,6 +808,7 @@ export class TownScene extends Phaser.Scene {
     } else {
       this.player.setMovement(dx, dy, moving);
     }
+    this.refreshAnimalPresentations(delta);
     this.stateSyncElapsed += delta;
     this.farmingSyncElapsed += delta;
     if (this.farmingSyncElapsed >= 5000) {
@@ -794,6 +865,11 @@ export class TownScene extends Phaser.Scene {
       gameElement.dataset.farmingGrowingBeds = String(farming?.growingBeds || 0);
       gameElement.dataset.farmingApplesReady = String(farming?.applesReady || 0);
       gameElement.dataset.farmingLawnJobs = String(farming?.activeLawnJobs || 0);
+      const animals = this.animals?.getDiagnostics?.();
+      gameElement.dataset.animalVisible = String(animals?.visibleWildAnimals || 0);
+      gameElement.dataset.animalAdopted = String(animals?.adoptedAnimals || 0);
+      gameElement.dataset.animalActive = animals?.activeAnimalId || "none";
+      gameElement.dataset.animalMeadow = String(animals?.southMeadowResidents || 0);
     }
   }
 
@@ -805,10 +881,11 @@ export class TownScene extends Phaser.Scene {
       camera: { zoom: Number(this.cameras.main.zoom.toFixed(2)), followingPlayer: !this.customResident?.getSnapshot?.().controlling },
       controls: { keyboard: true, touch: true, wheelZoom: true },
       interaction: this.interactions.getState(),
-      migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job", "world-time-weather-lighting", "basic-npc-town-life", "custom-resident-profile-home-control", "weather-aware-farming", "orchard-harvest", "persistent-lawn-jobs"],
+      migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job", "world-time-weather-lighting", "basic-npc-town-life", "custom-resident-profile-home-control", "weather-aware-farming", "orchard-harvest", "persistent-lawn-jobs", "animal-habitat-routes", "animal-friendship-feeding", "animal-adoption", "active-companion-following", "south-meadow"],
       npcTownLife: this.npcTownLife?.getDiagnostics?.(),
       customResident: this.customResident?.getDiagnostics?.(),
       farming: this.farming?.getDiagnostics?.(),
+      animals: this.animals?.getDiagnostics?.(),
       sharedState: {
         schemaVersion: this.gameState?.getSnapshot().schemaVersion || null,
         source: this.gameState?.getSnapshot().source.kind || null,

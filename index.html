@@ -22,8 +22,9 @@
           <button id="coin-status-button" class="economy-hud-button" type="button" aria-label="Open wallet">🪙 100</button>
           <button id="inventory-button" class="economy-hud-button" type="button" aria-label="Open inventory">🎒 2</button>
           <button id="custom-resident-button" class="economy-hud-button resident-hud-button" type="button" aria-label="Create your personal resident">💚 Create resident</button>
+          <button id="animal-friends-button" class="economy-hud-button animal-hud-button" type="button" aria-label="Open Animal Friends">🐾 Animal Friends</button>
           <button id="save-status-button" class="save-status-button" type="button" data-status="new">Save not started</button>
-          <div class="milestone-badge">PHASER TOWN · MILESTONE 10</div>
+          <div class="milestone-badge">PHASER TOWN · MILESTONE 11</div>
         </div>
       </section>
       <section id="interaction-prompt" class="interaction-prompt hidden" aria-label="Nearby interaction" aria-hidden="true">
@@ -224,6 +225,33 @@
             </section>
           </div>
           <p id="farming-status" class="farming-status" data-status="neutral" role="status" aria-live="polite">Your farming progress is saved with the rest of Willowmere.</p>
+        </div>
+      </section>
+      <section id="animal-friends-panel" class="animal-friends-panel hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="animal-friends-title" aria-describedby="animal-friends-status">
+        <div class="animal-friends-card">
+          <header class="animal-friends-header">
+            <div><p>MILESTONE 11 · ANIMALS & ADOPTION</p><h2 id="animal-friends-title">🐾 Animal Friends</h2></div>
+            <span id="animal-family-count">0 adopted · no family limit</span>
+            <button id="animal-friends-close" type="button" aria-label="Close Animal Friends">✕</button>
+          </header>
+          <div class="animal-friends-layout">
+            <aside id="animal-friends-list" class="animal-friends-list" aria-label="Willowmere animals"></aside>
+            <section class="animal-detail" aria-labelledby="animal-detail-name">
+              <div class="animal-detail-heading"><span id="animal-detail-icon">🐈</span><div><h3 id="animal-detail-name">Marmalade</h3><p id="animal-detail-kind">Bold Cat</p></div></div>
+              <div class="animal-trust-row"><progress id="animal-trust-progress" max="100" value="8">8%</progress><strong id="animal-trust-label">8% trust</strong></div>
+              <p id="animal-habitat" class="animal-habitat">Habitat: cottages, cafés and the market.</p>
+              <div class="animal-actions">
+                <button id="animal-greet" type="button">💚 Greet gently</button>
+                <button id="animal-adopt" class="primary" type="button">Invite to join</button>
+                <button id="animal-follow" class="primary" type="button" hidden>🐾 Follow me</button>
+                <button id="animal-roam" type="button" hidden>🌿 Roam South Meadow</button>
+              </div>
+              <h4>Offer one suitable treat today</h4>
+              <div id="animal-foods" class="animal-foods"></div>
+              <article class="animal-meadow-card"><span>🌼</span><div><strong>South Meadow</strong><small id="animal-meadow-summary">0 adopted companions roaming safely there.</small></div></article>
+            </section>
+          </div>
+          <p id="animal-friends-status" class="animal-friends-status" data-status="neutral" role="status" aria-live="polite">Greeting and suitable treats build trust. Only one companion follows at a time.</p>
         </div>
       </section>
       <section id="cleanup-hud" class="cleanup-hud hidden" aria-labelledby="cleanup-hud-title">
