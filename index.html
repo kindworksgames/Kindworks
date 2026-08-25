@@ -221,7 +221,10 @@
               <div class="farming-intro"><div><h3>Neighbourhood Lawn Care</h3><p>Grass and weeds regrow with elapsed game time and daily weather. A job appears only when a lawn truly needs care.</p></div></div>
               <div id="farming-lawns" class="lawn-grid" role="group" aria-label="Choose a lawn"></div>
               <p id="farming-lawn-summary" class="farming-lawn-summary"></p>
-              <button id="farming-complete-lawn" class="farming-primary" type="button">Mow & weed · earn 🪙 100</button>
+              <div class="farming-lawn-actions">
+                <button id="farming-complete-lawn" class="farming-primary" type="button">Start this Lawn Care job</button>
+                <button id="farming-lawn-campaign" type="button">Play the 750-level campaign</button>
+              </div>
             </section>
           </div>
           <p id="farming-status" class="farming-status" data-status="neutral" role="status" aria-live="polite">Your farming progress is saved with the rest of Willowmere.</p>
@@ -259,6 +262,42 @@
         <h2 id="landscape-required-title">Rotate your phone</h2>
         <p id="landscape-required-message">This activity is designed for landscape play. Turn your phone sideways to continue.</p>
       </aside>
+      <section id="lawn-care-hud" class="lawn-care-hud hidden" aria-labelledby="lawn-care-title">
+        <header class="lawn-care-header">
+          <div><p>MILESTONE 18 · ORIGINAL 750-LEVEL CAMPAIGN</p><h2 id="lawn-care-title">🌿 Lawn Care</h2><small id="lawn-care-summary">0 lawns cleared · 0 stars · Level 1 next</small></div>
+          <span id="lawn-care-balance">🪙 100</span>
+          <button id="lawn-care-exit" type="button">Save &amp; exit</button>
+        </header>
+        <section id="lawn-care-picker" class="lawn-care-picker" aria-label="Choose a Lawn Care level">
+          <div><strong>Mow all 750 original lawns</strong><small>The mower slides in a straight line until a hedge stops it. Cut at least half the grass before your moves run out.</small></div>
+          <label for="lawn-level-select">Lawn challenge<select id="lawn-level-select"><option value="1">Level 1</option></select></label>
+          <button id="lawn-level-start" type="button">Start Level 1</button>
+        </section>
+        <section id="lawn-care-gameplay" class="lawn-care-gameplay hidden" aria-label="Active Lawn Care level">
+          <div class="lawn-care-game-heading">
+            <div><small id="lawn-level-name">Level 1 of 750</small><strong id="lawn-level-band">Starter lawn</strong></div>
+            <span>Cut<strong id="lawn-progress">0%</strong></span><span>Moves<strong id="lawn-moves">0 / 11</strong></span><span>Par<strong id="lawn-optimal">9</strong></span>
+          </div>
+          <div class="lawn-care-play-area">
+            <div id="lawn-board-viewport" class="lawn-board-viewport"><div id="lawn-board" class="lawn-board" role="grid" aria-label="Lawn Care board"></div></div>
+            <aside class="lawn-care-side">
+              <div id="lawn-live-stars" class="lawn-live-stars" aria-label="Current rating">☆☆☆</div>
+              <article><small>EQUIPPED MOWER</small><strong id="lawn-mower">Old Green Mower</strong><span>Upgrades speed up weed-cutting animation only. Moves never change.</span></article>
+              <div class="lawn-care-legend"><span>🌱 Tall grass</span><span>▧ Hedge</span><span>🌿 Tough weed</span><span>🪵 Woody weed</span></div>
+              <button id="lawn-hint" type="button">💡 Show safe route</button>
+              <button id="lawn-retry" type="button">↻ Restart lawn</button>
+              <button id="lawn-qa-complete" class="hidden" type="button">✓ Certified QA completion</button>
+            </aside>
+          </div>
+          <div class="lawn-care-controls" aria-label="Mower direction controls"><button id="lawn-up" type="button" aria-label="Mow up">▲</button><button id="lawn-left" type="button" aria-label="Mow left">◀</button><button id="lawn-down" type="button" aria-label="Mow down">▼</button><button id="lawn-right" type="button" aria-label="Mow right">▶</button><button id="lawn-undo" type="button">↶ Undo</button></div>
+        </section>
+        <p id="lawn-care-status" class="lawn-care-status" data-status="neutral" role="status" aria-live="assertive">Choose a Lawn Care level to begin.</p>
+        <section id="lawn-care-result" class="lawn-care-result hidden" aria-labelledby="lawn-result-title">
+          <h3 id="lawn-result-title">Lawn restored!</h3><div id="lawn-result-stars">★★★</div><p id="lawn-result-message">Every strip is freshly cut.</p>
+          <div class="lawn-result-stats"><span>Cut<strong id="lawn-result-percent">100%</strong></span><span>Moves<strong id="lawn-result-moves">9</strong></span><span>Par<strong id="lawn-result-par">9</strong></span><span>Coins<strong id="lawn-result-coins">+100</strong></span></div>
+          <div class="lawn-result-actions"><button id="lawn-replay" type="button">Replay</button><button id="lawn-next" type="button">Next lawn</button><button id="lawn-return" type="button">Return to Willowmere</button></div>
+        </section>
+      </section>
       <section id="house-rescue-hud" class="house-rescue-hud hidden" aria-labelledby="house-rescue-hud-title">
         <header class="house-rescue-hud-header">
           <div><p>MILESTONE 16 · 750-LEVEL CAMPAIGN</p><h2 id="house-rescue-hud-title">🏠 House Rescue</h2><small id="house-rescue-progress-summary">0 rescued · 0 stars · Level 1 unlocked</small></div>

@@ -59,6 +59,12 @@ import {
   projectLegacyHouseRescue,
   validateHouseRescueState,
 } from "./houseRescueState.js";
+import {
+  createFreshLawnCareState,
+  normalizeLawnCareState,
+  projectLegacyLawnCare,
+  validateLawnCareState,
+} from "./lawnCareState.js";
 
 const DIRECTIONS = new Set(["up", "down", "left", "right"]);
 
@@ -115,6 +121,7 @@ export function createFreshGameState({ now = Date.now() } = {}) {
     cafe: createFreshCafeState(),
     river: createFreshRiverState(),
     houseRescue: createFreshHouseRescueState({ worldDay: world.day }),
+    lawnCare: createFreshLawnCareState(),
     legacySnapshot: null,
   };
 }
@@ -149,6 +156,7 @@ export function createGameStateFromLegacy(legacy, report, { now = Date.now() } =
   state.cafe = projectLegacyCafe(legacy.cafe);
   state.river = projectLegacyRiver(legacy);
   state.houseRescue = projectLegacyHouseRescue(legacy, state.world);
+  state.lawnCare = projectLegacyLawnCare(legacy);
   const legacySeeds = legacy.farmingFoundation?.seedInventory || {};
   for (const id of ["carrot-seeds", "fresh-greens-seeds", "wild-berry-starters"]) {
     const quantity = safeInteger(legacySeeds[id], 0, 99);
@@ -227,6 +235,12 @@ export function upgradeGameState(value, { now = Date.now() } = {}) {
       : normalizeCleanupState(state.progress.cleanup);
     state.schemaVersion = 14;
   }
+  if (state.schemaVersion === 14) {
+    state.lawnCare = state.source?.kind === "legacy-import"
+      ? projectLegacyLawnCare(state.legacySnapshot, state.lawnCare)
+      : normalizeLawnCareState(state.lawnCare);
+    state.schemaVersion = 15;
+  }
   return state;
 }
 
@@ -258,6 +272,7 @@ export function validateGameState(value) {
   errors.push(...validateCafeState(value.cafe).errors);
   errors.push(...validateRiverState(value.river).errors);
   errors.push(...validateHouseRescueState(value.houseRescue).errors);
+  errors.push(...validateLawnCareState(value.lawnCare).errors);
   if (value.source?.kind === "legacy-import") {
     if (!Number.isInteger(value.source.legacyVersion)) errors.push("Imported legacy version is missing.");
     if (typeof value.source.legacySourceKey !== "string") errors.push("Imported legacy source key is missing.");

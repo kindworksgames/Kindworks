@@ -78,6 +78,7 @@ export class TownScene extends Phaser.Scene {
     this.gameState = this.registry.get("gameState");
     this.shopController = this.registry.get("shopController");
     this.cleanupService = this.registry.get("cleanupService");
+    this.lawnCare = this.registry.get("lawnCare");
     this.worldSimulation = this.registry.get("worldSimulation");
     this.npcTownLife = this.registry.get("npcTownLife");
     this.customResident = this.registry.get("customResident");
@@ -120,7 +121,7 @@ export class TownScene extends Phaser.Scene {
               : qaTarget === "orchard"
                 ? ORCHARD_CONFIG.interaction
                 : qaTarget === "lawn"
-                ? { x: LAWN_PLOTS[0].x, y: LAWN_PLOTS[0].y + 110 }
+                ? { x: LAWN_PLOTS[0].x, y: LAWN_PLOTS[0].y + 85 }
                 : qaTarget === "animals" && animalQaPresentation?.position
                   ? { x: animalQaPresentation.position.x, y: animalQaPresentation.position.y + 72 }
                   : qaTarget === "fishing"
@@ -767,7 +768,7 @@ export class TownScene extends Phaser.Scene {
     document.body.dataset.gameScene = this.scene.key;
     const badge = document.querySelector(".milestone-badge");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 16";
+    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 18";
     if (hint) hint.textContent = "Arrow keys or WASD to walk · E or Space to interact · Shift to run";
   }
 
@@ -922,6 +923,26 @@ export class TownScene extends Phaser.Scene {
     this.cameras.main.fadeOut(220, 23, 43, 31);
     this.time.delayedCall(240, () => this.scene.start("WasteCollectionScene", { returnPosition, returnFacing }));
     return { ok: true, targetScene: "WasteCollectionScene", session: result.session };
+  }
+
+  startLawnCare({ mode = "campaign", targetId = null } = {}) {
+    if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before starting Lawn Care." };
+    if (!this.lawnCare) return { ok: false, reason: "The Lawn Care system is not ready." };
+    const returnPosition = { x: this.player.x, y: this.player.y };
+    const returnFacing = this.player.direction;
+    const result = mode === "town-job"
+      ? this.lawnCare.beginTownJob(targetId, { returnPosition, returnFacing })
+      : this.lawnCare.beginCampaign(this.lawnCare.getCampaignSnapshot().nextLevel, { returnPosition, returnFacing });
+    if (!result.ok) return result;
+    this.transitioning = true;
+    this.movement.setEnabled(false);
+    this.interactions.setEnabled(false);
+    this.player.setMovement(0, 0, false);
+    document.querySelector("#game")?.setAttribute("data-transition", "entering-lawn-care");
+    this.cameras.main.fadeOut(220, 38, 75, 42);
+    this.time.delayedCall(240, () => this.scene.start("LawnCareScene", { returnPosition, returnFacing }));
+    return { ok: true, targetScene: "LawnCareScene", session: result.session };
   }
 
   setOverlayOpen(open) {
@@ -1098,6 +1119,10 @@ export class TownScene extends Phaser.Scene {
       gameElement.dataset.wasteLevels = String(waste?.totalLevels || 0);
       gameElement.dataset.wasteCompleted = String(waste?.wasteProgress?.completed || 0);
       gameElement.dataset.wasteCatalogueValid = String(Boolean(waste?.catalogueValid));
+      const lawnCare = this.lawnCare?.getDiagnostics?.();
+      gameElement.dataset.lawnCareLevels = String(lawnCare?.totalLevels || 0);
+      gameElement.dataset.lawnCareCompleted = String(lawnCare?.progress?.completed || 0);
+      gameElement.dataset.lawnCareCatalogueValid = String(Boolean(lawnCare?.catalogueValid));
     }
   }
 
@@ -1109,7 +1134,7 @@ export class TownScene extends Phaser.Scene {
       camera: { zoom: Number(this.cameras.main.zoom.toFixed(2)), followingPlayer: !this.customResident?.getSnapshot?.().controlling },
       controls: { keyboard: true, touch: true, wheelZoom: true },
       interaction: this.interactions.getState(),
-      migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "cafe-scene-transition", "river-clearout-scene-transition", "house-rescue-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job", "world-time-weather-lighting", "basic-npc-town-life", "custom-resident-profile-home-control", "weather-aware-farming", "orchard-harvest", "persistent-lawn-jobs", "animal-habitat-routes", "animal-friendship-feeding", "animal-adoption", "active-companion-following", "south-meadow", "three-fishing-spots", "hidden-zone-fishing", "timed-reeling", "magnet-fishing", "fishing-inventory-rewards", "magnet-coin-rewards", "bakery-recipes", "bakery-customer-service", "bakery-first-clear-rewards", "bakery-level-unlocks", "shared-recipe-order-engine", "corner-cafe-recipes", "cafe-three-tray-service", "cafe-first-clear-rewards", "cafe-level-unlocks", "river-750-level-catalogue", "river-falling-piece-engine", "river-first-clear-rewards", "river-portrait-controls", "house-rescue-750-level-catalogue", "house-rescue-sort-and-vacuum", "house-rescue-persistent-home-jobs", "house-rescue-landscape-controls", "waste-750-authored-boards", "waste-five-slot-triple-matching", "waste-certified-solutions", "waste-first-clear-rewards", "waste-landscape-controls"],
+      migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "cafe-scene-transition", "river-clearout-scene-transition", "house-rescue-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job", "world-time-weather-lighting", "basic-npc-town-life", "custom-resident-profile-home-control", "weather-aware-farming", "orchard-harvest", "persistent-lawn-jobs", "animal-habitat-routes", "animal-friendship-feeding", "animal-adoption", "active-companion-following", "south-meadow", "three-fishing-spots", "hidden-zone-fishing", "timed-reeling", "magnet-fishing", "fishing-inventory-rewards", "magnet-coin-rewards", "bakery-recipes", "bakery-customer-service", "bakery-first-clear-rewards", "bakery-level-unlocks", "shared-recipe-order-engine", "corner-cafe-recipes", "cafe-three-tray-service", "cafe-first-clear-rewards", "cafe-level-unlocks", "river-750-level-catalogue", "river-falling-piece-engine", "river-first-clear-rewards", "river-portrait-controls", "house-rescue-750-level-catalogue", "house-rescue-sort-and-vacuum", "house-rescue-persistent-home-jobs", "house-rescue-landscape-controls", "waste-750-authored-boards", "waste-five-slot-triple-matching", "waste-certified-solutions", "waste-first-clear-rewards", "waste-landscape-controls", "lawn-750-authored-levels", "lawn-slide-mower-engine", "lawn-persistent-campaign", "lawn-town-job-effects", "lawn-first-clear-rewards", "lawn-landscape-controls"],
       npcTownLife: this.npcTownLife?.getDiagnostics?.(),
       customResident: this.customResident?.getDiagnostics?.(),
       farming: this.farming?.getDiagnostics?.(),
@@ -1119,6 +1144,7 @@ export class TownScene extends Phaser.Scene {
       river: this.river?.getDiagnostics?.(),
       houseRescue: this.houseRescue?.getDiagnostics?.(),
       wasteCollection: this.cleanupService?.getDiagnostics?.(),
+      lawnCare: this.lawnCare?.getDiagnostics?.(),
       sharedState: {
         schemaVersion: this.gameState?.getSnapshot().schemaVersion || null,
         source: this.gameState?.getSnapshot().source.kind || null,

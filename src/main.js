@@ -7,6 +7,7 @@ import { RiverClearoutScene } from "./scenes/RiverClearoutScene.js";
 import { HouseRescueScene } from "./scenes/HouseRescueScene.js";
 import { TownScene } from "./scenes/TownScene.js";
 import { WasteCollectionScene } from "./scenes/WasteCollectionScene.js";
+import { LawnCareScene } from "./scenes/LawnCareScene.js";
 import { FishingScene } from "./scenes/FishingScene.js";
 import { bootstrapState } from "./state/bootstrapState.js";
 import { GAME_STATE_SCHEMA_VERSION } from "./state/constants.js";
@@ -23,6 +24,7 @@ import { BakeryService } from "./systems/BakeryService.js";
 import { CafeService } from "./systems/CafeService.js";
 import { RiverClearoutService } from "./systems/RiverClearoutService.js";
 import { HouseRescueService } from "./systems/HouseRescueService.js";
+import { LawnCareService } from "./systems/LawnCareService.js";
 import { EconomyHudController } from "./ui/EconomyHudController.js";
 import { SaveStatusController } from "./ui/SaveStatusController.js";
 import { ShopController } from "./ui/ShopController.js";
@@ -47,6 +49,7 @@ const bakery = new BakeryService(stateRuntime.gameState, stateRuntime.repository
 const cafe = new CafeService(stateRuntime.gameState, stateRuntime.repository);
 const river = new RiverClearoutService(stateRuntime.gameState, stateRuntime.repository);
 const houseRescue = new HouseRescueService(stateRuntime.gameState, stateRuntime.repository);
+const lawnCare = new LawnCareService(stateRuntime.gameState, stateRuntime.repository);
 
 const config = {
   type: Phaser.AUTO,
@@ -60,7 +63,7 @@ const config = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene, TownScene, BakeryScene, CafeScene, RiverClearoutScene, HouseRescueScene, WasteCollectionScene, FishingScene],
+  scene: [BootScene, TownScene, BakeryScene, CafeScene, RiverClearoutScene, HouseRescueScene, WasteCollectionScene, LawnCareScene, FishingScene],
 };
 
 const game = new Phaser.Game(config);
@@ -76,6 +79,7 @@ game.registry.set("bakery", bakery);
 game.registry.set("cafe", cafe);
 game.registry.set("river", river);
 game.registry.set("houseRescue", houseRescue);
+game.registry.set("lawnCare", lawnCare);
 const economy = new EconomyService(stateRuntime.gameState, stateRuntime.repository);
 game.registry.set("economy", economy);
 const cleanupService = new CleanupJobService(stateRuntime.gameState, stateRuntime.repository);
@@ -112,6 +116,12 @@ game.registry.set("shopController", shopController);
 const farmingController = new FarmingController(farming, {
   onModalChange(open) {
     setModalOpen("farming", open);
+  },
+  onStartLawnJob(targetId) {
+    return activeTownScene()?.startLawnCare({ mode: "town-job", targetId }) || { ok: false, message: "Return to town to start Lawn Care." };
+  },
+  onStartLawnCampaign() {
+    return activeTownScene()?.startLawnCare({ mode: "campaign" }) || { ok: false, message: "Return to town to start the Lawn Care campaign." };
   },
 });
 game.registry.set("farmingController", farmingController);
@@ -160,7 +170,7 @@ window.__KINDWORKS_PHASER__ = {
   game,
   getMilestoneState() {
     const activeScene = game.scene.getScenes(true)[0];
-    return activeScene?.player && typeof activeScene.getMilestoneState === "function"
+    return typeof activeScene?.getMilestoneState === "function"
       ? activeScene.getMilestoneState()
       : { scene: activeScene?.scene?.key || "loading" };
   },

@@ -1,8 +1,8 @@
 # Kindworks Phaser save contract
 
-> Current migration status: Milestone 17 uses game-state and envelope schema
-> 14. Schemas 1 through 13 upgrade in order, with schema 14 adding the complete
-> persistent Waste Collection campaign described below. The historical schema-3
+> Current migration status: Milestone 18 uses game-state and envelope schema
+> 15. Schemas 1 through 14 upgrade in order, with schema 15 adding the complete
+> persistent Lawn Care campaign described below. The historical schema-3
 > foundation notes are retained for traceability.
 
 Milestone 3 introduced the protected save foundation alongside the preserved HTML game. Milestone 4 added the shared item catalogue, inventory, KindlyCoin ledger, and atomic economy transactions. Milestone 6 adds the first persistent cleanup session, exact-target result, and job reward. NPC, animal, farming, dynamic cleanup, and the remaining mini-games stay staged for later milestones.
@@ -22,14 +22,14 @@ The Phaser build owns only:
 - `kindworks_phaser_v1_backup`
 - `kindworks_phaser_v1_recovery`
 
-## Current Phaser envelope schema 14
+## Current Phaser envelope schema 15
 
 Every current and backup save is a JSON envelope:
 
 ```json
 {
   "format": "kindworks-phaser",
-  "schemaVersion": 14,
+  "schemaVersion": 15,
   "writtenAt": "2026-08-25T00:00:00.000Z",
   "appVersion": "0.1.0",
   "data": {},
@@ -37,7 +37,7 @@ Every current and backup save is a JSON envelope:
 }
 ```
 
-The checksum covers every envelope field except the checksum itself. A save is accepted only when its format, schema, timestamp, checksum, and inner game state all validate. Valid schemas 1 through 13 upgrade to schema 14, and the original verified envelope becomes the Phaser backup before replacement.
+The checksum covers every envelope field except the checksum itself. A save is accepted only when its format, schema, timestamp, checksum, and inner game state all validate. Valid schemas 1 through 14 upgrade to schema 15, and the original verified envelope becomes the Phaser backup before replacement.
 
 ## Historical game-state schema 3 foundation
 
@@ -118,6 +118,25 @@ The checksum covers every envelope field except the checksum itself. A save is a
   `completed` must equal the number of best results at or above 50 percent.
 - A first clear writes at most one `campaign-first-clear` transaction. Replay
   clears pay zero and campaign play never increments the town occurrence count.
+
+## Lawn Care schema-15 contract
+
+- `lawnCare.progress` stores `nextLevel`, the derived completion count, and one
+  best `{ stars, percent }` result per cleared level. Completion always equals
+  the number of best results at or above 50 percent.
+- One resumable `activeSession` stores campaign or town-job mode, assigned
+  authored level, mower row/column/facing, exact cut-cell IDs, move count, the
+  latest five undo frames, town return position, and the starting town-lawn
+  measurements when applicable.
+- Every move, undo, retry, cancellation, completion, first-clear reward, and
+  town-lawn effect validates and saves through the shared repository. A failed
+  write restores the exact board, wallet, lawn values, and progress checkpoint.
+- Campaign first clears use the original rounded completion percentage plus
+  five coins per 50-level band, with the level bonus capped at 70 and total
+  capped at 170. Replays pay zero.
+- Town occurrences can recur only after regrowth. The result percentage moves
+  grass toward height 5 and weeds toward pressure 3 proportionally, increments
+  the shared town-job count, and pays that new occurrence atomically.
 
 ## Legacy compatibility map
 

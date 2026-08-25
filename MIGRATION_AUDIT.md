@@ -93,3 +93,17 @@ town. The Milestone 6 six-piece Willow Commons occurrence remains intact and
 becomes the permanent campaign entrance after its first restoration. The new
 schema-14 state upgrades schema 13 safely, and Waste Collection requires
 landscape orientation on mobile. The protected HTML source remains unchanged.
+
+Milestone 18 completes Lawn Care. The protected `lawn-care` payload is
+extracted read-only into 750 unique authored grids with 750 unique source IDs
+and families, then all stored optimal routes are replay-verified. The mower
+slides until a hedge, gets exactly two moves above par, retains five undo
+states, and uses the original 50/85/100 percent star thresholds. Tough weeds
+begin at Level 10, woody weeds at Level 50, clusters never exceed six cells,
+and mower upgrades alter animation timing only. Campaign attempts resume from
+the shared save; first clears award the original percentage-plus-level reward
+once and replays pay zero. The same engine now powers neighbourhood jobs, where
+the cut percentage is applied proportionally to the real town lawn and each
+new regrown occurrence pays atomically. Lawn Care requires landscape on mobile,
+leaving River Clear-Out as the only portrait-friendly migrated mini-game. The
+new game-state/envelope schema is 15 and the protected HTML remains unchanged.

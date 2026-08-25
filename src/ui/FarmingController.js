@@ -5,9 +5,11 @@ function percentage(value, total) {
 }
 
 export class FarmingController {
-  constructor(farming, { onModalChange = () => {} } = {}) {
+  constructor(farming, { onModalChange = () => {}, onStartLawnJob = () => ({ ok: false }), onStartLawnCampaign = () => ({ ok: false }) } = {}) {
     this.farming = farming;
     this.onModalChange = onModalChange;
+    this.onStartLawnJob = onStartLawnJob;
+    this.onStartLawnCampaign = onStartLawnCampaign;
     this.selectedCropId = "carrot";
     this.selectedTab = "allotment";
     this.selectedLawnId = LAWN_PLOTS[0].id;
@@ -39,7 +41,16 @@ export class FarmingController {
         this.selectedLawnId = button.dataset.lawnId;
         return this.render();
       }
-      if (button.id === "farming-complete-lawn") return this.report(this.farming.completeLawnJob(this.selectedLawnId));
+      if (button.id === "farming-complete-lawn") {
+        const result = this.onStartLawnJob(this.selectedLawnId);
+        if (result?.ok) this.close();
+        return result?.ok ? result : this.report(result || { ok: false, message: "Lawn Care is not ready." });
+      }
+      if (button.id === "farming-lawn-campaign") {
+        const result = this.onStartLawnCampaign();
+        if (result?.ok) this.close();
+        return result?.ok ? result : this.report(result || { ok: false, message: "The Lawn Care campaign is not ready." });
+      }
     };
     this.onKeyDown = (event) => {
       if (event.key === "Escape" && this.isOpen()) this.close();
@@ -81,7 +92,7 @@ export class FarmingController {
       "apple-harvested": "One apple collected. The tree has started producing again.",
       "lawn-completed": `Lawn restored and 🪙 ${result.rewardCoins || 0} paid exactly once.`,
     };
-    this.status.textContent = result.ok ? messages[result.code] || "Farming state updated." : result.message || "That action is not available yet.";
+    this.status.textContent = result.ok ? messages[result.code] || "Farming state updated." : result.message || result.reason || "That action is not available yet.";
     this.status.dataset.status = result.ok ? "success" : "error";
     this.render();
     return result;
@@ -146,7 +157,7 @@ export class FarmingController {
     const lawnButton = document.querySelector("#farming-complete-lawn");
     if (lawnButton) {
       lawnButton.disabled = !lawnNeedsCare(selectedLawn);
-      lawnButton.textContent = lawnNeedsCare(selectedLawn) ? `Mow & weed · earn 🪙 ${LAWN_CONFIG.rewardCoins}` : "No lawn job needed";
+      lawnButton.textContent = lawnNeedsCare(selectedLawn) ? "Start this Lawn Care job" : "No lawn job needed";
     }
     const lawnSummary = document.querySelector("#farming-lawn-summary");
     if (lawnSummary) lawnSummary.textContent = `${selectedPlot?.title || "Lawn"} · completed ${selectedLawn?.completedJobs || 0} time${selectedLawn?.completedJobs === 1 ? "" : "s"}`;
