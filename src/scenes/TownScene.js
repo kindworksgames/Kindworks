@@ -3,6 +3,7 @@ import {
   BRIDGES,
   COLLISION_RECTS,
   COLORS,
+  CORNER_CAFE,
   DISTRICTS,
   HOUSES,
   LANDMARKS,
@@ -86,6 +87,7 @@ export class TownScene extends Phaser.Scene {
     this.animalFriendsController = this.registry.get("animalFriendsController");
     this.fishing = this.registry.get("fishing");
     this.bakery = this.registry.get("bakery");
+    this.cafe = this.registry.get("cafe");
     this.worldSimulation?.setPaused("activity", false);
     const savedState = this.gameState?.getSnapshot();
     this.cameras.main.setBounds(0, 0, WORLD.width, WORLD.height);
@@ -97,8 +99,10 @@ export class TownScene extends Phaser.Scene {
     const animalQaPresentation = qaTarget === "animals"
       ? this.animals?.getWorldPresentations?.().find((entry) => entry.visible && !entry.definition.rare)
       : null;
-    const qaSpawn = qaTarget === "bakery"
-      ? LITTLE_BAKERY.approach
+    const qaSpawn = qaTarget === "cafe"
+      ? CORNER_CAFE.approach
+      : qaTarget === "bakery"
+        ? LITTLE_BAKERY.approach
         : qaTarget === "fresh-market"
         ? FRESH_MARKET.approach
           : qaTarget === "waste"
@@ -136,6 +140,17 @@ export class TownScene extends Phaser.Scene {
       onTouchStep: (dx, dy) => this.moveActiveCharacter(dx, dy, 38),
     });
     const interactables = [
+        {
+          id: "corner-cafe-door",
+          kind: "door",
+          x: CORNER_CAFE.door.x,
+          y: CORNER_CAFE.door.y,
+          radius: CORNER_CAFE.interactionRadius,
+          icon: "☕",
+          label: "Enter Corner Café",
+          detail: "Friendly food, fast service",
+          onActivate: () => this.enterCafe(),
+        },
         {
           id: "little-bakery-door",
           kind: "door",
@@ -689,7 +704,7 @@ export class TownScene extends Phaser.Scene {
     document.body.dataset.gameScene = this.scene.key;
     const badge = document.querySelector(".milestone-badge");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 13";
+    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 14";
     if (hint) hint.textContent = "Arrow keys or WASD to walk · E or Space to interact · Shift to run";
   }
 
@@ -724,6 +739,26 @@ export class TownScene extends Phaser.Scene {
       });
     });
     return { ok: true, targetScene: "BakeryScene" };
+  }
+
+  enterCafe() {
+    if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before entering a building." };
+    this.transitioning = true;
+    this.movement.setEnabled(false);
+    this.interactions.setEnabled(false);
+    this.player.setMovement(0, 0, false);
+    this.gameState?.updatePlayer({ scene: "CafeScene", x: 640, y: 610, facing: "up" });
+    document.querySelector("#game")?.setAttribute("data-transition", "entering-cafe");
+    this.cameras.main.fadeOut(220, 31, 29, 24);
+    this.time.delayedCall(240, () => {
+      this.scene.start("CafeScene", {
+        returnPosition: { ...CORNER_CAFE.approach },
+        returnFacing: "down",
+        transitionCount: Number(this.entryData.transitionCount || 0) + 1,
+      });
+    });
+    return { ok: true, targetScene: "CafeScene" };
   }
 
   openFreshMarket() {
@@ -937,6 +972,10 @@ export class TownScene extends Phaser.Scene {
       gameElement.dataset.bakeryUnlocked = String(bakery?.unlockedLevel || 1);
       gameElement.dataset.bakeryCompleted = String(bakery?.completedLevels || 0);
       gameElement.dataset.bakeryStars = String(bakery?.totalStars || 0);
+      const cafe = this.cafe?.getDiagnostics?.();
+      gameElement.dataset.cafeUnlocked = String(cafe?.unlockedLevel || 1);
+      gameElement.dataset.cafeCompleted = String(cafe?.completedLevels || 0);
+      gameElement.dataset.cafeStars = String(cafe?.totalStars || 0);
     }
   }
 
@@ -948,7 +987,7 @@ export class TownScene extends Phaser.Scene {
       camera: { zoom: Number(this.cameras.main.zoom.toFixed(2)), followingPlayer: !this.customResident?.getSnapshot?.().controlling },
       controls: { keyboard: true, touch: true, wheelZoom: true },
       interaction: this.interactions.getState(),
-      migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job", "world-time-weather-lighting", "basic-npc-town-life", "custom-resident-profile-home-control", "weather-aware-farming", "orchard-harvest", "persistent-lawn-jobs", "animal-habitat-routes", "animal-friendship-feeding", "animal-adoption", "active-companion-following", "south-meadow", "three-fishing-spots", "hidden-zone-fishing", "timed-reeling", "magnet-fishing", "fishing-inventory-rewards", "magnet-coin-rewards", "bakery-recipes", "bakery-customer-service", "bakery-first-clear-rewards", "bakery-level-unlocks"],
+      migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "cafe-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job", "world-time-weather-lighting", "basic-npc-town-life", "custom-resident-profile-home-control", "weather-aware-farming", "orchard-harvest", "persistent-lawn-jobs", "animal-habitat-routes", "animal-friendship-feeding", "animal-adoption", "active-companion-following", "south-meadow", "three-fishing-spots", "hidden-zone-fishing", "timed-reeling", "magnet-fishing", "fishing-inventory-rewards", "magnet-coin-rewards", "bakery-recipes", "bakery-customer-service", "bakery-first-clear-rewards", "bakery-level-unlocks", "shared-recipe-order-engine", "corner-cafe-recipes", "cafe-three-tray-service", "cafe-first-clear-rewards", "cafe-level-unlocks"],
       npcTownLife: this.npcTownLife?.getDiagnostics?.(),
       customResident: this.customResident?.getDiagnostics?.(),
       farming: this.farming?.getDiagnostics?.(),

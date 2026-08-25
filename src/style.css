@@ -1837,6 +1837,123 @@ body[data-resident-control="true"] #control-hint { display: none; }
   }
 }
 
+/* Milestone 14 — Corner Café vertical slice */
+.cafe-hud {
+  position: absolute;
+  z-index: 49;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  width: min(650px, 53vw);
+  max-height: calc(100dvh - 20px);
+  overflow: auto;
+  color: #292238;
+  border: 4px solid #292238;
+  border-radius: 15px;
+  background: #f8edc9;
+  box-shadow: 8px 9px 0 rgb(23 25 41 / 48%);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+.cafe-hud.hidden, .cafe-picker.hidden, .cafe-shift.hidden, .cafe-result.hidden { display: none; }
+.cafe-hud-header { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 9px; padding: 10px; color: #fff1c9; background: #292238; }
+.cafe-hud-header div { min-width: 0; }
+.cafe-hud-header p, .cafe-hud-header h2, .cafe-hud-header small { display: block; margin: 0; }
+.cafe-hud-header p { color: #eabf57; font-size: 8px; font-weight: 900; letter-spacing: 1px; }
+.cafe-hud-header h2 { margin: 3px 0; font: 900 19px/1.05 system-ui, sans-serif; }
+.cafe-hud-header small { overflow: hidden; color: #d8d0bd; font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+.cafe-hud-header > span { padding: 6px 8px; border: 2px solid #6c665e; border-radius: 999px; color: #ffe67f; font-weight: 900; white-space: nowrap; }
+.cafe-hud button, .cafe-hud select { min-height: 36px; border: 3px solid #292238; border-radius: 7px; color: #292238; background: #fffaf0; font: 900 10px/1 ui-monospace, monospace; box-shadow: 3px 3px 0 rgb(41 34 56 / 35%); }
+.cafe-hud button:disabled { opacity: .4; box-shadow: none; }
+.cafe-hud-header button { min-height: 34px; padding: 5px 8px; border-color: #ffe2a0; box-shadow: none; }
+.cafe-picker { display: grid; grid-template-columns: minmax(0, 1fr) 145px 130px; align-items: end; gap: 9px; padding: 12px; }
+.cafe-picker strong, .cafe-picker small { display: block; }
+.cafe-picker small { margin-top: 4px; color: #746655; font: 700 9px/1.35 system-ui, sans-serif; }
+.cafe-picker label { display: grid; gap: 4px; color: #665947; font-size: 8px; font-weight: 900; }
+.cafe-picker select { width: 100%; padding: 6px; }
+.cafe-picker > button { color: #fff; background: #4e9156; }
+.cafe-shift { display: grid; gap: 7px; width: 100%; min-width: 0; padding: 8px; border-top: 3px solid #292238; }
+.cafe-shift > * { min-width: 0; }
+.cafe-shift-heading { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 6px; }
+.cafe-shift-heading div { min-width: 0; }
+.cafe-shift-heading small, .cafe-shift-heading strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cafe-shift-heading small { color: #796b5a; font-size: 8px; }
+.cafe-shift-heading div > strong { margin-top: 2px; font-size: 12px; }
+.cafe-shift-heading > span { display: grid; gap: 1px; min-width: 63px; padding: 5px; text-align: center; border: 2px solid #b69f79; border-radius: 7px; background: #fffaf0; color: #766956; font-size: 7px; text-transform: uppercase; }
+.cafe-shift-heading span strong { color: #292238; font-size: 12px; }
+.cafe-orders, .cafe-trays { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
+.cafe-orders button { display: grid; min-width: 0; gap: 2px; min-height: 43px; padding: 5px; text-align: left; }
+.cafe-orders button strong, .cafe-orders button small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cafe-orders button strong { font-size: 9px; }
+.cafe-orders button small { color: #746655; font-size: 7px; }
+.cafe-orders button.active { border-color: #d1684e; background: #ffe074; }
+.cafe-trays button { display: grid; min-width: 0; gap: 2px; min-height: 54px; padding: 5px; text-align: left; }
+.cafe-trays button small { color: #9b6349; font-size: 7px; }
+.cafe-trays button strong, .cafe-trays button span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cafe-trays button strong { font-size: 9px; }
+.cafe-trays button span { color: #665b4d; font-size: 8px; }
+.cafe-trays button.active { border-color: #292238; background: #b9ced0; outline: 2px solid #d1684e; }
+.cafe-current { padding: 7px; border: 3px solid #292238; border-radius: 8px; background: #fffaf0; }
+.cafe-current > small { color: #9b6349; font-size: 7px; font-weight: 900; letter-spacing: 1px; }
+.cafe-current h3 { margin: 3px 0 5px; font-size: 14px; }
+.cafe-recipe-sequence { display: flex; gap: 4px; overflow-x: auto; padding: 2px 1px 4px; }
+.cafe-recipe-sequence span { flex: 0 0 58px; display: grid; place-items: center; gap: 1px; min-height: 40px; padding: 3px; border: 2px solid #c8b68e; border-radius: 6px; background: #f2e3bd; font-size: 17px; }
+.cafe-recipe-sequence small { overflow: hidden; width: 100%; color: #6f6353; font: 700 6px/1.1 system-ui, sans-serif; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
+.cafe-recipe-sequence span.done { opacity: .5; background: #b9dc93; }
+.cafe-recipe-sequence span.next { border-color: #d66d4d; background: #ffe074; }
+.cafe-worktop-label { margin: 0 0 4px; color: #655746; font-size: 8px; font-weight: 900; }
+.cafe-step-list { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; max-height: 126px; overflow: auto; padding: 3px; }
+.cafe-step-list button { display: grid; place-items: center; gap: 1px; min-width: 0; min-height: 55px; padding: 3px; text-align: center; box-shadow: 2px 2px 0 rgb(41 34 56 / 30%); }
+.cafe-step-list button > span { font-size: 18px; }
+.cafe-step-list button strong { overflow: hidden; width: 100%; font-size: 7px; text-overflow: ellipsis; white-space: nowrap; }
+.cafe-step-list button small { color: #786a58; font-size: 6px; }
+.cafe-step-list button.station { background: #b9ced0; }
+.cafe-step-list button.next { background: #ffe074; outline: 2px solid #d66d4d; }
+.cafe-step-list button.working { background: #efc56f; }
+.cafe-step-list button.ready { background: #a8d58e; animation: cafe-ready-pulse .7s ease-in-out infinite alternate; }
+@keyframes cafe-ready-pulse { to { transform: translateY(-2px); box-shadow: 0 0 0 3px #4e9156; } }
+.cafe-controls { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.5fr); gap: 6px; }
+.cafe-controls .primary { color: #fff; background: #4e9156; }
+.cafe-controls #cafe-discard { color: #fff; background: #ae594c; }
+.cafe-status { min-height: 31px; margin: 0; padding: 7px 9px; border-top: 2px solid #c8b68e; color: #465447; background: #fff8e7; font: 800 9px/1.35 system-ui, sans-serif; }
+.cafe-status[data-status="success"] { color: #27643a; background: #dff0c5; }
+.cafe-status[data-status="error"] { color: #913d36; background: #f5c0b5; }
+.cafe-status[data-status="working"] { color: #6e4c1e; background: #ffe08b; }
+.cafe-result { padding: 13px; border-top: 3px solid #292238; text-align: center; }
+.cafe-result h3, .cafe-result p { margin: 0; }
+#cafe-result-stars { margin: 6px 0; color: #e3a82c; font-size: 28px; letter-spacing: 3px; text-shadow: 2px 2px #292238; }
+.cafe-result p { color: #6e6252; font: 700 10px/1.4 system-ui, sans-serif; }
+.cafe-result-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 10px 0; }
+.cafe-result-stats span { display: grid; gap: 3px; padding: 7px; border: 2px solid #c8b68e; border-radius: 7px; background: #fffaf0; color: #756956; font-size: 7px; }
+.cafe-result-stats strong { color: #292238; font-size: 13px; }
+.cafe-result-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.cafe-result-actions #cafe-next { color: #fff; background: #4e9156; }
+body[data-game-scene="CafeScene"] .touch-controls,
+body[data-game-scene="CafeScene"] .zoom-controls,
+body[data-game-scene="CafeScene"] .interaction-prompt,
+body[data-game-scene="CafeScene"] .town-hud,
+body[data-game-scene="CafeScene"] .control-hint { display: none; }
+
+@media (max-width: 720px) {
+  .cafe-hud { top: auto; right: 5px; bottom: max(5px, env(safe-area-inset-bottom)); left: 5px; width: auto; max-height: 72dvh; border-width: 3px; box-shadow: 4px 5px 0 rgb(23 25 41 / 42%); }
+  .cafe-hud-header { padding: 7px; }
+  .cafe-hud-header p, .cafe-hud-header small { display: none; }
+  .cafe-picker { grid-template-columns: minmax(0, 1fr) 115px; padding: 9px; }
+  .cafe-picker > div { grid-column: 1 / -1; }
+  .cafe-step-list { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+@media (max-height: 650px) and (orientation: landscape) {
+  .cafe-hud { width: min(720px, calc(100vw - 24px)); max-height: calc(100dvh - 12px); }
+  .cafe-hud-header { padding: 6px 9px; }
+  .cafe-shift { gap: 5px; padding: 6px; }
+  .cafe-orders button { min-height: 36px; }
+  .cafe-trays button { min-height: 45px; }
+  .cafe-recipe-sequence { display: none; }
+  .cafe-step-list { max-height: 110px; }
+  .cafe-step-list button { min-height: 46px; }
+}
+
 /* Milestone 13 — Little Bakery vertical slice */
 .landscape-required { display: none; }
 .bakery-hud {
@@ -1946,8 +2063,10 @@ body[data-game-scene="BakeryScene"] .control-hint { display: none; }
 }
 
 @media (max-width: 720px) and (orientation: portrait) {
-  body[data-game-scene="BakeryScene"] .bakery-hud { visibility: hidden; pointer-events: none; }
-  body[data-game-scene="BakeryScene"] .landscape-required {
+  body[data-game-scene="BakeryScene"] .bakery-hud,
+  body[data-game-scene="CafeScene"] .cafe-hud { visibility: hidden; pointer-events: none; }
+  body[data-game-scene="BakeryScene"] .landscape-required,
+  body[data-game-scene="CafeScene"] .landscape-required {
     position: absolute;
     z-index: 60;
     inset: 50% 18px auto;
@@ -1963,9 +2082,12 @@ body[data-game-scene="BakeryScene"] .control-hint { display: none; }
     text-align: center;
     transform: translateY(-50%);
   }
-  body[data-game-scene="BakeryScene"] .landscape-required span { font-size: 42px; }
-  body[data-game-scene="BakeryScene"] .landscape-required h2 { margin: 0; font: 900 24px/1.1 ui-monospace, monospace; }
-  body[data-game-scene="BakeryScene"] .landscape-required p { max-width: 310px; margin: 0; color: #655746; font: 800 12px/1.45 system-ui, sans-serif; }
+  body[data-game-scene="BakeryScene"] .landscape-required span,
+  body[data-game-scene="CafeScene"] .landscape-required span { font-size: 42px; }
+  body[data-game-scene="BakeryScene"] .landscape-required h2,
+  body[data-game-scene="CafeScene"] .landscape-required h2 { margin: 0; font: 900 24px/1.1 ui-monospace, monospace; }
+  body[data-game-scene="BakeryScene"] .landscape-required p,
+  body[data-game-scene="CafeScene"] .landscape-required p { max-width: 310px; margin: 0; color: #655746; font: 800 12px/1.45 system-ui, sans-serif; }
 }
 
 @media (max-height: 650px) and (orientation: landscape) {

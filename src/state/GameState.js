@@ -41,6 +41,12 @@ import {
   projectLegacyBakery,
   validateBakeryState,
 } from "./bakeryState.js";
+import {
+  createFreshCafeState,
+  normalizeCafeState,
+  projectLegacyCafe,
+  validateCafeState,
+} from "./cafeState.js";
 
 const DIRECTIONS = new Set(["up", "down", "left", "right"]);
 
@@ -94,6 +100,7 @@ export function createFreshGameState({ now = Date.now() } = {}) {
     animals: createFreshAnimalState(world),
     fishing: createFreshFishingState(world),
     bakery: createFreshBakeryState(),
+    cafe: createFreshCafeState(),
     legacySnapshot: null,
   };
 }
@@ -124,6 +131,7 @@ export function createGameStateFromLegacy(legacy, report, { now = Date.now() } =
   state.animals = projectLegacyAnimals(legacy.animals, state.world);
   state.fishing = projectLegacyFishing(legacy.fishing, legacy.magnetFishing, state.world);
   state.bakery = projectLegacyBakery(legacy.bakery);
+  state.cafe = projectLegacyCafe(legacy.cafe);
   const legacySeeds = legacy.farmingFoundation?.seedInventory || {};
   for (const id of ["carrot-seeds", "fresh-greens-seeds", "wild-berry-starters"]) {
     const quantity = safeInteger(legacySeeds[id], 0, 99);
@@ -184,6 +192,10 @@ export function upgradeGameState(value, { now = Date.now() } = {}) {
     state.bakery = normalizeBakeryState(state.bakery);
     state.schemaVersion = 10;
   }
+  if (state.schemaVersion === 10) {
+    state.cafe = normalizeCafeState(state.cafe);
+    state.schemaVersion = 11;
+  }
   return state;
 }
 
@@ -212,6 +224,7 @@ export function validateGameState(value) {
   errors.push(...validateAnimalState(value.animals, value.world).errors);
   errors.push(...validateFishingState(value.fishing, value.world).errors);
   errors.push(...validateBakeryState(value.bakery).errors);
+  errors.push(...validateCafeState(value.cafe).errors);
   if (value.source?.kind === "legacy-import") {
     if (!Number.isInteger(value.source.legacyVersion)) errors.push("Imported legacy version is missing.");
     if (typeof value.source.legacySourceKey !== "string") errors.push("Imported legacy source key is missing.");

@@ -112,6 +112,14 @@ export const LITTLE_BAKERY = Object.freeze({
   interactionRadius: 92,
 });
 
+export const CORNER_CAFE = Object.freeze({
+  id: "shop-01",
+  title: "Corner Café",
+  door: Object.freeze({ x: 305, y: 1120 }),
+  approach: Object.freeze({ x: 305, y: 1142 }),
+  interactionRadius: 92,
+});
+
 export const COLLISION_RECTS = Object.freeze([
   // The river is blocked between bridge openings.
   { x: 2445, y: 0, width: 235, height: 480 },

@@ -24,7 +24,7 @@
           <button id="custom-resident-button" class="economy-hud-button resident-hud-button" type="button" aria-label="Create your personal resident">💚 Create resident</button>
           <button id="animal-friends-button" class="economy-hud-button animal-hud-button" type="button" aria-label="Open Animal Friends">🐾 Animal Friends</button>
           <button id="save-status-button" class="save-status-button" type="button" data-status="new">Save not started</button>
-          <div class="milestone-badge">PHASER TOWN · MILESTONE 13</div>
+          <div class="milestone-badge">PHASER TOWN · MILESTONE 14</div>
         </div>
       </section>
       <section id="interaction-prompt" class="interaction-prompt hidden" aria-label="Nearby interaction" aria-hidden="true">
@@ -256,9 +256,35 @@
       </section>
       <aside id="landscape-required" class="landscape-required" role="status" aria-live="polite">
         <span aria-hidden="true">📱 ↻</span>
-        <h2>Rotate your phone</h2>
-        <p>Little Bakery is designed for landscape play. Turn your phone sideways to continue this shift.</p>
+        <h2 id="landscape-required-title">Rotate your phone</h2>
+        <p id="landscape-required-message">This activity is designed for landscape play. Turn your phone sideways to continue.</p>
       </aside>
+      <section id="cafe-hud" class="cafe-hud hidden" aria-labelledby="cafe-hud-title">
+        <header class="cafe-hud-header">
+          <div><p>MILESTONE 14 · CAFÉ VERTICAL SLICE</p><h2 id="cafe-hud-title">☕ Corner Café</h2><small id="cafe-progress-summary">0 cleared · 0 stars · 0 served</small></div>
+          <span id="cafe-balance">🪙 100</span>
+          <button id="cafe-exit" type="button">Exit café</button>
+        </header>
+        <section id="cafe-picker" class="cafe-picker" aria-label="Choose a café level">
+          <div><strong>150-shift café campaign</strong><small>Serve every customer with three preparation trays. First clears award coins once.</small></div>
+          <label for="cafe-level-select">Available shift<select id="cafe-level-select"><option value="1">Level 1</option></select></label>
+          <button id="cafe-start" type="button">Open for Level 1</button>
+        </section>
+        <section id="cafe-shift" class="cafe-shift hidden" aria-label="Active café shift">
+          <div class="cafe-shift-heading"><div><small id="cafe-level-name">Level 1 · First Cup</small><strong id="cafe-queue-label">No misses allowed</strong></div><span>Served<strong id="cafe-served">0 / 3</strong></span><span>Time<strong id="cafe-timer">1:45</strong></span></div>
+          <div id="cafe-orders" class="cafe-orders" aria-label="Customer orders"></div>
+          <div id="cafe-trays" class="cafe-trays" aria-label="Preparation trays"></div>
+          <div class="cafe-current"><small>CURRENT DISH</small><h3 id="cafe-order-name">🫖 Tea</h3><div id="cafe-recipe-sequence" class="cafe-recipe-sequence"></div></div>
+          <div><p class="cafe-worktop-label">Tap the highlighted next ingredient or station</p><div id="cafe-step-list" class="cafe-step-list"></div></div>
+          <div class="cafe-controls"><button id="cafe-undo" type="button" disabled>↶ Undo</button><button id="cafe-discard" type="button" disabled>🗑 Discard</button><button id="cafe-serve" class="primary" type="button" disabled>Serve customer</button></div>
+        </section>
+        <p id="cafe-status" class="cafe-status" data-status="neutral" role="status" aria-live="assertive">Choose an available café level to begin.</p>
+        <section id="cafe-result" class="cafe-result hidden" aria-labelledby="cafe-result-title">
+          <h3 id="cafe-result-title">Shift complete!</h3><div id="cafe-result-stars">★★★</div><p id="cafe-result-message">Every customer was served.</p>
+          <div class="cafe-result-stats"><span>Accuracy<strong id="cafe-result-accuracy">100%</strong></span><span>Happiness<strong id="cafe-result-happiness">100%</strong></span><span>Waste<strong id="cafe-result-waste">0</strong></span><span>Coins<strong id="cafe-result-coins">+59</strong></span></div>
+          <div class="cafe-result-actions"><button id="cafe-replay" type="button">Replay</button><button id="cafe-next" type="button">Next level</button><button id="cafe-return" type="button">Return to Willowmere</button></div>
+        </section>
+      </section>
       <section id="bakery-hud" class="bakery-hud hidden" aria-labelledby="bakery-hud-title">
         <header class="bakery-hud-header">
           <div><p>MILESTONE 13 · BAKERY VERTICAL SLICE</p><h2 id="bakery-hud-title">🥖 Little Bakery</h2><small id="bakery-progress-summary">0 cleared · 0 stars · 0 served</small></div>

@@ -267,7 +267,7 @@ export class FishingScene extends Phaser.Scene {
     const badge = document.querySelector(".milestone-badge");
     const location = document.querySelector("#location-status");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = `${this.mode === "magnet" ? "MAGNET FISHING" : "FISHING"} · MILESTONE 13`;
+    if (badge) badge.textContent = `${this.mode === "magnet" ? "MAGNET FISHING" : "FISHING"} · MILESTONE 14`;
     if (location) location.textContent = this.spot.title;
     if (hint) hint.textContent = "Tap water or use arrows to aim · Enter/Space casts or reels · Escape exits safely";
     document.querySelector("#fishing-mode-label").textContent = this.mode === "magnet" ? "MAGNET FISHING" : "FISHING";

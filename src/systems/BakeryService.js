@@ -6,11 +6,11 @@ import {
   BAKERY_RECIPES,
   bakeryFirstClearCoins,
   bakeryLevel,
-  bakeryResultForSession,
   bakeryStep,
 } from "../data/bakery.js";
 import { NPC_RESIDENTS } from "../data/npcTownLife.js";
 import { COIN_LEDGER_LIMIT } from "../state/economyState.js";
+import { applyRecipeStep, recipeOrderScore, resetRecipePreparation, undoRecipeStep } from "./RecipeOrderService.js";
 
 function appendLedger(state, now, details) {
   const id = `coin-${String(state.economy.nextTransactionId).padStart(6, "0")}`;
@@ -130,22 +130,15 @@ export class BakeryService {
   applyStep(stepId) {
     const session = this.activeSession;
     if (!session || session.finished) return { ok: false, code: "no-active-shift", message: "Start a bakery shift first." };
-    const expected = this.expectedStep();
-    if (!expected) return { ok: false, code: "recipe-ready", message: "This product is ready to finish and serve." };
-    if (!bakeryStep(stepId)) return this.recordMistake("Choose a valid ingredient or bakery station.");
-    if (stepId !== expected) return this.recordMistake(`That order needs ${bakeryStep(expected).name} next.`);
-    session.completedSteps.push(stepId);
-    session.stepIndex += 1;
     const recipe = this.currentRecipe();
-    const complete = session.stepIndex === recipe.steps.length;
+    const result = applyRecipeStep(session, recipe, stepId, bakeryStep);
+    if (!result.ok && result.code === "unknown-step") return this.recordMistake("Choose a valid ingredient or bakery station.");
+    if (!result.ok && result.code === "wrong-step") return this.recordMistake(`That order needs ${bakeryStep(result.expectedStep).name} next.`);
+    if (!result.ok) return result;
     return {
-      ok: true,
-      code: complete ? "recipe-complete" : "step-complete",
-      stepId,
-      step: bakeryStep(stepId),
+      ...result,
       recipeId: this.currentOrder().recipes[session.recipeIndex],
       recipe,
-      complete,
       expectedStep: this.expectedStep(),
       session: this.getActiveSession(),
     };
@@ -154,20 +147,16 @@ export class BakeryService {
   undoStep() {
     const session = this.activeSession;
     if (!session || session.finished) return { ok: false, code: "no-active-shift", message: "Start a bakery shift first." };
-    if (session.stepIndex < 1) return { ok: false, code: "nothing-to-undo", message: "There is nothing to undo." };
-    const removed = session.completedSteps.pop();
-    session.stepIndex -= 1;
-    return { ok: true, code: "step-undone", removed, expectedStep: this.expectedStep() };
+    const result = undoRecipeStep(session);
+    return result.ok ? { ...result, expectedStep: this.expectedStep() } : result;
   }
 
   discardRecipe() {
     const session = this.activeSession;
     if (!session || session.finished) return { ok: false, code: "no-active-shift", message: "Start a bakery shift first." };
-    if (session.stepIndex < 1) return { ok: false, code: "nothing-to-discard", message: "The preparation is already empty." };
+    if (!resetRecipePreparation(session)) return { ok: false, code: "nothing-to-discard", message: "The preparation is already empty." };
     session.waste += 1;
     session.mistakes += 1;
-    session.stepIndex = 0;
-    session.completedSteps = [];
     return { ok: true, code: "recipe-discarded", waste: session.waste, expectedStep: this.expectedStep() };
   }
 
@@ -234,7 +223,7 @@ export class BakeryService {
   finishSession({ failureReason = null } = {}) {
     const session = this.activeSession;
     if (!session || session.finished) return { ok: false, code: "shift-already-finished", message: "This bakery shift is already finished." };
-    const result = bakeryResultForSession(session);
+    const result = recipeOrderScore(session);
     if (failureReason) result.failureReason = failureReason;
     const transaction = this.commit((state) => {
       const progress = state.bakery;
