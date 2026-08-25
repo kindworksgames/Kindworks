@@ -17,6 +17,7 @@ export const WEATHER_CONFIG = Object.freeze({
     autumn: Object.freeze({ clear: 0.34, rain: 0.29, windy: 0.32, snow: 0.05 }),
     winter: Object.freeze({ clear: 0.28, rain: 0.18, windy: 0.24, snow: 0.30 }),
   }),
+  npcSpeed: Object.freeze({ clear: 1, rain: 0.90, snow: 0.78, windy: 0.86 }),
 });
 
 export const WEATHER_KINDS = Object.freeze({

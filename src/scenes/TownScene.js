@@ -19,6 +19,7 @@ import { COMMONS_RUBBISH_JOB } from "../data/cleanupJobs.js";
 import { FRESH_MARKET } from "../data/shops.js";
 import { InteractionSystem } from "../systems/InteractionSystem.js";
 import { MovementController } from "../systems/MovementController.js";
+import { NpcCharacter } from "../entities/NpcCharacter.js";
 
 const PLAYER_RADIUS = 17;
 const WALK_SPEED = 270;
@@ -58,6 +59,7 @@ export class TownScene extends Phaser.Scene {
     this.shopController = this.registry.get("shopController");
     this.cleanupService = this.registry.get("cleanupService");
     this.worldSimulation = this.registry.get("worldSimulation");
+    this.npcTownLife = this.registry.get("npcTownLife");
     this.worldSimulation?.setPaused("activity", false);
     const savedState = this.gameState?.getSnapshot();
     this.cameras.main.setBounds(0, 0, WORLD.width, WORLD.height);
@@ -81,6 +83,10 @@ export class TownScene extends Phaser.Scene {
     const direction = this.entryData.returnFacing || (qaTarget ? "up" : "down");
     this.shadow = this.add.ellipse(spawn.x, spawn.y + 18, 31, 12, 0x24442f, 0.28).setDepth(190);
     this.player = new PlayerCharacter(this, spawn.x, spawn.y, { direction }).setDepth(200);
+    this.npcCharacters = new Map();
+    for (const resident of this.npcTownLife?.getResidents?.() || []) {
+      this.npcCharacters.set(resident.id, new NpcCharacter(this, resident));
+    }
     this.movement = new MovementController(this, {
       onTouchStep: (dx, dy) => this.movePlayer(dx, dy, 38),
     });
@@ -375,7 +381,7 @@ export class TownScene extends Phaser.Scene {
     document.body.dataset.gameScene = this.scene.key;
     const badge = document.querySelector(".milestone-badge");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 7";
+    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 8";
     if (hint) hint.textContent = "Arrow keys or WASD to walk · E or Space to interact · Shift to run";
   }
 
@@ -480,6 +486,12 @@ export class TownScene extends Phaser.Scene {
 
   update(_time, delta) {
     this.worldSimulation?.tick(delta);
+    this.npcTownLife?.update(delta, this.gameState?.getSnapshot().world);
+    const residents = this.npcTownLife?.getResidents?.() || [];
+    for (const resident of residents) {
+      const nearby = Math.hypot(resident.x - this.player.x, resident.y - this.player.y) <= 92;
+      this.npcCharacters.get(resident.id)?.applyResident(resident, delta, nearby);
+    }
     const { dx, dy, sprinting } = this.movement.getVector();
     const speed = sprinting ? SPRINT_SPEED : WALK_SPEED;
     const moving = this.movePlayer(dx, dy, speed * Math.min(delta, 50) / 1000);
@@ -511,6 +523,15 @@ export class TownScene extends Phaser.Scene {
       gameElement.dataset.interaction = this.interactions.getState()?.id || "none";
       gameElement.dataset.transitionCount = String(Number(this.entryData.transitionCount || 0));
       gameElement.dataset.transition = this.transitioning ? "active" : "idle";
+      const diagnostics = this.npcTownLife?.getDiagnostics?.();
+      gameElement.dataset.npcResidents = String(diagnostics?.residentCount || 0);
+      gameElement.dataset.npcVisible = String(diagnostics?.visibleCount || 0);
+      gameElement.dataset.npcWalking = String(diagnostics?.walkingCount || 0);
+      gameElement.dataset.npcPaused = String(Boolean(diagnostics?.paused));
+      const sampleResident = residents[0];
+      gameElement.dataset.npcSample = sampleResident
+        ? `${sampleResident.id}:${Math.round(sampleResident.x)},${Math.round(sampleResident.y)}:${sampleResident.phase}`
+        : "none";
     }
   }
 
@@ -522,7 +543,8 @@ export class TownScene extends Phaser.Scene {
       camera: { zoom: Number(this.cameras.main.zoom.toFixed(2)), followingPlayer: true },
       controls: { keyboard: true, touch: true, wheelZoom: true },
       interaction: this.interactions.getState(),
-      migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job", "world-time-weather-lighting"],
+      migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job", "world-time-weather-lighting", "basic-npc-town-life"],
+      npcTownLife: this.npcTownLife?.getDiagnostics?.(),
       sharedState: {
         schemaVersion: this.gameState?.getSnapshot().schemaVersion || null,
         source: this.gameState?.getSnapshot().source.kind || null,

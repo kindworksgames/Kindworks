@@ -10,6 +10,7 @@ import { EconomyService } from "./systems/EconomyService.js";
 import { ShopService } from "./systems/ShopService.js";
 import { CleanupJobService } from "./systems/CleanupJobService.js";
 import { WorldSimulationService } from "./systems/WorldSimulationService.js";
+import { NpcTownLifeService } from "./systems/NpcTownLifeService.js";
 import { EconomyHudController } from "./ui/EconomyHudController.js";
 import { SaveStatusController } from "./ui/SaveStatusController.js";
 import { ShopController } from "./ui/ShopController.js";
@@ -18,6 +19,7 @@ import { WorldHudController } from "./ui/WorldHudController.js";
 const stateRuntime = bootstrapState(window.localStorage);
 const worldSimulation = new WorldSimulationService(stateRuntime.gameState, stateRuntime.repository);
 const offlineResolution = worldSimulation.resolveOffline();
+const npcTownLife = new NpcTownLifeService(stateRuntime.gameState, stateRuntime.repository);
 
 const config = {
   type: Phaser.AUTO,
@@ -38,6 +40,7 @@ const game = new Phaser.Game(config);
 game.registry.set("gameState", stateRuntime.gameState);
 game.registry.set("saveRepository", stateRuntime.repository);
 game.registry.set("worldSimulation", worldSimulation);
+game.registry.set("npcTownLife", npcTownLife);
 const economy = new EconomyService(stateRuntime.gameState, stateRuntime.repository);
 game.registry.set("economy", economy);
 const cleanupService = new CleanupJobService(stateRuntime.gameState, stateRuntime.repository);
@@ -49,6 +52,7 @@ function setModalOpen(name, open) {
   else openModals.delete(name);
   const anyOpen = openModals.size > 0;
   worldSimulation.setPaused("modal", anyOpen);
+  npcTownLife.setPaused("modal", anyOpen);
   document.body.dataset.modalOpen = String(anyOpen);
   const activeScene = game.scene.getScenes(true)[0];
   activeScene?.setOverlayOpen?.(anyOpen);
@@ -72,6 +76,7 @@ const shopController = new ShopController(shopService, stateRuntime, {
 game.registry.set("shopController", shopController);
 
 function handleVisibilityChange() {
+  npcTownLife.setPaused("background", document.hidden);
   if (document.hidden) worldSimulation.pause("background", { persist: true });
   else worldSimulation.resume("background", { resolveOffline: true });
 }
@@ -125,5 +130,8 @@ window.__KINDWORKS_PHASER__ = {
       presentation: worldHud.getDiagnostics(),
       initialOfflineResolution: offlineResolution,
     };
+  },
+  getNpcDiagnostics() {
+    return npcTownLife.getDiagnostics();
   },
 };

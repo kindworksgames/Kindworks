@@ -10,6 +10,7 @@ import {
 } from "./economyState.js";
 import { createFreshCleanupState, normalizeCleanupState, validateCleanupState } from "./cleanupState.js";
 import { createFreshWorldState, normalizeWorldState, validateWorldState } from "./worldState.js";
+import { createFreshNpcState, normalizeNpcState, validateNpcState } from "./npcState.js";
 
 const DIRECTIONS = new Set(["up", "down", "left", "right"]);
 
@@ -56,6 +57,7 @@ export function createFreshGameState({ now = Date.now() } = {}) {
     progress: { completedJobCount: 0, cleanup: createFreshCleanupState() },
     economy: createFreshEconomyState({ now }),
     inventory: createFreshInventoryState(),
+    npcs: createFreshNpcState(),
     legacySnapshot: null,
   };
 }
@@ -107,6 +109,10 @@ export function upgradeGameState(value, { now = Date.now() } = {}) {
     state.world = normalizeWorldState(state.world, { now });
     state.schemaVersion = 4;
   }
+  if (state.schemaVersion === 4) {
+    state.npcs = normalizeNpcState(state.npcs);
+    state.schemaVersion = 5;
+  }
   return state;
 }
 
@@ -129,6 +135,7 @@ export function validateGameState(value) {
   errors.push(...validateCleanupState(value.progress?.cleanup).errors);
   errors.push(...validateEconomyState(value.economy).errors);
   errors.push(...validateInventoryState(value.inventory).errors);
+  errors.push(...validateNpcState(value.npcs).errors);
   if (value.source?.kind === "legacy-import") {
     if (!Number.isInteger(value.source.legacyVersion)) errors.push("Imported legacy version is missing.");
     if (typeof value.source.legacySourceKey !== "string") errors.push("Imported legacy source key is missing.");
