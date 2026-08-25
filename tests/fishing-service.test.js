@@ -43,7 +43,7 @@ test("pins the original three fishing spots, catch tables, targeting and two fiv
 
 test("fresh Milestone 12 state is valid with separate fish and magnet progress", () => {
   const state = createFreshGameState({ now: 0 });
-  assert.equal(state.schemaVersion, 15);
+  assert.equal(state.schemaVersion, 16);
   assert.equal(validateGameState(state).ok, true);
   assert.equal(state.fishing.castsToday, 0);
   assert.equal(state.fishing.magnet.castsToday, 0);
@@ -190,7 +190,7 @@ test("schema 8 saves gain fishing while preserving all prior milestone state", (
   old.schemaVersion = 8;
   old.identity.townName = "Angler's Rest";
   const upgraded = upgradeGameState(old, { now: 1000 });
-  assert.equal(upgraded.schemaVersion, 15);
+  assert.equal(upgraded.schemaVersion, 16);
   assert.equal(upgraded.identity.townName, "Angler's Rest");
   assert.equal(upgraded.fishing.castsToday, 0);
   assert.equal(validateGameState(upgraded).ok, true);

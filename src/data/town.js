@@ -128,6 +128,14 @@ export const RIVER_CLEAROUT = Object.freeze({
   interactionRadius: 105,
 });
 
+export const BEACH_CLEANUP = Object.freeze({
+  id: "south-shore",
+  title: "South Shore Beach",
+  marker: Object.freeze({ x: 3220, y: 2380 }),
+  approach: Object.freeze({ x: 3220, y: 2320 }),
+  interactionRadius: 118,
+});
+
 export const COLLISION_RECTS = Object.freeze([
   // The river is blocked between bridge openings.
   { x: 2445, y: 0, width: 235, height: 480 },

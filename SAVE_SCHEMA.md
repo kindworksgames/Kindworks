@@ -1,8 +1,8 @@
 # Kindworks Phaser save contract
 
-> Current migration status: Milestone 18 uses game-state and envelope schema
-> 15. Schemas 1 through 14 upgrade in order, with schema 15 adding the complete
-> persistent Lawn Care campaign described below. The historical schema-3
+> Current migration status: Milestone 19 uses game-state and envelope schema
+> 16. Schemas 1 through 15 upgrade in order, with schema 16 adding the complete
+> persistent Beach Cleanup campaign described below. The historical schema-3
 > foundation notes are retained for traceability.
 
 Milestone 3 introduced the protected save foundation alongside the preserved HTML game. Milestone 4 added the shared item catalogue, inventory, KindlyCoin ledger, and atomic economy transactions. Milestone 6 adds the first persistent cleanup session, exact-target result, and job reward. NPC, animal, farming, dynamic cleanup, and the remaining mini-games stay staged for later milestones.
@@ -22,14 +22,14 @@ The Phaser build owns only:
 - `kindworks_phaser_v1_backup`
 - `kindworks_phaser_v1_recovery`
 
-## Current Phaser envelope schema 15
+## Current Phaser envelope schema 16
 
 Every current and backup save is a JSON envelope:
 
 ```json
 {
   "format": "kindworks-phaser",
-  "schemaVersion": 15,
+  "schemaVersion": 16,
   "writtenAt": "2026-08-25T00:00:00.000Z",
   "appVersion": "0.1.0",
   "data": {},
@@ -37,7 +37,7 @@ Every current and backup save is a JSON envelope:
 }
 ```
 
-The checksum covers every envelope field except the checksum itself. A save is accepted only when its format, schema, timestamp, checksum, and inner game state all validate. Valid schemas 1 through 14 upgrade to schema 15, and the original verified envelope becomes the Phaser backup before replacement.
+The checksum covers every envelope field except the checksum itself. A save is accepted only when its format, schema, timestamp, checksum, and inner game state all validate. Valid schemas 1 through 15 upgrade to schema 16, and the original verified envelope becomes the Phaser backup before replacement.
 
 ## Historical game-state schema 3 foundation
 
@@ -137,6 +137,23 @@ The checksum covers every envelope field except the checksum itself. A save is a
 - Town occurrences can recur only after regrowth. The result percentage moves
   grass toward height 5 and weeds toward pressure 3 proportionally, increments
   the shared town-job count, and pays that new occurrence atomically.
+
+## Beach Cleanup schema-16 contract
+
+- `beachCleanup.progress` stores the next selected level, derived completion
+  count, and best `{ stars, percent }` result for all 750 deterministic levels.
+- One resumable `activeSession` stores campaign or South Shore town-job mode,
+  the exact level, player cell, raked and collected cell IDs, recovered item
+  records, native coins, challenge flags, move count, undo frames, and town
+  return point.
+- Campaign first clears award the shared 100-percent reward plus five coins per
+  50-level band, capped at 170. Replays pay zero.
+- A South Shore occurrence awards the embedded game's native rubbish finds and
+  optional bonuses, capped at 170, then removes the town litter and schedules
+  the next dirty day. Each later occurrence has a new atomic reward.
+- Every step, undo, restart, cancellation, completion, reward, town effect, and
+  litter return validates through the shared repository. Failed persistence
+  restores the exact beach, wallet, campaign, and town checkpoint.
 
 ## Legacy compatibility map
 

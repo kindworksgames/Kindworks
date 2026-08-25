@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import {
+  BEACH_CLEANUP,
   BRIDGES,
   COLLISION_RECTS,
   COLORS,
@@ -79,6 +80,8 @@ export class TownScene extends Phaser.Scene {
     this.shopController = this.registry.get("shopController");
     this.cleanupService = this.registry.get("cleanupService");
     this.lawnCare = this.registry.get("lawnCare");
+    this.beachCleanup = this.registry.get("beachCleanup");
+    this.beachCleanup?.refresh?.();
     this.worldSimulation = this.registry.get("worldSimulation");
     this.npcTownLife = this.registry.get("npcTownLife");
     this.customResident = this.registry.get("customResident");
@@ -104,8 +107,10 @@ export class TownScene extends Phaser.Scene {
     const animalQaPresentation = qaTarget === "animals"
       ? this.animals?.getWorldPresentations?.().find((entry) => entry.visible && !entry.definition.rare)
       : null;
-    const qaSpawn = qaTarget === "house-rescue"
-      ? { x: HOUSES[0].x + HOUSES[0].width / 2, y: HOUSES[0].y + HOUSES[0].height + 54 }
+    const qaSpawn = qaTarget === "beach"
+      ? BEACH_CLEANUP.approach
+      : qaTarget === "house-rescue"
+        ? { x: HOUSES[0].x + HOUSES[0].width / 2, y: HOUSES[0].y + HOUSES[0].height + 54 }
       : qaTarget === "river"
       ? RIVER_CLEAROUT.approach
       : qaTarget === "cafe"
@@ -293,6 +298,18 @@ export class TownScene extends Phaser.Scene {
       detail: firstWasteJobAvailable ? "Clear 6 pieces from Willow Commons" : "Play all 750 authored matching challenges",
       onActivate: () => this.startWasteCollection(),
     });
+    const beachDirty = this.beachCleanup?.isTownJobAvailable?.();
+    interactables.push({
+      id: BEACH_CLEANUP.id,
+      kind: beachDirty ? "beach-cleanup-job" : "beach-cleanup-campaign",
+      x: BEACH_CLEANUP.marker.x,
+      y: BEACH_CLEANUP.marker.y,
+      radius: BEACH_CLEANUP.interactionRadius,
+      icon: "🏖️",
+      label: beachDirty ? "Clean South Shore Beach" : "Open Beach Cleanup Campaign",
+      detail: beachDirty ? `${this.beachCleanup.getSouthShoreSnapshot().litterCount} pieces of shoreline litter` : "Play all 750 original rake puzzles",
+      onActivate: () => this.startBeachCleanup(),
+    });
     this.interactions = new InteractionSystem({
       interactables,
       onChange: (interaction) => this.renderInteractionPrompt(interaction),
@@ -382,6 +399,7 @@ export class TownScene extends Phaser.Scene {
     this.drawFishingSpots();
     this.drawRiverCampaignMarker();
     this.drawCleanupTarget();
+    this.drawBeachCleanupTarget();
     this.drawLabels();
 
     this.add.rectangle(WORLD.width / 2, WORLD.height / 2, WORLD.width - 24, WORLD.height - 24)
@@ -645,6 +663,23 @@ export class TownScene extends Phaser.Scene {
     }).setOrigin(0.5).setDepth(119);
   }
 
+  drawBeachCleanupTarget() {
+    const dirty = this.beachCleanup?.isTownJobAvailable?.();
+    const { x, y } = BEACH_CLEANUP.marker;
+    const marker = this.add.container(x, y).setDepth(128);
+    const pulse = this.add.circle(0, 0, 42, dirty ? 0xffd05e : 0x9fe7db, 0.2).setStrokeStyle(5, dirty ? 0xffed9e : 0xe8fff9, 0.9);
+    const sign = this.add.rectangle(0, -2, 78, 56, 0xfff1bd).setStrokeStyle(4, 0x5b472b, 0.95);
+    const icon = this.add.text(0, -4, dirty ? "🏖️🧹" : "🏖️✨", { fontFamily: "Apple Color Emoji, system-ui", fontSize: "23px" }).setOrigin(0.5);
+    const label = this.add.text(0, -53, dirty ? "BEACH CLEANUP" : "750 BEACHES", { color: "#5b472b", backgroundColor: "rgba(255,249,223,.94)", fontFamily: "system-ui, sans-serif", fontSize: "11px", fontStyle: "bold", padding: { x: 7, y: 4 } }).setOrigin(0.5);
+    marker.add([pulse, sign, icon, label]);
+    this.tweens.add({ targets: pulse, scale: 1.24, alpha: 0.04, duration: 1080, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
+    if (dirty) {
+      for (const [dx, dy, piece] of [[-92, 23, "🥤"], [-55, 48, "🧴"], [72, 35, "🧦"], [105, 5, "📦"]]) {
+        this.add.text(x + dx, y + dy, piece, { fontFamily: "Apple Color Emoji, system-ui", fontSize: "20px" }).setOrigin(0.5).setDepth(116);
+      }
+    }
+  }
+
   drawLabels() {
     for (const district of DISTRICTS) {
       this.add.text(district.x + 12, district.y + 10, district.title, {
@@ -768,7 +803,7 @@ export class TownScene extends Phaser.Scene {
     document.body.dataset.gameScene = this.scene.key;
     const badge = document.querySelector(".milestone-badge");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 18";
+    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 19";
     if (hint) hint.textContent = "Arrow keys or WASD to walk · E or Space to interact · Shift to run";
   }
 
@@ -943,6 +978,28 @@ export class TownScene extends Phaser.Scene {
     this.cameras.main.fadeOut(220, 38, 75, 42);
     this.time.delayedCall(240, () => this.scene.start("LawnCareScene", { returnPosition, returnFacing }));
     return { ok: true, targetScene: "LawnCareScene", session: result.session };
+  }
+
+  startBeachCleanup() {
+    if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before starting Beach Cleanup." };
+    if (!this.beachCleanup) return { ok: false, reason: "The Beach Cleanup system is not ready." };
+    const returnPosition = { x: this.player.x, y: this.player.y };
+    const returnFacing = this.player.direction;
+    const townJobAvailable = this.beachCleanup.isTownJobAvailable();
+    const result = townJobAvailable
+      ? this.beachCleanup.beginTownJob({ returnPosition, returnFacing })
+      : { ok: true, session: null };
+    if (!result.ok) return result;
+    if (!townJobAvailable) this.gameState.updatePlayer({ scene: "BeachCleanupScene", x: returnPosition.x, y: returnPosition.y, facing: returnFacing });
+    this.transitioning = true;
+    this.movement.setEnabled(false);
+    this.interactions.setEnabled(false);
+    this.player.setMovement(0, 0, false);
+    document.querySelector("#game")?.setAttribute("data-transition", "entering-beach-cleanup");
+    this.cameras.main.fadeOut(220, 20, 49, 70);
+    this.time.delayedCall(240, () => this.scene.start("BeachCleanupScene", { returnPosition, returnFacing }));
+    return { ok: true, targetScene: "BeachCleanupScene", session: result.session };
   }
 
   setOverlayOpen(open) {
@@ -1123,6 +1180,11 @@ export class TownScene extends Phaser.Scene {
       gameElement.dataset.lawnCareLevels = String(lawnCare?.totalLevels || 0);
       gameElement.dataset.lawnCareCompleted = String(lawnCare?.progress?.completed || 0);
       gameElement.dataset.lawnCareCatalogueValid = String(Boolean(lawnCare?.catalogueValid));
+      const beach = this.beachCleanup?.getDiagnostics?.();
+      gameElement.dataset.beachLevels = String(beach?.totalLevels || 0);
+      gameElement.dataset.beachCompleted = String(beach?.completed || 0);
+      gameElement.dataset.beachCatalogueValid = String(Boolean(beach?.catalogueValid));
+      gameElement.dataset.southShoreDirty = String(Boolean(beach?.southShoreDirty));
     }
   }
 
@@ -1134,7 +1196,7 @@ export class TownScene extends Phaser.Scene {
       camera: { zoom: Number(this.cameras.main.zoom.toFixed(2)), followingPlayer: !this.customResident?.getSnapshot?.().controlling },
       controls: { keyboard: true, touch: true, wheelZoom: true },
       interaction: this.interactions.getState(),
-      migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "cafe-scene-transition", "river-clearout-scene-transition", "house-rescue-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job", "world-time-weather-lighting", "basic-npc-town-life", "custom-resident-profile-home-control", "weather-aware-farming", "orchard-harvest", "persistent-lawn-jobs", "animal-habitat-routes", "animal-friendship-feeding", "animal-adoption", "active-companion-following", "south-meadow", "three-fishing-spots", "hidden-zone-fishing", "timed-reeling", "magnet-fishing", "fishing-inventory-rewards", "magnet-coin-rewards", "bakery-recipes", "bakery-customer-service", "bakery-first-clear-rewards", "bakery-level-unlocks", "shared-recipe-order-engine", "corner-cafe-recipes", "cafe-three-tray-service", "cafe-first-clear-rewards", "cafe-level-unlocks", "river-750-level-catalogue", "river-falling-piece-engine", "river-first-clear-rewards", "river-portrait-controls", "house-rescue-750-level-catalogue", "house-rescue-sort-and-vacuum", "house-rescue-persistent-home-jobs", "house-rescue-landscape-controls", "waste-750-authored-boards", "waste-five-slot-triple-matching", "waste-certified-solutions", "waste-first-clear-rewards", "waste-landscape-controls", "lawn-750-authored-levels", "lawn-slide-mower-engine", "lawn-persistent-campaign", "lawn-town-job-effects", "lawn-first-clear-rewards", "lawn-landscape-controls"],
+      migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "cafe-scene-transition", "river-clearout-scene-transition", "house-rescue-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job", "world-time-weather-lighting", "basic-npc-town-life", "custom-resident-profile-home-control", "weather-aware-farming", "orchard-harvest", "persistent-lawn-jobs", "animal-habitat-routes", "animal-friendship-feeding", "animal-adoption", "active-companion-following", "south-meadow", "three-fishing-spots", "hidden-zone-fishing", "timed-reeling", "magnet-fishing", "fishing-inventory-rewards", "magnet-coin-rewards", "bakery-recipes", "bakery-customer-service", "bakery-first-clear-rewards", "bakery-level-unlocks", "shared-recipe-order-engine", "corner-cafe-recipes", "cafe-three-tray-service", "cafe-first-clear-rewards", "cafe-level-unlocks", "river-750-level-catalogue", "river-falling-piece-engine", "river-first-clear-rewards", "river-portrait-controls", "house-rescue-750-level-catalogue", "house-rescue-sort-and-vacuum", "house-rescue-persistent-home-jobs", "house-rescue-landscape-controls", "waste-750-authored-boards", "waste-five-slot-triple-matching", "waste-certified-solutions", "waste-first-clear-rewards", "waste-landscape-controls", "lawn-750-authored-levels", "lawn-slide-mower-engine", "lawn-persistent-campaign", "lawn-town-job-effects", "lawn-first-clear-rewards", "lawn-landscape-controls", "beach-750-deterministic-levels", "beach-rake-and-rubbish-engine", "beach-native-town-rewards", "beach-first-clear-rewards", "south-shore-litter-restoration", "beach-landscape-controls"],
       npcTownLife: this.npcTownLife?.getDiagnostics?.(),
       customResident: this.customResident?.getDiagnostics?.(),
       farming: this.farming?.getDiagnostics?.(),
@@ -1145,6 +1207,7 @@ export class TownScene extends Phaser.Scene {
       houseRescue: this.houseRescue?.getDiagnostics?.(),
       wasteCollection: this.cleanupService?.getDiagnostics?.(),
       lawnCare: this.lawnCare?.getDiagnostics?.(),
+      beachCleanup: this.beachCleanup?.getDiagnostics?.(),
       sharedState: {
         schemaVersion: this.gameState?.getSnapshot().schemaVersion || null,
         source: this.gameState?.getSnapshot().source.kind || null,

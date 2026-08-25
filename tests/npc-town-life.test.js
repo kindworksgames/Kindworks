@@ -84,7 +84,7 @@ test("schema 4 saves gain NPC town life without losing existing state", () => {
   oldState.schemaVersion = 4;
   oldState.world = advanceWorldState(oldState.world, 11 * 1440, { now: 500 }).world;
   const upgraded = upgradeGameState(oldState, { now: 1000 });
-  assert.equal(upgraded.schemaVersion, 15);
+  assert.equal(upgraded.schemaVersion, 16);
   assert.equal(upgraded.world.day, 12);
   assert.equal(upgraded.npcs.residents.length, 35);
   assert.equal(validateGameState(upgraded).ok, true);

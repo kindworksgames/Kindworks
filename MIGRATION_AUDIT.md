@@ -107,3 +107,18 @@ the cut percentage is applied proportionally to the real town lawn and each
 new regrown occurrence pays atomically. Lawn Care requires landscape on mobile,
 leaving River Clear-Out as the only portrait-friendly migrated mini-game. The
 new game-state/envelope schema is 15 and the protected HTML remains unchanged.
+
+Milestone 19 completes Beach Cleanup. The protected embedded package's exact
+`1.0.0-kindworks-integrated` rules now run natively in Phaser: all 750 levels
+use the original seeded 7×7-to-15×13 generator, obstacle bands, one-to-50
+rubbish curve, 19-item reward catalogue, leave-a-tile raking rule, undo, swipe
+and keyboard controls, and optional No Undo, Light Foot, and Clean Sweep
+bonuses. Every generated level has a deterministic certified full clear.
+Campaign first clears use the shared percentage-plus-level formula once;
+replays pay zero. The town-job entrance at South Shore instead banks the
+package's native rubbish finds and bonuses up to 170 coins, atomically removes
+the visible shoreline litter, and allows it to return after a calm interval.
+Active boards, finds, coins, challenge flags, and the exact town return point
+resume from schema 16 saves. Beach Cleanup requires landscape on mobile, so
+River Clear-Out remains the only portrait-friendly migrated mini-game. The
+protected HTML remains unchanged.

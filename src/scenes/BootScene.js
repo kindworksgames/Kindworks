@@ -9,7 +9,8 @@ export class BootScene extends Phaser.Scene {
   create() {
     createPlayerAssets(this);
     const activeLawnCare = this.registry.get("lawnCare")?.getActiveSession();
+    const activeBeachCleanup = this.registry.get("beachCleanup")?.getActiveSession();
     const activeCleanup = this.registry.get("cleanupService")?.getActiveSession();
-    this.scene.start(activeLawnCare ? "LawnCareScene" : activeCleanup ? "WasteCollectionScene" : "TownScene");
+    this.scene.start(activeBeachCleanup ? "BeachCleanupScene" : activeLawnCare ? "LawnCareScene" : activeCleanup ? "WasteCollectionScene" : "TownScene");
   }
 }
