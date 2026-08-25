@@ -162,7 +162,7 @@ export class WasteCollectionScene extends Phaser.Scene {
     const badge = document.querySelector(".milestone-badge");
     const status = document.querySelector("#location-status");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = "WASTE COLLECTION · MILESTONE 11";
+    if (badge) badge.textContent = "WASTE COLLECTION · MILESTONE 12";
     if (status) status.textContent = `${this.job.title} · Level ${this.session.assignedLevel}`;
     if (hint) hint.textContent = "Tap rubbish to collect · Arrow keys choose · Enter or Space collects · Escape exits safely";
     this.hud?.classList.remove("hidden");

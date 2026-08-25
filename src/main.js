@@ -4,6 +4,7 @@ import { BootScene } from "./scenes/BootScene.js";
 import { BakeryScene } from "./scenes/BakeryScene.js";
 import { TownScene } from "./scenes/TownScene.js";
 import { WasteCollectionScene } from "./scenes/WasteCollectionScene.js";
+import { FishingScene } from "./scenes/FishingScene.js";
 import { bootstrapState } from "./state/bootstrapState.js";
 import { GAME_STATE_SCHEMA_VERSION } from "./state/constants.js";
 import { EconomyService } from "./systems/EconomyService.js";
@@ -14,6 +15,7 @@ import { NpcTownLifeService } from "./systems/NpcTownLifeService.js";
 import { CustomResidentService } from "./systems/CustomResidentService.js";
 import { FarmingService } from "./systems/FarmingService.js";
 import { AnimalService } from "./systems/AnimalService.js";
+import { FishingService } from "./systems/FishingService.js";
 import { EconomyHudController } from "./ui/EconomyHudController.js";
 import { SaveStatusController } from "./ui/SaveStatusController.js";
 import { ShopController } from "./ui/ShopController.js";
@@ -32,6 +34,8 @@ const farming = new FarmingService(stateRuntime.gameState, stateRuntime.reposito
 farming.refresh({ persist: true });
 const animals = new AnimalService(stateRuntime.gameState, stateRuntime.repository);
 animals.refresh({ persist: true, offline: offlineResolution?.advancedGameMinutes > 0 });
+const fishing = new FishingService(stateRuntime.gameState, stateRuntime.repository);
+fishing.refresh({ persist: true });
 
 const config = {
   type: Phaser.AUTO,
@@ -45,7 +49,7 @@ const config = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene, TownScene, BakeryScene, WasteCollectionScene],
+  scene: [BootScene, TownScene, BakeryScene, WasteCollectionScene, FishingScene],
 };
 
 const game = new Phaser.Game(config);
@@ -56,6 +60,7 @@ game.registry.set("npcTownLife", npcTownLife);
 game.registry.set("customResident", customResident);
 game.registry.set("farming", farming);
 game.registry.set("animals", animals);
+game.registry.set("fishing", fishing);
 const economy = new EconomyService(stateRuntime.gameState, stateRuntime.repository);
 game.registry.set("economy", economy);
 const cleanupService = new CleanupJobService(stateRuntime.gameState, stateRuntime.repository);
@@ -195,5 +200,8 @@ window.__KINDWORKS_PHASER__ = {
   },
   getAnimalDiagnostics() {
     return { ...animals.getDiagnostics(), interface: animalFriendsController.getDiagnostics() };
+  },
+  getFishingDiagnostics() {
+    return fishing.getDiagnostics();
   },
 };

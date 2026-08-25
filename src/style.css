@@ -1837,6 +1837,65 @@ body[data-resident-control="true"] #control-hint { display: none; }
   }
 }
 
+/* Milestone 12 — fishing and magnet fishing */
+.fishing-hud {
+  position: absolute;
+  z-index: 38;
+  left: max(16px, env(safe-area-inset-left));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  width: min(370px, calc(100vw - 32px));
+  overflow: hidden;
+  color: #263747;
+  border: 4px solid #172638;
+  border-radius: 17px;
+  background: #fff1c8;
+  box-shadow: 6px 7px 0 rgba(16, 28, 37, .42);
+}
+.fishing-hud.hidden { display: none; }
+.fishing-hud-header { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: start; padding: 12px; color: #fff1c8; background: linear-gradient(115deg, #172638, #28536a); }
+.fishing-hud-header p, .fishing-hud-header h2, .fishing-hud-header small { display: block; margin: 0; }
+.fishing-hud-header p { font: 900 10px/1 ui-monospace, monospace; letter-spacing: 1.5px; color: #f2c65f; }
+.fishing-hud-header h2 { margin-top: 4px; font-size: 20px; }
+.fishing-hud-header small { margin-top: 4px; color: #d8e3df; font-size: 10px; line-height: 1.3; }
+.fishing-hud-header button { min-height: 38px; padding: 7px 9px; color: #263747; border: 3px solid #e8d29b; border-radius: 8px; background: #fff6da; font-weight: 850; }
+.fishing-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 8px; background: #ead8aa; border-bottom: 2px solid #172638; }
+.fishing-stats span { padding: 6px 4px; text-align: center; color: #6b6254; border: 1px solid #bca87c; border-radius: 8px; background: #fff8df; font-size: 10px; font-weight: 750; }
+.fishing-stats strong { display: block; margin-top: 2px; color: #263747; font: 900 14px/1.2 ui-monospace, monospace; }
+.fishing-status { min-height: 48px; margin: 0; padding: 10px 12px; color: #354757; background: #fff8df; font: 850 12px/1.35 ui-monospace, monospace; }
+.fishing-status[data-status="bite"] { color: #5a371c; background: #ffe16f; animation: fishing-status-pulse .38s steps(2, end) infinite; }
+.fishing-status[data-status="success"] { color: #245336; background: #d9efbd; }
+.fishing-status[data-status="error"] { color: #873f36; background: #f5c2b5; }
+@keyframes fishing-status-pulse { 50% { filter: brightness(1.08); } }
+.fishing-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 9px; background: #f1dfb5; }
+.fishing-actions button { min-height: 46px; color: #fff9df; border: 3px solid #172638; border-radius: 9px; background: #3f7b57; box-shadow: 3px 3px 0 rgba(23,38,56,.25); font: 900 12px ui-monospace, monospace; }
+.fishing-actions button:last-child { color: #3e3023; background: #efbf50; }
+.fishing-actions button.bite { outline: 4px solid #fff0a0; transform: translateY(-2px); }
+.fishing-actions button:disabled { opacity: .45; box-shadow: none; transform: none; }
+.fishing-catch-list, .fishing-last-result { margin: 0; padding: 7px 10px; color: #6c614f; background: #f1dfb5; font-size: 9px; line-height: 1.3; }
+.fishing-last-result { color: #354757; border-top: 1px solid #c6b486; background: #fff8df; font-weight: 800; }
+body[data-game-scene="FishingScene"] .touch-controls,
+body[data-game-scene="FishingScene"] .zoom-controls,
+body[data-game-scene="FishingScene"] .interaction-prompt { display: none !important; }
+
+@media (max-width: 720px) {
+  .fishing-hud { left: 6px; right: 6px; bottom: max(6px, env(safe-area-inset-bottom)); width: auto; border-width: 3px; border-radius: 13px; }
+  .fishing-hud-header { padding: 8px 9px; }
+  .fishing-hud-header h2 { font-size: 16px; }
+  .fishing-hud-header small { display: none; }
+  .fishing-hud-header button { min-height: 34px; }
+  .fishing-stats { padding: 5px; }
+  .fishing-stats span { padding: 4px 2px; }
+  .fishing-status { min-height: 39px; padding: 7px 9px; font-size: 11px; }
+  .fishing-actions { padding: 6px; }
+  .fishing-actions button { min-height: 40px; }
+  .fishing-catch-list { display: none; }
+  .fishing-last-result { padding: 5px 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fishing-status[data-status="bite"] { animation: none; }
+}
+
 /* Milestone 11 — animals, friendship, adoption and companions */
 .animal-hud-button { background: rgba(255, 248, 218, 0.94); }
 .animal-friends-panel {

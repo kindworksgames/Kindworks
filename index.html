@@ -24,7 +24,7 @@
           <button id="custom-resident-button" class="economy-hud-button resident-hud-button" type="button" aria-label="Create your personal resident">💚 Create resident</button>
           <button id="animal-friends-button" class="economy-hud-button animal-hud-button" type="button" aria-label="Open Animal Friends">🐾 Animal Friends</button>
           <button id="save-status-button" class="save-status-button" type="button" data-status="new">Save not started</button>
-          <div class="milestone-badge">PHASER TOWN · MILESTONE 11</div>
+          <div class="milestone-badge">PHASER TOWN · MILESTONE 12</div>
         </div>
       </section>
       <section id="interaction-prompt" class="interaction-prompt hidden" aria-label="Nearby interaction" aria-hidden="true">
@@ -253,6 +253,28 @@
           </div>
           <p id="animal-friends-status" class="animal-friends-status" data-status="neutral" role="status" aria-live="polite">Greeting and suitable treats build trust. Only one companion follows at a time.</p>
         </div>
+      </section>
+      <section id="fishing-hud" class="fishing-hud hidden" aria-labelledby="fishing-title">
+        <header class="fishing-hud-header">
+          <div>
+            <p id="fishing-mode-label">FISHING</p>
+            <h2 id="fishing-title">🎣 Commons Pond</h2>
+            <small id="fishing-description">Choose an exact point on the water.</small>
+          </div>
+          <button id="fishing-exit" type="button">Exit safely</button>
+        </header>
+        <div class="fishing-stats" aria-label="Fishing progress">
+          <span>Casts left<strong id="fishing-casts">5 / 5</strong></span>
+          <span>Total finds<strong id="fishing-total">0</strong></span>
+          <span>Streak<strong id="fishing-streak">0</strong></span>
+        </div>
+        <p id="fishing-status" class="fishing-status" data-status="neutral" role="status" aria-live="assertive">Choose a water point.</p>
+        <div class="fishing-actions">
+          <button id="fishing-cast" type="button">🎣 Cast here</button>
+          <button id="fishing-reel" type="button" disabled>⚡ Reel in</button>
+        </div>
+        <p id="fishing-catch-list" class="fishing-catch-list">River Minnows · River Trout</p>
+        <p id="fishing-last-result" class="fishing-last-result">No catch recorded this session yet.</p>
       </section>
       <section id="cleanup-hud" class="cleanup-hud hidden" aria-labelledby="cleanup-hud-title">
         <header class="cleanup-hud-header">

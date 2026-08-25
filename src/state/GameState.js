@@ -29,6 +29,12 @@ import {
   projectLegacyAnimals,
   validateAnimalState,
 } from "./animalState.js";
+import {
+  createFreshFishingState,
+  normalizeFishingState,
+  projectLegacyFishing,
+  validateFishingState,
+} from "./fishingState.js";
 
 const DIRECTIONS = new Set(["up", "down", "left", "right"]);
 
@@ -80,6 +86,7 @@ export function createFreshGameState({ now = Date.now() } = {}) {
     customResident: createFreshCustomResidentState(),
     farming: createFreshFarmingState(world),
     animals: createFreshAnimalState(world),
+    fishing: createFreshFishingState(world),
     legacySnapshot: null,
   };
 }
@@ -108,6 +115,7 @@ export function createGameStateFromLegacy(legacy, report, { now = Date.now() } =
   state.customResident = projectLegacyCustomResident(legacy);
   state.farming = projectLegacyFarming(legacy, state.world);
   state.animals = projectLegacyAnimals(legacy.animals, state.world);
+  state.fishing = projectLegacyFishing(legacy.fishing, legacy.magnetFishing, state.world);
   const legacySeeds = legacy.farmingFoundation?.seedInventory || {};
   for (const id of ["carrot-seeds", "fresh-greens-seeds", "wild-berry-starters"]) {
     const quantity = safeInteger(legacySeeds[id], 0, 99);
@@ -160,6 +168,10 @@ export function upgradeGameState(value, { now = Date.now() } = {}) {
     state.animals = normalizeAnimalState(state.animals, state.world);
     state.schemaVersion = 8;
   }
+  if (state.schemaVersion === 8) {
+    state.fishing = normalizeFishingState(state.fishing, state.world);
+    state.schemaVersion = 9;
+  }
   return state;
 }
 
@@ -186,6 +198,7 @@ export function validateGameState(value) {
   errors.push(...validateCustomResidentState(value.customResident).errors);
   errors.push(...validateFarmingState(value.farming, value.world).errors);
   errors.push(...validateAnimalState(value.animals, value.world).errors);
+  errors.push(...validateFishingState(value.fishing, value.world).errors);
   if (value.source?.kind === "legacy-import") {
     if (!Number.isInteger(value.source.legacyVersion)) errors.push("Imported legacy version is missing.");
     if (typeof value.source.legacySourceKey !== "string") errors.push("Imported legacy source key is missing.");

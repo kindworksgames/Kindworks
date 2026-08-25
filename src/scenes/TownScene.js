@@ -33,6 +33,7 @@ import {
   lawnNeedsCare,
 } from "../data/farming.js";
 import { ANIMAL_DEFINITIONS, SOUTH_MEADOW } from "../data/animals.js";
+import { FISHING_SPOTS, MAGNET_FISHING_SPOT } from "../data/fishing.js";
 
 const PLAYER_RADIUS = 17;
 const WALK_SPEED = 270;
@@ -83,6 +84,7 @@ export class TownScene extends Phaser.Scene {
     this.farmingController = this.registry.get("farmingController");
     this.animals = this.registry.get("animals");
     this.animalFriendsController = this.registry.get("animalFriendsController");
+    this.fishing = this.registry.get("fishing");
     this.worldSimulation?.setPaused("activity", false);
     const savedState = this.gameState?.getSnapshot();
     this.cameras.main.setBounds(0, 0, WORLD.width, WORLD.height);
@@ -108,6 +110,10 @@ export class TownScene extends Phaser.Scene {
                 ? { x: LAWN_PLOTS[0].x, y: LAWN_PLOTS[0].y + 110 }
                 : qaTarget === "animals" && animalQaPresentation?.position
                   ? { x: animalQaPresentation.position.x, y: animalQaPresentation.position.y + 72 }
+                  : qaTarget === "fishing"
+                    ? { x: FISHING_SPOTS[0].world.x, y: FISHING_SPOTS[0].world.y + 85 }
+                    : qaTarget === "magnet"
+                      ? { x: MAGNET_FISHING_SPOT.world.x, y: MAGNET_FISHING_SPOT.world.y + 82 }
           : null;
     const savedTownPosition = savedState?.player?.scene === "TownScene" ? savedState.player : null;
     const spawn = this.entryData.returnPosition
@@ -200,6 +206,30 @@ export class TownScene extends Phaser.Scene {
       this.animalInteractables.set(definition.id, interaction);
       interactables.push(interaction);
     }
+    for (const spot of FISHING_SPOTS) {
+      interactables.push({
+        id: spot.id,
+        kind: "fishing",
+        x: spot.world.x,
+        y: spot.world.y,
+        radius: spot.world.radius,
+        icon: spot.icon,
+        label: `Fish at ${spot.shortTitle}`,
+        detail: `${this.fishing?.castsLeft?.("fish") ?? 5} of 5 fishing casts remain today`,
+        onActivate: () => this.startFishing("fish", spot.id),
+      });
+    }
+    interactables.push({
+      id: MAGNET_FISHING_SPOT.id,
+      kind: "magnet-fishing",
+      x: MAGNET_FISHING_SPOT.world.x,
+      y: MAGNET_FISHING_SPOT.world.y,
+      radius: MAGNET_FISHING_SPOT.world.radius,
+      icon: MAGNET_FISHING_SPOT.icon,
+      label: "Magnet fish from Mill Bridge",
+      detail: `${this.fishing?.castsLeft?.("magnet") ?? 5} of 5 magnet casts remain today`,
+      onActivate: () => this.startFishing("magnet", MAGNET_FISHING_SPOT.id),
+    });
     if (this.cleanupService?.isAvailable(COMMONS_RUBBISH_JOB.id)) {
       interactables.push({
         id: COMMONS_RUBBISH_JOB.id,
@@ -298,6 +328,7 @@ export class TownScene extends Phaser.Scene {
     this.drawLandmarks();
     this.drawFarmingAreas();
     this.drawSouthMeadow();
+    this.drawFishingSpots();
     this.drawCleanupTarget();
     this.drawLabels();
 
@@ -496,6 +527,18 @@ export class TownScene extends Phaser.Scene {
     }).setOrigin(0.5).setDepth(46);
   }
 
+  drawFishingSpots() {
+    for (const spot of [...FISHING_SPOTS, MAGNET_FISHING_SPOT]) {
+      const marker = this.add.container(spot.world.x, spot.world.y).setDepth(124);
+      const pulse = this.add.circle(0, 0, 32, 0xffef93, 0.16).setStrokeStyle(5, 0xffef93, 0.78);
+      const post = this.add.rectangle(0, 15, 10, 46, 0x765238).setStrokeStyle(2, 0x294637, 0.7);
+      const sign = this.add.rectangle(0, -16, 59, 45, 0xfff1bd).setStrokeStyle(4, 0x294637, 0.9);
+      const icon = this.add.text(0, -17, spot.icon, { fontFamily: "Apple Color Emoji, system-ui", fontSize: "25px" }).setOrigin(0.5);
+      marker.add([pulse, post, sign, icon]);
+      this.tweens.add({ targets: pulse, scale: 1.25, alpha: 0.05, duration: 1000, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
+    }
+  }
+
   drawCleanupTarget() {
     if (!this.cleanupService?.isAvailable(COMMONS_RUBBISH_JOB.id)) return;
     const { x, y } = COMMONS_RUBBISH_JOB.world;
@@ -645,7 +688,7 @@ export class TownScene extends Phaser.Scene {
     document.body.dataset.gameScene = this.scene.key;
     const badge = document.querySelector(".milestone-badge");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 11";
+    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 12";
     if (hint) hint.textContent = "Arrow keys or WASD to walk · E or Space to interact · Shift to run";
   }
 
@@ -700,6 +743,20 @@ export class TownScene extends Phaser.Scene {
     if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
     if (!this.animalFriendsController) return { ok: false, reason: "The Animal Friends interface is not ready." };
     return this.animalFriendsController.open(animalId);
+  }
+
+  startFishing(mode, spotId) {
+    if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before fishing." };
+    const result = this.fishing?.begin?.(mode, spotId, { returnPosition: this.activePosition(), returnFacing: this.player.direction });
+    if (!result?.ok) return result || { ok: false, reason: "Fishing is not ready." };
+    this.transitioning = true;
+    this.movement.setEnabled(false);
+    this.interactions.setEnabled(false);
+    this.player.setMovement(0, 0, false);
+    this.cameras.main.fadeOut(220, 12, 35, 42);
+    this.time.delayedCall(240, () => this.scene.start("FishingScene"));
+    return { ok: true, targetScene: "FishingScene", mode, spotId };
   }
 
   startWasteCollection() {
@@ -870,6 +927,11 @@ export class TownScene extends Phaser.Scene {
       gameElement.dataset.animalAdopted = String(animals?.adoptedAnimals || 0);
       gameElement.dataset.animalActive = animals?.activeAnimalId || "none";
       gameElement.dataset.animalMeadow = String(animals?.southMeadowResidents || 0);
+      const fishing = this.fishing?.getDiagnostics?.();
+      gameElement.dataset.fishingCastsLeft = String(fishing?.fishCastsLeft ?? 5);
+      gameElement.dataset.magnetCastsLeft = String(fishing?.magnetCastsLeft ?? 5);
+      gameElement.dataset.fishCaught = String(fishing?.totalFishCaught || 0);
+      gameElement.dataset.magnetPulls = String(fishing?.totalMagnetPulls || 0);
     }
   }
 
@@ -881,11 +943,12 @@ export class TownScene extends Phaser.Scene {
       camera: { zoom: Number(this.cameras.main.zoom.toFixed(2)), followingPlayer: !this.customResident?.getSnapshot?.().controlling },
       controls: { keyboard: true, touch: true, wheelZoom: true },
       interaction: this.interactions.getState(),
-      migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job", "world-time-weather-lighting", "basic-npc-town-life", "custom-resident-profile-home-control", "weather-aware-farming", "orchard-harvest", "persistent-lawn-jobs", "animal-habitat-routes", "animal-friendship-feeding", "animal-adoption", "active-companion-following", "south-meadow"],
+      migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job", "world-time-weather-lighting", "basic-npc-town-life", "custom-resident-profile-home-control", "weather-aware-farming", "orchard-harvest", "persistent-lawn-jobs", "animal-habitat-routes", "animal-friendship-feeding", "animal-adoption", "active-companion-following", "south-meadow", "three-fishing-spots", "hidden-zone-fishing", "timed-reeling", "magnet-fishing", "fishing-inventory-rewards", "magnet-coin-rewards"],
       npcTownLife: this.npcTownLife?.getDiagnostics?.(),
       customResident: this.customResident?.getDiagnostics?.(),
       farming: this.farming?.getDiagnostics?.(),
       animals: this.animals?.getDiagnostics?.(),
+      fishing: this.fishing?.getDiagnostics?.(),
       sharedState: {
         schemaVersion: this.gameState?.getSnapshot().schemaVersion || null,
         source: this.gameState?.getSnapshot().source.kind || null,
