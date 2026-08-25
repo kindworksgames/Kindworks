@@ -1,0 +1,40 @@
+:root {
+  color-scheme: dark;
+  font-family: system-ui, sans-serif;
+  background: #14251c;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#game,
+.game-shell {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: radial-gradient(circle at top, #315843, #10241a 72%);
+}
+
+.game-shell {
+  display: grid;
+  place-items: center;
+  padding:
+    env(safe-area-inset-top)
+    env(safe-area-inset-right)
+    env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
+}
+
+#game canvas {
+  display: block;
+}
+
