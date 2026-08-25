@@ -6,6 +6,7 @@ import {
   DISTRICTS,
   HOUSES,
   LANDMARKS,
+  LITTLE_BAKERY,
   PATHS,
   PLAYER_START,
   RIVER_PATH,
@@ -13,6 +14,9 @@ import {
   SHOPS,
   WORLD,
 } from "../data/town.js";
+import { PlayerCharacter } from "../entities/PlayerCharacter.js";
+import { InteractionSystem } from "../systems/InteractionSystem.js";
+import { MovementController } from "../systems/MovementController.js";
 
 const PLAYER_RADIUS = 17;
 const WALK_SPEED = 270;
@@ -36,25 +40,44 @@ function containsWithRadius(rect, x, y, radius = PLAYER_RADIUS) {
 export class TownScene extends Phaser.Scene {
   constructor() {
     super("TownScene");
-    this.touchDirections = new Set();
     this.buildingCollisions = [];
-    this.facing = "down";
+    this.entryData = {};
+    this.transitioning = false;
+  }
+
+  init(data = {}) {
+    this.entryData = data;
+    this.buildingCollisions = [];
+    this.transitioning = false;
   }
 
   create() {
     this.cameras.main.setBounds(0, 0, WORLD.width, WORLD.height);
     this.drawTown();
 
-    this.shadow = this.add.ellipse(PLAYER_START.x, PLAYER_START.y + 20, 31, 14, 0x24442f, 0.28).setDepth(190);
-    this.player = this.add.sprite(PLAYER_START.x, PLAYER_START.y, "player-down").setDepth(200);
-
-    this.cursors = this.input.keyboard.createCursorKeys();
-    this.keys = this.input.keyboard.addKeys({
-      up: Phaser.Input.Keyboard.KeyCodes.W,
-      left: Phaser.Input.Keyboard.KeyCodes.A,
-      down: Phaser.Input.Keyboard.KeyCodes.S,
-      right: Phaser.Input.Keyboard.KeyCodes.D,
-      sprint: Phaser.Input.Keyboard.KeyCodes.SHIFT,
+    const qaAtBakery = import.meta.env.DEV
+      && new URLSearchParams(window.location.search).get("qa") === "bakery";
+    const spawn = this.entryData.returnPosition
+      || (qaAtBakery ? LITTLE_BAKERY.approach : PLAYER_START);
+    const direction = this.entryData.returnFacing || "down";
+    this.shadow = this.add.ellipse(spawn.x, spawn.y + 18, 31, 12, 0x24442f, 0.28).setDepth(190);
+    this.player = new PlayerCharacter(this, spawn.x, spawn.y, { direction }).setDepth(200);
+    this.movement = new MovementController(this, {
+      onTouchStep: (dx, dy) => this.movePlayer(dx, dy, 38),
+    });
+    this.interactions = new InteractionSystem({
+      interactables: [{
+        id: "little-bakery-door",
+        kind: "door",
+        x: LITTLE_BAKERY.door.x,
+        y: LITTLE_BAKERY.door.y,
+        radius: LITTLE_BAKERY.interactionRadius,
+        icon: "🥐",
+        label: "Enter Little Bakery",
+        detail: "Freshly baked, made to order",
+        onActivate: () => this.enterBakery(),
+      }],
+      onChange: (interaction) => this.renderInteractionPrompt(interaction),
     });
 
     const preferredZoom = window.matchMedia("(max-width: 720px)").matches ? 0.72 : 0.88;
@@ -66,8 +89,10 @@ export class TownScene extends Phaser.Scene {
     });
 
     this.bindInterface();
+    this.setSceneInterface();
+    this.cameras.main.fadeIn(220, 23, 43, 31);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.unbindInterface());
-    this.updateStatus("Willow Lane");
+    this.updateStatus();
   }
 
   drawTown() {
@@ -253,54 +278,62 @@ export class TownScene extends Phaser.Scene {
   }
 
   bindInterface() {
-    this.controlButtons = [...document.querySelectorAll("[data-move]")];
-    this.onControlDown = (event) => {
-      event.preventDefault();
-      event.currentTarget.setPointerCapture?.(event.pointerId);
-      this.touchDirections.add(event.currentTarget.dataset.move);
-      event.currentTarget.classList.add("is-active");
-    };
-    this.onControlUp = (event) => {
-      this.touchDirections.delete(event.currentTarget.dataset.move);
-      event.currentTarget.classList.remove("is-active");
-    };
-    this.onControlClick = (event) => {
-      const direction = event.currentTarget.dataset.move;
-      const vectors = {
-        up: [0, -1],
-        left: [-1, 0],
-        down: [0, 1],
-        right: [1, 0],
-      };
-      const [dx, dy] = vectors[direction] || [0, 0];
-      this.movePlayer(dx, dy, 38);
-    };
-    this.controlButtons.forEach((button) => {
-      button.addEventListener("pointerdown", this.onControlDown);
-      button.addEventListener("pointerup", this.onControlUp);
-      button.addEventListener("pointercancel", this.onControlUp);
-      button.addEventListener("lostpointercapture", this.onControlUp);
-      button.addEventListener("click", this.onControlClick);
-    });
-
     this.zoomIn = document.querySelector("#zoom-in");
     this.zoomOut = document.querySelector("#zoom-out");
+    this.interactionButton = document.querySelector("#interaction-action");
     this.onZoomIn = () => this.setZoom(this.cameras.main.zoom * 1.12);
     this.onZoomOut = () => this.setZoom(this.cameras.main.zoom / 1.12);
+    this.onInteraction = () => this.interactions.activateCurrent();
     this.zoomIn?.addEventListener("click", this.onZoomIn);
     this.zoomOut?.addEventListener("click", this.onZoomOut);
+    this.interactionButton?.addEventListener("click", this.onInteraction);
   }
 
   unbindInterface() {
-    this.controlButtons?.forEach((button) => {
-      button.removeEventListener("pointerdown", this.onControlDown);
-      button.removeEventListener("pointerup", this.onControlUp);
-      button.removeEventListener("pointercancel", this.onControlUp);
-      button.removeEventListener("lostpointercapture", this.onControlUp);
-      button.removeEventListener("click", this.onControlClick);
-    });
+    this.movement?.destroy();
     this.zoomIn?.removeEventListener("click", this.onZoomIn);
     this.zoomOut?.removeEventListener("click", this.onZoomOut);
+    this.interactionButton?.removeEventListener("click", this.onInteraction);
+    this.renderInteractionPrompt(null);
+  }
+
+  setSceneInterface() {
+    document.body.dataset.gameScene = this.scene.key;
+    const badge = document.querySelector(".milestone-badge");
+    const hint = document.querySelector("#control-hint");
+    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 2";
+    if (hint) hint.textContent = "Arrow keys or WASD to walk · E or Space to interact · Shift to run";
+  }
+
+  renderInteractionPrompt(interaction) {
+    const prompt = document.querySelector("#interaction-prompt");
+    const button = document.querySelector("#interaction-action");
+    const detail = document.querySelector("#interaction-detail");
+    if (!prompt || !button) return;
+    prompt.classList.toggle("hidden", !interaction);
+    prompt.setAttribute("aria-hidden", interaction ? "false" : "true");
+    if (interaction) {
+      button.textContent = `${interaction.icon || "✨"} ${interaction.label}`;
+      if (detail) detail.textContent = interaction.detail || "Press E or Space";
+    }
+  }
+
+  enterBakery() {
+    if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
+    this.transitioning = true;
+    this.movement.setEnabled(false);
+    this.interactions.setEnabled(false);
+    this.player.setMovement(0, 0, false);
+    document.querySelector("#game")?.setAttribute("data-transition", "entering-bakery");
+    this.cameras.main.fadeOut(220, 23, 43, 31);
+    this.time.delayedCall(240, () => {
+      this.scene.start("BakeryScene", {
+        returnPosition: { ...LITTLE_BAKERY.approach },
+        returnFacing: "down",
+        transitionCount: Number(this.entryData.transitionCount || 0) + 1,
+      });
+    });
+    return { ok: true, targetScene: "BakeryScene" };
   }
 
   setZoom(value) {
@@ -316,6 +349,8 @@ export class TownScene extends Phaser.Scene {
 
   movePlayer(dx, dy, distance) {
     if (!dx && !dy) return false;
+    const startX = this.player.x;
+    const startY = this.player.y;
     const magnitude = Math.hypot(dx, dy) || 1;
     const stepX = (dx / magnitude) * distance;
     const stepY = (dy / magnitude) * distance;
@@ -324,7 +359,7 @@ export class TownScene extends Phaser.Scene {
 
     if (!this.isBlocked(nextX, this.player.y)) this.player.x = nextX;
     if (!this.isBlocked(this.player.x, nextY)) this.player.y = nextY;
-    return true;
+    return Math.hypot(this.player.x - startX, this.player.y - startY) > 0.01;
   }
 
   updateStatus() {
@@ -338,24 +373,12 @@ export class TownScene extends Phaser.Scene {
   }
 
   update(_time, delta) {
-    let dx = 0;
-    let dy = 0;
-    if (this.cursors.left.isDown || this.keys.left.isDown || this.touchDirections.has("left")) dx -= 1;
-    if (this.cursors.right.isDown || this.keys.right.isDown || this.touchDirections.has("right")) dx += 1;
-    if (this.cursors.up.isDown || this.keys.up.isDown || this.touchDirections.has("up")) dy -= 1;
-    if (this.cursors.down.isDown || this.keys.down.isDown || this.touchDirections.has("down")) dy += 1;
-
-    const speed = this.keys.sprint.isDown ? SPRINT_SPEED : WALK_SPEED;
+    const { dx, dy, sprinting } = this.movement.getVector();
+    const speed = sprinting ? SPRINT_SPEED : WALK_SPEED;
     const moving = this.movePlayer(dx, dy, speed * Math.min(delta, 50) / 1000);
-
-    if (moving) {
-      const facing = Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? "left" : "right") : (dy < 0 ? "up" : "down");
-      if (facing !== this.facing) {
-        this.facing = facing;
-        this.player.setTexture(`player-${facing}`);
-      }
-      this.player.y += Math.sin(this.time.now / 80) * 0.16;
-    }
+    this.player.setMovement(dx, dy, moving);
+    this.interactions.update(this.player.x, this.player.y);
+    if (this.movement.consumeInteractPress()) this.interactions.activateCurrent();
 
     this.shadow.setPosition(this.player.x, this.player.y + 20);
     this.player.setDepth(200 + this.player.y / 10);
@@ -367,6 +390,10 @@ export class TownScene extends Phaser.Scene {
       gameElement.dataset.playerX = Math.round(this.player.x);
       gameElement.dataset.playerY = Math.round(this.player.y);
       gameElement.dataset.cameraZoom = this.cameras.main.zoom.toFixed(2);
+      gameElement.dataset.animation = this.player.getAnimationState();
+      gameElement.dataset.interaction = this.interactions.getState()?.id || "none";
+      gameElement.dataset.transitionCount = String(Number(this.entryData.transitionCount || 0));
+      gameElement.dataset.transition = this.transitioning ? "active" : "idle";
     }
   }
 
@@ -374,10 +401,11 @@ export class TownScene extends Phaser.Scene {
     return {
       scene: this.scene.key,
       world: { ...WORLD },
-      player: { x: Math.round(this.player.x), y: Math.round(this.player.y), facing: this.facing },
+      player: { x: Math.round(this.player.x), y: Math.round(this.player.y), facing: this.player.direction },
       camera: { zoom: Number(this.cameras.main.zoom.toFixed(2)), followingPlayer: true },
       controls: { keyboard: true, touch: true, wheelZoom: true },
-      migratedSystems: [],
+      interaction: this.interactions.getState(),
+      migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition"],
     };
   }
 }

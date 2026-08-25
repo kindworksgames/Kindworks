@@ -104,6 +104,14 @@ export const LANDMARKS = Object.freeze([
 
 export const PLAYER_START = Object.freeze({ x: 1050, y: 1545 });
 
+export const LITTLE_BAKERY = Object.freeze({
+  id: "shop-03",
+  title: "Little Bakery",
+  door: Object.freeze({ x: 805, y: 1120 }),
+  approach: Object.freeze({ x: 805, y: 1142 }),
+  interactionRadius: 92,
+});
+
 export const COLLISION_RECTS = Object.freeze([
   // The river is blocked between bridge openings.
   { x: 2445, y: 0, width: 235, height: 480 },

@@ -35,6 +35,14 @@ body {
     env(safe-area-inset-left);
 }
 
+#game {
+  position: absolute;
+  inset: 0;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
 #game canvas {
   display: block;
 }
@@ -42,6 +50,7 @@ body {
 .town-hud,
 .touch-controls,
 .zoom-controls,
+.interaction-prompt,
 .control-hint {
   position: absolute;
   z-index: 10;
@@ -65,6 +74,68 @@ body {
   background: rgb(28 58 42 / 88%);
   box-shadow: 0 7px 22px rgb(10 29 20 / 30%);
   backdrop-filter: blur(8px);
+}
+
+.interaction-prompt {
+  left: 50%;
+  bottom: max(72px, calc(env(safe-area-inset-bottom) + 58px));
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  gap: 4px 9px;
+  min-width: 260px;
+  padding: 9px 11px;
+  border: 1px solid rgb(255 255 255 / 38%);
+  border-radius: 16px;
+  background: rgb(246 251 242 / 95%);
+  box-shadow: 0 12px 34px rgb(22 50 35 / 24%);
+  color: #294c38;
+  transform: translateX(-50%);
+  backdrop-filter: blur(10px);
+}
+
+.interaction-prompt.hidden {
+  display: none;
+}
+
+.interaction-key {
+  grid-row: 1 / 3;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 2px solid #497756;
+  border-radius: 10px;
+  background: #dff0dc;
+  color: #2f613e;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.interaction-prompt button {
+  border: 0;
+  background: transparent;
+  color: #294c38;
+  padding: 0;
+  text-align: left;
+  font: 900 14px/1.2 system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.interaction-prompt small {
+  color: #687b6d;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.interaction-prompt button:focus-visible {
+  border-radius: 5px;
+  outline: 3px solid #d09b47;
+  outline-offset: 3px;
+}
+
+body[data-game-scene="BakeryScene"] .zoom-controls {
+  display: none;
 }
 
 .town-title {
@@ -170,6 +241,30 @@ body {
   .town-title {
     min-width: 164px;
     padding: 8px 11px;
+  }
+
+  .interaction-prompt {
+    bottom: max(76px, calc(env(safe-area-inset-bottom) + 64px));
+    min-width: min(310px, calc(100vw - 24px));
+  }
+
+  .interaction-key {
+    display: none;
+  }
+
+  .interaction-prompt {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .interaction-prompt button {
+    min-height: 44px;
+    text-align: center;
+  }
+
+  .zoom-controls {
+    top: max(76px, calc(env(safe-area-inset-top) + 62px));
+    bottom: auto;
   }
 }
 

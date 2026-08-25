@@ -38,5 +38,11 @@ The safest extraction order is:
 
 ## Current milestone
 
-The new application contains only a responsive Phaser boot scene. No gameplay logic, assets, save data, or progression have been migrated.
+Milestone 1 established the playable Willowmere town foundation, including
+camera follow/zoom, keyboard and touch movement, and initial collision bounds.
 
+Milestone 2 adds the reusable four-direction character animation,
+proximity-interaction, and scene-transition foundations. The Little Bakery now
+has a safe enter/exit interior shell that returns the player to its authored
+door position. Bakery gameplay, economy, inventory, saves, NPCs, and
+progression remain intentionally unmigrated.
