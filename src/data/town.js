@@ -120,6 +120,14 @@ export const CORNER_CAFE = Object.freeze({
   interactionRadius: 92,
 });
 
+export const RIVER_CLEAROUT = Object.freeze({
+  id: "river-clearout",
+  title: "River Clear-Out",
+  marker: Object.freeze({ x: 2380, y: 1190 }),
+  approach: Object.freeze({ x: 2365, y: 1240 }),
+  interactionRadius: 105,
+});
+
 export const COLLISION_RECTS = Object.freeze([
   // The river is blocked between bridge openings.
   { x: 2445, y: 0, width: 235, height: 480 },

@@ -2480,6 +2480,123 @@ body[data-game-scene="WasteCollectionScene"] .town-hud {
   display: none;
 }
 
+/* Milestone 15: the River Clear-Out campaign is intentionally portrait-friendly. */
+.river-hud {
+  position: fixed;
+  z-index: 48;
+  top: max(10px, env(safe-area-inset-top));
+  right: max(10px, env(safe-area-inset-right));
+  width: min(590px, calc(100vw - 20px));
+  max-height: calc(100dvh - 20px);
+  overflow: auto;
+  border: 4px solid #173f50;
+  border-radius: 14px;
+  background: #eefbf5;
+  box-shadow: 8px 9px 0 rgb(14 43 53 / 48%);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.river-hud.hidden, .river-picker.hidden, .river-gameplay.hidden, .river-result.hidden, #river-qa-solve.hidden { display: none; }
+.river-hud-header { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 8px; padding: 10px; color: #efffff; background: #173f50; }
+.river-hud-header div { min-width: 0; }
+.river-hud-header p, .river-hud-header h2, .river-hud-header small { display: block; margin: 0; }
+.river-hud-header p { color: #8fe6d1; font-size: 8px; font-weight: 900; letter-spacing: 1px; }
+.river-hud-header h2 { margin: 3px 0; font: 900 20px/1.05 system-ui, sans-serif; }
+.river-hud-header small { overflow: hidden; color: #cae2e3; font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+.river-hud-header > span { padding: 6px 8px; border: 2px solid #7fc9c3; border-radius: 999px; color: #fff0a0; font-weight: 900; white-space: nowrap; }
+.river-hud button, .river-hud select { min-height: 38px; border: 3px solid #173f50; border-radius: 7px; color: #173f50; background: #fbfff9; font: 900 10px/1 ui-monospace, monospace; box-shadow: 3px 3px 0 rgb(23 63 80 / 28%); touch-action: manipulation; }
+.river-hud button:disabled { opacity: .42; box-shadow: none; }
+.river-hud-header button { min-height: 34px; padding: 5px 8px; border-color: #b8f0e3; box-shadow: none; }
+.river-picker { display: grid; grid-template-columns: minmax(0, 1fr) 150px 120px; align-items: end; gap: 9px; padding: 13px; }
+.river-picker strong, .river-picker small { display: block; }
+.river-picker strong { color: #173f50; }
+.river-picker small { margin-top: 5px; color: #526f6d; font: 700 9px/1.35 system-ui, sans-serif; }
+.river-picker label { display: grid; gap: 4px; color: #3f6665; font-size: 8px; font-weight: 900; }
+.river-picker select { width: 100%; padding: 6px; }
+.river-picker > button { color: #fff; background: #317d73; }
+.river-gameplay { display: grid; gap: 7px; padding: 8px; border-top: 3px solid #173f50; }
+.river-game-heading { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 6px; }
+.river-game-heading div { min-width: 0; }
+.river-game-heading small, .river-game-heading div > strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.river-game-heading small { color: #436965; font-size: 8px; }
+.river-game-heading div > strong { margin-top: 2px; color: #173f50; font-size: 12px; }
+.river-game-heading > span { display: grid; gap: 1px; min-width: 68px; padding: 5px; text-align: center; border: 2px solid #86b9b0; border-radius: 7px; background: #fbfff9; color: #52706d; font-size: 7px; text-transform: uppercase; }
+.river-game-heading span strong { color: #173f50; font-size: 12px; }
+.river-play-area { display: grid; grid-template-columns: minmax(190px, 285px) minmax(125px, 1fr); justify-content: center; gap: 8px; min-width: 0; }
+.river-board { display: grid; grid-template-columns: repeat(10, 1fr); width: min(285px, 100%); aspect-ratio: 10 / 16; overflow: hidden; border: 4px solid #173f50; border-radius: 9px; background: linear-gradient(#78ccdc, #3e9db9); box-shadow: inset 0 0 0 2px rgb(255 255 255 / 32%); }
+.river-cell { display: grid; place-items: center; min-width: 0; min-height: 0; border: 1px solid rgb(26 92 109 / 30%); font-size: clamp(9px, 2.1vw, 17px); line-height: 1; }
+.river-cell.rubbish { background: #f3d381; }
+.river-cell.heavy { background: #ce735b; box-shadow: inset 0 0 0 2px #723b3a; }
+.river-cell.rock { background: #738082; filter: grayscale(.5); }
+.river-cell.placed { background: #a9e69b; }
+.river-cell.current { background: #ffe875; outline: 2px solid #fff; outline-offset: -2px; }
+.river-cell.ghost { opacity: .42; background: rgb(231 255 239 / 65%); }
+.river-side-panel { display: grid; align-content: start; gap: 7px; min-width: 0; }
+.river-stars { padding: 5px; color: #e7ad2f; background: #173f50; border-radius: 7px; font-size: 23px; letter-spacing: 2px; text-align: center; text-shadow: 1px 1px #fff; }
+.river-preview-card { padding: 7px; border: 2px solid #86b9b0; border-radius: 7px; background: #fbfff9; }
+.river-preview-card > small { color: #50716d; font-size: 7px; font-weight: 900; letter-spacing: 1px; }
+.river-preview { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-top: 5px; }
+.river-preview span { display: grid; place-items: center; min-height: 38px; border: 2px solid #a8cdc5; border-radius: 6px; color: #173f50; background: #d9f3eb; font-weight: 900; }
+.river-preview small { font-size: 15px; }
+.river-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
+.river-metrics span { display: grid; gap: 2px; padding: 5px; border: 2px solid #9cc8bf; border-radius: 6px; color: #55736f; background: #fbfff9; font-size: 7px; text-align: center; }
+.river-metrics strong { color: #173f50; font-size: 12px; }
+.river-side-panel button { min-height: 36px; }
+#river-qa-solve { color: #fff; background: #6a4f8c; }
+.river-controls { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5px; }
+.river-controls button { min-height: 42px; font-size: 14px; }
+.river-controls .primary { color: #fff; background: #317d73; }
+.river-status { min-height: 34px; margin: 0; padding: 8px 10px; border-top: 2px solid #9cc8bf; color: #315a5b; background: #effaf5; font: 800 9px/1.35 system-ui, sans-serif; }
+.river-status[data-status="success"] { color: #21633d; background: #dff3c8; }
+.river-status[data-status="error"] { color: #8e3f37; background: #f6c6bc; }
+.river-status[data-status="hint"] { color: #684c18; background: #ffe99a; }
+.river-result { padding: 14px; border-top: 3px solid #173f50; text-align: center; }
+.river-result h3, .river-result p { margin: 0; }
+.river-result h3 { color: #173f50; }
+#river-result-stars { margin: 7px 0; color: #e3a82c; font-size: 29px; letter-spacing: 3px; text-shadow: 2px 2px #173f50; }
+.river-result p { color: #526d69; font: 700 10px/1.4 system-ui, sans-serif; }
+.river-result-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 11px 0; }
+.river-result-stats span { display: grid; gap: 3px; padding: 7px; border: 2px solid #9cc8bf; border-radius: 7px; background: #fbfff9; color: #58736f; font-size: 7px; }
+.river-result-stats strong { color: #173f50; font-size: 13px; }
+.river-result-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.river-result-actions #river-next { color: #fff; background: #317d73; }
+body[data-game-scene="RiverClearoutScene"] .touch-controls,
+body[data-game-scene="RiverClearoutScene"] .zoom-controls,
+body[data-game-scene="RiverClearoutScene"] .interaction-prompt,
+body[data-game-scene="RiverClearoutScene"] .town-hud { display: none; }
+
+@media (max-width: 720px) {
+  .river-hud { top: max(4px, env(safe-area-inset-top)); right: 4px; left: 4px; width: auto; max-height: calc(100dvh - 8px); border-width: 3px; box-shadow: 4px 5px 0 rgb(14 43 53 / 48%); }
+  .river-hud-header { padding: 7px; }
+  .river-hud-header p, .river-hud-header small { display: none; }
+  .river-hud-header h2 { font-size: 16px; }
+  .river-hud-header > span { padding: 5px 6px; font-size: 9px; }
+  .river-hud-header button { min-height: 32px; padding: 4px 6px; font-size: 8px; }
+  .river-picker { grid-template-columns: minmax(0, 1fr) 110px; padding: 9px; }
+  .river-picker > div { grid-column: 1 / -1; }
+  .river-gameplay { gap: 5px; padding: 6px; }
+  .river-play-area { grid-template-columns: minmax(180px, 1fr) minmax(104px, 126px); gap: 6px; }
+  .river-board { width: min(100%, 276px); }
+  .river-stars { font-size: 18px; }
+  .river-preview-card { padding: 5px; }
+  .river-preview span { min-height: 31px; }
+  .river-side-panel button { font-size: 8px; }
+  .river-controls { gap: 4px; }
+  .river-controls button { min-height: 39px; padding: 2px; font-size: 12px; }
+  .river-status { min-height: 29px; padding: 6px 8px; font-size: 8px; }
+}
+
+@media (max-width: 420px) and (orientation: portrait) {
+  .river-game-heading div > strong { font-size: 9px; }
+  .river-game-heading > span { min-width: 54px; padding: 3px; }
+  .river-play-area { grid-template-columns: minmax(175px, 1fr) 96px; }
+  .river-board { width: min(100%, 252px); }
+  .river-metrics span { padding: 3px; }
+  .river-side-panel { gap: 4px; }
+  .river-preview-card > small { display: none; }
+  .river-stars { padding: 3px; font-size: 15px; }
+  .river-result { padding: 10px; }
+}
+
 @media (max-height: 610px) and (orientation: landscape) {
   .cleanup-hud {
     top: max(10px, env(safe-area-inset-top));

@@ -10,6 +10,7 @@ import {
   LITTLE_BAKERY,
   PATHS,
   PLAYER_START,
+  RIVER_CLEAROUT,
   RIVER_PATH,
   ROADS,
   SHOPS,
@@ -88,6 +89,7 @@ export class TownScene extends Phaser.Scene {
     this.fishing = this.registry.get("fishing");
     this.bakery = this.registry.get("bakery");
     this.cafe = this.registry.get("cafe");
+    this.river = this.registry.get("river");
     this.worldSimulation?.setPaused("activity", false);
     const savedState = this.gameState?.getSnapshot();
     this.cameras.main.setBounds(0, 0, WORLD.width, WORLD.height);
@@ -99,8 +101,10 @@ export class TownScene extends Phaser.Scene {
     const animalQaPresentation = qaTarget === "animals"
       ? this.animals?.getWorldPresentations?.().find((entry) => entry.visible && !entry.definition.rare)
       : null;
-    const qaSpawn = qaTarget === "cafe"
-      ? CORNER_CAFE.approach
+    const qaSpawn = qaTarget === "river"
+      ? RIVER_CLEAROUT.approach
+      : qaTarget === "cafe"
+        ? CORNER_CAFE.approach
       : qaTarget === "bakery"
         ? LITTLE_BAKERY.approach
         : qaTarget === "fresh-market"
@@ -140,6 +144,17 @@ export class TownScene extends Phaser.Scene {
       onTouchStep: (dx, dy) => this.moveActiveCharacter(dx, dy, 38),
     });
     const interactables = [
+        {
+          id: RIVER_CLEAROUT.id,
+          kind: "river-campaign",
+          x: RIVER_CLEAROUT.marker.x,
+          y: RIVER_CLEAROUT.marker.y,
+          radius: RIVER_CLEAROUT.interactionRadius,
+          icon: "🌊",
+          label: "Start River Clear-Out",
+          detail: "Restore 750 authored river challenges",
+          onActivate: () => this.enterRiverClearout(),
+        },
         {
           id: "corner-cafe-door",
           kind: "door",
@@ -345,6 +360,7 @@ export class TownScene extends Phaser.Scene {
     this.drawFarmingAreas();
     this.drawSouthMeadow();
     this.drawFishingSpots();
+    this.drawRiverCampaignMarker();
     this.drawCleanupTarget();
     this.drawLabels();
 
@@ -555,6 +571,20 @@ export class TownScene extends Phaser.Scene {
     }
   }
 
+  drawRiverCampaignMarker() {
+    const { x, y } = RIVER_CLEAROUT.marker;
+    const marker = this.add.container(x, y).setDepth(126);
+    const pulse = this.add.circle(0, 0, 43, 0x8fe6d1, 0.2).setStrokeStyle(6, 0xd9fff4, 0.88);
+    const sign = this.add.rectangle(0, -2, 72, 54, 0xeefbf5).setStrokeStyle(4, 0x173f50, 0.95);
+    const icon = this.add.text(0, -4, "🌊♻️", { fontFamily: "Apple Color Emoji, system-ui", fontSize: "24px" }).setOrigin(0.5);
+    const label = this.add.text(0, -50, "RIVER CLEAR-OUT", {
+      color: "#173f50", backgroundColor: "rgba(238,251,245,.94)", fontFamily: "system-ui, sans-serif",
+      fontSize: "11px", fontStyle: "bold", padding: { x: 7, y: 4 },
+    }).setOrigin(0.5);
+    marker.add([pulse, sign, icon, label]);
+    this.tweens.add({ targets: pulse, scale: 1.24, alpha: 0.04, duration: 1050, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
+  }
+
   drawCleanupTarget() {
     if (!this.cleanupService?.isAvailable(COMMONS_RUBBISH_JOB.id)) return;
     const { x, y } = COMMONS_RUBBISH_JOB.world;
@@ -704,7 +734,7 @@ export class TownScene extends Phaser.Scene {
     document.body.dataset.gameScene = this.scene.key;
     const badge = document.querySelector(".milestone-badge");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 14";
+    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 15";
     if (hint) hint.textContent = "Arrow keys or WASD to walk · E or Space to interact · Shift to run";
   }
 
@@ -759,6 +789,26 @@ export class TownScene extends Phaser.Scene {
       });
     });
     return { ok: true, targetScene: "CafeScene" };
+  }
+
+  enterRiverClearout() {
+    if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before starting River Clear-Out." };
+    this.transitioning = true;
+    this.movement.setEnabled(false);
+    this.interactions.setEnabled(false);
+    this.player.setMovement(0, 0, false);
+    this.gameState?.updatePlayer({ scene: "RiverClearoutScene", x: 640, y: 610, facing: "up" });
+    document.querySelector("#game")?.setAttribute("data-transition", "entering-river-clearout");
+    this.cameras.main.fadeOut(220, 24, 55, 66);
+    this.time.delayedCall(240, () => {
+      this.scene.start("RiverClearoutScene", {
+        returnPosition: { ...RIVER_CLEAROUT.approach },
+        returnFacing: "down",
+        transitionCount: Number(this.entryData.transitionCount || 0) + 1,
+      });
+    });
+    return { ok: true, targetScene: "RiverClearoutScene" };
   }
 
   openFreshMarket() {
@@ -976,6 +1026,10 @@ export class TownScene extends Phaser.Scene {
       gameElement.dataset.cafeUnlocked = String(cafe?.unlockedLevel || 1);
       gameElement.dataset.cafeCompleted = String(cafe?.completedLevels || 0);
       gameElement.dataset.cafeStars = String(cafe?.totalStars || 0);
+      const river = this.river?.getDiagnostics?.();
+      gameElement.dataset.riverLevels = String(river?.totalLevels || 0);
+      gameElement.dataset.riverCompleted = String(river?.completed || 0);
+      gameElement.dataset.riverCatalogueValid = String(Boolean(river?.catalogueValid));
     }
   }
 
@@ -987,13 +1041,14 @@ export class TownScene extends Phaser.Scene {
       camera: { zoom: Number(this.cameras.main.zoom.toFixed(2)), followingPlayer: !this.customResident?.getSnapshot?.().controlling },
       controls: { keyboard: true, touch: true, wheelZoom: true },
       interaction: this.interactions.getState(),
-      migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "cafe-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job", "world-time-weather-lighting", "basic-npc-town-life", "custom-resident-profile-home-control", "weather-aware-farming", "orchard-harvest", "persistent-lawn-jobs", "animal-habitat-routes", "animal-friendship-feeding", "animal-adoption", "active-companion-following", "south-meadow", "three-fishing-spots", "hidden-zone-fishing", "timed-reeling", "magnet-fishing", "fishing-inventory-rewards", "magnet-coin-rewards", "bakery-recipes", "bakery-customer-service", "bakery-first-clear-rewards", "bakery-level-unlocks", "shared-recipe-order-engine", "corner-cafe-recipes", "cafe-three-tray-service", "cafe-first-clear-rewards", "cafe-level-unlocks"],
+      migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "cafe-scene-transition", "river-clearout-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job", "world-time-weather-lighting", "basic-npc-town-life", "custom-resident-profile-home-control", "weather-aware-farming", "orchard-harvest", "persistent-lawn-jobs", "animal-habitat-routes", "animal-friendship-feeding", "animal-adoption", "active-companion-following", "south-meadow", "three-fishing-spots", "hidden-zone-fishing", "timed-reeling", "magnet-fishing", "fishing-inventory-rewards", "magnet-coin-rewards", "bakery-recipes", "bakery-customer-service", "bakery-first-clear-rewards", "bakery-level-unlocks", "shared-recipe-order-engine", "corner-cafe-recipes", "cafe-three-tray-service", "cafe-first-clear-rewards", "cafe-level-unlocks", "river-750-level-catalogue", "river-falling-piece-engine", "river-first-clear-rewards", "river-portrait-controls"],
       npcTownLife: this.npcTownLife?.getDiagnostics?.(),
       customResident: this.customResident?.getDiagnostics?.(),
       farming: this.farming?.getDiagnostics?.(),
       animals: this.animals?.getDiagnostics?.(),
       fishing: this.fishing?.getDiagnostics?.(),
       bakery: this.bakery?.getDiagnostics?.(),
+      river: this.river?.getDiagnostics?.(),
       sharedState: {
         schemaVersion: this.gameState?.getSnapshot().schemaVersion || null,
         source: this.gameState?.getSnapshot().source.kind || null,

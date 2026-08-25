@@ -47,6 +47,12 @@ import {
   projectLegacyCafe,
   validateCafeState,
 } from "./cafeState.js";
+import {
+  createFreshRiverState,
+  normalizeRiverState,
+  projectLegacyRiver,
+  validateRiverState,
+} from "./riverState.js";
 
 const DIRECTIONS = new Set(["up", "down", "left", "right"]);
 
@@ -101,6 +107,7 @@ export function createFreshGameState({ now = Date.now() } = {}) {
     fishing: createFreshFishingState(world),
     bakery: createFreshBakeryState(),
     cafe: createFreshCafeState(),
+    river: createFreshRiverState(),
     legacySnapshot: null,
   };
 }
@@ -132,6 +139,7 @@ export function createGameStateFromLegacy(legacy, report, { now = Date.now() } =
   state.fishing = projectLegacyFishing(legacy.fishing, legacy.magnetFishing, state.world);
   state.bakery = projectLegacyBakery(legacy.bakery);
   state.cafe = projectLegacyCafe(legacy.cafe);
+  state.river = projectLegacyRiver(legacy);
   const legacySeeds = legacy.farmingFoundation?.seedInventory || {};
   for (const id of ["carrot-seeds", "fresh-greens-seeds", "wild-berry-starters"]) {
     const quantity = safeInteger(legacySeeds[id], 0, 99);
@@ -196,6 +204,10 @@ export function upgradeGameState(value, { now = Date.now() } = {}) {
     state.cafe = normalizeCafeState(state.cafe);
     state.schemaVersion = 11;
   }
+  if (state.schemaVersion === 11) {
+    state.river = normalizeRiverState(state.river ?? state.legacySnapshot);
+    state.schemaVersion = 12;
+  }
   return state;
 }
 
@@ -225,6 +237,7 @@ export function validateGameState(value) {
   errors.push(...validateFishingState(value.fishing, value.world).errors);
   errors.push(...validateBakeryState(value.bakery).errors);
   errors.push(...validateCafeState(value.cafe).errors);
+  errors.push(...validateRiverState(value.river).errors);
   if (value.source?.kind === "legacy-import") {
     if (!Number.isInteger(value.source.legacyVersion)) errors.push("Imported legacy version is missing.");
     if (typeof value.source.legacySourceKey !== "string") errors.push("Imported legacy source key is missing.");

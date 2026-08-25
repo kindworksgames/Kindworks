@@ -104,7 +104,7 @@ export class BakeryScene extends Phaser.Scene {
     const badge = document.querySelector(".milestone-badge");
     const status = document.querySelector("#location-status");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = "LITTLE BAKERY · MILESTONE 14";
+    if (badge) badge.textContent = "LITTLE BAKERY · MILESTONE 15";
     const landscapeMessage = document.querySelector("#landscape-required-message");
     if (landscapeMessage) landscapeMessage.textContent = "Little Bakery is designed for landscape play. Turn your phone sideways to continue this shift.";
     if (status) status.textContent = "Inside Little Bakery";

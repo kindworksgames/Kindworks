@@ -3,6 +3,7 @@ import "./style.css";
 import { BootScene } from "./scenes/BootScene.js";
 import { BakeryScene } from "./scenes/BakeryScene.js";
 import { CafeScene } from "./scenes/CafeScene.js";
+import { RiverClearoutScene } from "./scenes/RiverClearoutScene.js";
 import { TownScene } from "./scenes/TownScene.js";
 import { WasteCollectionScene } from "./scenes/WasteCollectionScene.js";
 import { FishingScene } from "./scenes/FishingScene.js";
@@ -19,6 +20,7 @@ import { AnimalService } from "./systems/AnimalService.js";
 import { FishingService } from "./systems/FishingService.js";
 import { BakeryService } from "./systems/BakeryService.js";
 import { CafeService } from "./systems/CafeService.js";
+import { RiverClearoutService } from "./systems/RiverClearoutService.js";
 import { EconomyHudController } from "./ui/EconomyHudController.js";
 import { SaveStatusController } from "./ui/SaveStatusController.js";
 import { ShopController } from "./ui/ShopController.js";
@@ -41,6 +43,7 @@ const fishing = new FishingService(stateRuntime.gameState, stateRuntime.reposito
 fishing.refresh({ persist: true });
 const bakery = new BakeryService(stateRuntime.gameState, stateRuntime.repository);
 const cafe = new CafeService(stateRuntime.gameState, stateRuntime.repository);
+const river = new RiverClearoutService(stateRuntime.gameState, stateRuntime.repository);
 
 const config = {
   type: Phaser.AUTO,
@@ -54,7 +57,7 @@ const config = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene, TownScene, BakeryScene, CafeScene, WasteCollectionScene, FishingScene],
+  scene: [BootScene, TownScene, BakeryScene, CafeScene, RiverClearoutScene, WasteCollectionScene, FishingScene],
 };
 
 const game = new Phaser.Game(config);
@@ -68,6 +71,7 @@ game.registry.set("animals", animals);
 game.registry.set("fishing", fishing);
 game.registry.set("bakery", bakery);
 game.registry.set("cafe", cafe);
+game.registry.set("river", river);
 const economy = new EconomyService(stateRuntime.gameState, stateRuntime.repository);
 game.registry.set("economy", economy);
 const cleanupService = new CleanupJobService(stateRuntime.gameState, stateRuntime.repository);
@@ -216,5 +220,8 @@ window.__KINDWORKS_PHASER__ = {
   },
   getCafeDiagnostics() {
     return cafe.getDiagnostics();
+  },
+  getRiverDiagnostics() {
+    return river.getDiagnostics();
   },
 };

@@ -24,7 +24,7 @@
           <button id="custom-resident-button" class="economy-hud-button resident-hud-button" type="button" aria-label="Create your personal resident">💚 Create resident</button>
           <button id="animal-friends-button" class="economy-hud-button animal-hud-button" type="button" aria-label="Open Animal Friends">🐾 Animal Friends</button>
           <button id="save-status-button" class="save-status-button" type="button" data-status="new">Save not started</button>
-          <div class="milestone-badge">PHASER TOWN · MILESTONE 14</div>
+          <div class="milestone-badge">PHASER TOWN · MILESTONE 15</div>
         </div>
       </section>
       <section id="interaction-prompt" class="interaction-prompt hidden" aria-label="Nearby interaction" aria-hidden="true">
@@ -259,6 +259,38 @@
         <h2 id="landscape-required-title">Rotate your phone</h2>
         <p id="landscape-required-message">This activity is designed for landscape play. Turn your phone sideways to continue.</p>
       </aside>
+      <section id="river-hud" class="river-hud hidden" aria-labelledby="river-hud-title">
+        <header class="river-hud-header">
+          <div><p>MILESTONE 15 · 750-LEVEL CAMPAIGN</p><h2 id="river-hud-title">🌊 River Clear-Out</h2><small id="river-progress-summary">0 cleared · 0 stars · 0 restoration points</small></div>
+          <span id="river-balance">🪙 100</span>
+          <button id="river-exit" type="button">Exit river</button>
+        </header>
+        <section id="river-picker" class="river-picker" aria-label="Choose a River Clear-Out level">
+          <div><strong>Restore all 750 stretches of river</strong><small>Guide each falling recovery shape to clear the original rubbish. Every level is available; first clears award coins once.</small></div>
+          <label for="river-level-select">River challenge<select id="river-level-select"><option value="1">Level 1</option></select></label>
+          <button id="river-start" type="button">Start Level 1</button>
+        </section>
+        <section id="river-gameplay" class="river-gameplay hidden" aria-label="Active River Clear-Out level">
+          <div class="river-game-heading"><div><small id="river-level-name">Level 1 · River Challenge 001</small><strong id="river-band">Early Challenge</strong></div><span>Restored<strong id="river-percent">0%</strong></span><span>Pieces<strong id="river-pieces">0 / 10</strong></span></div>
+          <div class="river-play-area">
+            <div id="river-board" class="river-board" role="img" aria-label="10 by 16 River Clear-Out board"></div>
+            <div class="river-side-panel">
+              <div class="river-stars" id="river-live-stars" aria-label="Current rating">☆☆☆</div>
+              <div class="river-preview-card"><small>NEXT 3</small><div id="river-preview" class="river-preview"></div></div>
+              <div class="river-metrics"><span>Rows<strong id="river-rows">0</strong></span><span>Par<strong id="river-par">10</strong></span><span>Undos<strong id="river-undos">5</strong></span><span>Difficulty<strong id="river-difficulty">10</strong></span></div>
+              <button id="river-hint" type="button">💡 Show hint</button>
+              <button id="river-qa-solve" class="hidden" type="button">✓ Certified QA clear</button>
+            </div>
+          </div>
+          <div class="river-controls" aria-label="River piece controls"><button id="river-left" type="button" aria-label="Move left">◀</button><button id="river-rotate" type="button" aria-label="Rotate clockwise">↻</button><button id="river-down" type="button" aria-label="Move down">▼</button><button id="river-right" type="button" aria-label="Move right">▶</button><button id="river-drop" class="primary" type="button">Drop</button><button id="river-undo" type="button">↶ Undo</button></div>
+        </section>
+        <p id="river-status" class="river-status" data-status="neutral" role="status" aria-live="assertive">Choose any river level to begin.</p>
+        <section id="river-result" class="river-result hidden" aria-labelledby="river-result-title">
+          <h3 id="river-result-title">River stretch restored!</h3><div id="river-result-stars">★★★</div><p id="river-result-message">The original rubbish has been recovered.</p>
+          <div class="river-result-stats"><span>Restored<strong id="river-result-percent">100%</strong></span><span>Pieces<strong id="river-result-pieces">10</strong></span><span>Rows<strong id="river-result-rows">4</strong></span><span>Coins<strong id="river-result-coins">+100</strong></span></div>
+          <div class="river-result-actions"><button id="river-replay" type="button">Replay</button><button id="river-next" type="button">Next level</button><button id="river-return" type="button">Return to Willowmere</button></div>
+        </section>
+      </section>
       <section id="cafe-hud" class="cafe-hud hidden" aria-labelledby="cafe-hud-title">
         <header class="cafe-hud-header">
           <div><p>MILESTONE 14 · CAFÉ VERTICAL SLICE</p><h2 id="cafe-hud-title">☕ Corner Café</h2><small id="cafe-progress-summary">0 cleared · 0 stars · 0 served</small></div>

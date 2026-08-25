@@ -102,7 +102,7 @@ export class CafeScene extends Phaser.Scene {
   setSceneInterface() {
     document.body.dataset.gameScene = this.scene.key;
     const badge = document.querySelector(".milestone-badge");
-    if (badge) badge.textContent = "CORNER CAFÉ · MILESTONE 14";
+    if (badge) badge.textContent = "CORNER CAFÉ · MILESTONE 15";
     const status = document.querySelector("#location-status"); if (status) status.textContent = "Inside Corner Café";
     const hint = document.querySelector("#control-hint"); if (hint) hint.textContent = "Choose a prep tray · Follow highlighted steps · Escape exits safely";
     const landscapeMessage = document.querySelector("#landscape-required-message");
