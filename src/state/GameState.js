@@ -11,6 +11,12 @@ import {
 import { createFreshCleanupState, normalizeCleanupState, validateCleanupState } from "./cleanupState.js";
 import { createFreshWorldState, normalizeWorldState, validateWorldState } from "./worldState.js";
 import { createFreshNpcState, normalizeNpcState, validateNpcState } from "./npcState.js";
+import {
+  createFreshCustomResidentState,
+  normalizeCustomResidentState,
+  projectLegacyCustomResident,
+  validateCustomResidentState,
+} from "./customResidentState.js";
 
 const DIRECTIONS = new Set(["up", "down", "left", "right"]);
 
@@ -58,6 +64,7 @@ export function createFreshGameState({ now = Date.now() } = {}) {
     economy: createFreshEconomyState({ now }),
     inventory: createFreshInventoryState(),
     npcs: createFreshNpcState(),
+    customResident: createFreshCustomResidentState(),
     legacySnapshot: null,
   };
 }
@@ -83,6 +90,7 @@ export function createGameStateFromLegacy(legacy, report, { now = Date.now() } =
     ...(legacy.economy?.inventory || {}),
     equipped: legacy.economy?.equipped,
   });
+  state.customResident = projectLegacyCustomResident(legacy);
   state.legacySnapshot = structuredClone(legacy);
   return state;
 }
@@ -113,6 +121,10 @@ export function upgradeGameState(value, { now = Date.now() } = {}) {
     state.npcs = normalizeNpcState(state.npcs);
     state.schemaVersion = 5;
   }
+  if (state.schemaVersion === 5) {
+    state.customResident = normalizeCustomResidentState(state.customResident);
+    state.schemaVersion = 6;
+  }
   return state;
 }
 
@@ -136,6 +148,7 @@ export function validateGameState(value) {
   errors.push(...validateEconomyState(value.economy).errors);
   errors.push(...validateInventoryState(value.inventory).errors);
   errors.push(...validateNpcState(value.npcs).errors);
+  errors.push(...validateCustomResidentState(value.customResident).errors);
   if (value.source?.kind === "legacy-import") {
     if (!Number.isInteger(value.source.legacyVersion)) errors.push("Imported legacy version is missing.");
     if (typeof value.source.legacySourceKey !== "string") errors.push("Imported legacy source key is missing.");

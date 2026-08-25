@@ -20,6 +20,10 @@ import { FRESH_MARKET } from "../data/shops.js";
 import { InteractionSystem } from "../systems/InteractionSystem.js";
 import { MovementController } from "../systems/MovementController.js";
 import { NpcCharacter } from "../entities/NpcCharacter.js";
+import {
+  PERSONAL_HOME_RENDER_HOUSE_ID,
+  PERSONAL_HOME_OPTIONS,
+} from "../data/customResident.js";
 
 const PLAYER_RADIUS = 17;
 const WALK_SPEED = 270;
@@ -52,6 +56,10 @@ export class TownScene extends Phaser.Scene {
     this.entryData = data;
     this.buildingCollisions = [];
     this.transitioning = false;
+    this.personalHomeGraphics = null;
+    this.personalHomeLabel = null;
+    this.personalHomeCollisionAdded = false;
+    this.personalHomeSignature = null;
   }
 
   create() {
@@ -60,6 +68,8 @@ export class TownScene extends Phaser.Scene {
     this.cleanupService = this.registry.get("cleanupService");
     this.worldSimulation = this.registry.get("worldSimulation");
     this.npcTownLife = this.registry.get("npcTownLife");
+    this.customResident = this.registry.get("customResident");
+    this.customResidentController = this.registry.get("customResidentController");
     this.worldSimulation?.setPaused("activity", false);
     const savedState = this.gameState?.getSnapshot();
     this.cameras.main.setBounds(0, 0, WORLD.width, WORLD.height);
@@ -87,8 +97,11 @@ export class TownScene extends Phaser.Scene {
     for (const resident of this.npcTownLife?.getResidents?.() || []) {
       this.npcCharacters.set(resident.id, new NpcCharacter(this, resident));
     }
+    this.customResidentCharacter = null;
+    this.refreshCustomResident();
+    this.unsubscribeCustomResident = this.customResident?.subscribe?.(() => this.refreshCustomResident());
     this.movement = new MovementController(this, {
-      onTouchStep: (dx, dy) => this.movePlayer(dx, dy, 38),
+      onTouchStep: (dx, dy) => this.moveActiveCharacter(dx, dy, 38),
     });
     const interactables = [
         {
@@ -253,20 +266,55 @@ export class TownScene extends Phaser.Scene {
   }
 
   drawHouse(house) {
+    const personalHome = house.id === PERSONAL_HOME_RENDER_HOUSE_ID ? this.customResident?.getSnapshot?.().home : null;
+    if (personalHome) {
+      this.personalHomeGraphics?.destroy();
+      this.personalHomeLabel?.destroy();
+    }
+    const wallColor = personalHome ? PERSONAL_HOME_OPTIONS.wallPalette[personalHome.wallColor] : COLORS.wall;
+    const roofColor = personalHome ? PERSONAL_HOME_OPTIONS.roofPalette[personalHome.roofColor] : house.roof;
     const layer = this.add.graphics().setDepth(60 + house.y / 100);
+    if (personalHome) this.personalHomeGraphics = layer;
     layer.fillStyle(0x5c864e, 0.5);
     layer.fillRoundedRect(house.x - 36, house.y - 38, house.width + 72, house.height + 78, 18);
-    layer.fillStyle(COLORS.wall, 1);
+    layer.fillStyle(wallColor, 1);
     layer.fillRoundedRect(house.x, house.y + 32, house.width, house.height - 32, 10);
-    layer.fillStyle(house.roof, 1);
-    layer.fillTriangle(house.x - 12, house.y + 47, house.x + house.width / 2, house.y - 12, house.x + house.width + 12, house.y + 47);
+    layer.fillStyle(roofColor, 1);
+    if (personalHome?.roofStyle === "hip") {
+      layer.fillPoints([
+        { x: house.x + house.width * 0.28, y: house.y - 7 },
+        { x: house.x + house.width * 0.72, y: house.y - 7 },
+        { x: house.x + house.width + 12, y: house.y + 47 },
+        { x: house.x - 12, y: house.y + 47 },
+      ], true);
+    } else if (personalHome?.roofStyle === "gambrel") {
+      layer.fillPoints([
+        { x: house.x + house.width * 0.37, y: house.y - 12 },
+        { x: house.x + house.width * 0.63, y: house.y - 12 },
+        { x: house.x + house.width * 0.84, y: house.y + 14 },
+        { x: house.x + house.width + 12, y: house.y + 47 },
+        { x: house.x - 12, y: house.y + 47 },
+        { x: house.x + house.width * 0.16, y: house.y + 14 },
+      ], true);
+    } else {
+      layer.fillTriangle(house.x - 12, house.y + 47, house.x + house.width / 2, house.y - 12, house.x + house.width + 12, house.y + 47);
+    }
     layer.fillRect(house.x + 13, house.y + 38, house.width - 26, 28);
     layer.fillStyle(0x6f4c35, 1);
     layer.fillRect(house.x + house.width / 2 - 16, house.y + house.height - 54, 32, 54);
     layer.fillStyle(0x8ac5d5, 1);
     layer.fillRect(house.x + 28, house.y + 82, 34, 30);
     layer.fillRect(house.x + house.width - 62, house.y + 82, 34, 30);
-    this.buildingCollisions.push({ x: house.x - 8, y: house.y - 15, width: house.width + 16, height: house.height + 18 });
+    if (personalHome && this.customResident?.getSnapshot?.().created) {
+      this.personalHomeLabel = this.add.text(house.x + house.width / 2, house.y - 33, "💚 Meadowlight House", {
+        color: "#294637", fontFamily: "system-ui, sans-serif", fontSize: "11px", fontStyle: "bold",
+        backgroundColor: "rgba(255, 253, 241, 0.94)", padding: { x: 6, y: 3 },
+      }).setOrigin(0.5).setDepth(90 + house.y / 100);
+    }
+    if (!personalHome || !this.personalHomeCollisionAdded) {
+      this.buildingCollisions.push({ x: house.x - 8, y: house.y - 15, width: house.width + 16, height: house.height + 18 });
+      if (personalHome) this.personalHomeCollisionAdded = true;
+    }
   }
 
   drawShop(shop) {
@@ -357,6 +405,80 @@ export class TownScene extends Phaser.Scene {
     }).setOrigin(0.5).setAngle(90).setDepth(40);
   }
 
+  refreshCustomResident() {
+    const state = this.customResident?.getSnapshot?.();
+    const resident = this.customResident?.getResident?.();
+    const homeSignature = state?.home ? `${state.home.wallColor}:${state.home.roofStyle}:${state.home.roofColor}:${state.created}` : null;
+    if (homeSignature && homeSignature !== this.personalHomeSignature) {
+      this.personalHomeSignature = homeSignature;
+      const house = HOUSES.find((entry) => entry.id === PERSONAL_HOME_RENDER_HOUSE_ID);
+      if (house) this.drawHouse(house);
+    }
+    if (!resident) {
+      this.customResidentCharacter?.destroy();
+      this.customResidentCharacter = null;
+      return;
+    }
+    if (!this.customResidentCharacter) this.customResidentCharacter = new NpcCharacter(this, resident);
+    this.customResidentCharacter.applyResident(resident, 0, true);
+  }
+
+  locateCustomResident() {
+    const result = this.customResident?.locate?.();
+    if (!result?.ok) return result || { ok: false, message: "Your resident is not ready." };
+    this.cameras.main.stopFollow();
+    this.cameras.main.pan(result.location.x, result.location.y, 520, "Cubic.easeOut");
+    this.setZoom(Math.max(this.cameras.main.zoom, 0.9));
+    this.locatorBeacon?.destroy();
+    this.locatorBeacon = this.add.circle(result.location.x, result.location.y - 8, 34, 0xffef83, 0.16)
+      .setStrokeStyle(6, 0xfff4a6, 0.95)
+      .setDepth(500);
+    this.tweens.add({ targets: this.locatorBeacon, scale: 1.75, alpha: 0, duration: 1400, ease: "Cubic.easeOut", onComplete: () => this.locatorBeacon?.destroy() });
+    this.time.delayedCall(1450, () => this.cameras.main.startFollow(this.activeCharacter(), true, 0.12, 0.12));
+    const gameElement = document.querySelector("#game");
+    if (gameElement) gameElement.dataset.residentLocated = "true";
+    return { ...result, cameraRecentred: true };
+  }
+
+  startCustomResidentControl() {
+    const result = this.customResident?.beginControl?.({ x: this.player.x, y: this.player.y, facing: this.player.direction });
+    if (!result?.ok) return result || { ok: false, message: "Your resident is not ready." };
+    this.refreshCustomResident();
+    this.player.setMovement(0, 0, false);
+    this.player.setVisible(false);
+    this.shadow.setVisible(false);
+    this.customResidentCharacter?.setVisible(true);
+    this.cameras.main.startFollow(this.customResidentCharacter, true, 0.12, 0.12);
+    document.body.dataset.residentControl = "true";
+    this.updateStatus();
+    return { ...result, directControl: true };
+  }
+
+  endCustomResidentControl() {
+    const result = this.customResident?.endControl?.();
+    if (!result?.returnPlayer) return result || { ok: false, message: "Resident control is not active." };
+    this.player.setPosition(result.returnPlayer.x, result.returnPlayer.y);
+    this.player.direction = result.returnPlayer.facing;
+    this.player.setVisible(true);
+    this.shadow.setVisible(true);
+    this.customResidentCharacter?.setControlMovement(0, 0, false);
+    this.cameras.main.startFollow(this.player, true, 0.12, 0.12);
+    document.body.dataset.residentControl = "false";
+    this.updateStatus();
+    return { ...result, playerRestored: true };
+  }
+
+  activeCharacter() {
+    return this.customResident?.getSnapshot?.().controlling && this.customResidentCharacter
+      ? this.customResidentCharacter
+      : this.player;
+  }
+
+  activePosition() {
+    const actor = this.activeCharacter();
+    return { x: actor.x, y: actor.y };
+  }
+
   bindInterface() {
     this.zoomIn = document.querySelector("#zoom-in");
     this.zoomOut = document.querySelector("#zoom-out");
@@ -371,17 +493,19 @@ export class TownScene extends Phaser.Scene {
 
   unbindInterface() {
     this.movement?.destroy();
+    this.unsubscribeCustomResident?.();
     this.zoomIn?.removeEventListener("click", this.onZoomIn);
     this.zoomOut?.removeEventListener("click", this.onZoomOut);
     this.interactionButton?.removeEventListener("click", this.onInteraction);
     this.renderInteractionPrompt(null);
+    if (this.customResident?.getSnapshot?.().controlling) this.endCustomResidentControl();
   }
 
   setSceneInterface() {
     document.body.dataset.gameScene = this.scene.key;
     const badge = document.querySelector(".milestone-badge");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 8";
+    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 9";
     if (hint) hint.textContent = "Arrow keys or WASD to walk · E or Space to interact · Shift to run";
   }
 
@@ -400,6 +524,7 @@ export class TownScene extends Phaser.Scene {
 
   enterBakery() {
     if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before entering a building." };
     this.transitioning = true;
     this.movement.setEnabled(false);
     this.interactions.setEnabled(false);
@@ -419,12 +544,14 @@ export class TownScene extends Phaser.Scene {
 
   openFreshMarket() {
     if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before shopping." };
     if (!this.shopController) return { ok: false, reason: "The shop interface is not ready." };
     return this.shopController.open(FRESH_MARKET.id);
   }
 
   startWasteCollection() {
     if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before starting a job." };
     if (!this.cleanupService) return { ok: false, reason: "The cleanup system is not ready." };
     const result = this.cleanupService.begin(COMMONS_RUBBISH_JOB.id, {
       returnPosition: { x: this.player.x, y: this.player.y },
@@ -445,7 +572,10 @@ export class TownScene extends Phaser.Scene {
     if (this.transitioning) return;
     this.movement?.setEnabled(!open);
     this.interactions?.setEnabled(!open);
-    if (open) this.player?.setMovement(0, 0, false);
+    if (open) {
+      this.player?.setMovement(0, 0, false);
+      this.customResidentCharacter?.setControlMovement(0, 0, false);
+    }
   }
 
   setZoom(value) {
@@ -459,54 +589,70 @@ export class TownScene extends Phaser.Scene {
     return [...COLLISION_RECTS, ...this.buildingCollisions].some((rect) => containsWithRadius(rect, x, y));
   }
 
-  movePlayer(dx, dy, distance) {
+  moveActiveCharacter(dx, dy, distance) {
     if (!dx && !dy) return false;
-    const startX = this.player.x;
-    const startY = this.player.y;
+    const actor = this.activeCharacter();
+    const startX = actor.x;
+    const startY = actor.y;
     const magnitude = Math.hypot(dx, dy) || 1;
     const stepX = (dx / magnitude) * distance;
     const stepY = (dy / magnitude) * distance;
-    const nextX = this.player.x + stepX;
-    const nextY = this.player.y + stepY;
+    const nextX = actor.x + stepX;
+    const nextY = actor.y + stepY;
 
-    if (!this.isBlocked(nextX, this.player.y)) this.player.x = nextX;
-    if (!this.isBlocked(this.player.x, nextY)) this.player.y = nextY;
-    return Math.hypot(this.player.x - startX, this.player.y - startY) > 0.01;
+    if (!this.isBlocked(nextX, actor.y)) actor.x = nextX;
+    if (!this.isBlocked(actor.x, nextY)) actor.y = nextY;
+    return Math.hypot(actor.x - startX, actor.y - startY) > 0.01;
   }
 
   updateStatus() {
     const status = document.querySelector("#location-status");
     if (!status) return;
+    const position = this.activePosition();
     let label = "Willowmere";
     for (const district of DISTRICTS) {
-      if (containsWithRadius(district, this.player.x, this.player.y, 0)) label = district.title;
+      if (containsWithRadius(district, position.x, position.y, 0)) label = district.title;
     }
-    status.textContent = `${label} · ${Math.round(this.player.x)}, ${Math.round(this.player.y)}`;
+    const prefix = this.customResident?.getSnapshot?.().controlling ? `${this.customResident.getSnapshot().profile.name} · ` : "";
+    status.textContent = `${prefix}${label} · ${Math.round(position.x)}, ${Math.round(position.y)}`;
   }
 
   update(_time, delta) {
     this.worldSimulation?.tick(delta);
     this.npcTownLife?.update(delta, this.gameState?.getSnapshot().world);
     const residents = this.npcTownLife?.getResidents?.() || [];
+    const activePosition = this.activePosition();
     for (const resident of residents) {
-      const nearby = Math.hypot(resident.x - this.player.x, resident.y - this.player.y) <= 92;
+      const nearby = Math.hypot(resident.x - activePosition.x, resident.y - activePosition.y) <= 92;
       this.npcCharacters.get(resident.id)?.applyResident(resident, delta, nearby);
     }
     const { dx, dy, sprinting } = this.movement.getVector();
     const speed = sprinting ? SPRINT_SPEED : WALK_SPEED;
-    const moving = this.movePlayer(dx, dy, speed * Math.min(delta, 50) / 1000);
-    this.player.setMovement(dx, dy, moving);
+    const moving = this.moveActiveCharacter(dx, dy, speed * Math.min(delta, 50) / 1000);
+    const controlling = this.customResident?.getSnapshot?.().controlling;
+    if (controlling) {
+      const facing = Math.abs(dx) > Math.abs(dy) && dx ? (dx < 0 ? "left" : "right") : dy ? (dy < 0 ? "up" : "down") : this.customResident.getSnapshot().location.facing;
+      this.customResidentCharacter?.setControlMovement(dx, dy, moving);
+      this.customResident?.setRuntimePosition?.({ x: this.customResidentCharacter.x, y: this.customResidentCharacter.y, facing });
+      const personal = this.customResident.getResident();
+      if (personal) this.customResidentCharacter?.applyResident(personal, delta, true);
+    } else {
+      this.player.setMovement(dx, dy, moving);
+    }
     this.stateSyncElapsed += delta;
     if (this.stateSyncElapsed >= 250) {
       this.stateSyncElapsed = 0;
-      this.gameState?.updatePlayer({
-        scene: this.scene.key,
-        x: this.player.x,
-        y: this.player.y,
-        facing: this.player.direction,
-      });
+      if (!controlling) {
+        this.gameState?.updatePlayer({
+          scene: this.scene.key,
+          x: this.player.x,
+          y: this.player.y,
+          facing: this.player.direction,
+        });
+      }
     }
-    this.interactions.update(this.player.x, this.player.y);
+    const currentPosition = this.activePosition();
+    this.interactions.update(currentPosition.x, currentPosition.y);
     if (this.movement.consumeInteractPress()) this.interactions.activateCurrent();
 
     this.shadow.setPosition(this.player.x, this.player.y + 20);
@@ -532,6 +678,13 @@ export class TownScene extends Phaser.Scene {
       gameElement.dataset.npcSample = sampleResident
         ? `${sampleResident.id}:${Math.round(sampleResident.x)},${Math.round(sampleResident.y)}:${sampleResident.phase}`
         : "none";
+      const customDiagnostics = this.customResident?.getDiagnostics?.();
+      gameElement.dataset.customResidentCreated = String(Boolean(customDiagnostics?.created));
+      gameElement.dataset.customResidentControl = String(Boolean(customDiagnostics?.controlling));
+      gameElement.dataset.customResidentName = customDiagnostics?.residentName || "none";
+      gameElement.dataset.customResidentHome = customDiagnostics?.homeNodeId || "none";
+      gameElement.dataset.controlledX = Math.round(currentPosition.x);
+      gameElement.dataset.controlledY = Math.round(currentPosition.y);
     }
   }
 
@@ -540,11 +693,12 @@ export class TownScene extends Phaser.Scene {
       scene: this.scene.key,
       world: { ...WORLD },
       player: { x: Math.round(this.player.x), y: Math.round(this.player.y), facing: this.player.direction },
-      camera: { zoom: Number(this.cameras.main.zoom.toFixed(2)), followingPlayer: true },
+      camera: { zoom: Number(this.cameras.main.zoom.toFixed(2)), followingPlayer: !this.customResident?.getSnapshot?.().controlling },
       controls: { keyboard: true, touch: true, wheelZoom: true },
       interaction: this.interactions.getState(),
-      migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job", "world-time-weather-lighting", "basic-npc-town-life"],
+      migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job", "world-time-weather-lighting", "basic-npc-town-life", "custom-resident-profile-home-control"],
       npcTownLife: this.npcTownLife?.getDiagnostics?.(),
+      customResident: this.customResident?.getDiagnostics?.(),
       sharedState: {
         schemaVersion: this.gameState?.getSnapshot().schemaVersion || null,
         source: this.gameState?.getSnapshot().source.kind || null,

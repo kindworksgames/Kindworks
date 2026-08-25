@@ -21,8 +21,9 @@
           <div id="weather-status" class="world-status-pill weather-status" data-weather="clear" aria-label="Clear weather"><span aria-hidden="true">☀️</span> Clear <small>20°C</small></div>
           <button id="coin-status-button" class="economy-hud-button" type="button" aria-label="Open wallet">🪙 100</button>
           <button id="inventory-button" class="economy-hud-button" type="button" aria-label="Open inventory">🎒 2</button>
+          <button id="custom-resident-button" class="economy-hud-button resident-hud-button" type="button" aria-label="Create your personal resident">💚 Create resident</button>
           <button id="save-status-button" class="save-status-button" type="button" data-status="new">Save not started</button>
-          <div class="milestone-badge">PHASER TOWN · MILESTONE 8</div>
+          <div class="milestone-badge">PHASER TOWN · MILESTONE 9</div>
         </div>
       </section>
       <section id="interaction-prompt" class="interaction-prompt hidden" aria-label="Nearby interaction" aria-hidden="true">
@@ -41,6 +42,10 @@
         <button id="zoom-out" type="button" aria-label="Zoom out">−</button>
       </section>
       <p id="control-hint" class="control-hint">Arrow keys or WASD to walk · E or Space to interact · Shift to run</p>
+      <section id="resident-control-banner" class="resident-control-banner hidden" aria-hidden="true" aria-live="polite">
+        <div><strong>💚 Walking as <span id="resident-control-name">your resident</span></strong><small>Explore with the same keyboard or touch controls.</small></div>
+        <button id="resident-control-return" type="button">Return to your character</button>
+      </section>
       <section id="save-panel" class="save-panel hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="save-panel-title" aria-describedby="save-panel-message">
         <div class="save-panel-card">
           <div class="save-panel-icon" aria-hidden="true">🛟</div>
@@ -116,6 +121,76 @@
             </section>
           </div>
           <p class="shop-panel-note">Every purchase uses the shared KindlyCoin transaction and saves immediately. Press Escape to return to town.</p>
+        </div>
+      </section>
+      <section id="custom-resident-panel" class="custom-resident-panel hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="custom-resident-title" aria-describedby="custom-resident-description">
+        <div class="custom-resident-card">
+          <header class="custom-resident-header">
+            <div class="custom-resident-heart" aria-hidden="true">💚</div>
+            <div>
+              <p class="custom-resident-eyebrow">MILESTONE 9 · YOUR PERSONAL RESIDENT</p>
+              <h2 id="custom-resident-title">Create your resident</h2>
+              <p id="custom-resident-description">One custom resident and their Level 1 starter cottage are included free.</p>
+            </div>
+            <button id="custom-resident-close" type="button" aria-label="Close resident creator">✕</button>
+          </header>
+          <div class="custom-resident-layout">
+            <aside class="custom-resident-previews" aria-label="Live resident and home previews">
+              <div id="custom-resident-preview" class="custom-resident-preview" data-hair="0" data-accessory="none" data-build="average" aria-hidden="true">
+                <div class="resident-figure"><span class="resident-hair"></span><span class="resident-head"></span><span class="resident-face">•‿•</span><span class="resident-body"></span><span class="resident-accessory"></span></div>
+              </div>
+              <strong id="custom-resident-preview-name">Your resident</strong>
+              <small id="custom-resident-preview-summary">Choose up to three hobbies</small>
+              <div id="personal-home-preview" class="personal-home-preview" data-roof="gable" aria-hidden="true"><span class="home-roof"></span><span class="home-building"><i></i><b></b><i></i></span></div>
+              <div class="personal-home-label"><strong>🏡 Meadowlight House</strong><small>Level 1 · Small Starter Cottage · South Shore</small></div>
+            </aside>
+            <form id="custom-resident-form" class="custom-resident-form" novalidate>
+              <fieldset>
+                <legend>Who are they?</legend>
+                <label class="resident-field resident-field-wide" for="resident-name">Resident name
+                  <input id="resident-name" name="name" maxlength="18" autocomplete="off" aria-describedby="resident-name-hint resident-name-error" required />
+                  <small id="resident-name-hint">Up to 18 characters. Letters, numbers, spaces, apostrophes or hyphens.</small>
+                  <span id="resident-name-error" class="resident-field-error" role="alert" hidden></span>
+                </label>
+              </fieldset>
+              <fieldset>
+                <legend>How do they look?</legend>
+                <div class="resident-fields-grid">
+                  <label class="resident-field" for="resident-skin">Skin tone<select id="resident-skin" name="skin"><option value="light">Light</option><option value="warm">Warm</option><option value="tan">Tan</option><option value="brown">Brown</option><option value="deep">Deep</option></select></label>
+                  <label class="resident-field" for="resident-hair">Hair style<select id="resident-hair" name="hair"><option value="0">Classic</option><option value="1">Side bun</option><option value="2">Swept</option><option value="3">Curly</option></select></label>
+                  <label class="resident-field" for="resident-hair-colour">Hair colour<select id="resident-hair-colour" name="hairColor"><option value="black">Black</option><option value="dark-brown">Dark brown</option><option value="brown">Brown</option><option value="auburn">Auburn</option><option value="blonde">Blonde</option><option value="grey">Grey</option></select></label>
+                  <label class="resident-field" for="resident-accessory">Accessory<select id="resident-accessory" name="accessory"><option value="none">None</option><option value="glasses">Glasses</option><option value="cap">Cap</option><option value="sunhat">Sun hat</option><option value="satchel">Satchel</option><option value="badge">Helper badge</option></select></label>
+                  <label class="resident-field" for="resident-outfit">Outfit colour<select id="resident-outfit" name="outfit"><option value="0">Kindly red</option><option value="1">Garden green</option><option value="2">Warm amber</option><option value="3">River blue</option><option value="4">Soft plum</option><option value="5">Teal</option></select></label>
+                  <label class="resident-field" for="resident-build">Body build<select id="resident-build" name="bodyBuild"><option value="slim">Slim</option><option value="average">Average</option><option value="broad">Broad</option><option value="stocky">Stocky</option><option value="larger">Larger</option></select></label>
+                </div>
+              </fieldset>
+              <fieldset>
+                <legend>What do they love doing? <small id="resident-hobby-count">0 / 3 selected</small></legend>
+                <div id="resident-hobbies" class="resident-hobbies">
+                  <label><input type="checkbox" name="hobby" value="fishing" /><span>🎣 Fishing</span></label><label><input type="checkbox" name="hobby" value="gardening" /><span>🌱 Gardening</span></label>
+                  <label><input type="checkbox" name="hobby" value="pub" /><span>🍺 Pub regular</span></label><label><input type="checkbox" name="hobby" value="coffee" /><span>☕ Coffee</span></label>
+                  <label><input type="checkbox" name="hobby" value="reading" /><span>📚 Reading</span></label><label><input type="checkbox" name="hobby" value="shopping" /><span>🛍️ Shopping</span></label>
+                  <label><input type="checkbox" name="hobby" value="nature" /><span>🐦 Nature</span></label><label><input type="checkbox" name="hobby" value="walking" /><span>🚶 Walking</span></label>
+                  <label><input type="checkbox" name="hobby" value="bakery" /><span>🥐 Bakery lover</span></label><label><input type="checkbox" name="hobby" value="music" /><span>🐾 Animal lover</span></label>
+                  <label><input type="checkbox" name="hobby" value="helping" /><span>🧹 Community helper</span></label><label><input type="checkbox" name="hobby" value="riverside" /><span>🌊 Riverside walks</span></label>
+                </div>
+              </fieldset>
+              <fieldset>
+                <legend>Starter-home design</legend>
+                <div class="resident-fields-grid">
+                  <label class="resident-field" for="home-wall-colour">Wall colour<select id="home-wall-colour" name="wallColor"><option value="cream">Warm cream</option><option value="sage">Garden sage</option><option value="sky">Soft sky</option><option value="rose">Dusty rose</option><option value="yellow">Sunny yellow</option><option value="lavender">Lavender</option></select></label>
+                  <label class="resident-field" for="home-roof-style">Roof style<select id="home-roof-style" name="roofStyle"><option value="gable">Classic gable</option><option value="hip">Hipped roof</option><option value="gambrel">Cottage gambrel</option></select></label>
+                  <label class="resident-field" for="home-roof-colour">Roof colour<select id="home-roof-colour" name="roofColor"><option value="terracotta">Terracotta</option><option value="slate">Slate grey</option><option value="forest">Forest green</option><option value="navy">Deep navy</option><option value="plum">Soft plum</option><option value="gold">Harvest gold</option></select></label>
+                </div>
+              </fieldset>
+              <p id="custom-resident-status" class="custom-resident-status" data-status="neutral" role="status" aria-live="polite">Every option and the starter cottage are free.</p>
+              <div class="custom-resident-actions">
+                <button id="custom-resident-locate" class="hidden" type="button">📍 Locate in town</button>
+                <button id="custom-resident-control" class="hidden" type="button">🎮 Take a walk</button>
+                <button id="custom-resident-save" class="primary" type="submit">Create resident & home</button>
+              </div>
+            </form>
+          </div>
         </div>
       </section>
       <section id="cleanup-hud" class="cleanup-hud hidden" aria-labelledby="cleanup-hud-title">

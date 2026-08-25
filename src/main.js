@@ -11,15 +11,18 @@ import { ShopService } from "./systems/ShopService.js";
 import { CleanupJobService } from "./systems/CleanupJobService.js";
 import { WorldSimulationService } from "./systems/WorldSimulationService.js";
 import { NpcTownLifeService } from "./systems/NpcTownLifeService.js";
+import { CustomResidentService } from "./systems/CustomResidentService.js";
 import { EconomyHudController } from "./ui/EconomyHudController.js";
 import { SaveStatusController } from "./ui/SaveStatusController.js";
 import { ShopController } from "./ui/ShopController.js";
 import { WorldHudController } from "./ui/WorldHudController.js";
+import { CustomResidentController } from "./ui/CustomResidentController.js";
 
 const stateRuntime = bootstrapState(window.localStorage);
 const worldSimulation = new WorldSimulationService(stateRuntime.gameState, stateRuntime.repository);
 const offlineResolution = worldSimulation.resolveOffline();
 const npcTownLife = new NpcTownLifeService(stateRuntime.gameState, stateRuntime.repository);
+const customResident = new CustomResidentService(stateRuntime.gameState, stateRuntime.repository);
 
 const config = {
   type: Phaser.AUTO,
@@ -41,6 +44,7 @@ game.registry.set("gameState", stateRuntime.gameState);
 game.registry.set("saveRepository", stateRuntime.repository);
 game.registry.set("worldSimulation", worldSimulation);
 game.registry.set("npcTownLife", npcTownLife);
+game.registry.set("customResident", customResident);
 const economy = new EconomyService(stateRuntime.gameState, stateRuntime.repository);
 game.registry.set("economy", economy);
 const cleanupService = new CleanupJobService(stateRuntime.gameState, stateRuntime.repository);
@@ -74,6 +78,24 @@ const shopController = new ShopController(shopService, stateRuntime, {
   },
 });
 game.registry.set("shopController", shopController);
+const activeTownScene = () => game.scene.getScene("TownScene")?.scene?.isActive?.()
+  ? game.scene.getScene("TownScene")
+  : null;
+const customResidentController = new CustomResidentController(customResident, {
+  onModalChange(open) {
+    setModalOpen("custom-resident", open);
+  },
+  onLocate() {
+    return activeTownScene()?.locateCustomResident?.() || { ok: false, message: "Return to town to locate your resident." };
+  },
+  onStartControl() {
+    return activeTownScene()?.startCustomResidentControl?.() || { ok: false, message: "Return to town to walk as your resident." };
+  },
+  onEndControl() {
+    return activeTownScene()?.endCustomResidentControl?.() || { ok: false, message: "The control handoff is not active in town." };
+  },
+});
+game.registry.set("customResidentController", customResidentController);
 
 function handleVisibilityChange() {
   npcTownLife.setPaused("background", document.hidden);
@@ -81,7 +103,10 @@ function handleVisibilityChange() {
   else worldSimulation.resume("background", { resolveOffline: true });
 }
 document.addEventListener("visibilitychange", handleVisibilityChange);
-window.addEventListener("pagehide", () => worldSimulation.persist());
+window.addEventListener("pagehide", () => {
+  customResident.persistLocation();
+  worldSimulation.persist();
+});
 
 window.__KINDWORKS_PHASER__ = {
   game,
@@ -133,5 +158,8 @@ window.__KINDWORKS_PHASER__ = {
   },
   getNpcDiagnostics() {
     return npcTownLife.getDiagnostics();
+  },
+  getCustomResidentDiagnostics() {
+    return customResidentController.getDiagnostics();
   },
 };

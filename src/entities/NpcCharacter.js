@@ -4,15 +4,17 @@ export class NpcCharacter extends Phaser.GameObjects.Container {
   constructor(scene, resident) {
     super(scene, resident.x, resident.y);
     this.residentId = resident.id;
-    this.walkPhase = Number(resident.id.slice(-2)) * 0.73;
+    this.walkPhase = (Number(resident.id.slice(-2)) || 1) * 0.73;
     this.hovered = false;
+    this.controlMoving = false;
 
     this.shadow = scene.add.ellipse(0, 19, 29, 11, 0x1e3829, 0.26);
     this.leftLeg = scene.add.rectangle(-6, 13, 8, 15, resident.palette.pants);
     this.rightLeg = scene.add.rectangle(6, 13, 8, 15, resident.palette.pants);
     this.body = scene.add.rectangle(0, -1, 25, 27, resident.palette.shirt).setStrokeStyle(2, 0x294637, 0.55);
     this.head = scene.add.circle(0, -22, 13, resident.palette.skin).setStrokeStyle(2, 0x294637, 0.55);
-    this.hair = scene.add.arc(0, -26, 13, 180, 360, false, resident.palette.hair);
+    this.hair = scene.add.graphics();
+    this.accessory = scene.add.text(0, -29, "", { fontFamily: "system-ui", fontSize: "14px" }).setOrigin(0.5);
     this.face = scene.add.text(0, -21, "•‿•", { color: "#3d3028", fontFamily: "system-ui", fontSize: "7px", fontStyle: "bold" }).setOrigin(0.5);
     this.label = scene.add.text(0, -49, `${resident.name}\n${resident.role}`, {
       align: "center",
@@ -24,7 +26,7 @@ export class NpcCharacter extends Phaser.GameObjects.Container {
       padding: { x: 6, y: 3 },
     }).setOrigin(0.5, 1).setVisible(false);
 
-    this.add([this.shadow, this.leftLeg, this.rightLeg, this.body, this.head, this.hair, this.face, this.label]);
+    this.add([this.shadow, this.leftLeg, this.rightLeg, this.body, this.head, this.hair, this.face, this.accessory, this.label]);
     this.setSize(42, 66).setInteractive({ useHandCursor: true });
     this.on("pointerover", () => { this.hovered = true; this.label.setVisible(true); });
     this.on("pointerout", () => { this.hovered = false; this.label.setVisible(false); });
@@ -37,7 +39,8 @@ export class NpcCharacter extends Phaser.GameObjects.Container {
     this.setVisible(resident.visible);
     this.setDepth(185 + resident.y / 10);
     this.label.setVisible(resident.visible && (this.hovered || playerNearby));
-    const walking = resident.phase === "commuting";
+    this.drawAppearance(resident);
+    const walking = resident.phase === "commuting" || (resident.phase === "controlled" && this.controlMoving);
     if (walking) this.walkPhase += Math.min(50, Math.max(0, deltaMilliseconds)) * 0.012;
     const step = walking ? Math.sin(this.walkPhase) * 3 : 0;
     this.leftLeg.y = 13 + step;
@@ -45,7 +48,43 @@ export class NpcCharacter extends Phaser.GameObjects.Container {
     this.body.y = walking ? -1 + Math.abs(Math.sin(this.walkPhase)) * -1.4 : -1;
     this.scaleX = resident.facingX < -0.15 ? -1 : 1;
     this.label.scaleX = this.scaleX;
+    this.accessory.scaleX = this.scaleX;
     this.label.setText(`${resident.name}\n${resident.phase === "commuting" ? resident.activity : resident.role}`);
+  }
+
+  drawAppearance(resident) {
+    const bodyScale = Number(resident.bodyScale) || 1;
+    const signature = `${resident.palette.hair}:${resident.hairStyle || 0}:${resident.accessoryStyle || "none"}:${bodyScale}`;
+    if (signature === this.appearanceSignature) return;
+    this.appearanceSignature = signature;
+    this.body.scaleX = bodyScale;
+    this.leftLeg.x = -6 * bodyScale;
+    this.rightLeg.x = 6 * bodyScale;
+    this.hair.clear();
+    this.hair.fillStyle(resident.palette.hair, 1);
+    const style = Number(resident.hairStyle) || 0;
+    if (style === 1) {
+      this.hair.fillEllipse(0, -31, 25, 12);
+      this.hair.fillCircle(-12, -29, 6);
+    } else if (style === 2) {
+      this.hair.fillEllipse(0, -31, 26, 12);
+      this.hair.fillTriangle(-13, -31, 12, -35, 11, -25);
+    } else if (style === 3) {
+      for (const [x, y] of [[-9, -31], [0, -34], [9, -31], [-12, -27], [12, -27]]) this.hair.fillCircle(x, y, 5);
+    } else {
+      this.hair.fillEllipse(0, -31, 26, 12);
+      this.hair.fillRect(-13, -31, 26, 5);
+    }
+    const accessories = { none: "", glasses: "👓", cap: "🧢", sunhat: "👒", satchel: "👜", badge: "💚" };
+    const accessory = resident.accessoryStyle || "none";
+    this.accessory.setText(accessories[accessory] || "");
+    this.accessory.setPosition(accessory === "satchel" ? 13 : accessory === "badge" ? 7 : 0, accessory === "satchel" ? 3 : accessory === "badge" ? -2 : -29);
+    this.accessory.setFontSize(accessory === "glasses" ? 15 : accessory === "badge" ? 8 : 14);
+  }
+
+  setControlMovement(dx, dy, moving) {
+    this.controlMoving = Boolean(moving);
+    if (Math.abs(dx) > Math.abs(dy) && dx) this.scaleX = dx < 0 ? -1 : 1;
   }
 
   destroy(fromScene) {

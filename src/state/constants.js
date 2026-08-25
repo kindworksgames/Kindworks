@@ -1,5 +1,5 @@
-export const GAME_STATE_SCHEMA_VERSION = 5;
-export const SUPPORTED_GAME_STATE_SCHEMA_VERSIONS = Object.freeze([1, 2, 3, 4, 5]);
+export const GAME_STATE_SCHEMA_VERSION = 6;
+export const SUPPORTED_GAME_STATE_SCHEMA_VERSIONS = Object.freeze([1, 2, 3, 4, 5, 6]);
 export const PHASER_SAVE_FORMAT = "kindworks-phaser";
 export const PHASER_SAVE_KEY = "kindworks_phaser_v1";
 export const PHASER_BACKUP_KEY = "kindworks_phaser_v1_backup";
