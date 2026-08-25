@@ -20,7 +20,7 @@ export function createFreshInventoryState() {
     schemaVersion: INVENTORY_SCHEMA_VERSION,
     equipment: { "starter-mower": 1, "starter-vacuum": 1 },
     placeables: {},
-    consumables: {},
+    consumables: { "carrot-seeds": 1 },
     furniture: {},
     equipped: { mower: "starter-mower", vacuum: "starter-vacuum" },
     unresolvedLegacy: [],

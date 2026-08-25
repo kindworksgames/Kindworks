@@ -23,7 +23,7 @@
           <button id="inventory-button" class="economy-hud-button" type="button" aria-label="Open inventory">🎒 2</button>
           <button id="custom-resident-button" class="economy-hud-button resident-hud-button" type="button" aria-label="Create your personal resident">💚 Create resident</button>
           <button id="save-status-button" class="save-status-button" type="button" data-status="new">Save not started</button>
-          <div class="milestone-badge">PHASER TOWN · MILESTONE 9</div>
+          <div class="milestone-badge">PHASER TOWN · MILESTONE 10</div>
         </div>
       </section>
       <section id="interaction-prompt" class="interaction-prompt hidden" aria-label="Nearby interaction" aria-hidden="true">
@@ -191,6 +191,39 @@
               </div>
             </form>
           </div>
+        </div>
+      </section>
+      <section id="farming-panel" class="farming-panel hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="farming-title" aria-describedby="farming-status">
+        <div class="farming-panel-card">
+          <header class="farming-header">
+            <div><p>MILESTONE 10 · FARMING & LAWNS</p><h2 id="farming-title">🌱 Willowmere Growing</h2></div>
+            <span id="farming-balance" class="farming-balance">🪙 100</span>
+            <button id="farming-close" type="button" aria-label="Close farming and lawn care">✕</button>
+          </header>
+          <div class="farming-tabs" role="tablist" aria-label="Growing activities">
+            <button type="button" role="tab" data-farming-tab="allotment" aria-selected="true" class="active">🌱 Allotments</button>
+            <button type="button" role="tab" data-farming-tab="orchard" aria-selected="false">🍎 Orchard</button>
+            <button type="button" role="tab" data-farming-tab="lawns" aria-selected="false">🌾 Lawn Care</button>
+          </div>
+          <div class="farming-content">
+            <section data-farming-pane="allotment" aria-label="Willow Allotments">
+              <div class="farming-intro"><div><h3>Willow Allotments</h3><p>Choose a crop, buy a packet, then plant any unlocked empty bed. Rain helps growth; snow slows it.</p></div><button id="farming-buy-seed" type="button" data-buy-seed="carrot">Buy Carrot Seeds · 🪙 30</button></div>
+              <div id="farming-crop-choices" class="farming-crop-choices" role="group" aria-label="Choose a crop"></div>
+              <div id="farming-beds" class="farming-grid" aria-live="polite"></div>
+            </section>
+            <section data-farming-pane="orchard" aria-label="Community Orchard" hidden>
+              <div class="farming-intro"><div><h3>Community Orchard</h3><p>The starter apple tree holds one ripe apple at a time. After harvest, weather and game time produce the next.</p></div><span id="farming-apple-count" class="farming-stock">0 in inventory</span></div>
+              <article id="farming-orchard-state" class="orchard-state"></article>
+              <button id="farming-harvest-apple" class="farming-primary" type="button">🍎 Harvest one apple</button>
+            </section>
+            <section data-farming-pane="lawns" aria-label="Lawn care jobs" hidden>
+              <div class="farming-intro"><div><h3>Neighbourhood Lawn Care</h3><p>Grass and weeds regrow with elapsed game time and daily weather. A job appears only when a lawn truly needs care.</p></div></div>
+              <div id="farming-lawns" class="lawn-grid" role="group" aria-label="Choose a lawn"></div>
+              <p id="farming-lawn-summary" class="farming-lawn-summary"></p>
+              <button id="farming-complete-lawn" class="farming-primary" type="button">Mow & weed · earn 🪙 100</button>
+            </section>
+          </div>
+          <p id="farming-status" class="farming-status" data-status="neutral" role="status" aria-live="polite">Your farming progress is saved with the rest of Willowmere.</p>
         </div>
       </section>
       <section id="cleanup-hud" class="cleanup-hud hidden" aria-labelledby="cleanup-hud-title">

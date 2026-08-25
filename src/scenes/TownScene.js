@@ -24,6 +24,13 @@ import {
   PERSONAL_HOME_RENDER_HOUSE_ID,
   PERSONAL_HOME_OPTIONS,
 } from "../data/customResident.js";
+import {
+  ALLOTMENT_CONFIG,
+  FARMING_CROPS,
+  LAWN_PLOTS,
+  ORCHARD_CONFIG,
+  lawnNeedsCare,
+} from "../data/farming.js";
 
 const PLAYER_RADIUS = 17;
 const WALK_SPEED = 270;
@@ -70,6 +77,8 @@ export class TownScene extends Phaser.Scene {
     this.npcTownLife = this.registry.get("npcTownLife");
     this.customResident = this.registry.get("customResident");
     this.customResidentController = this.registry.get("customResidentController");
+    this.farming = this.registry.get("farming");
+    this.farmingController = this.registry.get("farmingController");
     this.worldSimulation?.setPaused("activity", false);
     const savedState = this.gameState?.getSnapshot();
     this.cameras.main.setBounds(0, 0, WORLD.width, WORLD.height);
@@ -80,10 +89,16 @@ export class TownScene extends Phaser.Scene {
       : null;
     const qaSpawn = qaTarget === "bakery"
       ? LITTLE_BAKERY.approach
-      : qaTarget === "fresh-market"
+        : qaTarget === "fresh-market"
         ? FRESH_MARKET.approach
-        : qaTarget === "waste"
-          ? COMMONS_RUBBISH_JOB.world.approach
+          : qaTarget === "waste"
+            ? COMMONS_RUBBISH_JOB.world.approach
+            : qaTarget === "farming"
+              ? ALLOTMENT_CONFIG.interaction
+              : qaTarget === "orchard"
+                ? ORCHARD_CONFIG.interaction
+                : qaTarget === "lawn"
+                  ? { x: LAWN_PLOTS[0].x, y: LAWN_PLOTS[0].y + 110 }
           : null;
     const savedTownPosition = savedState?.player?.scene === "TownScene" ? savedState.player : null;
     const spawn = this.entryData.returnPosition
@@ -126,7 +141,38 @@ export class TownScene extends Phaser.Scene {
           detail: "Fresh fish, meat and pond food",
           onActivate: () => this.openFreshMarket(),
         },
+        {
+          id: "willow-allotments",
+          kind: "farming",
+          ...ALLOTMENT_CONFIG.interaction,
+          icon: "🌱",
+          label: "Open Willow Allotments",
+          detail: "Plant, grow and harvest six persistent beds",
+          onActivate: () => this.openFarming("allotment"),
+        },
+        {
+          id: "community-orchard",
+          kind: "farming",
+          ...ORCHARD_CONFIG.interaction,
+          icon: "🍎",
+          label: "Visit Community Orchard",
+          detail: "Harvest one apple at a time",
+          onActivate: () => this.openFarming("orchard"),
+        },
     ];
+    for (const plot of LAWN_PLOTS) {
+      interactables.push({
+        id: plot.id,
+        kind: "lawn-job",
+        x: plot.x,
+        y: plot.y,
+        radius: plot.radius,
+        icon: "🌾",
+        label: `Check ${plot.title}`,
+        detail: "Weather-aware lawn care job",
+        onActivate: () => this.openFarming("lawns", plot.id),
+      });
+    }
     if (this.cleanupService?.isAvailable(COMMONS_RUBBISH_JOB.id)) {
       interactables.push({
         id: COMMONS_RUBBISH_JOB.id,
@@ -145,6 +191,8 @@ export class TownScene extends Phaser.Scene {
       onChange: (interaction) => this.renderInteractionPrompt(interaction),
     });
     this.stateSyncElapsed = 0;
+    this.farmingSyncElapsed = 0;
+    this.unsubscribeFarming = this.farming?.subscribe?.(() => this.drawFarmingAreas());
 
     const preferredZoom = window.matchMedia("(max-width: 720px)").matches ? 0.72 : 0.88;
     this.cameras.main.startFollow(this.player, true, 0.12, 0.12);
@@ -219,6 +267,7 @@ export class TownScene extends Phaser.Scene {
     HOUSES.forEach((house) => this.drawHouse(house));
     SHOPS.forEach((shop) => this.drawShop(shop));
     this.drawLandmarks();
+    this.drawFarmingAreas();
     this.drawCleanupTarget();
     this.drawLabels();
 
@@ -358,6 +407,48 @@ export class TownScene extends Phaser.Scene {
     }
   }
 
+  drawFarmingAreas() {
+    this.farmingVisuals?.destroy();
+    this.farmingLabels?.forEach((label) => label.destroy());
+    this.farmingLabels = [];
+    const state = this.farming?.getSnapshot?.();
+    if (!state) return;
+    const graphics = this.add.graphics().setDepth(116);
+    this.farmingVisuals = graphics;
+
+    state.allotment.beds.forEach((bed, index) => {
+      const x = 1090 + (index % 2) * 260;
+      const y = 2170 + Math.floor(index / 2) * 116;
+      graphics.fillStyle(bed.unlocked ? 0x765638 : 0x77756b, 1);
+      graphics.fillRoundedRect(x, y, 225, 82, 11);
+      graphics.lineStyle(4, bed.status === "ready" ? 0xe7bd4e : 0xd0b37a, 0.9);
+      graphics.strokeRoundedRect(x, y, 225, 82, 11);
+      if (bed.cropId) {
+        const crop = FARMING_CROPS[bed.cropId];
+        const count = bed.status === "ready" ? 6 : 3;
+        for (let plant = 0; plant < count; plant += 1) {
+          this.farmingLabels.push(this.add.text(x + 28 + plant * 32, y + 41 + (plant % 2) * 6, crop.icon, { fontSize: bed.status === "ready" ? "24px" : "18px" }).setOrigin(0.5).setDepth(118));
+        }
+      } else if (!bed.unlocked) {
+        this.farmingLabels.push(this.add.text(x + 112, y + 41, "🔒", { fontSize: "24px" }).setOrigin(0.5).setDepth(118));
+      }
+    });
+
+    const tree = state.orchard.trees[0];
+    this.farmingLabels.push(this.add.text(3070, 230, tree.availableFruit ? "🌳🍎" : "🌳", { fontSize: "58px" }).setOrigin(0.5).setDepth(118));
+    for (const plot of LAWN_PLOTS) {
+      const lawn = state.lawns[plot.id];
+      const tall = lawn.grassHeight / 100;
+      graphics.fillStyle(lawnNeedsCare(lawn) ? 0x5f964d : 0x96cf78, 0.85);
+      graphics.fillRoundedRect(plot.x - 78, plot.y - 38, 156, 76, 16);
+      if (tall > 0.35) {
+        graphics.lineStyle(3, 0x456f3c, 0.9);
+        for (let blade = -62; blade <= 62; blade += 18) graphics.lineBetween(plot.x + blade, plot.y + 24, plot.x + blade + 5, plot.y + 24 - 28 * tall);
+      }
+      if (lawnNeedsCare(lawn)) this.farmingLabels.push(this.add.text(plot.x, plot.y - 58, "🌾 JOB", { color: "#294637", backgroundColor: "rgba(255,249,223,.9)", fontSize: "12px", fontStyle: "bold", padding: { x: 6, y: 3 } }).setOrigin(0.5).setDepth(119));
+    }
+  }
+
   drawCleanupTarget() {
     if (!this.cleanupService?.isAvailable(COMMONS_RUBBISH_JOB.id)) return;
     const { x, y } = COMMONS_RUBBISH_JOB.world;
@@ -494,6 +585,7 @@ export class TownScene extends Phaser.Scene {
   unbindInterface() {
     this.movement?.destroy();
     this.unsubscribeCustomResident?.();
+    this.unsubscribeFarming?.();
     this.zoomIn?.removeEventListener("click", this.onZoomIn);
     this.zoomOut?.removeEventListener("click", this.onZoomOut);
     this.interactionButton?.removeEventListener("click", this.onInteraction);
@@ -505,7 +597,7 @@ export class TownScene extends Phaser.Scene {
     document.body.dataset.gameScene = this.scene.key;
     const badge = document.querySelector(".milestone-badge");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 9";
+    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 10";
     if (hint) hint.textContent = "Arrow keys or WASD to walk · E or Space to interact · Shift to run";
   }
 
@@ -547,6 +639,13 @@ export class TownScene extends Phaser.Scene {
     if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before shopping." };
     if (!this.shopController) return { ok: false, reason: "The shop interface is not ready." };
     return this.shopController.open(FRESH_MARKET.id);
+  }
+
+  openFarming(tab, targetId = null) {
+    if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before starting this activity." };
+    if (!this.farmingController) return { ok: false, reason: "The farming interface is not ready." };
+    return this.farmingController.open(tab, targetId);
   }
 
   startWasteCollection() {
@@ -640,6 +739,11 @@ export class TownScene extends Phaser.Scene {
       this.player.setMovement(dx, dy, moving);
     }
     this.stateSyncElapsed += delta;
+    this.farmingSyncElapsed += delta;
+    if (this.farmingSyncElapsed >= 5000) {
+      this.farmingSyncElapsed = 0;
+      this.farming?.refresh?.({ persist: true });
+    }
     if (this.stateSyncElapsed >= 250) {
       this.stateSyncElapsed = 0;
       if (!controlling) {
@@ -685,6 +789,11 @@ export class TownScene extends Phaser.Scene {
       gameElement.dataset.customResidentHome = customDiagnostics?.homeNodeId || "none";
       gameElement.dataset.controlledX = Math.round(currentPosition.x);
       gameElement.dataset.controlledY = Math.round(currentPosition.y);
+      const farming = this.farming?.getDiagnostics?.();
+      gameElement.dataset.farmingReadyBeds = String(farming?.readyBeds || 0);
+      gameElement.dataset.farmingGrowingBeds = String(farming?.growingBeds || 0);
+      gameElement.dataset.farmingApplesReady = String(farming?.applesReady || 0);
+      gameElement.dataset.farmingLawnJobs = String(farming?.activeLawnJobs || 0);
     }
   }
 
@@ -696,9 +805,10 @@ export class TownScene extends Phaser.Scene {
       camera: { zoom: Number(this.cameras.main.zoom.toFixed(2)), followingPlayer: !this.customResident?.getSnapshot?.().controlling },
       controls: { keyboard: true, touch: true, wheelZoom: true },
       interaction: this.interactions.getState(),
-      migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job", "world-time-weather-lighting", "basic-npc-town-life", "custom-resident-profile-home-control"],
+      migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job", "world-time-weather-lighting", "basic-npc-town-life", "custom-resident-profile-home-control", "weather-aware-farming", "orchard-harvest", "persistent-lawn-jobs"],
       npcTownLife: this.npcTownLife?.getDiagnostics?.(),
       customResident: this.customResident?.getDiagnostics?.(),
+      farming: this.farming?.getDiagnostics?.(),
       sharedState: {
         schemaVersion: this.gameState?.getSnapshot().schemaVersion || null,
         source: this.gameState?.getSnapshot().source.kind || null,

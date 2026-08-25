@@ -17,6 +17,12 @@ import {
   projectLegacyCustomResident,
   validateCustomResidentState,
 } from "./customResidentState.js";
+import {
+  createFreshFarmingState,
+  normalizeFarmingState,
+  projectLegacyFarming,
+  validateFarmingState,
+} from "./farmingState.js";
 
 const DIRECTIONS = new Set(["up", "down", "left", "right"]);
 
@@ -65,6 +71,7 @@ export function createFreshGameState({ now = Date.now() } = {}) {
     inventory: createFreshInventoryState(),
     npcs: createFreshNpcState(),
     customResident: createFreshCustomResidentState(),
+    farming: createFreshFarmingState(createFreshWorldState({ now })),
     legacySnapshot: null,
   };
 }
@@ -91,6 +98,16 @@ export function createGameStateFromLegacy(legacy, report, { now = Date.now() } =
     equipped: legacy.economy?.equipped,
   });
   state.customResident = projectLegacyCustomResident(legacy);
+  state.farming = projectLegacyFarming(legacy, state.world);
+  const legacySeeds = legacy.farmingFoundation?.seedInventory || {};
+  for (const id of ["carrot-seeds", "fresh-greens-seeds", "wild-berry-starters"]) {
+    const quantity = safeInteger(legacySeeds[id], 0, 99);
+    if (quantity) state.inventory.consumables[id] = quantity;
+  }
+  const legacyCarrots = safeInteger(legacy.allotment?.carrots, 0, 99);
+  const legacyApples = safeInteger(legacy.orchard?.apples, 0, 99);
+  if (legacyCarrots) state.inventory.consumables["allotment-carrot"] = legacyCarrots;
+  if (legacyApples) state.inventory.consumables["orchard-apple"] = legacyApples;
   state.legacySnapshot = structuredClone(legacy);
   return state;
 }
@@ -125,6 +142,11 @@ export function upgradeGameState(value, { now = Date.now() } = {}) {
     state.customResident = normalizeCustomResidentState(state.customResident);
     state.schemaVersion = 6;
   }
+  if (state.schemaVersion === 6) {
+    state.farming = normalizeFarmingState(state.farming, state.world);
+    if (!state.inventory?.consumables?.["carrot-seeds"] && !state.farming.allotment.beds.some((bed) => bed.cropId)) state.inventory.consumables["carrot-seeds"] = 1;
+    state.schemaVersion = 7;
+  }
   return state;
 }
 
@@ -149,6 +171,7 @@ export function validateGameState(value) {
   errors.push(...validateInventoryState(value.inventory).errors);
   errors.push(...validateNpcState(value.npcs).errors);
   errors.push(...validateCustomResidentState(value.customResident).errors);
+  errors.push(...validateFarmingState(value.farming, value.world).errors);
   if (value.source?.kind === "legacy-import") {
     if (!Number.isInteger(value.source.legacyVersion)) errors.push("Imported legacy version is missing.");
     if (typeof value.source.legacySourceKey !== "string") errors.push("Imported legacy source key is missing.");

@@ -1,4 +1,9 @@
 const itemRows = [
+  ["carrot-seeds", "Carrot Seeds", "🥕", "consumable", 30, "Farming", { retailer: "town-grocer", inventoryLimit: 99 }],
+  ["fresh-greens-seeds", "Greens Seeds", "🥬", "consumable", 80, "Farming", { retailer: "town-grocer", inventoryLimit: 99 }],
+  ["wild-berry-starters", "Berry Starters", "🫐", "consumable", 120, "Farming", { retailer: "town-grocer", inventoryLimit: 99 }],
+  ["allotment-carrot", "Allotment Carrot", "🥕", "consumable", 0, "Farm Harvests", { farmingOnly: true, inventoryLimit: 99 }],
+  ["orchard-apple", "Orchard Apple", "🍎", "consumable", 0, "Farm Harvests", { farmingOnly: true, inventoryLimit: 99 }],
   ["mixed-seeds", "Mixed Bird Seed", "🌾", "consumable", 60, "Animal Treats", { retailer: "town-grocer" }],
   ["sunflower-seeds", "Sunflower Seeds", "🌻", "consumable", 90, "Animal Treats", { retailer: "town-grocer" }],
   ["fresh-greens", "Fresh Greens", "🥬", "consumable", 70, "Animal Treats", { retailer: "town-grocer" }],
@@ -86,6 +91,7 @@ export const ITEM_IDS = Object.freeze(Object.keys(ITEM_CATALOG));
 export const INVENTORY_BUCKETS = Object.freeze(["equipment", "placeables", "consumables", "furniture"]);
 export const INVENTORY_STACK_LIMIT = 9999;
 export const LEGACY_CATALOGUE_SIZE = 76;
+export const CATALOGUE_SIZE = itemRows.length;
 
 export function inventoryBucketFor(item) {
   if (item?.category === "equipment") return "equipment";
@@ -96,13 +102,13 @@ export function inventoryBucketFor(item) {
 }
 
 export function inventoryLimitFor(item) {
-  return item?.category === "equipment" || item?.unique ? 1 : INVENTORY_STACK_LIMIT;
+  return item?.category === "equipment" || item?.unique ? 1 : item?.inventoryLimit || INVENTORY_STACK_LIMIT;
 }
 
 export function validateItemCatalog(catalog = ITEM_CATALOG) {
   const errors = [];
   const ids = Object.keys(catalog);
-  if (ids.length !== LEGACY_CATALOGUE_SIZE) errors.push(`Expected ${LEGACY_CATALOGUE_SIZE} legacy catalogue entries, found ${ids.length}.`);
+  if (ids.length !== CATALOGUE_SIZE || ids.length < LEGACY_CATALOGUE_SIZE) errors.push(`Expected ${CATALOGUE_SIZE} current catalogue entries, found ${ids.length}.`);
   for (const [key, item] of Object.entries(catalog)) {
     if (item.id !== key) errors.push(`${key} has a mismatched item id.`);
     if (!item.name || !item.icon || !item.shopGroup) errors.push(`${key} is missing display metadata.`);

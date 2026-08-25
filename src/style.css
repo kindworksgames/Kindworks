@@ -2132,3 +2132,103 @@ body[data-game-scene="WasteCollectionScene"] .town-hud {
     margin-bottom: 12px;
   }
 }
+/* Milestone 10 — farming, orchard and lawn care */
+.farming-panel {
+  position: absolute;
+  inset: 0;
+  z-index: 42;
+  display: grid;
+  place-items: center;
+  padding: clamp(12px, 3vw, 34px);
+  background: rgba(20, 39, 29, 0.68);
+  backdrop-filter: blur(7px);
+}
+
+.farming-panel.hidden { display: none; }
+
+.farming-panel-card {
+  width: min(900px, 100%);
+  max-height: min(680px, calc(100vh - 24px));
+  overflow: auto;
+  color: #294637;
+  background: linear-gradient(145deg, #fffdf2, #eff7df);
+  border: 3px solid #315e3f;
+  border-radius: 24px;
+  box-shadow: 0 22px 70px rgba(9, 28, 17, 0.42);
+}
+
+.farming-header, .farming-intro {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  justify-content: space-between;
+}
+
+.farming-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 18px 20px 14px;
+  color: #fffdf2;
+  background: #315e3f;
+}
+
+.farming-header p, .farming-header h2, .farming-intro h3, .farming-intro p { margin: 0; }
+.farming-header p { font-size: 11px; font-weight: 800; letter-spacing: 1.4px; opacity: 0.8; }
+.farming-header h2 { margin-top: 3px; font-size: clamp(21px, 3vw, 29px); }
+.farming-header button { min-width: 42px; min-height: 42px; border: 0; border-radius: 50%; color: #294637; background: #fffdf2; font-weight: 900; }
+.farming-balance, .farming-stock { padding: 8px 12px; border-radius: 999px; background: rgba(255, 255, 255, 0.16); font-weight: 850; white-space: nowrap; }
+.farming-stock { color: #315e3f; background: #dcebc7; }
+
+.farming-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 12px 18px 0; }
+.farming-tabs button { min-height: 44px; border: 2px solid #a9c38e; border-radius: 13px; color: #315e3f; background: #f7faec; font-weight: 800; }
+.farming-tabs button.active { color: #fff; border-color: #315e3f; background: #4f8556; }
+.farming-content { padding: 18px; }
+.farming-intro { align-items: flex-start; margin-bottom: 14px; }
+.farming-intro p { max-width: 620px; margin-top: 4px; color: #58705e; line-height: 1.4; }
+.farming-intro button, .farming-primary { min-height: 44px; padding: 9px 14px; border: 0; border-radius: 12px; color: #fff; background: #4f8556; font-weight: 850; }
+.farming-intro button:disabled, .farming-primary:disabled, .farm-card button:disabled { opacity: 0.46; cursor: not-allowed; }
+
+.farming-crop-choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; margin-bottom: 14px; }
+.farming-crop-choices button, .lawn-card { display: grid; gap: 2px; padding: 11px; text-align: left; color: #294637; border: 2px solid #b7cc9f; border-radius: 14px; background: #f9f8e9; }
+.farming-crop-choices button.selected, .lawn-card.selected { border-color: #4f8556; background: #e2f0cf; box-shadow: inset 0 0 0 1px #4f8556; }
+.farming-crop-choices span { font-size: 24px; }
+.farming-crop-choices small, .lawn-card small, .farm-card small, .orchard-state small { color: #657967; }
+
+.farming-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+.farm-card { display: grid; grid-template-columns: 42px 1fr auto; align-items: center; gap: 10px; min-height: 82px; padding: 10px; border: 2px solid #c3d4ad; border-radius: 14px; background: rgba(255, 255, 255, 0.72); }
+.farm-card.locked { background: #eeeadf; }
+.farm-card.ready { border-color: #d2983f; background: #fff4c9; }
+.farm-card > div { display: grid; gap: 4px; }
+.farm-card progress, .orchard-state progress { width: 100%; height: 8px; accent-color: #4f8556; }
+.farm-icon { font-size: 30px; text-align: center; }
+.farm-card button { min-height: 38px; padding: 6px 10px; border: 0; border-radius: 10px; color: #fff; background: #587d51; font-weight: 800; }
+
+.orchard-state { display: flex; align-items: center; gap: 18px; margin: 22px 0; padding: 20px; border: 2px solid #b8cc9f; border-radius: 18px; background: #edf6d9; }
+.orchard-state > div { flex: 1; display: grid; gap: 7px; }
+.orchard-tree { font-size: clamp(62px, 11vw, 100px); }
+.lawn-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
+.lawn-card span { font-size: 28px; }
+.lawn-card em { margin-top: 5px; color: #8a5c1e; font-size: 12px; font-style: normal; font-weight: 850; }
+.farming-lawn-summary { color: #58705e; font-weight: 700; }
+.farming-primary { width: 100%; }
+.farming-status { margin: 0; padding: 12px 18px 16px; color: #4f6653; border-top: 1px solid #cad8b7; background: rgba(255, 255, 255, 0.5); }
+.farming-status[data-status="success"] { color: #23613a; }
+.farming-status[data-status="error"] { color: #9a3030; }
+
+@media (max-width: 720px) {
+  .farming-panel { padding: 8px; align-items: end; }
+  .farming-panel-card { max-height: 88vh; border-radius: 20px 20px 0 0; }
+  .farming-header { padding: 13px 14px 11px; }
+  .farming-header p { display: none; }
+  .farming-balance { font-size: 13px; }
+  .farming-tabs { padding-inline: 10px; }
+  .farming-tabs button { padding: 4px; font-size: 12px; }
+  .farming-content { padding: 12px; }
+  .farming-intro { display: grid; }
+  .farming-intro button { width: 100%; }
+  .farming-crop-choices, .lawn-grid { grid-template-columns: 1fr; }
+  .farming-crop-choices button, .lawn-card { grid-template-columns: 38px 1fr; align-items: center; }
+  .farming-crop-choices button span, .lawn-card span { grid-row: 1 / span 3; }
+  .farming-grid { grid-template-columns: 1fr; }
+}

@@ -12,17 +12,22 @@ import { CleanupJobService } from "./systems/CleanupJobService.js";
 import { WorldSimulationService } from "./systems/WorldSimulationService.js";
 import { NpcTownLifeService } from "./systems/NpcTownLifeService.js";
 import { CustomResidentService } from "./systems/CustomResidentService.js";
+import { FarmingService } from "./systems/FarmingService.js";
 import { EconomyHudController } from "./ui/EconomyHudController.js";
 import { SaveStatusController } from "./ui/SaveStatusController.js";
 import { ShopController } from "./ui/ShopController.js";
 import { WorldHudController } from "./ui/WorldHudController.js";
 import { CustomResidentController } from "./ui/CustomResidentController.js";
+import { FarmingController } from "./ui/FarmingController.js";
+import { ITEM_IDS } from "./data/items.js";
 
 const stateRuntime = bootstrapState(window.localStorage);
 const worldSimulation = new WorldSimulationService(stateRuntime.gameState, stateRuntime.repository);
 const offlineResolution = worldSimulation.resolveOffline();
 const npcTownLife = new NpcTownLifeService(stateRuntime.gameState, stateRuntime.repository);
 const customResident = new CustomResidentService(stateRuntime.gameState, stateRuntime.repository);
+const farming = new FarmingService(stateRuntime.gameState, stateRuntime.repository);
+farming.refresh({ persist: true });
 
 const config = {
   type: Phaser.AUTO,
@@ -45,6 +50,7 @@ game.registry.set("saveRepository", stateRuntime.repository);
 game.registry.set("worldSimulation", worldSimulation);
 game.registry.set("npcTownLife", npcTownLife);
 game.registry.set("customResident", customResident);
+game.registry.set("farming", farming);
 const economy = new EconomyService(stateRuntime.gameState, stateRuntime.repository);
 game.registry.set("economy", economy);
 const cleanupService = new CleanupJobService(stateRuntime.gameState, stateRuntime.repository);
@@ -78,6 +84,12 @@ const shopController = new ShopController(shopService, stateRuntime, {
   },
 });
 game.registry.set("shopController", shopController);
+const farmingController = new FarmingController(farming, {
+  onModalChange(open) {
+    setModalOpen("farming", open);
+  },
+});
+game.registry.set("farmingController", farmingController);
 const activeTownScene = () => game.scene.getScene("TownScene")?.scene?.isActive?.()
   ? game.scene.getScene("TownScene")
   : null;
@@ -105,6 +117,7 @@ function handleVisibilityChange() {
 document.addEventListener("visibilitychange", handleVisibilityChange);
 window.addEventListener("pagehide", () => {
   customResident.persistLocation();
+  farming.refresh({ persist: true });
   worldSimulation.persist();
 });
 
@@ -139,7 +152,7 @@ window.__KINDWORKS_PHASER__ = {
       ownedTypes: ["equipment", "placeables", "consumables", "furniture"]
         .reduce((count, bucket) => count + Object.keys(state.inventory[bucket]).length, 0),
       unresolvedLegacyItems: state.inventory.unresolvedLegacy.length,
-      catalogueEntries: 76,
+      catalogueEntries: ITEM_IDS.length,
       schemaVersion: state.schemaVersion,
     };
   },
@@ -161,5 +174,8 @@ window.__KINDWORKS_PHASER__ = {
   },
   getCustomResidentDiagnostics() {
     return customResidentController.getDiagnostics();
+  },
+  getFarmingDiagnostics() {
+    return { ...farming.getDiagnostics(), interface: farmingController.getDiagnostics() };
   },
 };
