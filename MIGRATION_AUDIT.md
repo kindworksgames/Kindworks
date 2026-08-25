@@ -54,3 +54,15 @@ writing to any `kindworks_living_town_*` key. A legacy copy is created only
 after explicit confirmation and retains the complete source snapshot for later
 domain-by-domain migration. Economy, inventory, NPCs, animals, shops, farming,
 rewards, and mini-game behavior remain intentionally unmigrated.
+
+Milestone 4 extracts the shared 76-item catalogue, four inventory buckets,
+KindlyCoin wallet, bounded transaction ledger, and rollback-safe persistence.
+Milestone 5 proves the first complete retailer through Fresh Market's exact
+seven-product catalogue and purchase flow.
+
+Milestone 6 proves the first complete cleanup vertical slice. A persistent
+six-piece rubbish cluster in Willow Commons creates a saved job session,
+launches `WasteCollectionScene`, accepts one exact 100% result, awards the
+legacy-compatible 100-coin Level 1 reward, removes only that target, and
+survives reload without duplicate payment. Dynamic litter, repeat cycles, and
+the remaining 749 Waste Collection layouts remain intentionally unmigrated.

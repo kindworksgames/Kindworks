@@ -18,7 +18,7 @@
           <button id="coin-status-button" class="economy-hud-button" type="button" aria-label="Open wallet">🪙 100</button>
           <button id="inventory-button" class="economy-hud-button" type="button" aria-label="Open inventory">🎒 2</button>
           <button id="save-status-button" class="save-status-button" type="button" data-status="new">Save not started</button>
-          <div class="milestone-badge">PHASER TOWN · MILESTONE 5</div>
+          <div class="milestone-badge">PHASER TOWN · MILESTONE 6</div>
         </div>
       </section>
       <section id="interaction-prompt" class="interaction-prompt hidden" aria-label="Nearby interaction" aria-hidden="true">
@@ -112,6 +112,36 @@
             </section>
           </div>
           <p class="shop-panel-note">Every purchase uses the shared KindlyCoin transaction and saves immediately. Press Escape to return to town.</p>
+        </div>
+      </section>
+      <section id="cleanup-hud" class="cleanup-hud hidden" aria-labelledby="cleanup-hud-title">
+        <header class="cleanup-hud-header">
+          <div>
+            <p>MILESTONE 6 · FIRST CLEANUP JOB</p>
+            <h2 id="cleanup-hud-title">🧹 Waste Collection</h2>
+          </div>
+          <button id="cleanup-exit" type="button" aria-label="Exit Waste Collection without changing the town">Exit safely</button>
+        </header>
+        <div class="cleanup-progress-row">
+          <progress id="cleanup-progress" max="6" value="0" aria-label="Waste Collection progress">0 of 6</progress>
+          <strong id="cleanup-progress-text">0 / 6 collected</strong>
+        </div>
+        <div id="cleanup-item-list" class="cleanup-item-list" aria-label="Rubbish pieces"></div>
+        <p id="cleanup-status" class="cleanup-status" role="status" aria-live="polite">Choose a piece of rubbish.</p>
+        <button id="cleanup-finish" class="cleanup-finish" type="button" disabled>Finish cleanup</button>
+      </section>
+      <section id="cleanup-result" class="cleanup-result hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="cleanup-result-title" aria-describedby="cleanup-result-message">
+        <div class="cleanup-result-card">
+          <div class="cleanup-result-icon" aria-hidden="true">✨</div>
+          <p class="cleanup-result-eyebrow">100% RESTORED</p>
+          <h2 id="cleanup-result-title">Area cleaned!</h2>
+          <p id="cleanup-result-message">Every piece has been removed from Willow Commons.</p>
+          <div class="cleanup-result-stats">
+            <span>Rating<strong>★★★</strong></span>
+            <span>Reward<strong>🪙 <span id="cleanup-result-coins">+100</span></strong></span>
+            <span>Balance<strong>🪙 <span id="cleanup-result-balance">200</span></strong></span>
+          </div>
+          <button id="cleanup-result-return" type="button">Return to Willowmere</button>
         </div>
       </section>
     </main>

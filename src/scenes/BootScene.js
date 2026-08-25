@@ -8,6 +8,7 @@ export class BootScene extends Phaser.Scene {
 
   create() {
     createPlayerAssets(this);
-    this.scene.start("TownScene");
+    const activeCleanup = this.registry.get("cleanupService")?.getActiveSession();
+    this.scene.start(activeCleanup ? "WasteCollectionScene" : "TownScene");
   }
 }

@@ -3,10 +3,12 @@ import "./style.css";
 import { BootScene } from "./scenes/BootScene.js";
 import { BakeryScene } from "./scenes/BakeryScene.js";
 import { TownScene } from "./scenes/TownScene.js";
+import { WasteCollectionScene } from "./scenes/WasteCollectionScene.js";
 import { bootstrapState } from "./state/bootstrapState.js";
 import { GAME_STATE_SCHEMA_VERSION } from "./state/constants.js";
 import { EconomyService } from "./systems/EconomyService.js";
 import { ShopService } from "./systems/ShopService.js";
+import { CleanupJobService } from "./systems/CleanupJobService.js";
 import { EconomyHudController } from "./ui/EconomyHudController.js";
 import { SaveStatusController } from "./ui/SaveStatusController.js";
 import { ShopController } from "./ui/ShopController.js";
@@ -25,7 +27,7 @@ const config = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene, TownScene, BakeryScene],
+  scene: [BootScene, TownScene, BakeryScene, WasteCollectionScene],
 };
 
 const game = new Phaser.Game(config);
@@ -33,6 +35,8 @@ game.registry.set("gameState", stateRuntime.gameState);
 game.registry.set("saveRepository", stateRuntime.repository);
 const economy = new EconomyService(stateRuntime.gameState, stateRuntime.repository);
 game.registry.set("economy", economy);
+const cleanupService = new CleanupJobService(stateRuntime.gameState, stateRuntime.repository);
+game.registry.set("cleanupService", cleanupService);
 const shopService = new ShopService(economy);
 const openModals = new Set();
 function setModalOpen(name, open) {
@@ -97,5 +101,8 @@ window.__KINDWORKS_PHASER__ = {
   },
   getShopDiagnostics() {
     return shopController.getDiagnostics();
+  },
+  getCleanupDiagnostics() {
+    return cleanupService.getDiagnostics();
   },
 };

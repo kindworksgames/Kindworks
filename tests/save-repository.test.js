@@ -38,7 +38,7 @@ test("loads and upgrades a valid Milestone 3 schema-1 envelope", () => {
   const loaded = new SaveRepository(storage).load();
   assert.equal(loaded.ok, true);
   assert.equal(loaded.needsMigration, true);
-  assert.equal(loaded.state.schemaVersion, 2);
+  assert.equal(loaded.state.schemaVersion, 3);
   assert.equal(loaded.state.economy.coins, 100);
 });
 

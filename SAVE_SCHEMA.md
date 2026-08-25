@@ -1,6 +1,6 @@
 # Kindworks Phaser save contract
 
-Milestone 3 introduced the protected save foundation alongside the preserved HTML game. Milestone 4 adds the shared item catalogue, inventory, KindlyCoin ledger, and atomic economy transactions. NPC, animal, farming, shop, and mini-game behaviour remain staged for later milestones.
+Milestone 3 introduced the protected save foundation alongside the preserved HTML game. Milestone 4 added the shared item catalogue, inventory, KindlyCoin ledger, and atomic economy transactions. Milestone 6 adds the first persistent cleanup session, exact-target result, and job reward. NPC, animal, farming, dynamic cleanup, and the remaining mini-games stay staged for later milestones.
 
 ## Storage namespaces
 
@@ -17,14 +17,14 @@ The Phaser build owns only:
 - `kindworks_phaser_v1_backup`
 - `kindworks_phaser_v1_recovery`
 
-## Phaser envelope schema 2
+## Phaser envelope schema 3
 
 Every current and backup save is a JSON envelope:
 
 ```json
 {
   "format": "kindworks-phaser",
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "writtenAt": "2026-08-25T00:00:00.000Z",
   "appVersion": "0.1.0",
   "data": {},
@@ -32,13 +32,13 @@ Every current and backup save is a JSON envelope:
 }
 ```
 
-The checksum covers every envelope field except the checksum itself. A save is accepted only when its format, schema, timestamp, checksum, and inner game state all validate. A valid Milestone 3 schema-1 envelope is upgraded to schema 2 and the original verified envelope becomes the Phaser backup before replacement.
+The checksum covers every envelope field except the checksum itself. A save is accepted only when its format, schema, timestamp, checksum, and inner game state all validate. Valid schema-1 and schema-2 envelopes upgrade to schema 3, and the original verified envelope becomes the Phaser backup before replacement.
 
-## Game-state schema 2
+## Game-state schema 3
 
 | Field | Type | Default | Rule |
 | --- | --- | --- | --- |
-| `schemaVersion` | integer | `2` | Schema 1 is upgraded automatically; all new writes use 2. |
+| `schemaVersion` | integer | `3` | Schemas 1 and 2 are upgraded automatically; all new writes use 3. |
 | `createdAt` | ISO timestamp | creation time | Required. |
 | `updatedAt` | ISO timestamp | creation time | Required. |
 | `source.kind` | string | `new` | `new` or `legacy-import`. |
@@ -52,7 +52,8 @@ The checksum covers every envelope field except the checksum itself. A save is a
 | `player.scene` | string | `TownScene` | Current Phaser scene. |
 | `player.x`, `player.y` | finite numbers | authored town spawn | Shared scene position. |
 | `player.facing` | string | `down` | `up`, `down`, `left`, or `right`. |
-| `progress.completedJobCount` | non-negative integer | `0` | Preserved projection only; job behavior is not migrated. |
+| `progress.completedJobCount` | non-negative integer | `0` | Shared count incremented once for each committed cleanup occurrence. |
+| `progress.cleanup` | object | first target available | Active `JobSession`, processed session IDs, bounded history, exact target state, and Waste Collection level progress. |
 | `economy` | object | 100 starter coins | Validated balance, lifetime totals, next transaction ID, and bounded ledger. |
 | `inventory` | object | two starter tools | Four owned-item buckets, equipped tools, and unresolved legacy records. |
 | `legacySnapshot` | object/null | `null` | Complete read-only copy used by later domain migrations. |
@@ -70,6 +71,14 @@ The checksum covers every envelope field except the checksum itself. A save is a
 - A successful mutation validates the complete candidate state and persists it immediately.
 - If validation or persistence fails, the in-memory balance and inventory return to the exact pre-transaction checkpoint.
 - Legacy HTML storage keys remain read-only throughout economy import and Phaser transactions.
+
+## Cleanup transaction contract
+
+- Starting a job saves the exact target/item snapshot, assigned level, and return position before changing scenes.
+- A valid full result marks that exact target complete, advances its progress, awards the shared wallet, and records job/session metadata in one atomic save.
+- Processed session IDs prevent duplicate rewards.
+- Cancelling restores the town position without cleaning the target or changing coins.
+- Any save failure restores the exact pre-transaction in-memory checkpoint.
 
 ## Legacy compatibility map
 

@@ -8,6 +8,7 @@ import {
   validateEconomyState,
   validateInventoryState,
 } from "./economyState.js";
+import { createFreshCleanupState, normalizeCleanupState, validateCleanupState } from "./cleanupState.js";
 
 const DIRECTIONS = new Set(["up", "down", "left", "right"]);
 
@@ -51,7 +52,7 @@ export function createFreshGameState({ now = Date.now() } = {}) {
       y: PLAYER_START.y,
       facing: "down",
     },
-    progress: { completedJobCount: 0 },
+    progress: { completedJobCount: 0, cleanup: createFreshCleanupState() },
     economy: createFreshEconomyState({ now }),
     inventory: createFreshInventoryState(),
     legacySnapshot: null,
@@ -93,6 +94,11 @@ export function upgradeGameState(value, { now = Date.now() } = {}) {
     state.inventory = legacyEconomy
       ? projectLegacyInventory({ ...(legacyEconomy.inventory || {}), equipped: legacyEconomy.equipped })
       : createFreshInventoryState();
+    state.schemaVersion = 2;
+  }
+  if (state.schemaVersion === 2) {
+    if (!state.progress || typeof state.progress !== "object") state.progress = { completedJobCount: 0 };
+    state.progress.cleanup = normalizeCleanupState(state.progress.cleanup);
     state.schemaVersion = GAME_STATE_SCHEMA_VERSION;
   }
   return state;
@@ -115,6 +121,7 @@ export function validateGameState(value) {
   if (!DIRECTIONS.has(value.player?.facing)) errors.push("Player facing direction is invalid.");
   if (typeof value.player?.scene !== "string" || !value.player.scene) errors.push("Player scene is missing.");
   if (!Number.isInteger(value.progress?.completedJobCount) || value.progress.completedJobCount < 0) errors.push("Completed-job count is invalid.");
+  errors.push(...validateCleanupState(value.progress?.cleanup).errors);
   errors.push(...validateEconomyState(value.economy).errors);
   errors.push(...validateInventoryState(value.inventory).errors);
   if (value.source?.kind === "legacy-import") {

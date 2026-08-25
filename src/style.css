@@ -54,7 +54,9 @@ body {
 .control-hint,
 .save-panel,
 .economy-panel,
-.shop-panel {
+.shop-panel,
+.cleanup-hud,
+.cleanup-result {
   position: absolute;
   z-index: 10;
   user-select: none;
@@ -105,6 +107,12 @@ body {
 .economy-hud-button:focus-visible,
 .economy-panel button:focus-visible,
 .shop-panel button:focus-visible {
+  outline: 3px solid #ffe66d;
+  outline-offset: 3px;
+}
+
+.cleanup-hud button:focus-visible,
+.cleanup-result button:focus-visible {
   outline: 3px solid #ffe66d;
   outline-offset: 3px;
 }
@@ -1276,5 +1284,287 @@ body[data-game-scene="BakeryScene"] .zoom-controls {
 @media (min-width: 721px) and (pointer: fine) {
   .touch-controls {
     opacity: 0.56;
+  }
+}
+
+.cleanup-hud {
+  top: max(14px, env(safe-area-inset-top));
+  left: max(14px, env(safe-area-inset-left));
+  z-index: 22;
+  width: min(330px, calc(100vw - 28px));
+  max-height: calc(100dvh - 112px);
+  overflow: auto;
+  padding: 14px;
+  border: 1px solid rgb(255 255 255 / 40%);
+  border-radius: 20px;
+  background: rgb(255 253 241 / 96%);
+  color: #294c38;
+  box-shadow: 0 18px 52px rgb(10 29 20 / 34%);
+  pointer-events: auto;
+  backdrop-filter: blur(10px);
+}
+
+.cleanup-hud.hidden,
+.cleanup-result.hidden {
+  display: none;
+}
+
+.cleanup-hud-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  gap: 10px;
+}
+
+.cleanup-hud-header p,
+.cleanup-result-eyebrow {
+  margin: 0 0 4px;
+  color: #6a806f;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.11em;
+}
+
+.cleanup-hud h2,
+.cleanup-result h2 {
+  margin: 0;
+  color: #294c38;
+  font-size: 20px;
+  line-height: 1.1;
+}
+
+.cleanup-hud-header button {
+  min-height: 38px;
+  padding: 8px 10px;
+  border: 1px solid #c8d7c4;
+  border-radius: 11px;
+  background: #f2f5e9;
+  color: #52675a;
+  font: 800 10px/1 system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.cleanup-progress-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 9px;
+  margin: 13px 0 10px;
+}
+
+.cleanup-progress-row progress {
+  width: 100%;
+  height: 12px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 999px;
+  background: #dce8d7;
+}
+
+.cleanup-progress-row progress::-webkit-progress-bar {
+  border-radius: 999px;
+  background: #dce8d7;
+}
+
+.cleanup-progress-row progress::-webkit-progress-value {
+  border-radius: 999px;
+  background: linear-gradient(90deg, #68a95f, #93c95e);
+}
+
+.cleanup-progress-row strong {
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.cleanup-item-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.cleanup-item-list button {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  align-items: center;
+  gap: 5px;
+  min-height: 46px;
+  padding: 6px 7px;
+  border: 2px solid #d5dfce;
+  border-radius: 12px;
+  background: #f8f5e6;
+  color: #294c38;
+  text-align: left;
+  font: 750 10px/1.15 system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.cleanup-item-list button span:first-child {
+  font-size: 21px;
+}
+
+.cleanup-item-list button.selected {
+  border-color: #4d8758;
+  background: #e3f2dc;
+  box-shadow: 0 0 0 2px rgb(77 135 88 / 16%);
+}
+
+.cleanup-item-list button.collected {
+  border-color: #b9d4b5;
+  background: #eaf5e6;
+  color: #66806c;
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.cleanup-status {
+  min-height: 39px;
+  margin: 10px 0 8px;
+  padding: 8px 9px;
+  border-radius: 10px;
+  background: #edf5e8;
+  color: #4d6655;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.cleanup-finish,
+.cleanup-result-card > button {
+  width: 100%;
+  min-height: 44px;
+  border: 0;
+  border-radius: 12px;
+  background: #397446;
+  color: #fff;
+  box-shadow: 0 5px 0 #285433;
+  font: 900 12px/1 system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.cleanup-finish:disabled {
+  background: #9aab9d;
+  box-shadow: 0 5px 0 #778b7b;
+  cursor: not-allowed;
+}
+
+.cleanup-result {
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(13 31 22 / 72%);
+  pointer-events: auto;
+  backdrop-filter: blur(8px);
+}
+
+.cleanup-result-card {
+  width: min(480px, calc(100vw - 32px));
+  padding: 28px;
+  border: 1px solid rgb(255 255 255 / 42%);
+  border-radius: 24px;
+  background: linear-gradient(155deg, #fffdf3, #e6f4e2);
+  color: #294c38;
+  text-align: center;
+  box-shadow: 0 24px 80px rgb(5 18 11 / 48%);
+}
+
+.cleanup-result-icon {
+  font-size: 48px;
+}
+
+.cleanup-result-card > p:not(.cleanup-result-eyebrow) {
+  margin: 9px 0 18px;
+  color: #62756a;
+  font-size: 13px;
+}
+
+.cleanup-result-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.cleanup-result-stats span {
+  display: grid;
+  gap: 5px;
+  padding: 10px 7px;
+  border: 1px solid #d4e0cf;
+  border-radius: 12px;
+  background: #f5f7eb;
+  color: #728176;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.cleanup-result-stats strong {
+  color: #386847;
+  font-size: 15px;
+}
+
+body[data-game-scene="WasteCollectionScene"] .touch-controls,
+body[data-game-scene="WasteCollectionScene"] .zoom-controls,
+body[data-game-scene="WasteCollectionScene"] .interaction-prompt,
+body[data-game-scene="WasteCollectionScene"] .town-hud {
+  display: none;
+}
+
+@media (max-height: 610px) and (orientation: landscape) {
+  .cleanup-hud {
+    top: max(10px, env(safe-area-inset-top));
+    width: min(300px, calc(100vw - 24px));
+    max-height: calc(100dvh - 62px);
+    padding: 9px;
+    border-radius: 14px;
+  }
+
+  .cleanup-hud-header p {
+    display: none;
+  }
+
+  .cleanup-hud h2 {
+    font-size: 16px;
+  }
+
+  .cleanup-hud-header button {
+    min-height: 32px;
+    padding: 6px 8px;
+  }
+
+  .cleanup-progress-row {
+    margin: 7px 0;
+  }
+
+  .cleanup-item-list {
+    gap: 4px;
+  }
+
+  .cleanup-item-list button {
+    min-height: 37px;
+    padding: 3px 5px;
+  }
+
+  .cleanup-status {
+    min-height: 29px;
+    margin: 6px 0;
+    padding: 5px 7px;
+  }
+
+  .cleanup-finish {
+    min-height: 34px;
+  }
+
+  .cleanup-result-card {
+    padding: 16px;
+  }
+
+  .cleanup-result-icon {
+    font-size: 32px;
+  }
+
+  .cleanup-result-stats {
+    margin-bottom: 12px;
   }
 }

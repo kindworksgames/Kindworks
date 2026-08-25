@@ -15,6 +15,7 @@ import {
   WORLD,
 } from "../data/town.js";
 import { PlayerCharacter } from "../entities/PlayerCharacter.js";
+import { COMMONS_RUBBISH_JOB } from "../data/cleanupJobs.js";
 import { FRESH_MARKET } from "../data/shops.js";
 import { InteractionSystem } from "../systems/InteractionSystem.js";
 import { MovementController } from "../systems/MovementController.js";
@@ -55,6 +56,7 @@ export class TownScene extends Phaser.Scene {
   create() {
     this.gameState = this.registry.get("gameState");
     this.shopController = this.registry.get("shopController");
+    this.cleanupService = this.registry.get("cleanupService");
     const savedState = this.gameState?.getSnapshot();
     this.cameras.main.setBounds(0, 0, WORLD.width, WORLD.height);
     this.drawTown();
@@ -66,7 +68,9 @@ export class TownScene extends Phaser.Scene {
       ? LITTLE_BAKERY.approach
       : qaTarget === "fresh-market"
         ? FRESH_MARKET.approach
-        : null;
+        : qaTarget === "waste"
+          ? COMMONS_RUBBISH_JOB.world.approach
+          : null;
     const savedTownPosition = savedState?.player?.scene === "TownScene" ? savedState.player : null;
     const spawn = this.entryData.returnPosition
       || qaSpawn
@@ -78,8 +82,7 @@ export class TownScene extends Phaser.Scene {
     this.movement = new MovementController(this, {
       onTouchStep: (dx, dy) => this.movePlayer(dx, dy, 38),
     });
-    this.interactions = new InteractionSystem({
-      interactables: [
+    const interactables = [
         {
           id: "little-bakery-door",
           kind: "door",
@@ -102,7 +105,22 @@ export class TownScene extends Phaser.Scene {
           detail: "Fresh fish, meat and pond food",
           onActivate: () => this.openFreshMarket(),
         },
-      ],
+    ];
+    if (this.cleanupService?.isAvailable(COMMONS_RUBBISH_JOB.id)) {
+      interactables.push({
+        id: COMMONS_RUBBISH_JOB.id,
+        kind: "cleanup-job",
+        x: COMMONS_RUBBISH_JOB.world.x,
+        y: COMMONS_RUBBISH_JOB.world.y,
+        radius: COMMONS_RUBBISH_JOB.world.interactionRadius,
+        icon: COMMONS_RUBBISH_JOB.icon,
+        label: "Start Waste Collection",
+        detail: "Clear 6 pieces from Willow Commons",
+        onActivate: () => this.startWasteCollection(),
+      });
+    }
+    this.interactions = new InteractionSystem({
+      interactables,
       onChange: (interaction) => this.renderInteractionPrompt(interaction),
     });
     this.stateSyncElapsed = 0;
@@ -180,6 +198,7 @@ export class TownScene extends Phaser.Scene {
     HOUSES.forEach((house) => this.drawHouse(house));
     SHOPS.forEach((shop) => this.drawShop(shop));
     this.drawLandmarks();
+    this.drawCleanupTarget();
     this.drawLabels();
 
     this.add.rectangle(WORLD.width / 2, WORLD.height / 2, WORLD.width - 24, WORLD.height - 24)
@@ -283,6 +302,32 @@ export class TownScene extends Phaser.Scene {
     }
   }
 
+  drawCleanupTarget() {
+    if (!this.cleanupService?.isAvailable(COMMONS_RUBBISH_JOB.id)) return;
+    const { x, y } = COMMONS_RUBBISH_JOB.world;
+    const layer = this.add.graphics().setDepth(118);
+    const pieces = [
+      [-34, -12, 0x75b8c5], [4, -22, 0xa6acb0], [37, -4, 0xc99167],
+      [-23, 22, 0xd66b70], [14, 19, 0xd6d1bd], [42, 28, 0xe9e4d6],
+    ];
+    for (const [dx, dy, color] of pieces) {
+      layer.fillStyle(0x294637, 0.2);
+      layer.fillEllipse(x + dx, y + dy + 7, 25, 10);
+      layer.fillStyle(color, 1);
+      layer.fillRoundedRect(x + dx - 9, y + dy - 7, 18, 15, 3);
+      layer.lineStyle(2, 0x294637, 0.65);
+      layer.strokeRoundedRect(x + dx - 9, y + dy - 7, 18, 15, 3);
+    }
+    this.add.text(x, y - 57, "🧹 CLEANUP", {
+      color: "#294637",
+      fontFamily: "system-ui, sans-serif",
+      fontSize: "13px",
+      fontStyle: "bold",
+      backgroundColor: "rgba(255, 249, 223, 0.9)",
+      padding: { x: 7, y: 4 },
+    }).setOrigin(0.5).setDepth(119);
+  }
+
   drawLabels() {
     for (const district of DISTRICTS) {
       this.add.text(district.x + 12, district.y + 10, district.title, {
@@ -328,7 +373,7 @@ export class TownScene extends Phaser.Scene {
     document.body.dataset.gameScene = this.scene.key;
     const badge = document.querySelector(".milestone-badge");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 5";
+    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 6";
     if (hint) hint.textContent = "Arrow keys or WASD to walk · E or Space to interact · Shift to run";
   }
 
@@ -368,6 +413,24 @@ export class TownScene extends Phaser.Scene {
     if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
     if (!this.shopController) return { ok: false, reason: "The shop interface is not ready." };
     return this.shopController.open(FRESH_MARKET.id);
+  }
+
+  startWasteCollection() {
+    if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
+    if (!this.cleanupService) return { ok: false, reason: "The cleanup system is not ready." };
+    const result = this.cleanupService.begin(COMMONS_RUBBISH_JOB.id, {
+      returnPosition: { x: this.player.x, y: this.player.y },
+      returnFacing: this.player.direction,
+    });
+    if (!result.ok) return result;
+    this.transitioning = true;
+    this.movement.setEnabled(false);
+    this.interactions.setEnabled(false);
+    this.player.setMovement(0, 0, false);
+    document.querySelector("#game")?.setAttribute("data-transition", "entering-waste-collection");
+    this.cameras.main.fadeOut(220, 23, 43, 31);
+    this.time.delayedCall(240, () => this.scene.start("WasteCollectionScene"));
+    return { ok: true, targetScene: "WasteCollectionScene", session: result.session };
   }
 
   setOverlayOpen(open) {
@@ -456,7 +519,7 @@ export class TownScene extends Phaser.Scene {
       camera: { zoom: Number(this.cameras.main.zoom.toFixed(2)), followingPlayer: true },
       controls: { keyboard: true, touch: true, wheelZoom: true },
       interaction: this.interactions.getState(),
-      migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "shared-game-state", "safe-save-foundation"],
+      migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job"],
       sharedState: {
         schemaVersion: this.gameState?.getSnapshot().schemaVersion || null,
         source: this.gameState?.getSnapshot().source.kind || null,
