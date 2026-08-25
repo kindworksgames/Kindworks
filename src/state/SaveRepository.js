@@ -5,9 +5,12 @@ import {
   PHASER_RECOVERY_KEY,
   PHASER_SAVE_FORMAT,
   PHASER_SAVE_KEY,
+  SUPPORTED_GAME_STATE_SCHEMA_VERSIONS,
 } from "./constants.js";
 import { checksumValue } from "./checksum.js";
-import { validateGameState } from "./GameState.js";
+import { upgradeGameState, validateGameState } from "./GameState.js";
+
+const SUPPORTED_SCHEMAS = new Set(SUPPORTED_GAME_STATE_SCHEMA_VERSIONS);
 
 export function createSaveEnvelope(data, { now = Date.now(), appVersion = APP_VERSION } = {}) {
   const body = {
@@ -24,7 +27,7 @@ export function validateSaveEnvelope(envelope) {
   const errors = [];
   if (!envelope || typeof envelope !== "object" || Array.isArray(envelope)) return { ok: false, errors: ["Save envelope must be an object."] };
   if (envelope.format !== PHASER_SAVE_FORMAT) errors.push("Save format is not Kindworks Phaser.");
-  if (envelope.schemaVersion !== GAME_STATE_SCHEMA_VERSION) errors.push("Save schema version is unsupported.");
+  if (!SUPPORTED_SCHEMAS.has(envelope.schemaVersion)) errors.push("Save schema version is unsupported.");
   if (Number.isNaN(new Date(envelope.writtenAt).getTime())) errors.push("Save timestamp is invalid.");
   const body = {
     format: envelope.format,
@@ -34,9 +37,18 @@ export function validateSaveEnvelope(envelope) {
     data: envelope.data,
   };
   if (envelope.checksum !== checksumValue(body)) errors.push("Save checksum does not match its contents.");
-  const stateValidation = validateGameState(envelope.data);
+  const upgradedData = upgradeGameState(envelope.data, { now: Date.parse(envelope.writtenAt) || Date.now() });
+  const stateValidation = validateGameState(upgradedData);
   errors.push(...stateValidation.errors);
-  return { ok: errors.length === 0, errors };
+  return {
+    ok: errors.length === 0,
+    errors,
+    upgradedData: errors.length === 0 ? upgradedData : null,
+    needsMigration: errors.length === 0 && (
+      envelope.schemaVersion !== GAME_STATE_SCHEMA_VERSION
+      || envelope.data?.schemaVersion !== GAME_STATE_SCHEMA_VERSION
+    ),
+  };
 }
 
 function parseEnvelope(raw) {
@@ -44,7 +56,11 @@ function parseEnvelope(raw) {
   try {
     const envelope = JSON.parse(raw);
     const validation = validateSaveEnvelope(envelope);
-    return { ...validation, envelope: validation.ok ? envelope : null };
+    return {
+      ...validation,
+      envelope: validation.ok ? envelope : null,
+      state: validation.ok ? validation.upgradedData : null,
+    };
   } catch {
     return { ok: false, errors: ["Save contains invalid JSON."], envelope: null };
   }
@@ -98,8 +114,9 @@ export class SaveRepository {
         status: kind === "current" ? "loaded" : "recovered-backup",
         sourceKey: key,
         recovered: kind === "backup",
-        state: structuredClone(parsed.envelope.data),
+        state: structuredClone(parsed.state),
         envelope: parsed.envelope,
+        needsMigration: parsed.needsMigration,
         failures,
       };
       this.lastResult = result;

@@ -8,6 +8,7 @@ import {
 } from "../src/state/constants.js";
 import { createFreshGameState } from "../src/state/GameState.js";
 import { SaveRepository, validateSaveEnvelope } from "../src/state/SaveRepository.js";
+import { checksumValue } from "../src/state/checksum.js";
 import { MemoryStorage } from "./helpers/MemoryStorage.js";
 
 test("writes and reloads a checksummed Phaser envelope", () => {
@@ -19,6 +20,26 @@ test("writes and reloads a checksummed Phaser envelope", () => {
   const envelope = JSON.parse(storage.getItem(PHASER_SAVE_KEY));
   assert.equal(validateSaveEnvelope(envelope).ok, true);
   assert.deepEqual(repository.load().state, state);
+});
+
+test("loads and upgrades a valid Milestone 3 schema-1 envelope", () => {
+  const state = createFreshGameState({ now: 0 });
+  delete state.economy;
+  delete state.inventory;
+  state.schemaVersion = 1;
+  const body = {
+    format: "kindworks-phaser",
+    schemaVersion: 1,
+    writtenAt: new Date(1000).toISOString(),
+    appVersion: "0.1.0",
+    data: state,
+  };
+  const storage = new MemoryStorage({ [PHASER_SAVE_KEY]: JSON.stringify({ ...body, checksum: checksumValue(body) }) });
+  const loaded = new SaveRepository(storage).load();
+  assert.equal(loaded.ok, true);
+  assert.equal(loaded.needsMigration, true);
+  assert.equal(loaded.state.schemaVersion, 2);
+  assert.equal(loaded.state.economy.coins, 100);
 });
 
 test("backs up the last valid save before replacing it", () => {

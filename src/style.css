@@ -52,7 +52,8 @@ body {
 .zoom-controls,
 .interaction-prompt,
 .control-hint,
-.save-panel {
+.save-panel,
+.economy-panel {
   position: absolute;
   z-index: 10;
   user-select: none;
@@ -61,11 +62,14 @@ body {
 .hud-actions {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
   gap: 8px;
   pointer-events: auto;
 }
 
-.save-status-button {
+.save-status-button,
+.economy-hud-button {
   min-height: 36px;
   padding: 8px 12px;
   border: 1px solid rgb(255 255 255 / 30%);
@@ -76,6 +80,13 @@ body {
   font: 800 11px/1 system-ui, sans-serif;
   cursor: pointer;
   backdrop-filter: blur(8px);
+}
+
+.economy-hud-button {
+  min-width: 72px;
+  background: rgb(61 84 50 / 94%);
+  color: #fff6c7;
+  font-size: 13px;
 }
 
 .save-status-button[data-status="healthy"] {
@@ -89,7 +100,9 @@ body {
 }
 
 .save-status-button:focus-visible,
-.save-panel button:focus-visible {
+.save-panel button:focus-visible,
+.economy-hud-button:focus-visible,
+.economy-panel button:focus-visible {
   outline: 3px solid #ffe66d;
   outline-offset: 3px;
 }
@@ -187,6 +200,215 @@ body[data-game-scene="BakeryScene"] .zoom-controls {
 
 .save-panel.hidden {
   display: none;
+}
+
+.economy-panel {
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(13 31 22 / 70%);
+  backdrop-filter: blur(7px);
+}
+
+.economy-panel.hidden,
+.economy-view.hidden {
+  display: none;
+}
+
+.economy-panel-card {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  width: min(680px, calc(100vw - 32px));
+  max-height: min(720px, calc(100dvh - 32px));
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 34%);
+  border-radius: 24px;
+  background: linear-gradient(155deg, #fffdf3, #eaf5e8);
+  color: #294c38;
+  box-shadow: 0 24px 80px rgb(5 18 11 / 46%);
+}
+
+.economy-panel-header {
+  display: grid;
+  grid-template-columns: 54px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 22px 12px;
+}
+
+.economy-panel-icon {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 17px;
+  background: #dcefd9;
+  font-size: 29px;
+}
+
+.economy-panel-eyebrow {
+  margin: 0 0 4px;
+  color: #69816f;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+.economy-panel h2 {
+  margin: 0;
+  color: #214832;
+  font-size: 23px;
+}
+
+.economy-panel-close {
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: 13px;
+  background: #e0ebdd;
+  color: #355943;
+  font-size: 17px;
+  cursor: pointer;
+}
+
+.economy-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin: 0 22px 12px;
+  padding: 5px;
+  border-radius: 15px;
+  background: #dfeade;
+}
+
+.economy-tabs button {
+  min-height: 43px;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  color: #587061;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.economy-tabs button[aria-selected="true"] {
+  background: #fffdf5;
+  color: #28523a;
+  box-shadow: 0 4px 12px rgb(35 72 49 / 13%);
+}
+
+.economy-view {
+  min-height: 0;
+  overflow: auto;
+  padding: 4px 22px 16px;
+  overscroll-behavior: contain;
+}
+
+.wallet-balance-card {
+  display: grid;
+  gap: 4px;
+  padding: 18px;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #356f48, #234e35);
+  color: #f3ffed;
+}
+
+.wallet-balance-card > span {
+  color: #cfe8ca;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.wallet-balance-card strong {
+  font-size: 32px;
+}
+
+.wallet-balance-card small {
+  color: #d8ecd2;
+  font-weight: 700;
+}
+
+.economy-view h3,
+.inventory-group h3 {
+  margin: 16px 0 8px;
+  color: #365b43;
+  font-size: 13px;
+}
+
+.economy-ledger,
+.inventory-group ul {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.economy-ledger li,
+.inventory-group li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 9px 12px;
+  border: 1px solid #d5e3d4;
+  border-radius: 12px;
+  background: rgb(255 255 255 / 58%);
+  font-size: 13px;
+}
+
+.coin-positive { color: #2d7444; }
+.coin-negative { color: #a0563e; }
+
+.catalogue-status,
+.economy-panel-note {
+  margin: 0;
+  color: #59705f;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.catalogue-status {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #e2efe0;
+}
+
+.inventory-groups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 14px;
+}
+
+.inventory-group li {
+  grid-template-columns: 30px 1fr auto;
+}
+
+.inventory-item-icon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: #e4efe1;
+  font-size: 17px;
+}
+
+.inventory-empty {
+  margin: 0;
+  padding: 12px;
+  border: 1px dashed #c5d5c5;
+  border-radius: 12px;
+  color: #7b8b7e;
+  font-size: 12px;
+}
+
+.economy-panel-note {
+  padding: 11px 22px 16px;
+  border-top: 1px solid #d9e5d8;
 }
 
 .save-panel-card {
@@ -385,6 +607,16 @@ body[data-game-scene="BakeryScene"] .zoom-controls {
     white-space: nowrap;
   }
 
+  .hud-actions {
+    max-width: 56vw;
+  }
+
+  .economy-hud-button {
+    min-width: 58px;
+    min-height: 34px;
+    padding: 7px 9px;
+  }
+
   .touch-controls {
     grid-template: repeat(2, 48px) / repeat(3, 48px);
   }
@@ -433,6 +665,59 @@ body[data-game-scene="BakeryScene"] .zoom-controls {
 
   .save-panel h2 {
     font-size: 19px;
+  }
+
+  .economy-panel {
+    padding: 10px;
+  }
+
+  .economy-panel-card {
+    width: calc(100vw - 20px);
+    max-height: calc(100dvh - 20px);
+    border-radius: 19px;
+  }
+
+  .economy-panel-header {
+    grid-template-columns: 44px 1fr auto;
+    gap: 9px;
+    padding: 14px 14px 10px;
+  }
+
+  .economy-panel-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 13px;
+    font-size: 23px;
+  }
+
+  .economy-panel h2 {
+    font-size: 19px;
+  }
+
+  .economy-tabs {
+    margin: 0 14px 10px;
+  }
+
+  .economy-view {
+    padding: 2px 14px 12px;
+  }
+
+  .inventory-groups {
+    grid-template-columns: 1fr;
+  }
+
+  .economy-panel-note {
+    padding: 9px 14px 12px;
+  }
+}
+
+@media (max-width: 520px) {
+  .save-status-button {
+    display: none;
+  }
+
+  .town-title {
+    min-width: 145px;
   }
 }
 

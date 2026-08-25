@@ -52,7 +52,7 @@ export class SaveStatusController {
     const game = document.querySelector("#game");
     if (game) {
       game.dataset.saveStatus = status.hasCurrent ? "healthy" : status.hasRecovery ? "attention" : "not-started";
-      game.dataset.saveSchema = "1";
+      game.dataset.saveSchema = "2";
       game.dataset.legacyDetected = String(status.legacyAvailable);
       game.dataset.legacyUntouched = "true";
     }

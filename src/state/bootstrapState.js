@@ -4,7 +4,11 @@ import { SaveRepository } from "./SaveRepository.js";
 
 export function bootstrapState(storage, options = {}) {
   const repository = new SaveRepository(storage);
-  const loaded = repository.load();
+  let loaded = repository.load();
+  if (loaded.ok && loaded.needsMigration) {
+    const migrationSave = repository.save(loaded.state, options);
+    loaded = { ...loaded, migrated: migrationSave.ok, migrationSave };
+  }
   const legacyImporter = new LegacySaveImporter(storage);
   const legacyInspection = legacyImporter.inspect();
   const initialState = loaded.ok ? loaded.state : createFreshGameState(options);

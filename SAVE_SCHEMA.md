@@ -1,6 +1,6 @@
 # Kindworks Phaser save contract
 
-Milestone 3 introduces a new save foundation alongside the preserved HTML game. It does not migrate economy, inventory, NPC, animal, farming, shop, or mini-game behaviour yet.
+Milestone 3 introduced the protected save foundation alongside the preserved HTML game. Milestone 4 adds the shared item catalogue, inventory, KindlyCoin ledger, and atomic economy transactions. NPC, animal, farming, shop, and mini-game behaviour remain staged for later milestones.
 
 ## Storage namespaces
 
@@ -17,14 +17,14 @@ The Phaser build owns only:
 - `kindworks_phaser_v1_backup`
 - `kindworks_phaser_v1_recovery`
 
-## Phaser envelope schema 1
+## Phaser envelope schema 2
 
 Every current and backup save is a JSON envelope:
 
 ```json
 {
   "format": "kindworks-phaser",
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "writtenAt": "2026-08-25T00:00:00.000Z",
   "appVersion": "0.1.0",
   "data": {},
@@ -32,13 +32,13 @@ Every current and backup save is a JSON envelope:
 }
 ```
 
-The checksum covers every envelope field except the checksum itself. A save is accepted only when its format, schema, timestamp, checksum, and inner game state all validate.
+The checksum covers every envelope field except the checksum itself. A save is accepted only when its format, schema, timestamp, checksum, and inner game state all validate. A valid Milestone 3 schema-1 envelope is upgraded to schema 2 and the original verified envelope becomes the Phaser backup before replacement.
 
-## Game-state schema 1
+## Game-state schema 2
 
 | Field | Type | Default | Rule |
 | --- | --- | --- | --- |
-| `schemaVersion` | integer | `1` | Must equal the supported schema. |
+| `schemaVersion` | integer | `2` | Schema 1 is upgraded automatically; all new writes use 2. |
 | `createdAt` | ISO timestamp | creation time | Required. |
 | `updatedAt` | ISO timestamp | creation time | Required. |
 | `source.kind` | string | `new` | `new` or `legacy-import`. |
@@ -53,7 +53,23 @@ The checksum covers every envelope field except the checksum itself. A save is a
 | `player.x`, `player.y` | finite numbers | authored town spawn | Shared scene position. |
 | `player.facing` | string | `down` | `up`, `down`, `left`, or `right`. |
 | `progress.completedJobCount` | non-negative integer | `0` | Preserved projection only; job behavior is not migrated. |
+| `economy` | object | 100 starter coins | Validated balance, lifetime totals, next transaction ID, and bounded ledger. |
+| `inventory` | object | two starter tools | Four owned-item buckets, equipped tools, and unresolved legacy records. |
 | `legacySnapshot` | object/null | `null` | Complete read-only copy used by later domain migrations. |
+
+## Economy and inventory contract
+
+- The current balance is always `lifetimeCoinsEarned - lifetimeCoinsSpent`.
+- Every credit, debit, and purchase records an ID, signed amount, kind, reason, related item/quantity when present, and timestamp.
+- The ledger retains the latest 500 entries.
+- The extracted catalogue contains all 76 legacy IDs: 12 equipment, 35 placeables, 15 consumables, 10 furniture items, and 4 aquarium collectibles.
+- Inventory uses `equipment`, `placeables`, `consumables`, and `furniture` buckets. Aquarium collectibles remain outside normal inventory, matching the legacy game.
+- Equipment and unique furniture are capped at one. Other inventory stacks are capped at 9,999.
+- `starter-mower` and `starter-vacuum` always remain owned and correctly equipped.
+- Unknown or wrongly bucketed legacy records are retained in `unresolvedLegacy` instead of being silently discarded.
+- A successful mutation validates the complete candidate state and persists it immediately.
+- If validation or persistence fails, the in-memory balance and inventory return to the exact pre-transaction checkpoint.
+- Legacy HTML storage keys remain read-only throughout economy import and Phaser transactions.
 
 ## Legacy compatibility map
 

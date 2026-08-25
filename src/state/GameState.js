@@ -1,5 +1,13 @@
 import { PLAYER_START, WORLD } from "../data/town.js";
 import { GAME_STATE_SCHEMA_VERSION } from "./constants.js";
+import {
+  createFreshEconomyState,
+  createFreshInventoryState,
+  projectLegacyEconomy,
+  projectLegacyInventory,
+  validateEconomyState,
+  validateInventoryState,
+} from "./economyState.js";
 
 const DIRECTIONS = new Set(["up", "down", "left", "right"]);
 
@@ -44,6 +52,8 @@ export function createFreshGameState({ now = Date.now() } = {}) {
       facing: "down",
     },
     progress: { completedJobCount: 0 },
+    economy: createFreshEconomyState({ now }),
+    inventory: createFreshInventoryState(),
     legacySnapshot: null,
   };
 }
@@ -63,7 +73,28 @@ export function createGameStateFromLegacy(legacy, report, { now = Date.now() } =
   state.world.day = safeInteger(legacy.worldDay, 1);
   state.world.clockMinutes = safeInteger(legacy.worldClockMinutes, 0, 1439);
   state.progress.completedJobCount = safeInteger(legacy.completedJobCount, 0);
+  state.economy = projectLegacyEconomy(legacy.economy, { now });
+  state.inventory = projectLegacyInventory({
+    ...(legacy.economy?.inventory || {}),
+    equipped: legacy.economy?.equipped,
+  });
   state.legacySnapshot = structuredClone(legacy);
+  return state;
+}
+
+export function upgradeGameState(value, { now = Date.now() } = {}) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return value;
+  const state = structuredClone(value);
+  if (state.schemaVersion === 1) {
+    const legacyEconomy = state.legacySnapshot?.economy;
+    state.economy = legacyEconomy
+      ? projectLegacyEconomy(legacyEconomy, { now })
+      : createFreshEconomyState({ now });
+    state.inventory = legacyEconomy
+      ? projectLegacyInventory({ ...(legacyEconomy.inventory || {}), equipped: legacyEconomy.equipped })
+      : createFreshInventoryState();
+    state.schemaVersion = GAME_STATE_SCHEMA_VERSION;
+  }
   return state;
 }
 
@@ -84,6 +115,8 @@ export function validateGameState(value) {
   if (!DIRECTIONS.has(value.player?.facing)) errors.push("Player facing direction is invalid.");
   if (typeof value.player?.scene !== "string" || !value.player.scene) errors.push("Player scene is missing.");
   if (!Number.isInteger(value.progress?.completedJobCount) || value.progress.completedJobCount < 0) errors.push("Completed-job count is invalid.");
+  errors.push(...validateEconomyState(value.economy).errors);
+  errors.push(...validateInventoryState(value.inventory).errors);
   if (value.source?.kind === "legacy-import") {
     if (!Number.isInteger(value.source.legacyVersion)) errors.push("Imported legacy version is missing.");
     if (typeof value.source.legacySourceKey !== "string") errors.push("Imported legacy source key is missing.");
@@ -94,9 +127,11 @@ export function validateGameState(value) {
 
 export class GameStateService {
   constructor(initialState = createFreshGameState()) {
-    const validation = validateGameState(initialState);
+    const upgraded = upgradeGameState(initialState);
+    const validation = validateGameState(upgraded);
     if (!validation.ok) throw new TypeError(validation.errors.join(" "));
-    this.state = structuredClone(initialState);
+    this.state = structuredClone(upgraded);
+    this.listeners = new Set();
   }
 
   getSnapshot() {
@@ -107,7 +142,15 @@ export class GameStateService {
     const validation = validateGameState(nextState);
     if (!validation.ok) return validation;
     this.state = structuredClone(nextState);
-    return { ok: true, state: this.getSnapshot() };
+    const snapshot = this.getSnapshot();
+    for (const listener of this.listeners) listener(snapshot);
+    return { ok: true, state: snapshot };
+  }
+
+  subscribe(listener) {
+    if (typeof listener !== "function") throw new TypeError("A state listener must be a function.");
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
   }
 
   updatePlayer({ scene, x, y, facing }, { now = Date.now() } = {}) {

@@ -170,7 +170,7 @@ export class BakeryScene extends Phaser.Scene {
     const badge = document.querySelector(".milestone-badge");
     const status = document.querySelector("#location-status");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = "LITTLE BAKERY · MILESTONE 3";
+    if (badge) badge.textContent = "LITTLE BAKERY · MILESTONE 4";
     if (status) status.textContent = "Inside Little Bakery";
     if (hint) hint.textContent = "Walk with arrows or WASD · E or Space to leave";
   }

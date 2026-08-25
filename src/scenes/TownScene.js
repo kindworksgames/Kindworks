@@ -305,7 +305,7 @@ export class TownScene extends Phaser.Scene {
     document.body.dataset.gameScene = this.scene.key;
     const badge = document.querySelector(".milestone-badge");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 3";
+    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 4";
     if (hint) hint.textContent = "Arrow keys or WASD to walk · E or Space to interact · Shift to run";
   }
 
