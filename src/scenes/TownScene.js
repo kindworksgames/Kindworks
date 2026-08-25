@@ -85,6 +85,7 @@ export class TownScene extends Phaser.Scene {
     this.animals = this.registry.get("animals");
     this.animalFriendsController = this.registry.get("animalFriendsController");
     this.fishing = this.registry.get("fishing");
+    this.bakery = this.registry.get("bakery");
     this.worldSimulation?.setPaused("activity", false);
     const savedState = this.gameState?.getSnapshot();
     this.cameras.main.setBounds(0, 0, WORLD.width, WORLD.height);
@@ -688,7 +689,7 @@ export class TownScene extends Phaser.Scene {
     document.body.dataset.gameScene = this.scene.key;
     const badge = document.querySelector(".milestone-badge");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 12";
+    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 13";
     if (hint) hint.textContent = "Arrow keys or WASD to walk · E or Space to interact · Shift to run";
   }
 
@@ -932,6 +933,10 @@ export class TownScene extends Phaser.Scene {
       gameElement.dataset.magnetCastsLeft = String(fishing?.magnetCastsLeft ?? 5);
       gameElement.dataset.fishCaught = String(fishing?.totalFishCaught || 0);
       gameElement.dataset.magnetPulls = String(fishing?.totalMagnetPulls || 0);
+      const bakery = this.bakery?.getDiagnostics?.();
+      gameElement.dataset.bakeryUnlocked = String(bakery?.unlockedLevel || 1);
+      gameElement.dataset.bakeryCompleted = String(bakery?.completedLevels || 0);
+      gameElement.dataset.bakeryStars = String(bakery?.totalStars || 0);
     }
   }
 
@@ -943,12 +948,13 @@ export class TownScene extends Phaser.Scene {
       camera: { zoom: Number(this.cameras.main.zoom.toFixed(2)), followingPlayer: !this.customResident?.getSnapshot?.().controlling },
       controls: { keyboard: true, touch: true, wheelZoom: true },
       interaction: this.interactions.getState(),
-      migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job", "world-time-weather-lighting", "basic-npc-town-life", "custom-resident-profile-home-control", "weather-aware-farming", "orchard-harvest", "persistent-lawn-jobs", "animal-habitat-routes", "animal-friendship-feeding", "animal-adoption", "active-companion-following", "south-meadow", "three-fishing-spots", "hidden-zone-fishing", "timed-reeling", "magnet-fishing", "fishing-inventory-rewards", "magnet-coin-rewards"],
+      migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job", "world-time-weather-lighting", "basic-npc-town-life", "custom-resident-profile-home-control", "weather-aware-farming", "orchard-harvest", "persistent-lawn-jobs", "animal-habitat-routes", "animal-friendship-feeding", "animal-adoption", "active-companion-following", "south-meadow", "three-fishing-spots", "hidden-zone-fishing", "timed-reeling", "magnet-fishing", "fishing-inventory-rewards", "magnet-coin-rewards", "bakery-recipes", "bakery-customer-service", "bakery-first-clear-rewards", "bakery-level-unlocks"],
       npcTownLife: this.npcTownLife?.getDiagnostics?.(),
       customResident: this.customResident?.getDiagnostics?.(),
       farming: this.farming?.getDiagnostics?.(),
       animals: this.animals?.getDiagnostics?.(),
       fishing: this.fishing?.getDiagnostics?.(),
+      bakery: this.bakery?.getDiagnostics?.(),
       sharedState: {
         schemaVersion: this.gameState?.getSnapshot().schemaVersion || null,
         source: this.gameState?.getSnapshot().source.kind || null,

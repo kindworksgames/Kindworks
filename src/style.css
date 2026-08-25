@@ -1837,6 +1837,143 @@ body[data-resident-control="true"] #control-hint { display: none; }
   }
 }
 
+/* Milestone 13 — Little Bakery vertical slice */
+.landscape-required { display: none; }
+.bakery-hud {
+  position: absolute;
+  z-index: 48;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  flex-direction: column;
+  width: min(560px, 47vw);
+  max-height: calc(100dvh - 24px);
+  overflow: auto;
+  color: #292238;
+  border: 4px solid #292238;
+  border-radius: 15px;
+  background: #fff1c9;
+  box-shadow: 8px 9px 0 rgb(23 25 41 / 48%);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+.bakery-hud.hidden { display: none; }
+.bakery-picker.hidden,
+.bakery-shift.hidden,
+.bakery-result.hidden { display: none; }
+.bakery-hud-header { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 9px; padding: 11px; color: #fff1c9; background: #292238; }
+.bakery-hud-header p, .bakery-hud-header h2, .bakery-hud-header small { display: block; margin: 0; }
+.bakery-hud-header p { color: #f0c55f; font-size: 9px; font-weight: 900; letter-spacing: 1px; }
+.bakery-hud-header h2 { margin: 3px 0; font: 900 20px/1.05 system-ui, sans-serif; }
+.bakery-hud-header small { color: #d8d0bd; font-size: 9px; }
+.bakery-hud-header > span { padding: 7px 9px; border: 2px solid #6c665e; border-radius: 999px; color: #ffe67f; font-weight: 900; white-space: nowrap; }
+.bakery-hud button, .bakery-hud select { min-height: 40px; border: 3px solid #292238; border-radius: 7px; color: #292238; background: #fffaf0; font: 900 11px/1 ui-monospace, monospace; box-shadow: 3px 3px 0 rgb(41 34 56 / 35%); }
+.bakery-hud button:disabled { opacity: .42; box-shadow: none; }
+.bakery-hud-header button { min-height: 36px; padding: 5px 8px; border-color: #ffe2a0; box-shadow: none; }
+.bakery-picker { display: grid; grid-template-columns: 1fr 145px 130px; align-items: end; gap: 10px; padding: 14px; }
+.bakery-picker strong, .bakery-picker small { display: block; }
+.bakery-picker small { margin-top: 5px; color: #746655; font: 700 10px/1.35 system-ui, sans-serif; }
+.bakery-picker label { display: grid; gap: 4px; color: #665947; font-size: 9px; font-weight: 900; }
+.bakery-picker select { width: 100%; padding: 7px; }
+.bakery-picker > button { color: #fff; background: #4e9156; }
+.bakery-shift { display: grid; gap: 9px; width: 100%; min-width: 0; min-height: 0; padding: 10px; border-top: 3px solid #292238; }
+.bakery-shift > * { min-width: 0; }
+.bakery-shift-heading { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 7px; }
+.bakery-shift-heading div { min-width: 0; }
+.bakery-shift-heading small, .bakery-shift-heading strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bakery-shift-heading small { color: #796b5a; font-size: 9px; }
+.bakery-shift-heading div > strong { margin-top: 3px; font-size: 15px; }
+.bakery-shift-heading > span { display: grid; gap: 2px; min-width: 66px; padding: 6px; text-align: center; border: 2px solid #b69f79; border-radius: 7px; background: #fffaf0; color: #766956; font-size: 8px; text-transform: uppercase; }
+.bakery-shift-heading span strong { color: #292238; font-size: 13px; }
+.bakery-customer-progress { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; }
+.bakery-customer-progress progress { width: 100%; height: 11px; accent-color: #66aa55; }
+.bakery-customer-progress strong { font-size: 9px; }
+.bakery-order { padding: 9px; border: 3px solid #292238; border-radius: 8px; background: #fffaf0; }
+.bakery-order > small { color: #9b6349; font-size: 8px; font-weight: 900; letter-spacing: 1px; }
+.bakery-order h3 { margin: 4px 0 8px; font-size: 16px; }
+.bakery-recipe-sequence { display: flex; gap: 5px; overflow-x: auto; padding: 3px 2px 5px; }
+.bakery-recipe-sequence span { flex: 0 0 69px; display: grid; place-items: center; gap: 2px; min-height: 52px; padding: 4px; border: 2px solid #c8b68e; border-radius: 6px; background: #f2e3bd; font-size: 19px; }
+.bakery-recipe-sequence small { overflow: hidden; width: 100%; color: #6f6353; font: 700 7px/1.15 system-ui, sans-serif; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
+.bakery-recipe-sequence span.done { opacity: .5; background: #b9dc93; }
+.bakery-recipe-sequence span.next { border-color: #d66d4d; background: #ffe074; box-shadow: 0 0 0 2px #d66d4d; }
+.bakery-worktop-label { margin: 0 0 5px; color: #655746; font-size: 9px; font-weight: 900; }
+.bakery-step-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; max-height: 155px; overflow: auto; padding: 3px; }
+.bakery-step-list button { display: grid; place-items: center; gap: 2px; min-height: 64px; padding: 4px; text-align: center; box-shadow: 2px 2px 0 rgb(41 34 56 / 30%); }
+.bakery-step-list button > span { font-size: 20px; }
+.bakery-step-list button strong { overflow: hidden; width: 100%; font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+.bakery-step-list button small { color: #786a58; font-size: 7px; }
+.bakery-step-list button.station { background: #b9ced0; }
+.bakery-step-list button.next { border-color: #292238; background: #ffe074; outline: 3px solid #d66d4d; transform: translateY(-1px); }
+.bakery-controls { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.5fr); gap: 7px; }
+.bakery-controls .primary { color: #fff; background: #4e9156; }
+.bakery-controls #bakery-discard { color: #fff; background: #ae594c; }
+.bakery-status { min-height: 38px; margin: 0; padding: 9px 11px; border-top: 2px solid #c8b68e; color: #465447; background: #fff8e7; font: 800 10px/1.35 system-ui, sans-serif; }
+.bakery-status[data-status="success"] { color: #27643a; background: #dff0c5; }
+.bakery-status[data-status="error"] { color: #913d36; background: #f5c0b5; }
+.bakery-status[data-status="working"] { color: #6e4c1e; background: #ffe08b; }
+.bakery-result { padding: 15px; border-top: 3px solid #292238; text-align: center; }
+.bakery-result h3, .bakery-result p { margin: 0; }
+#bakery-result-stars { margin: 7px 0; color: #e3a82c; font-size: 29px; letter-spacing: 3px; text-shadow: 2px 2px #292238; }
+.bakery-result p { color: #6e6252; font: 700 11px/1.4 system-ui, sans-serif; }
+.bakery-result-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 12px 0; }
+.bakery-result-stats span { display: grid; gap: 3px; padding: 7px; border: 2px solid #c8b68e; border-radius: 7px; background: #fffaf0; color: #756956; font-size: 8px; }
+.bakery-result-stats strong { color: #292238; font-size: 14px; }
+.bakery-result-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+.bakery-result-actions #bakery-next { color: #fff; background: #4e9156; }
+body[data-game-scene="BakeryScene"] .touch-controls,
+body[data-game-scene="BakeryScene"] .zoom-controls,
+body[data-game-scene="BakeryScene"] .interaction-prompt,
+body[data-game-scene="BakeryScene"] .town-hud,
+body[data-game-scene="BakeryScene"] .control-hint { display: none; }
+
+@media (max-width: 720px) {
+  .bakery-hud { top: auto; right: 5px; bottom: max(5px, env(safe-area-inset-bottom)); left: 5px; width: auto; max-height: 68dvh; border-width: 3px; border-radius: 12px; box-shadow: 4px 5px 0 rgb(23 25 41 / 42%); }
+  .bakery-hud-header { grid-template-columns: 1fr auto auto; padding: 7px; }
+  .bakery-hud-header p, .bakery-hud-header small { display: none; }
+  .bakery-hud-header h2 { font-size: 16px; }
+  .bakery-hud-header > span { padding: 5px 7px; font-size: 10px; }
+  .bakery-hud-header button { min-height: 32px; font-size: 9px; }
+  .bakery-picker { grid-template-columns: 1fr 115px; padding: 9px; }
+  .bakery-picker > div { grid-column: 1 / -1; }
+  .bakery-picker > button { min-height: 38px; }
+  .bakery-shift { gap: 6px; padding: 7px; }
+  .bakery-order { padding: 6px; }
+  .bakery-order h3 { margin-bottom: 5px; font-size: 14px; }
+  .bakery-recipe-sequence span { flex-basis: 58px; min-height: 44px; }
+  .bakery-step-list { grid-template-columns: repeat(4, minmax(0, 1fr)); max-height: 118px; }
+  .bakery-step-list button { min-height: 53px; }
+  .bakery-status { min-height: 31px; padding: 6px 8px; }
+  .bakery-result { padding: 10px; }
+}
+
+@media (max-width: 720px) and (orientation: portrait) {
+  body[data-game-scene="BakeryScene"] .bakery-hud { visibility: hidden; pointer-events: none; }
+  body[data-game-scene="BakeryScene"] .landscape-required {
+    position: absolute;
+    z-index: 60;
+    inset: 50% 18px auto;
+    display: grid;
+    place-items: center;
+    gap: 10px;
+    padding: 24px 20px;
+    color: #292238;
+    border: 4px solid #292238;
+    border-radius: 18px;
+    background: #fff1c9;
+    box-shadow: 7px 8px 0 rgb(23 25 41 / 48%);
+    text-align: center;
+    transform: translateY(-50%);
+  }
+  body[data-game-scene="BakeryScene"] .landscape-required span { font-size: 42px; }
+  body[data-game-scene="BakeryScene"] .landscape-required h2 { margin: 0; font: 900 24px/1.1 ui-monospace, monospace; }
+  body[data-game-scene="BakeryScene"] .landscape-required p { max-width: 310px; margin: 0; color: #655746; font: 800 12px/1.45 system-ui, sans-serif; }
+}
+
+@media (max-height: 650px) and (orientation: landscape) {
+  .bakery-hud { width: min(560px, calc(100vw - 24px)); max-height: calc(100dvh - 12px); }
+  .bakery-recipe-sequence { display: none; }
+  .bakery-step-list { max-height: 122px; }
+}
+
 /* Milestone 12 — fishing and magnet fishing */
 .fishing-hud {
   position: absolute;

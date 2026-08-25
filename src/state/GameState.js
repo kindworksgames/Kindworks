@@ -35,6 +35,12 @@ import {
   projectLegacyFishing,
   validateFishingState,
 } from "./fishingState.js";
+import {
+  createFreshBakeryState,
+  normalizeBakeryState,
+  projectLegacyBakery,
+  validateBakeryState,
+} from "./bakeryState.js";
 
 const DIRECTIONS = new Set(["up", "down", "left", "right"]);
 
@@ -87,6 +93,7 @@ export function createFreshGameState({ now = Date.now() } = {}) {
     farming: createFreshFarmingState(world),
     animals: createFreshAnimalState(world),
     fishing: createFreshFishingState(world),
+    bakery: createFreshBakeryState(),
     legacySnapshot: null,
   };
 }
@@ -116,6 +123,7 @@ export function createGameStateFromLegacy(legacy, report, { now = Date.now() } =
   state.farming = projectLegacyFarming(legacy, state.world);
   state.animals = projectLegacyAnimals(legacy.animals, state.world);
   state.fishing = projectLegacyFishing(legacy.fishing, legacy.magnetFishing, state.world);
+  state.bakery = projectLegacyBakery(legacy.bakery);
   const legacySeeds = legacy.farmingFoundation?.seedInventory || {};
   for (const id of ["carrot-seeds", "fresh-greens-seeds", "wild-berry-starters"]) {
     const quantity = safeInteger(legacySeeds[id], 0, 99);
@@ -172,6 +180,10 @@ export function upgradeGameState(value, { now = Date.now() } = {}) {
     state.fishing = normalizeFishingState(state.fishing, state.world);
     state.schemaVersion = 9;
   }
+  if (state.schemaVersion === 9) {
+    state.bakery = normalizeBakeryState(state.bakery);
+    state.schemaVersion = 10;
+  }
   return state;
 }
 
@@ -199,6 +211,7 @@ export function validateGameState(value) {
   errors.push(...validateFarmingState(value.farming, value.world).errors);
   errors.push(...validateAnimalState(value.animals, value.world).errors);
   errors.push(...validateFishingState(value.fishing, value.world).errors);
+  errors.push(...validateBakeryState(value.bakery).errors);
   if (value.source?.kind === "legacy-import") {
     if (!Number.isInteger(value.source.legacyVersion)) errors.push("Imported legacy version is missing.");
     if (typeof value.source.legacySourceKey !== "string") errors.push("Imported legacy source key is missing.");

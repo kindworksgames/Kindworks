@@ -16,6 +16,7 @@ import { CustomResidentService } from "./systems/CustomResidentService.js";
 import { FarmingService } from "./systems/FarmingService.js";
 import { AnimalService } from "./systems/AnimalService.js";
 import { FishingService } from "./systems/FishingService.js";
+import { BakeryService } from "./systems/BakeryService.js";
 import { EconomyHudController } from "./ui/EconomyHudController.js";
 import { SaveStatusController } from "./ui/SaveStatusController.js";
 import { ShopController } from "./ui/ShopController.js";
@@ -36,6 +37,7 @@ const animals = new AnimalService(stateRuntime.gameState, stateRuntime.repositor
 animals.refresh({ persist: true, offline: offlineResolution?.advancedGameMinutes > 0 });
 const fishing = new FishingService(stateRuntime.gameState, stateRuntime.repository);
 fishing.refresh({ persist: true });
+const bakery = new BakeryService(stateRuntime.gameState, stateRuntime.repository);
 
 const config = {
   type: Phaser.AUTO,
@@ -61,6 +63,7 @@ game.registry.set("customResident", customResident);
 game.registry.set("farming", farming);
 game.registry.set("animals", animals);
 game.registry.set("fishing", fishing);
+game.registry.set("bakery", bakery);
 const economy = new EconomyService(stateRuntime.gameState, stateRuntime.repository);
 game.registry.set("economy", economy);
 const cleanupService = new CleanupJobService(stateRuntime.gameState, stateRuntime.repository);
@@ -203,5 +206,8 @@ window.__KINDWORKS_PHASER__ = {
   },
   getFishingDiagnostics() {
     return fishing.getDiagnostics();
+  },
+  getBakeryDiagnostics() {
+    return bakery.getDiagnostics();
   },
 };

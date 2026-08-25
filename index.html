@@ -24,7 +24,7 @@
           <button id="custom-resident-button" class="economy-hud-button resident-hud-button" type="button" aria-label="Create your personal resident">💚 Create resident</button>
           <button id="animal-friends-button" class="economy-hud-button animal-hud-button" type="button" aria-label="Open Animal Friends">🐾 Animal Friends</button>
           <button id="save-status-button" class="save-status-button" type="button" data-status="new">Save not started</button>
-          <div class="milestone-badge">PHASER TOWN · MILESTONE 12</div>
+          <div class="milestone-badge">PHASER TOWN · MILESTONE 13</div>
         </div>
       </section>
       <section id="interaction-prompt" class="interaction-prompt hidden" aria-label="Nearby interaction" aria-hidden="true">
@@ -253,6 +253,36 @@
           </div>
           <p id="animal-friends-status" class="animal-friends-status" data-status="neutral" role="status" aria-live="polite">Greeting and suitable treats build trust. Only one companion follows at a time.</p>
         </div>
+      </section>
+      <aside id="landscape-required" class="landscape-required" role="status" aria-live="polite">
+        <span aria-hidden="true">📱 ↻</span>
+        <h2>Rotate your phone</h2>
+        <p>Little Bakery is designed for landscape play. Turn your phone sideways to continue this shift.</p>
+      </aside>
+      <section id="bakery-hud" class="bakery-hud hidden" aria-labelledby="bakery-hud-title">
+        <header class="bakery-hud-header">
+          <div><p>MILESTONE 13 · BAKERY VERTICAL SLICE</p><h2 id="bakery-hud-title">🥖 Little Bakery</h2><small id="bakery-progress-summary">0 cleared · 0 stars · 0 served</small></div>
+          <span id="bakery-balance">🪙 100</span>
+          <button id="bakery-exit" type="button">Exit bakery</button>
+        </header>
+        <section id="bakery-picker" class="bakery-picker" aria-label="Choose a bakery level">
+          <div><strong>150-shift bakery campaign</strong><small>Complete each no-miss shift to unlock the next. First clears award coins once.</small></div>
+          <label for="bakery-level-select">Available shift<select id="bakery-level-select"><option value="1">Level 1</option></select></label>
+          <button id="bakery-start" type="button">Open for Level 1</button>
+        </section>
+        <section id="bakery-shift" class="bakery-shift hidden" aria-label="Active bakery shift">
+          <div class="bakery-shift-heading"><div><small id="bakery-level-name">Level 1 · Opening Shift</small><strong id="bakery-customer-name">Customer</strong></div><span>Served<strong id="bakery-served">0 / 3</strong></span><span>Time<strong id="bakery-timer">2:00</strong></span></div>
+          <div class="bakery-customer-progress"><progress id="bakery-patience" max="100" value="100">100%</progress><strong id="bakery-patience-label">100% patience</strong></div>
+          <div class="bakery-order"><small>CURRENT PRODUCT</small><h3 id="bakery-order-name">🍞 Classic bread loaf</h3><div id="bakery-recipe-sequence" class="bakery-recipe-sequence"></div></div>
+          <div><p class="bakery-worktop-label">Tap the highlighted next ingredient or station</p><div id="bakery-step-list" class="bakery-step-list"></div></div>
+          <div class="bakery-controls"><button id="bakery-undo" type="button" disabled>↶ Undo</button><button id="bakery-discard" type="button" disabled>🗑 Discard</button><button id="bakery-serve" class="primary" type="button" disabled>Serve customer</button></div>
+        </section>
+        <p id="bakery-status" class="bakery-status" data-status="neutral" role="status" aria-live="assertive">Choose an available bakery level to begin.</p>
+        <section id="bakery-result" class="bakery-result hidden" aria-labelledby="bakery-result-title">
+          <h3 id="bakery-result-title">Shift complete!</h3><div id="bakery-result-stars">★★★</div><p id="bakery-result-message">Every customer was served.</p>
+          <div class="bakery-result-stats"><span>Accuracy<strong id="bakery-result-accuracy">100%</strong></span><span>Happiness<strong id="bakery-result-happiness">100%</strong></span><span>Waste<strong id="bakery-result-waste">0</strong></span><span>Coins<strong id="bakery-result-coins">+80</strong></span></div>
+          <div class="bakery-result-actions"><button id="bakery-replay" type="button">Replay</button><button id="bakery-next" type="button">Next level</button><button id="bakery-return" type="button">Return to Willowmere</button></div>
+        </section>
       </section>
       <section id="fishing-hud" class="fishing-hud hidden" aria-labelledby="fishing-title">
         <header class="fishing-hud-header">
