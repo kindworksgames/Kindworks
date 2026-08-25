@@ -81,3 +81,15 @@ completed homes respawn after three to six game days, and the personal home is
 never selected. Active work resumes from the Phaser save, completion is atomic,
 and House Rescue requires landscape orientation on mobile. The protected HTML
 source remains unchanged.
+
+Milestone 17 completes Waste Collection. The exact protected payload now backs
+750 authored compact matching boards, 40 rubbish types, 15 checkpoints, and
+750 verified five-slot solution certificates in Phaser. Only uncovered cards
+can enter the tray, triples clear automatically, five unmatched cards fail the
+attempt, and every card/tray move persists for reload. All levels are
+selectable; first clears award the original percentage-plus-level coins once,
+while replays cannot duplicate rewards and campaign play does not change the
+town. The Milestone 6 six-piece Willow Commons occurrence remains intact and
+becomes the permanent campaign entrance after its first restoration. The new
+schema-14 state upgrades schema 13 safely, and Waste Collection requires
+landscape orientation on mobile. The protected HTML source remains unchanged.

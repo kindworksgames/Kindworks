@@ -1,8 +1,8 @@
 # Kindworks Phaser save contract
 
-> Current migration status: Milestone 16 uses game-state and envelope schema
-> 13. Schemas 1 through 12 upgrade in order, with schema 13 adding the complete
-> persistent House Rescue domain described below. The historical schema-3
+> Current migration status: Milestone 17 uses game-state and envelope schema
+> 14. Schemas 1 through 13 upgrade in order, with schema 14 adding the complete
+> persistent Waste Collection campaign described below. The historical schema-3
 > foundation notes are retained for traceability.
 
 Milestone 3 introduced the protected save foundation alongside the preserved HTML game. Milestone 4 added the shared item catalogue, inventory, KindlyCoin ledger, and atomic economy transactions. Milestone 6 adds the first persistent cleanup session, exact-target result, and job reward. NPC, animal, farming, dynamic cleanup, and the remaining mini-games stay staged for later milestones.
@@ -22,14 +22,14 @@ The Phaser build owns only:
 - `kindworks_phaser_v1_backup`
 - `kindworks_phaser_v1_recovery`
 
-## Current Phaser envelope schema 13
+## Current Phaser envelope schema 14
 
 Every current and backup save is a JSON envelope:
 
 ```json
 {
   "format": "kindworks-phaser",
-  "schemaVersion": 13,
+  "schemaVersion": 14,
   "writtenAt": "2026-08-25T00:00:00.000Z",
   "appVersion": "0.1.0",
   "data": {},
@@ -37,7 +37,7 @@ Every current and backup save is a JSON envelope:
 }
 ```
 
-The checksum covers every envelope field except the checksum itself. A save is accepted only when its format, schema, timestamp, checksum, and inner game state all validate. Valid schemas 1 through 12 upgrade to schema 13, and the original verified envelope becomes the Phaser backup before replacement.
+The checksum covers every envelope field except the checksum itself. A save is accepted only when its format, schema, timestamp, checksum, and inner game state all validate. Valid schemas 1 through 13 upgrade to schema 14, and the original verified envelope becomes the Phaser backup before replacement.
 
 ## Historical game-state schema 3 foundation
 
@@ -101,6 +101,23 @@ The checksum covers every envelope field except the checksum itself. A save is a
   repository. A persistence failure restores the whole pre-action checkpoint.
 - Completion records one `house-rescue-job-reward` ledger entry and increments
   the shared completed-job count in the same atomic save.
+
+## Waste Collection schema-14 contract
+
+- `progress.cleanup.schemaVersion` is 2. Its existing target, bounded history,
+  processed-session set, and Level 1 best result remain compatible with the
+  Milestone 6 state.
+- A campaign `activeSession` records the exact authored level, removed card
+  IDs, sorted tray type IDs, moves, matches, lifecycle, and exact town return
+  position. Structural validation rejects unknown cards, duplicate removals,
+  invalid tray types, over-capacity trays, or inconsistent move totals.
+- Campaign moves, retries, cancellation, completion, best results, next-level
+  selection, first-clear coins, and ledger metadata validate and save through
+  the shared repository. Any failed write restores the full pre-action state.
+- Each successfully cleared level has one best `{ stars, percent }` record.
+  `completed` must equal the number of best results at or above 50 percent.
+- A first clear writes at most one `campaign-first-clear` transaction. Replay
+  clears pay zero and campaign play never increments the town occurrence count.
 
 ## Legacy compatibility map
 

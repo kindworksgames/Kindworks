@@ -395,6 +395,30 @@
         <p id="fishing-catch-list" class="fishing-catch-list">River Minnows · River Trout</p>
         <p id="fishing-last-result" class="fishing-last-result">No catch recorded this session yet.</p>
       </section>
+      <section id="waste-campaign-hud" class="waste-campaign-hud hidden" aria-labelledby="waste-campaign-title">
+        <header class="waste-campaign-header">
+          <div><p>MILESTONE 17 · 750-LEVEL CAMPAIGN</p><h2 id="waste-campaign-title">🧹 Waste Collection</h2><small id="waste-campaign-summary">0 cleared · 0 stars · Level 1 next</small></div>
+          <span id="waste-campaign-balance">🪙 100</span>
+          <button id="waste-campaign-exit" type="button">Exit campaign</button>
+        </header>
+        <section id="waste-campaign-picker" class="waste-campaign-picker" aria-label="Choose a Waste Collection level">
+          <div><strong>Match all the rubbish in triples</strong><small>Every authored level is available. Only uncovered cards can move; do not fill the five-slot collection tray.</small></div>
+          <label for="waste-level-select">Park challenge<select id="waste-level-select"><option value="1">Level 1</option></select></label>
+          <button id="waste-level-start" type="button">Start Level 1</button>
+        </section>
+        <section id="waste-campaign-gameplay" class="waste-campaign-gameplay hidden" aria-label="Active Waste Collection level">
+          <div class="waste-campaign-heading"><div><small id="waste-level-name">Level 1 of 750</small><strong id="waste-level-band">30 cards · 10 types · 2 layers</strong></div><span>Left<strong id="waste-level-remaining">30</strong></span><span>Matches<strong id="waste-level-matches">0</strong></span><span>Tray<strong id="waste-level-tray-count">0 / 5</strong></span></div>
+          <div id="waste-board-viewport" class="waste-board-viewport"><div id="waste-board" class="waste-board" aria-label="Waste Collection matching board"></div></div>
+          <div class="waste-tray-wrap"><small>COLLECTION TRAY · THREE MATCHING CARDS CLEAR AUTOMATICALLY</small><div id="waste-tray" class="waste-tray" aria-label="Five-slot collection tray"></div></div>
+          <div class="waste-campaign-actions"><button id="waste-hint" type="button">💡 Highlight a safe card</button><button id="waste-retry" type="button">↻ Retry level</button><button id="waste-qa-solve" class="hidden" type="button">✓ Certified QA clear</button></div>
+        </section>
+        <p id="waste-campaign-status" class="waste-campaign-status" data-status="neutral" role="status" aria-live="assertive">Choose any of the 750 Waste Collection levels.</p>
+        <section id="waste-campaign-result" class="waste-campaign-result hidden" aria-labelledby="waste-result-title">
+          <h3 id="waste-result-title">Park restored!</h3><div id="waste-result-stars">★★★</div><p id="waste-result-message">Every rubbish card was matched.</p>
+          <div class="waste-result-stats"><span>Cleared<strong id="waste-result-percent">100%</strong></span><span>Moves<strong id="waste-result-moves">30</strong></span><span>Matches<strong id="waste-result-matches">10</strong></span><span>Coins<strong id="waste-result-coins">+100</strong></span></div>
+          <div class="waste-result-actions"><button id="waste-replay" type="button">Replay</button><button id="waste-next" type="button">Next level</button><button id="waste-return" type="button">Return to Willowmere</button></div>
+        </section>
+      </section>
       <section id="cleanup-hud" class="cleanup-hud hidden" aria-labelledby="cleanup-hud-title">
         <header class="cleanup-hud-header">
           <div>

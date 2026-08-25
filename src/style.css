@@ -2622,6 +2622,79 @@ body[data-game-scene="WasteCollectionScene"] .town-hud {
   display: none;
 }
 
+/* Milestone 17: complete authored Waste Collection campaign. */
+.waste-campaign-hud { position: fixed; z-index: 49; top: max(8px, env(safe-area-inset-top)); right: max(8px, env(safe-area-inset-right)); width: min(720px, calc(100vw - 16px)); max-height: calc(100dvh - 16px); overflow: auto; border: 4px solid #283d32; border-radius: 13px; background: #f6f0d7; box-shadow: 8px 9px 0 rgb(16 32 23 / 48%); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.waste-campaign-hud.hidden, .waste-campaign-picker.hidden, .waste-campaign-gameplay.hidden, .waste-campaign-result.hidden, #waste-qa-solve.hidden { display: none; }
+.waste-campaign-header { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 8px; padding: 9px 10px; color: #fff8d6; background: #283d32; }
+.waste-campaign-header p, .waste-campaign-header h2, .waste-campaign-header small { display: block; margin: 0; }
+.waste-campaign-header p { color: #b7e079; font-size: 8px; font-weight: 900; letter-spacing: 1px; }
+.waste-campaign-header h2 { margin: 2px 0; font: 900 20px/1 system-ui, sans-serif; }
+.waste-campaign-header small { overflow: hidden; color: #d7e5c2; font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+.waste-campaign-header > span { padding: 6px 8px; border: 2px solid #d9bd55; border-radius: 5px; color: #283d32; background: #fff0a8; font-size: 10px; font-weight: 900; }
+.waste-campaign-hud button, .waste-campaign-hud select { min-height: 38px; border: 2px solid #283d32; border-radius: 5px; background: #fffaf0; color: #283d32; box-shadow: 2px 2px 0 #283d32; font: 900 10px/1.1 ui-monospace, monospace; cursor: pointer; }
+.waste-campaign-header button { padding: 6px 8px; color: #fff; background: #8a4c3d; }
+.waste-campaign-picker { display: grid; grid-template-columns: minmax(0, 1fr) 170px 125px; align-items: end; gap: 9px; padding: 13px; background: linear-gradient(#edf2cc, #d5e6ad); }
+.waste-campaign-picker strong, .waste-campaign-picker small { display: block; }
+.waste-campaign-picker strong { color: #314a37; font-size: 12px; }
+.waste-campaign-picker small { margin-top: 4px; color: #607159; font: 700 9px/1.35 system-ui, sans-serif; }
+.waste-campaign-picker label { display: grid; gap: 3px; color: #536553; font-size: 8px; font-weight: 900; }
+.waste-campaign-picker select { width: 100%; padding: 6px; }
+#waste-level-start { color: #fff; background: #4b7f3d; }
+.waste-campaign-gameplay { padding: 8px; background: #e4d6a5; }
+.waste-campaign-heading { display: grid; grid-template-columns: minmax(0, 1fr) repeat(3, 64px); gap: 5px; margin-bottom: 6px; }
+.waste-campaign-heading > div, .waste-campaign-heading > span { display: grid; align-content: center; gap: 2px; min-width: 0; padding: 6px; border: 2px solid #53634a; border-radius: 5px; background: #fff8dc; }
+.waste-campaign-heading small { overflow: hidden; color: #64715f; font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+.waste-campaign-heading > div strong { overflow: hidden; color: #283d32; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.waste-campaign-heading > span { color: #63705d; font-size: 7px; text-align: center; }
+.waste-campaign-heading > span strong { color: #283d32; font-size: 12px; }
+.waste-board-viewport { position: relative; height: min(48vh, 445px); min-height: 270px; overflow: hidden; border: 4px solid #283d32; border-radius: 6px; background: radial-gradient(circle at 15% 22%, #8fca5f 0 2px, transparent 3px), radial-gradient(circle at 78% 68%, #496e38 0 2px, transparent 3px), linear-gradient(#5d9747, #4b853e); box-shadow: inset 0 0 0 5px #82b45d; }
+.waste-board { position: absolute; inset: 4px; }
+.waste-card { position: absolute; display: grid; place-items: center; width: 8.15%; height: 11.9%; min-height: 0 !important; padding: 0 !important; border-width: 2px !important; border-radius: 4px !important; background: #efe2bc !important; box-shadow: 2px 3px 0 #27372e !important; transform: rotate(var(--card-rotation)); transform-origin: center; touch-action: manipulation; }
+.waste-card.blocked { opacity: .48; filter: saturate(.55) brightness(.82); cursor: not-allowed; }
+.waste-card.safe-hint { outline: 5px solid #ffdc48; outline-offset: 2px; animation: wasteHintPulse .7s ease-in-out infinite alternate; }
+.waste-card span { font-size: clamp(14px, 2.7vw, 28px); filter: drop-shadow(1px 2px 0 rgb(50 61 48 / 28%)); }
+.waste-card small { position: absolute; right: 2px; bottom: 1px; color: #645b47; font-size: 6px; }
+@keyframes wasteHintPulse { to { outline-color: #fff4a3; transform: rotate(var(--card-rotation)) scale(1.08); } }
+.waste-tray-wrap { display: grid; gap: 3px; margin-top: 6px; }
+.waste-tray-wrap > small { color: #435242; font-size: 7px; font-weight: 900; letter-spacing: .35px; }
+.waste-tray { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; }
+.waste-tray-slot { display: grid; place-items: center; min-height: 43px; border: 3px solid #53634a; border-radius: 5px; color: #8b8269; background: #fff8dc; font-size: 21px; box-shadow: inset 0 0 0 2px #d8ca9d; }
+.waste-tray-slot.filled { background: #eee0b6; }
+.waste-campaign-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 6px; }
+.waste-campaign-actions button { min-height: 34px; }
+#waste-qa-solve { color: #fff; background: #6a4f8c; }
+.waste-campaign-status { min-height: 33px; margin: 0; padding: 8px 10px; border-top: 2px solid #53634a; color: #405840; background: #eff5d7; font: 800 9px/1.35 system-ui, sans-serif; }
+.waste-campaign-status[data-status="success"] { color: #245e35; background: #d9efb7; }
+.waste-campaign-status[data-status="error"] { color: #873c34; background: #f5c5b6; }
+.waste-campaign-status[data-status="hint"] { color: #6a4b15; background: #ffe68a; }
+.waste-campaign-result { padding: 14px; border-top: 3px solid #283d32; color: #283d32; text-align: center; }
+.waste-campaign-result h3, .waste-campaign-result p { margin: 0; }
+#waste-result-stars { margin: 7px 0; color: #e2aa2e; font-size: 29px; letter-spacing: 3px; text-shadow: 2px 2px #283d32; }
+.waste-campaign-result p { color: #5a6a58; font: 700 10px/1.4 system-ui, sans-serif; }
+.waste-result-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 11px 0; }
+.waste-result-stats span { display: grid; gap: 3px; padding: 7px; border: 2px solid #84906d; border-radius: 5px; background: #fffaf0; color: #64705b; font-size: 7px; }
+.waste-result-stats strong { color: #283d32; font-size: 13px; }
+.waste-result-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+#waste-next { color: #fff; background: #4b7f3d; }
+
+@media (max-height: 650px) and (orientation: landscape) {
+  .waste-campaign-hud { top: 3px; right: 3px; width: min(760px, calc(100vw - 6px)); max-height: calc(100dvh - 6px); border-width: 3px; }
+  .waste-campaign-header { padding: 5px 7px; }
+  .waste-campaign-picker { padding: 8px; }
+  .waste-board-viewport { height: min(52vh, 330px); min-height: 220px; }
+  .waste-tray-slot { min-height: 34px; }
+}
+
+@media (max-width: 720px) and (orientation: portrait) {
+  body[data-game-scene="WasteCollectionScene"] .waste-campaign-hud,
+  body[data-game-scene="WasteCollectionScene"] .cleanup-hud,
+  body[data-game-scene="WasteCollectionScene"] .cleanup-result { visibility: hidden; pointer-events: none; }
+  body[data-game-scene="WasteCollectionScene"] .landscape-required { position: fixed; z-index: 90; inset: 0; display: grid; place-content: center; justify-items: center; gap: 10px; padding: 24px; border: 0; border-radius: 0; color: #493d30; background: linear-gradient(155deg, #fff8dc, #dceeb8); text-align: center; box-shadow: none; }
+  body[data-game-scene="WasteCollectionScene"] .landscape-required span { font-size: 42px; }
+  body[data-game-scene="WasteCollectionScene"] .landscape-required h2 { margin: 0; font: 900 24px/1.1 ui-monospace, monospace; }
+  body[data-game-scene="WasteCollectionScene"] .landscape-required p { max-width: 310px; margin: 0; color: #655746; font: 800 12px/1.45 system-ui, sans-serif; }
+}
+
 /* Milestone 15: the River Clear-Out campaign is intentionally portrait-friendly. */
 .river-hud {
   position: fixed;

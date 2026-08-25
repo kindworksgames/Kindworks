@@ -280,19 +280,18 @@ export class TownScene extends Phaser.Scene {
       detail: `${this.fishing?.castsLeft?.("magnet") ?? 5} of 5 magnet casts remain today`,
       onActivate: () => this.startFishing("magnet", MAGNET_FISHING_SPOT.id),
     });
-    if (this.cleanupService?.isAvailable(COMMONS_RUBBISH_JOB.id)) {
-      interactables.push({
-        id: COMMONS_RUBBISH_JOB.id,
-        kind: "cleanup-job",
-        x: COMMONS_RUBBISH_JOB.world.x,
-        y: COMMONS_RUBBISH_JOB.world.y,
-        radius: COMMONS_RUBBISH_JOB.world.interactionRadius,
-        icon: COMMONS_RUBBISH_JOB.icon,
-        label: "Start Waste Collection",
-        detail: "Clear 6 pieces from Willow Commons",
-        onActivate: () => this.startWasteCollection(),
-      });
-    }
+    const firstWasteJobAvailable = this.cleanupService?.isAvailable(COMMONS_RUBBISH_JOB.id);
+    interactables.push({
+      id: COMMONS_RUBBISH_JOB.id,
+      kind: firstWasteJobAvailable ? "cleanup-job" : "waste-campaign",
+      x: COMMONS_RUBBISH_JOB.world.x,
+      y: COMMONS_RUBBISH_JOB.world.y,
+      radius: COMMONS_RUBBISH_JOB.world.interactionRadius,
+      icon: COMMONS_RUBBISH_JOB.icon,
+      label: firstWasteJobAvailable ? "Start Waste Collection" : "Open Waste Collection Campaign",
+      detail: firstWasteJobAvailable ? "Clear 6 pieces from Willow Commons" : "Play all 750 authored matching challenges",
+      onActivate: () => this.startWasteCollection(),
+    });
     this.interactions = new InteractionSystem({
       interactables,
       onChange: (interaction) => this.renderInteractionPrompt(interaction),
@@ -620,13 +619,13 @@ export class TownScene extends Phaser.Scene {
   }
 
   drawCleanupTarget() {
-    if (!this.cleanupService?.isAvailable(COMMONS_RUBBISH_JOB.id)) return;
+    const firstJobAvailable = this.cleanupService?.isAvailable(COMMONS_RUBBISH_JOB.id);
     const { x, y } = COMMONS_RUBBISH_JOB.world;
     const layer = this.add.graphics().setDepth(118);
-    const pieces = [
+    const pieces = firstJobAvailable ? [
       [-34, -12, 0x75b8c5], [4, -22, 0xa6acb0], [37, -4, 0xc99167],
       [-23, 22, 0xd66b70], [14, 19, 0xd6d1bd], [42, 28, 0xe9e4d6],
-    ];
+    ] : [[-25, -4, 0xe9d8a9], [0, -12, 0xe9d8a9], [25, -4, 0xe9d8a9]];
     for (const [dx, dy, color] of pieces) {
       layer.fillStyle(0x294637, 0.2);
       layer.fillEllipse(x + dx, y + dy + 7, 25, 10);
@@ -635,7 +634,7 @@ export class TownScene extends Phaser.Scene {
       layer.lineStyle(2, 0x294637, 0.65);
       layer.strokeRoundedRect(x + dx - 9, y + dy - 7, 18, 15, 3);
     }
-    this.add.text(x, y - 57, "🧹 CLEANUP", {
+    this.add.text(x, y - 57, firstJobAvailable ? "🧹 CLEANUP" : "🧹 750 LEVELS", {
       color: "#294637",
       fontFamily: "system-ui, sans-serif",
       fontSize: "13px",
@@ -909,18 +908,19 @@ export class TownScene extends Phaser.Scene {
     if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
     if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before starting a job." };
     if (!this.cleanupService) return { ok: false, reason: "The cleanup system is not ready." };
-    const result = this.cleanupService.begin(COMMONS_RUBBISH_JOB.id, {
-      returnPosition: { x: this.player.x, y: this.player.y },
-      returnFacing: this.player.direction,
-    });
+    const returnPosition = { x: this.player.x, y: this.player.y };
+    const returnFacing = this.player.direction;
+    const firstJobAvailable = this.cleanupService.isAvailable(COMMONS_RUBBISH_JOB.id);
+    const result = firstJobAvailable ? this.cleanupService.begin(COMMONS_RUBBISH_JOB.id, { returnPosition, returnFacing }) : { ok: true, session: null };
     if (!result.ok) return result;
+    if (!firstJobAvailable) this.gameState?.updatePlayer({ scene: "WasteCollectionScene", x: returnPosition.x, y: returnPosition.y, facing: returnFacing });
     this.transitioning = true;
     this.movement.setEnabled(false);
     this.interactions.setEnabled(false);
     this.player.setMovement(0, 0, false);
     document.querySelector("#game")?.setAttribute("data-transition", "entering-waste-collection");
     this.cameras.main.fadeOut(220, 23, 43, 31);
-    this.time.delayedCall(240, () => this.scene.start("WasteCollectionScene"));
+    this.time.delayedCall(240, () => this.scene.start("WasteCollectionScene", { returnPosition, returnFacing }));
     return { ok: true, targetScene: "WasteCollectionScene", session: result.session };
   }
 
@@ -1094,6 +1094,10 @@ export class TownScene extends Phaser.Scene {
       gameElement.dataset.houseRescueLevels = String(houseRescue?.totalLevels || 0);
       gameElement.dataset.houseRescueDirtyHomes = String(houseRescue?.dirtyHomes?.length || 0);
       gameElement.dataset.houseRescueCatalogueValid = String(Boolean(houseRescue?.catalogueValid));
+      const waste = this.cleanupService?.getDiagnostics?.();
+      gameElement.dataset.wasteLevels = String(waste?.totalLevels || 0);
+      gameElement.dataset.wasteCompleted = String(waste?.wasteProgress?.completed || 0);
+      gameElement.dataset.wasteCatalogueValid = String(Boolean(waste?.catalogueValid));
     }
   }
 
@@ -1105,7 +1109,7 @@ export class TownScene extends Phaser.Scene {
       camera: { zoom: Number(this.cameras.main.zoom.toFixed(2)), followingPlayer: !this.customResident?.getSnapshot?.().controlling },
       controls: { keyboard: true, touch: true, wheelZoom: true },
       interaction: this.interactions.getState(),
-      migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "cafe-scene-transition", "river-clearout-scene-transition", "house-rescue-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job", "world-time-weather-lighting", "basic-npc-town-life", "custom-resident-profile-home-control", "weather-aware-farming", "orchard-harvest", "persistent-lawn-jobs", "animal-habitat-routes", "animal-friendship-feeding", "animal-adoption", "active-companion-following", "south-meadow", "three-fishing-spots", "hidden-zone-fishing", "timed-reeling", "magnet-fishing", "fishing-inventory-rewards", "magnet-coin-rewards", "bakery-recipes", "bakery-customer-service", "bakery-first-clear-rewards", "bakery-level-unlocks", "shared-recipe-order-engine", "corner-cafe-recipes", "cafe-three-tray-service", "cafe-first-clear-rewards", "cafe-level-unlocks", "river-750-level-catalogue", "river-falling-piece-engine", "river-first-clear-rewards", "river-portrait-controls", "house-rescue-750-level-catalogue", "house-rescue-sort-and-vacuum", "house-rescue-persistent-home-jobs", "house-rescue-landscape-controls"],
+      migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "cafe-scene-transition", "river-clearout-scene-transition", "house-rescue-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job", "world-time-weather-lighting", "basic-npc-town-life", "custom-resident-profile-home-control", "weather-aware-farming", "orchard-harvest", "persistent-lawn-jobs", "animal-habitat-routes", "animal-friendship-feeding", "animal-adoption", "active-companion-following", "south-meadow", "three-fishing-spots", "hidden-zone-fishing", "timed-reeling", "magnet-fishing", "fishing-inventory-rewards", "magnet-coin-rewards", "bakery-recipes", "bakery-customer-service", "bakery-first-clear-rewards", "bakery-level-unlocks", "shared-recipe-order-engine", "corner-cafe-recipes", "cafe-three-tray-service", "cafe-first-clear-rewards", "cafe-level-unlocks", "river-750-level-catalogue", "river-falling-piece-engine", "river-first-clear-rewards", "river-portrait-controls", "house-rescue-750-level-catalogue", "house-rescue-sort-and-vacuum", "house-rescue-persistent-home-jobs", "house-rescue-landscape-controls", "waste-750-authored-boards", "waste-five-slot-triple-matching", "waste-certified-solutions", "waste-first-clear-rewards", "waste-landscape-controls"],
       npcTownLife: this.npcTownLife?.getDiagnostics?.(),
       customResident: this.customResident?.getDiagnostics?.(),
       farming: this.farming?.getDiagnostics?.(),
@@ -1114,6 +1118,7 @@ export class TownScene extends Phaser.Scene {
       bakery: this.bakery?.getDiagnostics?.(),
       river: this.river?.getDiagnostics?.(),
       houseRescue: this.houseRescue?.getDiagnostics?.(),
+      wasteCollection: this.cleanupService?.getDiagnostics?.(),
       sharedState: {
         schemaVersion: this.gameState?.getSnapshot().schemaVersion || null,
         source: this.gameState?.getSnapshot().source.kind || null,

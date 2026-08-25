@@ -8,7 +8,7 @@ import {
   validateEconomyState,
   validateInventoryState,
 } from "./economyState.js";
-import { createFreshCleanupState, normalizeCleanupState, validateCleanupState } from "./cleanupState.js";
+import { createFreshCleanupState, normalizeCleanupState, projectLegacyCleanup, validateCleanupState } from "./cleanupState.js";
 import { createFreshWorldState, normalizeWorldState, validateWorldState } from "./worldState.js";
 import { createFreshNpcState, normalizeNpcState, validateNpcState } from "./npcState.js";
 import {
@@ -135,6 +135,7 @@ export function createGameStateFromLegacy(legacy, report, { now = Date.now() } =
   state.world.clockMinutes = safeInteger(legacy.worldClockMinutes, 0, 1439);
   state.world = normalizeWorldState(state.world, { now });
   state.progress.completedJobCount = safeInteger(legacy.completedJobCount, 0);
+  state.progress.cleanup = projectLegacyCleanup(legacy, state.progress.cleanup);
   state.economy = projectLegacyEconomy(legacy.economy, { now });
   state.inventory = projectLegacyInventory({
     ...(legacy.economy?.inventory || {}),
@@ -219,6 +220,12 @@ export function upgradeGameState(value, { now = Date.now() } = {}) {
   if (state.schemaVersion === 12) {
     state.houseRescue = normalizeHouseRescueState(state.houseRescue ?? state.legacySnapshot, { worldDay: state.world?.day });
     state.schemaVersion = 13;
+  }
+  if (state.schemaVersion === 13) {
+    state.progress.cleanup = state.source?.kind === "legacy-import"
+      ? projectLegacyCleanup(state.legacySnapshot, state.progress.cleanup)
+      : normalizeCleanupState(state.progress.cleanup);
+    state.schemaVersion = 14;
   }
   return state;
 }
