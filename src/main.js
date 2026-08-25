@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import "./style.css";
 import { BootScene } from "./scenes/BootScene.js";
+import { TownScene } from "./scenes/TownScene.js";
 
 const config = {
   type: Phaser.AUTO,
@@ -14,8 +15,15 @@ const config = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene],
+  scene: [BootScene, TownScene],
 };
 
-new Phaser.Game(config);
+const game = new Phaser.Game(config);
 
+window.__KINDWORKS_PHASER__ = {
+  game,
+  getMilestoneState() {
+    const scene = game.scene.getScene("TownScene");
+    return scene?.player ? scene.getMilestoneState() : { scene: "loading" };
+  },
+};

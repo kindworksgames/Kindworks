@@ -12,8 +12,22 @@
   <body>
     <main class="game-shell" aria-label="Kindworks Phaser game">
       <div id="game"></div>
+      <section class="town-hud" aria-label="Town information">
+        <div class="town-title"><strong>KINDWORKS</strong><span id="location-status">Willowmere</span></div>
+        <div class="milestone-badge">PHASER TOWN · MILESTONE 1</div>
+      </section>
+      <section class="touch-controls" aria-label="Movement controls">
+        <button type="button" class="move-up" data-move="up" aria-label="Walk up">▲</button>
+        <button type="button" class="move-left" data-move="left" aria-label="Walk left">◀</button>
+        <button type="button" class="move-down" data-move="down" aria-label="Walk down">▼</button>
+        <button type="button" class="move-right" data-move="right" aria-label="Walk right">▶</button>
+      </section>
+      <section class="zoom-controls" aria-label="Map zoom controls">
+        <button id="zoom-in" type="button" aria-label="Zoom in">＋</button>
+        <button id="zoom-out" type="button" aria-label="Zoom out">−</button>
+      </section>
+      <p class="control-hint">Arrow keys or WASD to walk · hold Shift to run · mouse wheel to zoom</p>
     </main>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
-
