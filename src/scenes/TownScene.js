@@ -90,6 +90,8 @@ export class TownScene extends Phaser.Scene {
     this.bakery = this.registry.get("bakery");
     this.cafe = this.registry.get("cafe");
     this.river = this.registry.get("river");
+    this.houseRescue = this.registry.get("houseRescue");
+    this.houseRescue?.refreshJobs?.();
     this.worldSimulation?.setPaused("activity", false);
     const savedState = this.gameState?.getSnapshot();
     this.cameras.main.setBounds(0, 0, WORLD.width, WORLD.height);
@@ -101,7 +103,9 @@ export class TownScene extends Phaser.Scene {
     const animalQaPresentation = qaTarget === "animals"
       ? this.animals?.getWorldPresentations?.().find((entry) => entry.visible && !entry.definition.rare)
       : null;
-    const qaSpawn = qaTarget === "river"
+    const qaSpawn = qaTarget === "house-rescue"
+      ? { x: HOUSES[0].x + HOUSES[0].width / 2, y: HOUSES[0].y + HOUSES[0].height + 54 }
+      : qaTarget === "river"
       ? RIVER_CLEAROUT.approach
       : qaTarget === "cafe"
         ? CORNER_CAFE.approach
@@ -207,6 +211,21 @@ export class TownScene extends Phaser.Scene {
           onActivate: () => this.openFarming("orchard"),
         },
     ];
+    for (const home of this.houseRescue?.dirtyHomes?.() || []) {
+      const house = HOUSES.find((entry) => entry.id === home.houseId);
+      if (!house) continue;
+      interactables.push({
+        id: `house-rescue-${house.id}`,
+        kind: "house-rescue",
+        x: house.x + house.width / 2,
+        y: house.y + house.height + 42,
+        radius: 86,
+        icon: "🧹",
+        label: `Rescue ${house.id.replace("house-", "Cottage ")}`,
+        detail: "Sort rubbish, then vacuum at least 95% of the floor",
+        onActivate: () => this.enterHouseRescue(house.id),
+      });
+    }
     for (const plot of LAWN_PLOTS) {
       interactables.push({
         id: plot.id,
@@ -355,6 +374,7 @@ export class TownScene extends Phaser.Scene {
     this.drawBridges();
     this.drawParkDetails();
     HOUSES.forEach((house) => this.drawHouse(house));
+    this.drawHouseRescueMarkers();
     SHOPS.forEach((shop) => this.drawShop(shop));
     this.drawLandmarks();
     this.drawFarmingAreas();
@@ -456,6 +476,20 @@ export class TownScene extends Phaser.Scene {
     if (!personalHome || !this.personalHomeCollisionAdded) {
       this.buildingCollisions.push({ x: house.x - 8, y: house.y - 15, width: house.width + 16, height: house.height + 18 });
       if (personalHome) this.personalHomeCollisionAdded = true;
+    }
+  }
+
+  drawHouseRescueMarkers() {
+    for (const home of this.houseRescue?.dirtyHomes?.() || []) {
+      const house = HOUSES.find((entry) => entry.id === home.houseId);
+      if (!house) continue;
+      const x = house.x + house.width / 2;
+      const y = house.y - 35;
+      const marker = this.add.container(x, y).setDepth(128 + house.y / 100);
+      const pulse = this.add.circle(0, 0, 30, 0xffe47c, 0.2).setStrokeStyle(5, 0xffef9a, 0.9);
+      const badge = this.add.text(0, 0, "🧹", { fontFamily: "Apple Color Emoji, system-ui", fontSize: "28px", backgroundColor: "rgba(255,249,223,.95)", padding: { x: 7, y: 4 } }).setOrigin(0.5);
+      marker.add([pulse, badge]);
+      this.tweens.add({ targets: pulse, scale: 1.28, alpha: 0.04, duration: 950, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
     }
   }
 
@@ -734,7 +768,7 @@ export class TownScene extends Phaser.Scene {
     document.body.dataset.gameScene = this.scene.key;
     const badge = document.querySelector(".milestone-badge");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 15";
+    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 16";
     if (hint) hint.textContent = "Arrow keys or WASD to walk · E or Space to interact · Shift to run";
   }
 
@@ -809,6 +843,32 @@ export class TownScene extends Phaser.Scene {
       });
     });
     return { ok: true, targetScene: "RiverClearoutScene" };
+  }
+
+  enterHouseRescue(houseId) {
+    if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before starting House Rescue." };
+    const home = this.houseRescue?.getSnapshot?.().homes?.[houseId];
+    if (!home?.dirty) return { ok: false, reason: "This home is already clean." };
+    const active = this.houseRescue?.getActiveSession?.();
+    if (active && active.houseId !== houseId) return { ok: false, reason: `Your saved House Rescue is waiting at ${active.houseId.replace("house-", "Cottage ")}.` };
+    const returnPosition = { x: this.player.x, y: this.player.y };
+    this.transitioning = true;
+    this.movement.setEnabled(false);
+    this.interactions.setEnabled(false);
+    this.player.setMovement(0, 0, false);
+    this.gameState?.updatePlayer({ scene: "HouseRescueScene", x: 640, y: 610, facing: "up" });
+    document.querySelector("#game")?.setAttribute("data-transition", "entering-house-rescue");
+    this.cameras.main.fadeOut(220, 53, 42, 35);
+    this.time.delayedCall(240, () => {
+      this.scene.start("HouseRescueScene", {
+        houseId,
+        returnPosition,
+        returnFacing: this.player.direction,
+        transitionCount: Number(this.entryData.transitionCount || 0) + 1,
+      });
+    });
+    return { ok: true, targetScene: "HouseRescueScene", houseId };
   }
 
   openFreshMarket() {
@@ -1030,6 +1090,10 @@ export class TownScene extends Phaser.Scene {
       gameElement.dataset.riverLevels = String(river?.totalLevels || 0);
       gameElement.dataset.riverCompleted = String(river?.completed || 0);
       gameElement.dataset.riverCatalogueValid = String(Boolean(river?.catalogueValid));
+      const houseRescue = this.houseRescue?.getDiagnostics?.();
+      gameElement.dataset.houseRescueLevels = String(houseRescue?.totalLevels || 0);
+      gameElement.dataset.houseRescueDirtyHomes = String(houseRescue?.dirtyHomes?.length || 0);
+      gameElement.dataset.houseRescueCatalogueValid = String(Boolean(houseRescue?.catalogueValid));
     }
   }
 
@@ -1041,7 +1105,7 @@ export class TownScene extends Phaser.Scene {
       camera: { zoom: Number(this.cameras.main.zoom.toFixed(2)), followingPlayer: !this.customResident?.getSnapshot?.().controlling },
       controls: { keyboard: true, touch: true, wheelZoom: true },
       interaction: this.interactions.getState(),
-      migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "cafe-scene-transition", "river-clearout-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job", "world-time-weather-lighting", "basic-npc-town-life", "custom-resident-profile-home-control", "weather-aware-farming", "orchard-harvest", "persistent-lawn-jobs", "animal-habitat-routes", "animal-friendship-feeding", "animal-adoption", "active-companion-following", "south-meadow", "three-fishing-spots", "hidden-zone-fishing", "timed-reeling", "magnet-fishing", "fishing-inventory-rewards", "magnet-coin-rewards", "bakery-recipes", "bakery-customer-service", "bakery-first-clear-rewards", "bakery-level-unlocks", "shared-recipe-order-engine", "corner-cafe-recipes", "cafe-three-tray-service", "cafe-first-clear-rewards", "cafe-level-unlocks", "river-750-level-catalogue", "river-falling-piece-engine", "river-first-clear-rewards", "river-portrait-controls"],
+      migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "cafe-scene-transition", "river-clearout-scene-transition", "house-rescue-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job", "world-time-weather-lighting", "basic-npc-town-life", "custom-resident-profile-home-control", "weather-aware-farming", "orchard-harvest", "persistent-lawn-jobs", "animal-habitat-routes", "animal-friendship-feeding", "animal-adoption", "active-companion-following", "south-meadow", "three-fishing-spots", "hidden-zone-fishing", "timed-reeling", "magnet-fishing", "fishing-inventory-rewards", "magnet-coin-rewards", "bakery-recipes", "bakery-customer-service", "bakery-first-clear-rewards", "bakery-level-unlocks", "shared-recipe-order-engine", "corner-cafe-recipes", "cafe-three-tray-service", "cafe-first-clear-rewards", "cafe-level-unlocks", "river-750-level-catalogue", "river-falling-piece-engine", "river-first-clear-rewards", "river-portrait-controls", "house-rescue-750-level-catalogue", "house-rescue-sort-and-vacuum", "house-rescue-persistent-home-jobs", "house-rescue-landscape-controls"],
       npcTownLife: this.npcTownLife?.getDiagnostics?.(),
       customResident: this.customResident?.getDiagnostics?.(),
       farming: this.farming?.getDiagnostics?.(),
@@ -1049,6 +1113,7 @@ export class TownScene extends Phaser.Scene {
       fishing: this.fishing?.getDiagnostics?.(),
       bakery: this.bakery?.getDiagnostics?.(),
       river: this.river?.getDiagnostics?.(),
+      houseRescue: this.houseRescue?.getDiagnostics?.(),
       sharedState: {
         schemaVersion: this.gameState?.getSnapshot().schemaVersion || null,
         source: this.gameState?.getSnapshot().source.kind || null,

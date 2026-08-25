@@ -1,0 +1,181 @@
+export const HOUSE_RESCUE_STATE_SCHEMA_VERSION = 1;
+export const HOUSE_RESCUE_TOTAL_LEVELS = 750;
+
+export const HOUSE_RESCUE_RULES = Object.freeze({
+  maxDirtyHomes: 5,
+  completionCoverage: 0.95,
+  baseCoins: 60,
+  accuracyCoins: 40,
+  maxCoins: 170,
+  levelBonusEvery: 50,
+  levelBonusCoins: 5,
+  maxLevelBonusCoins: 70,
+  respawnMinDays: 3,
+  respawnMaxDays: 6,
+  visibleItemsPerWave: 9,
+  correctScore: 2,
+  wrongScore: -1,
+  vacuumRadius: 7.2,
+  vacuumPower: 1,
+  initialDirty: Object.freeze(["house-1", "house-6", "house-11", "house-16"]),
+});
+
+export const HOUSE_RESCUE_CATEGORIES = Object.freeze({
+  organic: Object.freeze({ id: "organic", label: "Organic", icon: "🌿", color: "#4d934f" }),
+  recycle: Object.freeze({ id: "recycle", label: "Recycling", icon: "♻️", color: "#4389c7" }),
+  garbage: Object.freeze({ id: "garbage", label: "Garbage", icon: "🗑️", color: "#333a3d" }),
+});
+
+export const HOUSE_RESCUE_ITEMS = Object.freeze([
+  Object.freeze({ id: "apple-core", category: "organic", label: "Apple core", icon: "🍎" }),
+  Object.freeze({ id: "banana-peel", category: "organic", label: "Banana peel", icon: "🍌" }),
+  Object.freeze({ id: "food-scraps", category: "organic", label: "Food scraps", icon: "🥬" }),
+  Object.freeze({ id: "eggshell", category: "organic", label: "Eggshells", icon: "🥚" }),
+  Object.freeze({ id: "carrot-top", category: "organic", label: "Carrot top", icon: "🥕" }),
+  Object.freeze({ id: "drink-can", category: "recycle", label: "Empty can", icon: "🥫" }),
+  Object.freeze({ id: "plastic-bottle", category: "recycle", label: "Plastic bottle", icon: "🧴" }),
+  Object.freeze({ id: "glass-bottle", category: "recycle", label: "Glass bottle", icon: "🍾" }),
+  Object.freeze({ id: "newspaper", category: "recycle", label: "Newspaper", icon: "📰" }),
+  Object.freeze({ id: "cardboard", category: "recycle", label: "Cardboard", icon: "📦" }),
+  Object.freeze({ id: "dirty-tissue", category: "garbage", label: "Dirty tissue", icon: "🧻" }),
+  Object.freeze({ id: "greasy-wrapper", category: "garbage", label: "Greasy wrapper", icon: "🍬" }),
+  Object.freeze({ id: "broken-mug", category: "garbage", label: "Broken mug", icon: "☕" }),
+  Object.freeze({ id: "used-sponge", category: "garbage", label: "Used sponge", icon: "🧽" }),
+  Object.freeze({ id: "plastic-fork", category: "garbage", label: "Plastic fork", icon: "🍴" }),
+]);
+
+const ITEMS_BY_CATEGORY = Object.freeze(Object.fromEntries(
+  Object.keys(HOUSE_RESCUE_CATEGORIES).map((category) => [category, HOUSE_RESCUE_ITEMS.filter((item) => item.category === category)]),
+));
+
+function clampLevel(value) {
+  const number = Math.floor(Number(value));
+  return Number.isFinite(number) ? Math.max(1, Math.min(HOUSE_RESCUE_TOTAL_LEVELS, number)) : 1;
+}
+
+function hashUnit(key, index = 0) {
+  let hash = 2166136261;
+  const text = `${key}:${index}`;
+  for (let cursor = 0; cursor < text.length; cursor += 1) {
+    hash ^= text.charCodeAt(cursor);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0) / 4294967296;
+}
+
+export function houseRescueLevel(value) {
+  const level = clampLevel(value);
+  const index = level - 1;
+  const progress = index / Math.max(1, HOUSE_RESCUE_TOTAL_LEVELS - 1);
+  const itemTier = Math.min(7, Math.floor(index / 94));
+  const itemCount = 9 + itemTier * 3;
+  const maxStainStrength = Math.min(5, 1 + Math.floor(index / 150));
+  const dirtCount = Math.min(270, 180 + Math.floor(index / 25) * 3);
+  const itemSpacing = Number((48 - progress * 7).toFixed(3));
+  const label = maxStainStrength === 1 ? "light stains"
+    : maxStainStrength === 2 ? "set-in stains"
+      : maxStainStrength === 3 ? "stubborn stains"
+        : maxStainStrength === 4 ? "deep grime" : "very deep grime";
+  return Object.freeze({ level, itemCount, maxStainStrength, dirtCount, itemSpacing, difficultyIndex: level, label });
+}
+
+export function houseRescueLevelBonus(level) {
+  const steps = Math.floor((clampLevel(level) - 1) / HOUSE_RESCUE_RULES.levelBonusEvery);
+  return Math.min(HOUSE_RESCUE_RULES.maxLevelBonusCoins, steps * HOUSE_RESCUE_RULES.levelBonusCoins);
+}
+
+export function houseRescueStars(mistakes) {
+  const count = Math.max(0, Math.floor(Number(mistakes) || 0));
+  return count <= 1 ? 3 : count <= 4 ? 2 : 1;
+}
+
+export function houseRescueReward(level, correct, mistakes) {
+  const sorted = Math.max(0, Math.floor(Number(correct) || 0));
+  const errors = Math.max(0, Math.floor(Number(mistakes) || 0));
+  const accuracy = sorted / Math.max(1, sorted + errors);
+  return Math.min(
+    HOUSE_RESCUE_RULES.maxCoins,
+    HOUSE_RESCUE_RULES.baseCoins + Math.round(HOUSE_RESCUE_RULES.accuracyCoins * accuracy) + houseRescueLevelBonus(level),
+  );
+}
+
+export function generateHouseRescueItems({ houseId, jobSerial = 1, level = 1 }) {
+  const config = houseRescueLevel(level);
+  const categories = Object.keys(HOUSE_RESCUE_CATEGORIES);
+  return Array.from({ length: config.itemCount }, (_, index) => {
+    const category = categories[index % categories.length];
+    const definitions = ITEMS_BY_CATEGORY[category];
+    const offset = Math.floor(hashUnit(`${houseId}:${jobSerial}:${config.level}:${category}`, 17) * definitions.length);
+    const definition = definitions[(Math.floor(index / 3) + offset) % definitions.length];
+    const cell = index % HOUSE_RESCUE_RULES.visibleItemsPerWave;
+    const column = cell % 3;
+    const row = Math.floor(cell / 3);
+    const jitterX = (hashUnit(`${houseId}:${jobSerial}:${config.level}:item-x`, index) - 0.5) * 4;
+    const jitterY = (hashUnit(`${houseId}:${jobSerial}:${config.level}:item-y`, index) - 0.5) * 4;
+    return Object.freeze({
+      id: `rescue-item-${index + 1}`,
+      defId: definition.id,
+      category,
+      label: definition.label,
+      icon: definition.icon,
+      wave: Math.floor(index / HOUSE_RESCUE_RULES.visibleItemsPerWave),
+      x: Number((16 + column * 24 + jitterX).toFixed(3)),
+      y: Number((22 + row * 27 + jitterY).toFixed(3)),
+      sorted: false,
+    });
+  });
+}
+
+export function generateHouseRescueDirt({ houseId, jobSerial = 1, level = 1 }) {
+  const config = houseRescueLevel(level);
+  const columns = Math.ceil(config.dirtCount / 15);
+  return Array.from({ length: config.dirtCount }, (_, index) => {
+    const column = index % columns;
+    const row = Math.floor(index / columns);
+    const x = 4 + column * (70 / Math.max(1, columns - 1)) + (hashUnit(`${houseId}:${jobSerial}:${config.level}:dirt-x`, index) - 0.5) * 2.4;
+    const y = 6 + row * (88 / 14) + (hashUnit(`${houseId}:${jobSerial}:${config.level}:dirt-y`, index) - 0.5) * 2.4;
+    let strength = 1 + Math.floor(hashUnit(`${houseId}:${jobSerial}:${config.level}:dirt-strength`, index * 73) * config.maxStainStrength);
+    if (index < config.maxStainStrength) strength = index + 1;
+    return Object.freeze({ id: `stain-${index + 1}`, x: Number(x.toFixed(3)), y: Number(y.toFixed(3)), strength, remaining: strength });
+  });
+}
+
+export function houseRescueCoverage(dirt) {
+  let total = 0;
+  let removed = 0;
+  for (const stain of Array.isArray(dirt) ? dirt : []) {
+    const strength = Math.max(1, Math.floor(Number(stain.strength) || 1));
+    const remaining = Math.max(0, Math.min(strength, Number(stain.remaining) || 0));
+    total += strength;
+    removed += strength - remaining;
+  }
+  return total ? removed / total : 0;
+}
+
+export function validateHouseRescueCatalogue() {
+  const errors = [];
+  let previous = null;
+  for (let level = 1; level <= HOUSE_RESCUE_TOTAL_LEVELS; level += 1) {
+    const config = houseRescueLevel(level);
+    if (config.level !== level) errors.push(`Level ${level} identity changed.`);
+    if (config.itemCount < 9 || config.itemCount > 30 || config.itemCount % 3) errors.push(`Level ${level} item count is invalid.`);
+    if (config.maxStainStrength < 1 || config.maxStainStrength > 5) errors.push(`Level ${level} stain strength is invalid.`);
+    if (config.dirtCount < 180 || config.dirtCount > 270) errors.push(`Level ${level} dirt count is invalid.`);
+    if (previous && (config.itemCount < previous.itemCount || config.maxStainStrength < previous.maxStainStrength || config.dirtCount < previous.dirtCount || config.itemSpacing >= previous.itemSpacing)) errors.push(`Level ${level} does not increase difficulty.`);
+    const items = generateHouseRescueItems({ houseId: "house-1", jobSerial: 1, level });
+    const dirt = generateHouseRescueDirt({ houseId: "house-1", jobSerial: 1, level });
+    if (items.length !== config.itemCount || dirt.length !== config.dirtCount) errors.push(`Level ${level} generation count changed.`);
+    if (items.some((item) => ITEMS_BY_CATEGORY[item.category]?.every((definition) => definition.id !== item.defId))) errors.push(`Level ${level} has a category mismatch.`);
+    previous = config;
+  }
+  return Object.freeze({
+    valid: errors.length === 0,
+    errors,
+    totalLevels: HOUSE_RESCUE_TOTAL_LEVELS,
+    first: houseRescueLevel(1),
+    last: houseRescueLevel(HOUSE_RESCUE_TOTAL_LEVELS),
+    categories: Object.keys(HOUSE_RESCUE_CATEGORIES),
+    rewardRange: [HOUSE_RESCUE_RULES.baseCoins, HOUSE_RESCUE_RULES.maxCoins],
+    score: { correct: HOUSE_RESCUE_RULES.correctScore, wrong: HOUSE_RESCUE_RULES.wrongScore },
+  });
+}

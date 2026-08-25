@@ -24,7 +24,7 @@
           <button id="custom-resident-button" class="economy-hud-button resident-hud-button" type="button" aria-label="Create your personal resident">💚 Create resident</button>
           <button id="animal-friends-button" class="economy-hud-button animal-hud-button" type="button" aria-label="Open Animal Friends">🐾 Animal Friends</button>
           <button id="save-status-button" class="save-status-button" type="button" data-status="new">Save not started</button>
-          <div class="milestone-badge">PHASER TOWN · MILESTONE 15</div>
+          <div class="milestone-badge">PHASER TOWN · MILESTONE 16</div>
         </div>
       </section>
       <section id="interaction-prompt" class="interaction-prompt hidden" aria-label="Nearby interaction" aria-hidden="true">
@@ -259,6 +259,37 @@
         <h2 id="landscape-required-title">Rotate your phone</h2>
         <p id="landscape-required-message">This activity is designed for landscape play. Turn your phone sideways to continue.</p>
       </aside>
+      <section id="house-rescue-hud" class="house-rescue-hud hidden" aria-labelledby="house-rescue-hud-title">
+        <header class="house-rescue-hud-header">
+          <div><p>MILESTONE 16 · 750-LEVEL CAMPAIGN</p><h2 id="house-rescue-hud-title">🏠 House Rescue</h2><small id="house-rescue-progress-summary">0 rescued · 0 stars · Level 1 unlocked</small></div>
+          <span id="house-rescue-balance">🪙 100</span>
+          <button id="house-rescue-exit" type="button">Save &amp; exit</button>
+        </header>
+        <section id="house-rescue-picker" class="house-rescue-picker" aria-label="Choose a House Rescue level">
+          <div><strong>Rescue this neighbour's home</strong><small>Sort every item, then remove at least 95% of all stain layers. Progress unlocks the next of 750 levels.</small></div>
+          <label for="house-rescue-level-select">Available level<select id="house-rescue-level-select"><option value="1">Level 1 · light stains</option></select></label>
+          <button id="house-rescue-start" type="button">Start Level 1</button>
+        </section>
+        <section id="house-rescue-gameplay" class="house-rescue-gameplay hidden" aria-label="Active House Rescue level">
+          <div class="house-rescue-game-heading"><div><small id="house-rescue-level-name">Level 1 of 750 · light stains</small><strong>Sort first, then vacuum</strong></div><span>Score<strong id="house-rescue-score">0</strong></span><span>Mistakes<strong id="house-rescue-mistakes">0</strong></span><span>Floor<strong id="house-rescue-coverage">0%</strong></span></div>
+          <div class="house-rescue-stages"><span id="house-rescue-sort-stage" class="active">1 · Sort</span><span id="house-rescue-vacuum-stage">2 · Vacuum</span></div>
+          <section id="house-rescue-sort-panel" class="house-rescue-sort-panel">
+            <div class="house-rescue-stage-meta"><span>Wave <strong id="house-rescue-wave">1 / 1</strong></span><span>Remaining <strong id="house-rescue-remaining">9</strong></span><small>Tap an item, then its bin · or drag it directly</small></div>
+            <div class="house-rescue-sort-layout"><div id="house-rescue-sort-floor" class="house-rescue-sort-floor" aria-label="Rubbish waiting to be sorted"></div><div id="house-rescue-bins" class="house-rescue-bins" aria-label="Sorting bins"><button type="button" data-house-rescue-bin="organic"><span>🌿</span><strong>Organic</strong><small>Press 1</small></button><button type="button" data-house-rescue-bin="recycle"><span>♻️</span><strong>Recycling</strong><small>Press 2</small></button><button type="button" data-house-rescue-bin="garbage"><span>🗑️</span><strong>Garbage</strong><small>Press 3</small></button></div></div>
+          </section>
+          <section id="house-rescue-vacuum-panel" class="house-rescue-vacuum-panel hidden">
+            <div class="house-rescue-stage-meta"><span>Stain layers <strong id="house-rescue-layers">180</strong></span><small>Swipe the vacuum repeatedly over stubborn stains · arrow keys also work</small></div>
+            <div id="house-rescue-vacuum-floor" class="house-rescue-vacuum-floor" aria-label="Floor to vacuum"></div>
+          </section>
+          <button id="house-rescue-qa-complete" class="hidden" type="button">✓ Certified QA completion</button>
+        </section>
+        <p id="house-rescue-status" class="house-rescue-status" data-status="neutral" role="status" aria-live="assertive">Choose an available House Rescue level to begin.</p>
+        <section id="house-rescue-result" class="house-rescue-result hidden" aria-labelledby="house-rescue-result-title">
+          <h3 id="house-rescue-result-title">The cottage is sparkling!</h3><div id="house-rescue-result-stars">★★★</div><p id="house-rescue-result-message">Every item was sorted and the floor was restored.</p>
+          <div class="house-rescue-result-stats"><span>Score<strong id="house-rescue-result-score">18</strong></span><span>Accuracy<strong id="house-rescue-result-accuracy">100%</strong></span><span>Coins<strong id="house-rescue-result-coins">+100</strong></span></div>
+          <div class="house-rescue-result-actions"><button id="house-rescue-next-home" type="button">Find next home</button><button id="house-rescue-return" type="button">Return to Willowmere</button></div>
+        </section>
+      </section>
       <section id="river-hud" class="river-hud hidden" aria-labelledby="river-hud-title">
         <header class="river-hud-header">
           <div><p>MILESTONE 15 · 750-LEVEL CAMPAIGN</p><h2 id="river-hud-title">🌊 River Clear-Out</h2><small id="river-progress-summary">0 cleared · 0 stars · 0 restoration points</small></div>

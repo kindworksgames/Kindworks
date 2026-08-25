@@ -66,3 +66,18 @@ launches `WasteCollectionScene`, accepts one exact 100% result, awards the
 legacy-compatible 100-coin Level 1 reward, removes only that target, and
 survives reload without duplicate payment. Dynamic litter, repeat cycles, and
 the remaining 749 Waste Collection layouts remain intentionally unmigrated.
+
+Milestones 7 through 15 expanded the shared world simulation, resident creator,
+farming, animals and adoption, fishing and magnet fishing, Little Bakery,
+Corner Café, and the complete 750-level River Clear-Out campaign.
+
+Milestone 16 migrates the protected House Rescue campaign. All 750 original
+difficulty configurations are generated from the preserved formulas: 9–30
+rubbish items in waves of nine, three exact sorting categories, 180–267 floor
+stains, one to five stain layers, +2/−1 sorting scores, 95% vacuum completion,
+and the original 60 + accuracy + level-bonus reward capped at 170 coins. Four
+original starter cottages are dirty, no more than five jobs can be active,
+completed homes respawn after three to six game days, and the personal home is
+never selected. Active work resumes from the Phaser save, completion is atomic,
+and House Rescue requires landscape orientation on mobile. The protected HTML
+source remains unchanged.

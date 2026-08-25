@@ -1,5 +1,10 @@
 # Kindworks Phaser save contract
 
+> Current migration status: Milestone 16 uses game-state and envelope schema
+> 13. Schemas 1 through 12 upgrade in order, with schema 13 adding the complete
+> persistent House Rescue domain described below. The historical schema-3
+> foundation notes are retained for traceability.
+
 Milestone 3 introduced the protected save foundation alongside the preserved HTML game. Milestone 4 added the shared item catalogue, inventory, KindlyCoin ledger, and atomic economy transactions. Milestone 6 adds the first persistent cleanup session, exact-target result, and job reward. NPC, animal, farming, dynamic cleanup, and the remaining mini-games stay staged for later milestones.
 
 ## Storage namespaces
@@ -17,14 +22,14 @@ The Phaser build owns only:
 - `kindworks_phaser_v1_backup`
 - `kindworks_phaser_v1_recovery`
 
-## Phaser envelope schema 3
+## Current Phaser envelope schema 13
 
 Every current and backup save is a JSON envelope:
 
 ```json
 {
   "format": "kindworks-phaser",
-  "schemaVersion": 3,
+  "schemaVersion": 13,
   "writtenAt": "2026-08-25T00:00:00.000Z",
   "appVersion": "0.1.0",
   "data": {},
@@ -32,9 +37,9 @@ Every current and backup save is a JSON envelope:
 }
 ```
 
-The checksum covers every envelope field except the checksum itself. A save is accepted only when its format, schema, timestamp, checksum, and inner game state all validate. Valid schema-1 and schema-2 envelopes upgrade to schema 3, and the original verified envelope becomes the Phaser backup before replacement.
+The checksum covers every envelope field except the checksum itself. A save is accepted only when its format, schema, timestamp, checksum, and inner game state all validate. Valid schemas 1 through 12 upgrade to schema 13, and the original verified envelope becomes the Phaser backup before replacement.
 
-## Game-state schema 3
+## Historical game-state schema 3 foundation
 
 | Field | Type | Default | Rule |
 | --- | --- | --- | --- |
@@ -79,6 +84,23 @@ The checksum covers every envelope field except the checksum itself. A save is a
 - Processed session IDs prevent duplicate rewards.
 - Cancelling restores the town position without cleaning the target or changing coins.
 - Any save failure restores the exact pre-transaction in-memory checkpoint.
+
+## House Rescue schema-13 contract
+
+- `houseRescue` tracks selected/unlocked levels, per-level best score/stars/
+  mistakes/completion count, campaign totals, lifetime work, all 19 rendered
+  cottages, and one resumable active session.
+- Each home has a stable job serial, dirty flag, completion history, next due
+  game day, best result, and last reward. `house-19`, the rendered personal
+  home, can never become dirty.
+- Active data contains the deterministic item and stain snapshots, sorted
+  flags, stain layers remaining, vacuum position, score, mistakes, house/job
+  identity, and exact town return position.
+- Starting, sorting, vacuum progress, finishing, rewards, home cleanup, level
+  unlocks, and day-based respawns all validate and save through the shared
+  repository. A persistence failure restores the whole pre-action checkpoint.
+- Completion records one `house-rescue-job-reward` ledger entry and increments
+  the shared completed-job count in the same atomic save.
 
 ## Legacy compatibility map
 

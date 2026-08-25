@@ -1393,6 +1393,148 @@ body[data-game-scene="BakeryScene"] .zoom-controls {
   }
 }
 
+/* Milestone 16 — House Rescue 750-level campaign */
+.house-rescue-hud {
+  position: absolute;
+  z-index: 52;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  width: min(760px, 63vw);
+  max-height: calc(100dvh - 20px);
+  overflow: auto;
+  color: #3b3028;
+  border: 4px solid #3b3028;
+  border-radius: 14px;
+  background: #f5e5bd;
+  box-shadow: 8px 9px 0 rgb(45 34 27 / 48%);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+.house-rescue-hud.hidden,
+.house-rescue-picker.hidden,
+.house-rescue-gameplay.hidden,
+.house-rescue-sort-panel.hidden,
+.house-rescue-vacuum-panel.hidden,
+.house-rescue-result.hidden,
+#house-rescue-qa-complete.hidden { display: none; }
+.house-rescue-hud-header { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 8px; padding: 10px; color: #fff4d5; background: #3b3028; }
+.house-rescue-hud-header p, .house-rescue-hud-header h2, .house-rescue-hud-header small { display: block; margin: 0; }
+.house-rescue-hud-header p { color: #f0cc69; font-size: 8px; font-weight: 900; letter-spacing: 1px; }
+.house-rescue-hud-header h2 { margin: 3px 0; font: 900 20px/1.05 system-ui, sans-serif; }
+.house-rescue-hud-header small { overflow: hidden; color: #ddd0b5; font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+.house-rescue-hud-header > span { padding: 6px 8px; border: 2px solid #8e7c61; border-radius: 999px; color: #ffe77f; font-weight: 900; white-space: nowrap; }
+.house-rescue-hud button, .house-rescue-hud select { min-height: 39px; border: 3px solid #3b3028; border-radius: 7px; color: #3b3028; background: #fffaf0; font: 900 10px/1 ui-monospace, monospace; box-shadow: 3px 3px 0 rgb(59 48 40 / 30%); touch-action: manipulation; }
+.house-rescue-hud button:disabled { opacity: .42; box-shadow: none; }
+.house-rescue-hud-header button { min-height: 34px; padding: 5px 8px; border-color: #e6d5ae; box-shadow: none; }
+.house-rescue-picker { display: grid; grid-template-columns: minmax(0, 1fr) 180px 130px; align-items: end; gap: 9px; padding: 13px; }
+.house-rescue-picker strong, .house-rescue-picker small { display: block; }
+.house-rescue-picker small { margin-top: 5px; color: #746653; font: 700 9px/1.35 system-ui, sans-serif; }
+.house-rescue-picker label { display: grid; gap: 4px; color: #675947; font-size: 8px; font-weight: 900; }
+.house-rescue-picker select { width: 100%; padding: 6px; }
+.house-rescue-picker > button { color: #fff; background: #4d934f; }
+.house-rescue-gameplay { display: grid; gap: 7px; padding: 8px; border-top: 3px solid #3b3028; }
+.house-rescue-game-heading { display: grid; grid-template-columns: minmax(0, 1fr) repeat(3, auto); align-items: center; gap: 6px; }
+.house-rescue-game-heading div { min-width: 0; }
+.house-rescue-game-heading small, .house-rescue-game-heading div > strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.house-rescue-game-heading small { color: #766753; font-size: 8px; }
+.house-rescue-game-heading div > strong { margin-top: 2px; font-size: 12px; }
+.house-rescue-game-heading > span { display: grid; gap: 1px; min-width: 59px; padding: 5px; text-align: center; border: 2px solid #b9a57d; border-radius: 7px; background: #fffaf0; color: #776956; font-size: 7px; text-transform: uppercase; }
+.house-rescue-game-heading span strong { color: #3b3028; font-size: 12px; }
+.house-rescue-stages { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.house-rescue-stages span { padding: 6px; border: 2px solid #b6a37e; border-radius: 6px; color: #786b59; background: #e9d9b6; font-size: 9px; font-weight: 900; text-align: center; }
+.house-rescue-stages span.active { color: #fff; border-color: #3b3028; background: #b9664e; }
+.house-rescue-stages span.done { color: #224d2e; border-color: #4d934f; background: #cce4ad; }
+.house-rescue-stage-meta { display: flex; align-items: center; gap: 12px; min-height: 25px; color: #6e604e; font-size: 8px; }
+.house-rescue-stage-meta span { white-space: nowrap; }
+.house-rescue-stage-meta strong { color: #3b3028; font-size: 11px; }
+.house-rescue-stage-meta small { margin-left: auto; font: 700 8px/1.25 system-ui, sans-serif; text-align: right; }
+.house-rescue-sort-layout { display: grid; grid-template-columns: minmax(0, 1fr) 142px; gap: 7px; }
+.house-rescue-sort-floor, .house-rescue-vacuum-floor { position: relative; min-height: 355px; overflow: hidden; border: 4px solid #5c4938; border-radius: 10px; background: repeating-linear-gradient(90deg, #d5b881 0 39px, #c7a875 39px 42px); box-shadow: inset 0 0 0 3px rgb(255 250 227 / 38%); touch-action: none; }
+.house-rescue-sort-floor::before, .house-rescue-vacuum-floor::before { content: ""; position: absolute; inset: 5% 3% 6%; border: 2px dashed rgb(84 65 48 / 24%); border-radius: 8px; pointer-events: none; }
+.house-rescue-item { position: absolute; z-index: 2; display: grid; place-items: center; width: 78px; min-height: 62px !important; padding: 3px !important; transform: translate(-50%, -50%); cursor: grab; box-shadow: 2px 2px 0 rgb(59 48 40 / 28%) !important; }
+.house-rescue-item span { font-size: 25px; line-height: 1; }
+.house-rescue-item small { overflow: hidden; max-width: 70px; font: 800 7px/1.1 system-ui, sans-serif; text-overflow: ellipsis; white-space: nowrap; }
+.house-rescue-item.selected { border-color: #b94f3b; outline: 4px solid #ffe069; transform: translate(-50%, -52%) scale(1.06); }
+.house-rescue-bins { display: grid; grid-template-rows: repeat(3, 1fr); gap: 7px; }
+.house-rescue-bins button { display: grid; grid-template-columns: 38px 1fr; grid-template-rows: 1fr 1fr; align-items: center; min-height: 108px; padding: 6px; color: #fff; text-align: left; }
+.house-rescue-bins button span { grid-row: 1 / 3; font-size: 28px; text-align: center; }
+.house-rescue-bins button strong { font-size: 10px; }
+.house-rescue-bins button small { color: #fff; font-size: 7px; opacity: .82; }
+.house-rescue-bins [data-house-rescue-bin="organic"] { background: #4d934f; }
+.house-rescue-bins [data-house-rescue-bin="recycle"] { background: #4389c7; }
+.house-rescue-bins [data-house-rescue-bin="garbage"] { background: #333a3d; }
+.house-rescue-vacuum-floor { min-height: 365px; background: repeating-linear-gradient(90deg, #d7b982 0 42px, #c7a875 42px 45px); cursor: crosshair; }
+.house-rescue-stain { position: absolute; z-index: 1; width: var(--stain-size); height: calc(var(--stain-size) * .75); border-radius: 50%; background: #49372d; opacity: .42; transform: translate(-50%, -50%) rotate(18deg); pointer-events: none; }
+.house-rescue-stain.strength-3, .house-rescue-stain.strength-4, .house-rescue-stain.strength-5 { opacity: .56; box-shadow: 3px 1px 0 rgb(52 39 31 / 24%); }
+.house-rescue-vacuum { position: absolute; z-index: 3; display: grid; place-items: center; width: 48px; height: 48px; border: 3px solid #3b3028; border-radius: 50%; background: #ffe47c; font-size: 27px; box-shadow: 3px 3px 0 rgb(59 48 40 / 32%); transform: translate(-50%, -50%); pointer-events: none; }
+#house-rescue-qa-complete { color: #fff; background: #765a91; }
+.house-rescue-status { min-height: 34px; margin: 0; padding: 8px 10px; border-top: 2px solid #b9a57d; color: #5a5042; background: #fff8e6; font: 800 9px/1.35 system-ui, sans-serif; }
+.house-rescue-status[data-status="success"] { color: #21633d; background: #dff0c5; }
+.house-rescue-status[data-status="error"] { color: #8e3f37; background: #f5c1b7; }
+.house-rescue-result { padding: 14px; border-top: 3px solid #3b3028; text-align: center; }
+.house-rescue-result h3, .house-rescue-result p { margin: 0; }
+.house-rescue-result h3 { color: #3b3028; }
+#house-rescue-result-stars { margin: 7px 0; color: #e3a82c; font-size: 29px; letter-spacing: 3px; text-shadow: 2px 2px #3b3028; }
+.house-rescue-result p { color: #6d604f; font: 700 10px/1.4 system-ui, sans-serif; }
+.house-rescue-result-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 11px 0; }
+.house-rescue-result-stats span { display: grid; gap: 3px; padding: 7px; border: 2px solid #b9a57d; border-radius: 7px; background: #fffaf0; color: #756754; font-size: 7px; }
+.house-rescue-result-stats strong { color: #3b3028; font-size: 13px; }
+.house-rescue-result-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.house-rescue-result-actions #house-rescue-return { color: #fff; background: #4d934f; }
+body[data-game-scene="HouseRescueScene"] .touch-controls,
+body[data-game-scene="HouseRescueScene"] .zoom-controls,
+body[data-game-scene="HouseRescueScene"] .interaction-prompt,
+body[data-game-scene="HouseRescueScene"] .town-hud,
+body[data-game-scene="HouseRescueScene"] .control-hint { display: none; }
+
+@media (max-width: 900px) {
+  .house-rescue-hud { top: 5px; right: 5px; left: 5px; width: auto; max-height: calc(100dvh - 10px); border-width: 3px; box-shadow: 4px 5px 0 rgb(45 34 27 / 45%); }
+  .house-rescue-hud-header { padding: 6px; }
+  .house-rescue-hud-header p, .house-rescue-hud-header small { display: none; }
+  .house-rescue-hud-header h2 { font-size: 15px; }
+  .house-rescue-hud-header button { min-height: 31px; font-size: 8px; }
+  .house-rescue-gameplay { gap: 4px; padding: 5px; }
+  .house-rescue-game-heading div > strong { display: none; }
+  .house-rescue-sort-floor, .house-rescue-vacuum-floor { min-height: 300px; }
+  .house-rescue-item { width: 64px; min-height: 49px !important; }
+  .house-rescue-item span { font-size: 20px; }
+  .house-rescue-bins { grid-template-rows: none; }
+  .house-rescue-bins button { min-height: 91px; }
+  .house-rescue-status { min-height: 27px; padding: 5px 7px; }
+}
+
+@media (max-height: 650px) and (orientation: landscape) {
+  .house-rescue-hud { max-height: calc(100dvh - 8px); }
+  .house-rescue-sort-floor, .house-rescue-vacuum-floor { min-height: 250px; }
+  .house-rescue-item { width: 60px; min-height: 44px !important; }
+  .house-rescue-bins button { min-height: 73px; }
+  .house-rescue-stage-meta { min-height: 20px; }
+}
+
+@media (max-width: 720px) and (orientation: portrait) {
+  body[data-game-scene="HouseRescueScene"] .house-rescue-hud { visibility: hidden; pointer-events: none; }
+  body[data-game-scene="HouseRescueScene"] .landscape-required {
+    position: absolute;
+    z-index: 60;
+    inset: 50% 18px auto;
+    display: grid;
+    place-items: center;
+    gap: 10px;
+    padding: 24px 20px;
+    color: #3b3028;
+    border: 4px solid #3b3028;
+    border-radius: 18px;
+    background: #f5e5bd;
+    box-shadow: 7px 8px 0 rgb(45 34 27 / 48%);
+    text-align: center;
+    transform: translateY(-50%);
+  }
+  body[data-game-scene="HouseRescueScene"] .landscape-required span { font-size: 42px; }
+  body[data-game-scene="HouseRescueScene"] .landscape-required h2 { margin: 0; font: 900 24px/1.1 ui-monospace, monospace; }
+  body[data-game-scene="HouseRescueScene"] .landscape-required p { max-width: 310px; margin: 0; color: #655746; font: 800 12px/1.45 system-ui, sans-serif; }
+}
+
 /* Milestone 9: one personal resident, their starter home, and direct-control handoff. */
 .custom-resident-panel {
   position: fixed;
