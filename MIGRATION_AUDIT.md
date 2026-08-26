@@ -465,3 +465,43 @@ untouched. All 328 automated tests and the production build pass. Desktop,
 species inspection, inventory collection, occupied-tank safeguard, responsive
 layout and a clean console. The protected HTML source remains byte-for-byte
 unchanged.
+
+Milestone 34 completes the original homeowner gratitude-gift system. Every
+accepted House Rescue completion and every NPC-owned lawn completed to at least
+80 percent now receives one stable, duplicate-protected gift chance. Each
+household records lawn and indoor care separately, recognises full inside-and-
+out care completed within the original seven-day window, and observes its own
+seven-day gift cooldown while still remembering care completed during that
+cooldown. Normal work retains the original eight-percent chance; full household
+care raises it to ten percent; rare and exceptional gifts remain exactly one
+percent combined. Fifteen consecutive eligible misses guarantee the sixteenth
+chance through the original pity rule.
+
+Eligible gifts use the exact four price tiers and context-sensitive stock:
+mowers or town placeables for lawn care, vacuums or furniture for House Rescue,
+and the complete eligible catalogue after full household care. Starter,
+subscription, QA, aquarium, locked, full-inventory and Record Player items are
+excluded. A missing tier safely downgrades until valid stock exists. The selected
+item, household cooldown, pity counter, processed event, inventory quantity,
+zero-coin value ledger, bounded history and delivery queue commit in the same
+verified transaction as the completed job. Queue saturation leaves an event
+retryable, duplicate events cannot grant twice, and any failed write restores
+the exact pre-job state.
+
+Waiting gifts open only when the player is safely back in town and no other
+modal is active. The accessible two-stage reveal preserves the homeowner's
+original dialogue, household name, gift tier and shop value, pauses the town,
+traps keyboard focus, honours reduced motion and offers Keep for later plus the
+correct Equip, Furnish or Place action. The item is already safely owned before
+the reveal; acknowledgement atomically removes only its queue entry and marks
+history revealed, while a failed acknowledgement leaves the gift waiting.
+
+Schema 31 upgrades schema 30 with the bounded format-2 homeowner-gift domain.
+Original zero-padded household identities, cooldowns, pity state, processed
+events, history and queued deliveries convert without changing the protected
+legacy snapshot; a queued legacy record without a matching owned item is safely
+dropped instead of duplicating inventory. All 345 automated tests and the
+production build pass. Desktop, 390×844 portrait and 844×390 landscape browser
+QA verified both reveal stages, keyboard focus, safe dismissal, immediate tool
+equipping, no overflow, 44-pixel-or-larger mobile tap targets and a clean console.
+The protected HTML source remains byte-for-byte unchanged.

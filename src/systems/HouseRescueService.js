@@ -13,6 +13,7 @@ import {
 } from "../data/houseRescue.js";
 import { COIN_LEDGER_LIMIT } from "../state/economyState.js";
 import { ITEM_CATALOG } from "../data/items.js";
+import { queueHomeownerGiftInto } from "./HomeownerGiftService.js";
 
 function appendLedger(state, now, details) {
   const id = `coin-${String(state.economy.nextTransactionId).padStart(6, "0")}`;
@@ -272,7 +273,13 @@ export class HouseRescueService {
       coins,
       nextLevel: progress.selectedLevel,
     };
-    return { ok: true, code: "house-rescue-complete", result, cleanedLayers, ledger };
+    const homeownerGift = queueHomeownerGiftInto(state, {
+      source: "house-rescue",
+      houseId: session.houseId,
+      eventId: `homeowner:house-rescue:${session.houseId}:${session.jobSerial}`,
+      now: this.now(),
+    });
+    return { ok: true, code: "house-rescue-complete", result, cleanedLayers, ledger, homeownerGift };
   }
 
   qaComplete() {

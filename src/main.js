@@ -43,6 +43,7 @@ import { BeachCleanupService } from "./systems/BeachCleanupService.js";
 import { PlaygroundPowerwashService } from "./systems/PlaygroundPowerwashService.js";
 import { TownPlacementService } from "./systems/TownPlacementService.js";
 import { RestorationMilestoneService } from "./systems/RestorationMilestoneService.js";
+import { HomeownerGiftService } from "./systems/HomeownerGiftService.js";
 import { EconomyHudController } from "./ui/EconomyHudController.js";
 import { SaveStatusController } from "./ui/SaveStatusController.js";
 import { ShopController } from "./ui/ShopController.js";
@@ -51,6 +52,7 @@ import { CustomResidentController } from "./ui/CustomResidentController.js";
 import { FarmingController } from "./ui/FarmingController.js";
 import { AnimalFriendsController } from "./ui/AnimalFriendsController.js";
 import { RestorationMilestoneController } from "./ui/RestorationMilestoneController.js";
+import { HomeownerGiftController } from "./ui/HomeownerGiftController.js";
 import { ITEM_IDS } from "./data/items.js";
 import { findSafeFurniturePlacement } from "./data/homeInteriors.js";
 
@@ -86,6 +88,7 @@ const playgroundPowerwash = new PlaygroundPowerwashService(stateRuntime.gameStat
 playgroundPowerwash.refresh();
 const townPlacement = new TownPlacementService(stateRuntime.gameState, stateRuntime.repository);
 const restorationMilestones = new RestorationMilestoneService(stateRuntime.gameState, stateRuntime.repository);
+const homeownerGifts = new HomeownerGiftService(stateRuntime.gameState, stateRuntime.repository);
 
 const config = {
   type: Phaser.AUTO,
@@ -127,6 +130,7 @@ game.registry.set("beachCleanup", beachCleanup);
 game.registry.set("playgroundPowerwash", playgroundPowerwash);
 game.registry.set("townPlacement", townPlacement);
 game.registry.set("restorationMilestones", restorationMilestones);
+game.registry.set("homeownerGifts", homeownerGifts);
 const economy = new EconomyService(stateRuntime.gameState, stateRuntime.repository);
 game.registry.set("economy", economy);
 if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "aquarium") {
@@ -160,6 +164,7 @@ if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa")
 }
 if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "collection") municipalCollection.start({ force: true, persist: true });
 if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "restoration") restorationMilestones.unlockForQa("festival", { revealed: false });
+if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "homeowner-gift" && !homeownerGifts.getNext()) homeownerGifts.queueForQa();
 if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "home") {
   if (!customResident.getSnapshot().created) {
     customResident.saveProfile({
@@ -224,6 +229,21 @@ const restorationMilestoneController = new RestorationMilestoneController(restor
 });
 game.registry.set("restorationMilestoneController", restorationMilestoneController);
 setTimeout(() => restorationMilestoneController.maybeOpen(), 450);
+const homeownerGiftController = new HomeownerGiftController(homeownerGifts, {
+  onModalChange(open) {
+    setModalOpen("homeowner-gift", open);
+  },
+  canOpen() {
+    return Boolean(activeTownScene()) && document.body.dataset.modalOpen !== "true";
+  },
+  onUseItem(item) {
+    if (item?.category === "equipment") return economy.equip(item.id, { reason: `Equipped neighbour gift: ${item.name}` });
+    if (item?.category === "furniture") return activeTownScene()?.enterHouseInterior?.("house-20", { focusFurnitureId: item.id }) || { ok: false, message: "Return to Willowmere town to furnish your home." };
+    return activeTownScene()?.beginTownPlacement?.(item?.id) || { ok: false, message: "Return to Willowmere town to place this item." };
+  },
+});
+game.registry.set("homeownerGiftController", homeownerGiftController);
+setTimeout(() => homeownerGiftController.maybeOpen(), 520);
 const saveStatus = new SaveStatusController(stateRuntime, {
   onModalChange(open) {
     setModalOpen("save", open);
@@ -407,6 +427,18 @@ window.__KINDWORKS_PHASER__ = {
   },
   getRestorationMilestoneDiagnostics() {
     return { ...restorationMilestones.getDiagnostics(), interface: restorationMilestoneController.getDiagnostics() };
+  },
+  getHomeownerGiftState() {
+    return homeownerGifts.getSnapshot();
+  },
+  getHomeownerGiftDiagnostics() {
+    return { ...homeownerGifts.getDiagnostics(), interface: homeownerGiftController.getDiagnostics() };
+  },
+  qaQueueHomeownerGift(options = {}) {
+    if (!import.meta.env.DEV) return { ok: false, message: "Visual QA helpers are available only in development." };
+    const result = homeownerGifts.queueForQa(options);
+    if (result.ok) setTimeout(() => homeownerGiftController.maybeOpen(), 80);
+    return result;
   },
   qaUnlockRestorationMilestone(id = "festival", { reveal = true } = {}) {
     if (!import.meta.env.DEV) return { ok: false, message: "Visual QA helpers are available only in development." };

@@ -14,6 +14,7 @@ import {
 } from "../state/lawnCareState.js";
 import { COIN_LEDGER_LIMIT } from "../state/economyState.js";
 import { registerRestorationCleanupInto } from "../state/restorationMilestoneState.js";
+import { queueHomeownerGiftInto } from "./HomeownerGiftService.js";
 
 export const MIN_LAWN_REWARD_PERCENT = 50;
 export const MAX_LAWN_REWARD_COINS = 170;
@@ -330,6 +331,13 @@ export class LawnCareService {
       worldPosition: plot ? { x: plot.x, y: plot.y } : session.returnPosition,
       occurredAt: completedAt,
     }) : null;
+    const homeownerGift = session.mode === "town-job" ? queueHomeownerGiftInto(state, {
+      source: "lawn",
+      houseId: plot?.houseSourceId,
+      eventId: `homeowner:lawn:${session.id}`,
+      percent: result.percent,
+      now: this.now(),
+    }) : null;
     return {
       ok: true,
       code: session.mode === "campaign" ? "lawn-campaign-completed" : "lawn-job-completed",
@@ -341,6 +349,7 @@ export class LawnCareService {
       townEffect,
       ledger: ledger ? structuredClone(ledger) : null,
       restoration,
+      homeownerGift,
     };
   }
 

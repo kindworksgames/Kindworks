@@ -25,7 +25,7 @@
           <button id="custom-resident-button" class="economy-hud-button resident-hud-button" type="button" aria-label="Create your personal resident">💚 Create resident</button>
           <button id="animal-friends-button" class="economy-hud-button animal-hud-button" type="button" aria-label="Open Animal Friends">🐾 Animal Friends</button>
           <button id="save-status-button" class="save-status-button" type="button" data-status="new">Save not started</button>
-          <div class="milestone-badge">PHASER TOWN · MILESTONE 26</div>
+          <div class="milestone-badge">PHASER TOWN · MILESTONE 34</div>
         </div>
       </section>
       <section id="grocer-hud" class="grocer-hud hidden" aria-label="Village Grocer information">
@@ -72,6 +72,28 @@
           <p id="restoration-milestone-change" class="restoration-milestone-change"></p>
           <p id="restoration-milestone-gift" class="restoration-milestone-gift hidden">🎁 Willowmere gave you a Town Planter. It is waiting in your inventory.</p>
           <button id="restoration-milestone-dismiss" type="button">See the restored town</button>
+        </div>
+      </section>
+      <section id="homeowner-gift-panel" class="homeowner-gift-panel hidden" data-phase="message" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="homeowner-gift-owner" aria-describedby="homeowner-gift-message homeowner-gift-status">
+        <div class="homeowner-gift-card">
+          <div class="homeowner-gift-house" aria-hidden="true">🏡</div>
+          <p class="homeowner-gift-eyebrow">MILESTONE 34 · NEIGHBOUR GRATITUDE</p>
+          <h2 id="homeowner-gift-owner">A grateful neighbour</h2>
+          <p id="homeowner-gift-home" class="homeowner-gift-home">Willowmere home</p>
+          <p id="homeowner-gift-message" class="homeowner-gift-message"></p>
+          <button id="homeowner-gift-continue" class="homeowner-gift-continue" type="button">See the gift</button>
+          <div id="homeowner-gift-present" class="homeowner-gift-present" aria-live="polite">
+            <div class="homeowner-gift-rays" aria-hidden="true"></div>
+            <div id="homeowner-gift-icon" class="homeowner-gift-icon" aria-hidden="true">🎁</div>
+            <span id="homeowner-gift-tier" class="homeowner-gift-tier">Neighbour gift</span>
+            <h3 id="homeowner-gift-name">A thoughtful gift</h3>
+            <strong id="homeowner-gift-value">Worth 🪙 0</strong>
+          </div>
+          <p id="homeowner-gift-status" class="homeowner-gift-status" role="status">The gift is already saved safely in your inventory.</p>
+          <div class="homeowner-gift-actions">
+            <button id="homeowner-gift-keep" type="button">Keep for later</button>
+            <button id="homeowner-gift-use" class="primary" type="button">Use now</button>
+          </div>
         </div>
       </section>
       <section id="save-panel" class="save-panel hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="save-panel-title" aria-describedby="save-panel-message">
@@ -389,7 +411,7 @@
       </section>
       <section id="home-interior-hud" class="home-interior-hud hidden" aria-labelledby="home-interior-title">
         <header class="home-interior-header">
-          <div><p>MILESTONES 32–33 · HOMES &amp; AQUARIUM</p><h2 id="home-interior-title">🏡 Willowmere Home</h2><small id="home-interior-subtitle">A lived-in cottage</small></div>
+          <div><p>MILESTONES 32–34 · HOMES, AQUARIUM &amp; GIFTS</p><h2 id="home-interior-title">🏡 Willowmere Home</h2><small id="home-interior-subtitle">A lived-in cottage</small></div>
           <button id="home-interior-exit" type="button">Exit home</button>
         </header>
         <div id="home-interior-badges" class="home-interior-badges" aria-label="Home details"></div>

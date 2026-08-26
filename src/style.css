@@ -2438,6 +2438,105 @@ body[data-resident-control="true"] #control-hint { display: none; }
   .restoration-milestone-card button { width: 100%; min-height: 48px; }
 }
 
+/* Milestone 34: failure-safe homeowner gratitude gifts. */
+.homeowner-gift-panel {
+  position: fixed;
+  z-index: 96;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  color: #294637;
+  background: radial-gradient(circle at 50% 35%, rgba(255, 247, 190, .42), rgba(19, 47, 35, .84));
+  backdrop-filter: blur(5px);
+}
+.homeowner-gift-panel.hidden { display: none; }
+.homeowner-gift-card {
+  position: relative;
+  isolation: isolate;
+  width: min(560px, calc(100vw - 28px));
+  overflow: hidden;
+  border: 5px solid #315c40;
+  border-radius: 24px;
+  padding: 27px clamp(18px, 5vw, 42px) 25px;
+  background: linear-gradient(155deg, #fffceb, #ecf1cf 58%, #d5ebcd);
+  box-shadow: 0 22px 70px rgba(11, 38, 25, .48), inset 0 0 0 3px rgba(255,255,255,.72);
+  text-align: center;
+  animation: homeowner-gift-arrive .55s cubic-bezier(.2,.9,.25,1.12) both;
+}
+.homeowner-gift-house { font-size: 46px; filter: drop-shadow(0 5px 0 rgba(56, 85, 55, .13)); }
+.homeowner-gift-eyebrow { margin: 3px 0 7px; color: #78814b; font: 900 10px/1.2 ui-monospace, monospace; letter-spacing: .15em; }
+.homeowner-gift-card h2 { margin: 0; color: #315c40; font: 950 clamp(25px, 5vw, 34px)/1 system-ui, sans-serif; }
+.homeowner-gift-home { margin: 7px 0 0; color: #6b765c; font: 800 11px/1.3 system-ui, sans-serif; }
+.homeowner-gift-message { max-width: 455px; margin: 18px auto; color: #3c5745; font: 750 16px/1.55 system-ui, sans-serif; }
+.homeowner-gift-continue,
+.homeowner-gift-actions button {
+  min-height: 48px;
+  border: 3px solid #315c40;
+  border-radius: 12px;
+  padding: 10px 18px;
+  color: #315c40;
+  background: #fff8cf;
+  box-shadow: 0 5px 0 #315c40;
+  font: 900 14px/1.15 system-ui, sans-serif;
+  cursor: pointer;
+}
+.homeowner-gift-continue { color: #fff; background: #4f865b; }
+.homeowner-gift-continue:hover,
+.homeowner-gift-actions button:hover { background: #e7efbf; }
+.homeowner-gift-continue:hover,
+.homeowner-gift-actions button.primary:hover { background: #5b9768; }
+.homeowner-gift-continue:active,
+.homeowner-gift-actions button:active { transform: translateY(3px); box-shadow: 0 2px 0 #315c40; }
+.homeowner-gift-continue:focus-visible,
+.homeowner-gift-actions button:focus-visible { outline: 4px solid #f2c94f; outline-offset: 4px; }
+.homeowner-gift-present { position: relative; display: none; padding: 12px 12px 5px; }
+.homeowner-gift-rays { position: absolute; z-index: -1; inset: -100%; opacity: .22; background: repeating-conic-gradient(#efc64f 0 8deg, transparent 8deg 22deg); animation: homeowner-gift-rays 16s linear infinite; }
+.homeowner-gift-icon { font-size: clamp(68px, 13vw, 96px); line-height: 1.1; animation: homeowner-gift-pop .75s cubic-bezier(.2,.9,.25,1.35) both; }
+.homeowner-gift-tier { display: inline-block; margin: 6px 0 7px; border: 2px solid #b88435; border-radius: 999px; padding: 5px 10px; color: #684d21; background: #ffeaa0; font: 900 10px/1 ui-monospace, monospace; letter-spacing: .08em; text-transform: uppercase; }
+.homeowner-gift-tier[data-tier="rare"] { border-color: #547f9a; color: #31566d; background: #cceafa; }
+.homeowner-gift-tier[data-tier="exceptional"] { border-color: #8d5c9b; color: #643b72; background: #ead0ef; }
+.homeowner-gift-present h3 { margin: 0; color: #315c40; font: 950 25px/1.12 system-ui, sans-serif; }
+.homeowner-gift-present strong { display: block; margin-top: 7px; color: #6f5a25; font-size: 13px; }
+.homeowner-gift-status { margin: 14px auto 0; max-width: 460px; color: #65725d; font: 750 12px/1.4 system-ui, sans-serif; }
+.homeowner-gift-status[data-status="error"] { border-radius: 9px; padding: 8px; color: #79382f; background: #f8d2c8; }
+.homeowner-gift-actions { display: none; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 17px; }
+.homeowner-gift-actions button.primary { color: #fff; background: #4f865b; }
+.homeowner-gift-panel[data-phase="gift"] .homeowner-gift-message,
+.homeowner-gift-panel[data-phase="gift"] .homeowner-gift-continue { display: none; }
+.homeowner-gift-panel[data-phase="gift"] .homeowner-gift-present,
+.homeowner-gift-panel[data-phase="gift"] .homeowner-gift-actions { display: grid; }
+@keyframes homeowner-gift-arrive { from { opacity: 0; transform: translateY(22px) scale(.9); } to { opacity: 1; transform: none; } }
+@keyframes homeowner-gift-pop { from { opacity: 0; transform: scale(.25) rotate(-14deg); } to { opacity: 1; transform: none; } }
+@keyframes homeowner-gift-rays { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .homeowner-gift-card, .homeowner-gift-icon, .homeowner-gift-rays { animation: none; }
+}
+
+@media (max-width: 540px) {
+  .homeowner-gift-panel { padding: 8px; }
+  .homeowner-gift-card { width: min(100%, 440px); border-width: 4px; border-radius: 18px; padding: 21px 15px 19px; }
+  .homeowner-gift-house { font-size: 38px; }
+  .homeowner-gift-message { margin: 13px auto; font-size: 14px; }
+  .homeowner-gift-continue { width: 100%; }
+  .homeowner-gift-actions { grid-template-columns: 1fr; }
+}
+
+@media (max-height: 560px) and (orientation: landscape) {
+  .homeowner-gift-panel { padding: 5px; }
+  .homeowner-gift-card { width: min(700px, calc(100vw - 10px)); max-height: calc(100dvh - 10px); padding: 12px 22px 13px; border-width: 3px; border-radius: 15px; }
+  .homeowner-gift-house { display: none; }
+  .homeowner-gift-card h2 { font-size: 22px; }
+  .homeowner-gift-message { margin: 9px auto; font-size: 13px; line-height: 1.4; }
+  .homeowner-gift-icon { font-size: 52px; }
+  .homeowner-gift-present { padding: 4px; }
+  .homeowner-gift-present h3 { font-size: 19px; }
+  .homeowner-gift-status { margin-top: 7px; }
+  .homeowner-gift-actions { margin-top: 8px; }
+  .homeowner-gift-actions button, .homeowner-gift-continue { min-height: 44px; }
+}
+
 @media (max-width: 820px) {
   .custom-resident-layout { grid-template-columns: 1fr; padding: 12px; }
   .custom-resident-previews { position: static; grid-template-columns: 130px 1fr; text-align: left; }

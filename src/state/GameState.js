@@ -128,6 +128,12 @@ import {
   validateHomeInteriorState,
 } from "./homeInteriorState.js";
 import { reconcileAquariumHousingInto, validateAquariumHousing } from "./aquariumState.js";
+import {
+  createFreshHomeownerGiftState,
+  normalizeHomeownerGiftState,
+  projectLegacyHomeownerGiftState,
+  validateHomeownerGiftState,
+} from "./homeownerGiftState.js";
 
 const DIRECTIONS = new Set(["up", "down", "left", "right"]);
 
@@ -195,6 +201,7 @@ export function createFreshGameState({ now = Date.now() } = {}) {
     morningMug: createFreshMorningMugState(),
     riversideKitchen: createFreshRiversideKitchenState(),
     southShoreScoops: createFreshSouthShoreScoopsState(),
+    homeownerGifts: createFreshHomeownerGiftState(),
     legacySnapshot: null,
   };
 }
@@ -240,6 +247,7 @@ export function createGameStateFromLegacy(legacy, report, { now = Date.now() } =
   state.morningMug = projectLegacyMorningMug(legacy.morningMug);
   state.riversideKitchen = projectLegacyRiversideKitchen(legacy.riversideKitchen);
   state.southShoreScoops = projectLegacySouthShoreScoops(legacy.southShoreScoops ?? legacy.scoops);
+  state.homeownerGifts = projectLegacyHomeownerGiftState(legacy, state.inventory);
   state.restorationMilestones = projectLegacyRestorationMilestoneState(legacy, state);
   const legacySeeds = legacy.farmingFoundation?.seedInventory || {};
   for (const id of ["carrot-seeds", "fresh-greens-seeds", "wild-berry-starters"]) {
@@ -432,6 +440,12 @@ export function upgradeGameState(value, { now = Date.now() } = {}) {
     reconcileAquariumHousingInto(state, { reason: "A placed home fish tank was not available after the Milestone 33 save upgrade", now });
     state.schemaVersion = 30;
   }
+  if (state.schemaVersion === 30) {
+    state.homeownerGifts = state.source?.kind === "legacy-import"
+      ? projectLegacyHomeownerGiftState(state.legacySnapshot, state.inventory)
+      : normalizeHomeownerGiftState(state.homeownerGifts, state.inventory);
+    state.schemaVersion = 31;
+  }
   return state;
 }
 
@@ -470,6 +484,7 @@ export function validateGameState(value) {
   errors.push(...validateAnimalState(value.animals, value.world).errors);
   errors.push(...validateFishingState(value.fishing, value.world).errors);
   errors.push(...validateAquariumHousing(value).errors);
+  errors.push(...validateHomeownerGiftState(value.homeownerGifts, value.inventory).errors);
   errors.push(...validateBakeryState(value.bakery).errors);
   errors.push(...validateCafeState(value.cafe).errors);
   errors.push(...validateRiverState(value.river).errors);
