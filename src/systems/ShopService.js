@@ -40,7 +40,10 @@ export class ShopService {
     if (!item) return { ok: false, code: "unknown-item", message: `Unknown item: ${itemId}` };
     const state = this.economy.gameState.getSnapshot();
     const orchardSapling = item.farmingKind === "sapling";
-    const owned = orchardSapling ? state.farming.orchard.purchasedSaplings : this.economy.inventory.quantity(state.inventory, itemId);
+    const placedUniqueFurniture = item.unique
+      ? state.homeInteriors?.placements?.filter((placement) => placement.itemId === itemId).length || 0
+      : 0;
+    const owned = orchardSapling ? state.farming.orchard.purchasedSaplings : this.economy.inventory.quantity(state.inventory, itemId) + placedUniqueFurniture;
     const limit = orchardSapling ? ORCHARD_CONFIG.maxTrees : inventoryLimitFor(item);
     const remainingCapacity = orchardSapling
       ? Math.max(0, ORCHARD_CONFIG.maxTrees - state.farming.orchard.trees.length - owned)

@@ -403,3 +403,31 @@ schema-28 reload persistence, the on-map cottage and a clean console. A 390×844
 mobile browser check confirmed the complete progression controls remain
 readable, tappable and free of horizontal overflow. The protected HTML source
 remains byte-for-byte unchanged.
+
+Milestone 32 completes the bird's-eye home-interior and furniture system. All
+19 physical cottages now open from town into stable, distinct interiors with
+authored floor layers, perimeter walls, internal partitions, doorway clearance,
+built-in furniture and collision rules. Meadowlight House follows the player's
+current purchased tier; the other 18 cottages preserve their named households,
+live resident schedules and current House Rescue cleanliness. Every room object,
+resident and dirty area can be inspected, and a dirty cottage starts or resumes
+its exact House Rescue job before returning to the same interior.
+
+All ten original furniture products are now usable indoors: Cosy Sofa, Reading
+Armchair, Woven Home Rug, Oak Coffee Table, Bookshelf, Leafy House Plant, Floor
+Lamp, Dining Table, Small Wardrobe and Ornamental Fish Tank. The personal home
+supports up to 60 saved placements with tap or keyboard placement, quarter-turn
+rotation, collision-aware movement and storage back to inventory. Rugs retain
+their floor-layer behaviour while solid furniture respects walls, doors,
+partitions, built-ins and other solid items. The aquarium remains an empty,
+placeable furnishing here; fish capacity and swimming belong to Milestone 33.
+
+Furniture inventory, transforms, serials, visits and inspections save through
+the shared verified state, with atomic rollback after failed persistence. Schema
+29 upgrades schema 28 and imports original `homeFurniture` positions and turns
+without changing the protected legacy snapshot. All 316 automated tests and the
+production build pass. Desktop browser QA verified entry, inspection, placement,
+rotation, movement, storage, resident schedules and the House Rescue round trip.
+Responsive 400×842 portrait and 842×400 landscape browser checks confirmed the
+interior and controls remain readable and usable. The protected HTML source
+remains byte-for-byte unchanged.

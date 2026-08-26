@@ -27,7 +27,7 @@ function stateAtDay(day) {
 test("fresh Milestone 26 state has six beds, one positioned starter tree and one lawn job", () => {
   const state = createFreshGameState({ now: 0 });
   assert.equal(validateGameState(state).ok, true);
-  assert.equal(state.schemaVersion, 28);
+  assert.equal(state.schemaVersion, 29);
   assert.equal(state.farming.allotment.beds.length, 6);
   assert.equal(state.farming.allotment.unlockedBeds, 1);
   assert.equal(state.inventory.consumables["carrot-seeds"], 1);
@@ -206,7 +206,7 @@ test("schema 6 saves gain farming without losing the preceding milestone systems
   old.schemaVersion = 6;
   old.identity.townName = "Keeperton";
   const upgraded = upgradeGameState(old, { now: 1000 });
-  assert.equal(upgraded.schemaVersion, 28);
+  assert.equal(upgraded.schemaVersion, 29);
   assert.equal(upgraded.identity.townName, "Keeperton");
   assert.equal(upgraded.farming.allotment.beds.length, 6);
   assert.equal(validateGameState(upgraded).ok, true);

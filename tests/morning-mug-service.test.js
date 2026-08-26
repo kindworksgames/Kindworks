@@ -88,7 +88,7 @@ test("all 150 shifts satisfy the original chapter, order, timing and difficulty 
 
 test("fresh Milestone 21 state is valid and keeps Morning Mug separate from Corner Café", () => {
   const state = createFreshGameState({ now: 0 });
-  assert.equal(state.schemaVersion, 28);
+  assert.equal(state.schemaVersion, 29);
   assert.equal(state.morningMug.unlockedLevel, 1);
   assert.equal(state.morningMug.activeShift, null);
   assert.equal(state.cafe.unlockedLevel, 1);
@@ -240,7 +240,7 @@ test("schema 17 saves gain Morning Mug while preserving every prior milestone", 
   old.playgroundPowerwash.progress.best[1] = { stars: 3, percent: 100 };
   old.playgroundPowerwash.progress.completed = 1;
   const upgraded = upgradeGameState(old, { now: 0 });
-  assert.equal(upgraded.schemaVersion, 28);
+  assert.equal(upgraded.schemaVersion, 29);
   assert.equal(upgraded.morningMug.unlockedLevel, 1);
   assert.deepEqual(upgraded.playgroundPowerwash.progress.best[1], { stars: 3, percent: 100 });
   assert.equal(validateGameState(upgraded).ok, true);

@@ -119,6 +119,22 @@ const LEGACY_ITEM_METADATA = Object.freeze({
   "town-centre-monument": { unlock: { game: "waste", perfects: 30 } },
 });
 
+// Authored indoor presentation from the final HTML game. Aquarium behaviour is
+// intentionally introduced in Milestone 33; Milestone 32 treats the tank as a
+// unique, placeable furnishing only.
+const HOME_FURNITURE_METADATA = Object.freeze({
+  "cosy-sofa": { description: "A roomy, comfortable sofa for the living area.", indoorKind: "sofa", indoorSize: [0.20, 0.12] },
+  "reading-armchair": { description: "A soft armchair made for a quiet reading corner.", indoorKind: "armchair", indoorSize: [0.11, 0.13] },
+  "oak-coffee-table": { description: "A sturdy oak table for the centre of the room.", indoorKind: "coffee-table", indoorSize: [0.14, 0.10] },
+  "tall-bookshelf": { description: "A tall shelf with plenty of room for favourite books.", indoorKind: "bookshelf", indoorSize: [0.09, 0.17] },
+  "glow-floor-lamp": { description: "A warm floor lamp that brightens a cosy corner.", indoorKind: "floor-lamp", indoorSize: [0.075, 0.10] },
+  "leafy-house-plant": { description: "A cheerful leafy plant for bringing the garden indoors.", indoorKind: "plant", indoorSize: [0.075, 0.10] },
+  "woven-home-rug": { description: "A woven rug that sits safely beneath other furniture.", indoorKind: "woven-rug", indoorSize: [0.20, 0.16], floorLayer: true },
+  "record-player": { description: "A record player for music-filled evenings at home.", indoorKind: "record-player", indoorSize: [0.11, 0.10] },
+  "companion-basket": { description: "A snug basket where an adopted companion can rest.", indoorKind: "companion-basket", indoorSize: [0.12, 0.11] },
+  "ornamental-fish-tank": { description: "An empty ornamental fish tank ready for Milestone 33's aquarium residents.", indoorKind: "fish-tank", indoorSize: [0.19, 0.13], aquarium: true },
+});
+
 const placeableMetadata = (placeableType, minRiverDistance, minRoadClearance, description, effect = {}) => ({
   description,
   placeableType,
@@ -172,7 +188,7 @@ function freezeMetadata(value) {
 
 export const ITEM_CATALOG = Object.freeze(Object.fromEntries(itemRows.map((row) => {
   const [id, name, icon, category, price, shopGroup, flags = {}] = row;
-  const metadata = structuredClone({ ...(LEGACY_ITEM_METADATA[id] || {}), ...(LEGACY_PLACEABLE_METADATA[id] || {}) });
+  const metadata = structuredClone({ ...(LEGACY_ITEM_METADATA[id] || {}), ...(LEGACY_PLACEABLE_METADATA[id] || {}), ...(HOME_FURNITURE_METADATA[id] || {}) });
   return [id, freezeMetadata({ id, name, icon, category, price, shopGroup, ...metadata, ...flags })];
 })));
 

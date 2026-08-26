@@ -308,7 +308,11 @@ export class HouseRescueScene extends Phaser.Scene {
     const returnPosition = session?.returnPosition || this.entryData.returnPosition;
     const returnFacing = session?.returnFacing || this.entryData.returnFacing || "down";
     this.cameras.main.fadeOut(180, 53, 42, 35);
-    this.time.delayedCall(200, () => this.scene.start("TownScene", { returnPosition, returnFacing, transitionCount: Number(this.entryData.transitionCount || 0) + 1 }));
+    this.time.delayedCall(200, () => {
+      if (this.entryData.returnScene === "HouseInteriorScene" && this.entryData.returnHouseId) {
+        this.scene.start("HouseInteriorScene", { houseId: this.entryData.returnHouseId, returnPosition, returnFacing, transitionCount: Number(this.entryData.transitionCount || 0) + 1 });
+      } else this.scene.start("TownScene", { returnPosition, returnFacing, transitionCount: Number(this.entryData.transitionCount || 0) + 1 });
+    });
     return true;
   }
 

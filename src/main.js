@@ -8,6 +8,7 @@ import { RiversideKitchenScene } from "./scenes/RiversideKitchenScene.js";
 import { SouthShoreScoopsScene } from "./scenes/SouthShoreScoopsScene.js";
 import { RiverClearoutScene } from "./scenes/RiverClearoutScene.js";
 import { HouseRescueScene } from "./scenes/HouseRescueScene.js";
+import { HouseInteriorScene } from "./scenes/HouseInteriorScene.js";
 import { TownScene } from "./scenes/TownScene.js";
 import { WasteCollectionScene } from "./scenes/WasteCollectionScene.js";
 import { LawnCareScene } from "./scenes/LawnCareScene.js";
@@ -35,6 +36,7 @@ import { RiversideKitchenService } from "./systems/RiversideKitchenService.js";
 import { SouthShoreScoopsService } from "./systems/SouthShoreScoopsService.js";
 import { RiverClearoutService } from "./systems/RiverClearoutService.js";
 import { HouseRescueService } from "./systems/HouseRescueService.js";
+import { HomeInteriorService } from "./systems/HomeInteriorService.js";
 import { LawnCareService } from "./systems/LawnCareService.js";
 import { BeachCleanupService } from "./systems/BeachCleanupService.js";
 import { PlaygroundPowerwashService } from "./systems/PlaygroundPowerwashService.js";
@@ -60,6 +62,7 @@ const offlineResolution = worldSimulation.resolveOffline();
 const npcTownLife = new NpcTownLifeService(stateRuntime.gameState, stateRuntime.repository);
 const municipalCollection = new MunicipalCollectionService(stateRuntime.gameState, stateRuntime.repository);
 const customResident = new CustomResidentService(stateRuntime.gameState, stateRuntime.repository);
+const homeInteriors = new HomeInteriorService(stateRuntime.gameState, stateRuntime.repository, { customResident });
 farming.refresh({ persist: true });
 livingEnvironment.refresh({ persist: true });
 const animals = new AnimalService(stateRuntime.gameState, stateRuntime.repository);
@@ -93,7 +96,7 @@ const config = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene, TownScene, VillageGrocerScene, BakeryScene, CafeScene, MorningMugScene, RiversideKitchenScene, SouthShoreScoopsScene, RiverClearoutScene, HouseRescueScene, WasteCollectionScene, LawnCareScene, BeachCleanupScene, PlaygroundPowerwashScene, FishingScene],
+  scene: [BootScene, TownScene, HouseInteriorScene, VillageGrocerScene, BakeryScene, CafeScene, MorningMugScene, RiversideKitchenScene, SouthShoreScoopsScene, RiverClearoutScene, HouseRescueScene, WasteCollectionScene, LawnCareScene, BeachCleanupScene, PlaygroundPowerwashScene, FishingScene],
 };
 
 const game = new Phaser.Game(config);
@@ -103,6 +106,7 @@ game.registry.set("worldSimulation", worldSimulation);
 game.registry.set("npcTownLife", npcTownLife);
 game.registry.set("municipalCollection", municipalCollection);
 game.registry.set("customResident", customResident);
+game.registry.set("homeInteriors", homeInteriors);
 game.registry.set("farming", farming);
 game.registry.set("livingEnvironment", livingEnvironment);
 game.registry.set("animals", animals);
@@ -149,6 +153,19 @@ if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa")
   }
   const balance = stateRuntime.gameState.getSnapshot().economy.coins;
   if (balance < 200_000) economy.credit(200_000 - balance, { kind: "development-fixture", reason: "Milestone 31 personal-home visual QA" });
+}
+if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "interior") {
+  if (!customResident.getSnapshot().created) {
+    customResident.saveProfile({
+      name: "Meadow", skin: "warm", hair: 1, hairColor: "dark-brown", accessory: "badge", outfit: 1, bodyBuild: "average",
+      hobbies: ["gardening", "reading", "helping"], home: { wallColor: "sage", roofStyle: "gable", roofColor: "terracotta" },
+    });
+  }
+  for (const itemId of ["cosy-sofa", "reading-armchair", "woven-home-rug", "leafy-house-plant", "ornamental-fish-tank"]) {
+    const state = stateRuntime.gameState.getSnapshot();
+    const ownedOrPlaced = Number(state.inventory.furniture[itemId] || 0) + state.homeInteriors.placements.filter((placement) => placement.itemId === itemId).length;
+    if (!ownedOrPlaced) economy?.grantItem?.(itemId, 1, { reason: "Milestone 32 home-interior visual QA" });
+  }
 }
 const cleanupService = new CleanupJobService(stateRuntime.gameState, stateRuntime.repository, { environment: livingEnvironment });
 game.registry.set("cleanupService", cleanupService);
@@ -199,6 +216,7 @@ const economyHud = new EconomyHudController(stateRuntime, {
     return game.registry.get("animalFriendsController")?.open?.() || { ok: false };
   },
   onPlaceable(item) {
+    if (item?.category === "furniture") return activeTownScene()?.enterHouseInterior?.("house-20", { focusFurnitureId: item.id }) || { ok: false, message: "Return to Willowmere town to furnish your home." };
     return activeTownScene()?.beginTownPlacement?.(item?.id) || { ok: false, message: "Return to Willowmere town to place this item." };
   },
 });
@@ -415,5 +433,16 @@ window.__KINDWORKS_PHASER__ = {
   },
   getHouseRescueDiagnostics() {
     return houseRescue.getDiagnostics();
+  },
+  getHomeInteriorDiagnostics() {
+    return homeInteriors.getDiagnostics();
+  },
+  qaEnterHomeInterior(houseId = "house-20") {
+    if (!import.meta.env.DEV) return { ok: false, message: "Visual QA helpers are available only in development." };
+    return activeTownScene()?.enterHouseInterior?.(houseId) || { ok: false, message: "Willowmere town is not active." };
+  },
+  qaGrantHomeFurniture(itemId = "cosy-sofa") {
+    if (!import.meta.env.DEV) return { ok: false, message: "Visual QA helpers are available only in development." };
+    return economy.grantItem(itemId, 1, { reason: "Milestone 32 home-interior visual QA" });
   },
 };

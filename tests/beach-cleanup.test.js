@@ -127,7 +127,7 @@ test("schema 15 saves and original beach progress upgrade through schema 19", ()
   delete old.beachCleanup;
   old.schemaVersion = 15;
   const upgraded = upgradeGameState(old, { now: 0 });
-  assert.equal(upgraded.schemaVersion, 28);
+  assert.equal(upgraded.schemaVersion, 29);
   assert.equal(upgraded.beachCleanup.progress.nextLevel, 1);
   assert.equal(validateGameState(upgraded).ok, true);
   const projected = projectLegacyBeachCleanup({ miniGames: { progress: { beach: { nextLevel: 44, best: { 1: { stars: 3, percent: 100 }, 43: { stars: 3, percent: 100 } } } } }, environment: { beachLitter: 7 } });

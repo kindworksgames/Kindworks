@@ -387,6 +387,28 @@
           <div class="lawn-result-actions"><button id="lawn-replay" type="button">Replay</button><button id="lawn-next" type="button">Next lawn</button><button id="lawn-return" type="button">Return to Willowmere</button></div>
         </section>
       </section>
+      <section id="home-interior-hud" class="home-interior-hud hidden" aria-labelledby="home-interior-title">
+        <header class="home-interior-header">
+          <div><p>MILESTONE 32 · BIRD'S-EYE HOMES</p><h2 id="home-interior-title">🏡 Willowmere Home</h2><small id="home-interior-subtitle">A lived-in cottage</small></div>
+          <button id="home-interior-exit" type="button">Exit home</button>
+        </header>
+        <div id="home-interior-badges" class="home-interior-badges" aria-label="Home details"></div>
+        <aside class="home-interior-sidebar">
+          <section class="home-interior-readout" aria-live="polite"><strong id="home-interior-readout-title">Look around the room</strong><p id="home-interior-readout-detail">Tap furniture, residents or companions to inspect them.</p></section>
+          <div class="home-interior-actions">
+            <button id="home-interior-clean" class="hidden" type="button">🧹 Start House Rescue</button>
+            <button id="home-interior-furnish" class="hidden" type="button">🛋️ Furnish home</button>
+            <button id="home-interior-move" class="hidden" type="button">↔ Move selected</button>
+            <button id="home-interior-store" class="hidden" type="button">📦 Store selected</button>
+          </div>
+          <p id="home-interior-status" class="home-interior-status" data-status="neutral" role="status" aria-live="assertive">Tap something in the room to inspect it.</p>
+          <section id="home-furniture-placement" class="home-furniture-placement hidden" aria-label="Furniture placement controls">
+            <p id="home-furniture-placement-hint">Tap a clear place in the room.</p>
+            <div><button id="home-interior-rotate" type="button">↻ Rotate</button><button id="home-interior-confirm" type="button" disabled>✓ Confirm</button><button id="home-interior-cancel" type="button">Cancel</button></div>
+          </section>
+          <section id="home-furniture-tray" class="home-furniture-tray" aria-label="Owned home furniture"></section>
+        </aside>
+      </section>
       <section id="house-rescue-hud" class="house-rescue-hud hidden" aria-labelledby="house-rescue-hud-title">
         <header class="house-rescue-hud-header">
           <div><p>MILESTONE 16 · 750-LEVEL CAMPAIGN</p><h2 id="house-rescue-hud-title">🏠 House Rescue</h2><small id="house-rescue-progress-summary">0 rescued · 0 stars · Level 1 unlocked</small></div>

@@ -109,6 +109,12 @@ export class EconomyHudController {
             button.dataset.placeItem = item.id;
             button.textContent = "Place in town";
             action.append(button);
+          } else if (item.category === "furniture") {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.dataset.placeItem = item.id;
+            button.textContent = "Furnish home";
+            action.append(button);
           } else action.textContent = `×${quantity}`;
           const count = document.createElement("strong");
           count.textContent = item.category === "equipment" ? "" : `×${quantity}`;

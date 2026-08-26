@@ -166,7 +166,7 @@ test("a failed home save rolls the full home, economy and ledger checkpoint back
   assert.deepEqual(gameState.getSnapshot(), before);
 });
 
-test("schema 27 and legacy HTML homes convert to schema 28 without losing progress", () => {
+test("schema 27 and legacy HTML homes convert through schema 28 to 29 without losing progress", () => {
   const old = createFreshGameState({ now: 0 });
   old.schemaVersion = 27;
   old.customResident.schemaVersion = 1;
@@ -175,7 +175,7 @@ test("schema 27 and legacy HTML homes convert to schema 28 without losing progre
   old.houseRescue.homes["house-19"] = { ...old.houseRescue.homes["house-20"], houseId: "house-19" };
   delete old.houseRescue.homes["house-20"];
   const upgraded = upgradeGameState(old, { now: 1000 });
-  assert.equal(upgraded.schemaVersion, 28);
+  assert.equal(upgraded.schemaVersion, 29);
   assert.equal(upgraded.customResident.schemaVersion, 2);
   assert.equal(upgraded.customResident.home.level, 3);
   assert.equal(upgraded.customResident.home.wallColor, "lavender");

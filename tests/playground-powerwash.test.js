@@ -155,7 +155,7 @@ test("schema 16 and legacy playground data upgrade to schema 19 while failed sav
   delete old.playgroundPowerwash;
   old.schemaVersion = 16;
   const upgraded = upgradeGameState(old, { now: 0 });
-  assert.equal(upgraded.schemaVersion, 28);
+  assert.equal(upgraded.schemaVersion, 29);
   assert.equal(upgraded.playgroundPowerwash.playground.dirty, true);
   const legacy = projectLegacyPlaygroundPowerwash({ miniGames: { progress: { playground: { nextLevel: 4, best: { 3: { stars: 3, percent: 100 } } } } }, playgroundPowerwashing: { dirty: false, lastCleanedDay: 5, nextDirtyDay: 8, cleanings: 2 } });
   assert.equal(legacy.progress.completed, 1);

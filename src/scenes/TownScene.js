@@ -113,6 +113,7 @@ export class TownScene extends Phaser.Scene {
     this.restorationMilestones = this.registry.get("restorationMilestones");
     this.restorationMilestoneController = this.registry.get("restorationMilestoneController");
     this.customResident = this.registry.get("customResident");
+    this.homeInteriors = this.registry.get("homeInteriors");
     this.customResidentController = this.registry.get("customResidentController");
     this.farming = this.registry.get("farming");
     this.livingEnvironment = this.registry.get("livingEnvironment");
@@ -150,7 +151,7 @@ export class TownScene extends Phaser.Scene {
       : null;
     const qaSpawn = qaTarget === "collection"
       ? { x: 970, y: 1260 }
-      : qaTarget === "home"
+      : qaTarget === "home" || qaTarget === "interior"
         ? { x: 3875, y: 1880 }
       : qaTarget === "powerwash"
       ? PLAYGROUND_POWERWASH.approach
@@ -322,19 +323,18 @@ export class TownScene extends Phaser.Scene {
           onActivate: () => this.openFarming("orchard"),
         },
     ];
-    for (const home of this.houseRescue?.dirtyHomes?.() || []) {
-      const house = HOUSES.find((entry) => entry.id === home.houseId);
-      if (!house) continue;
+    for (const house of HOUSES) {
+      const interior = this.homeInteriors?.getInterior?.(house.id);
       interactables.push({
-        id: `house-rescue-${house.id}`,
-        kind: "house-rescue",
+        id: `home-interior-${house.id}`,
+        kind: "home-interior",
         x: house.x + house.width / 2,
         y: house.y + house.height + 42,
         radius: 86,
-        icon: "🧹",
-        label: `Rescue ${house.id.replace("house-", "Cottage ")}`,
-        detail: "Sort rubbish, then vacuum at least 95% of the floor",
-        onActivate: () => this.enterHouseRescue(house.id),
+        icon: interior?.dirty ? "🧹" : house.id === PERSONAL_HOME_RENDER_HOUSE_ID ? "💚" : "🏡",
+        label: house.id === PERSONAL_HOME_RENDER_HOUSE_ID ? "Enter Meadowlight House" : `Visit ${interior?.name || house.id.replace("house-", "Cottage ")}`,
+        detail: interior?.dirty ? "This home needs House Rescue · enter to inspect or help" : `${interior?.occupants?.length || 0} resident${interior?.occupants?.length === 1 ? "" : "s"} home now · clean interior`,
+        onActivate: () => this.enterHouseInterior(house.id),
       });
     }
     for (const plot of LAWN_PLOTS) {
@@ -1695,6 +1695,31 @@ export class TownScene extends Phaser.Scene {
       });
     });
     return { ok: true, targetScene: "HouseRescueScene", houseId };
+  }
+
+  enterHouseInterior(houseId, { focusFurnitureId = null } = {}) {
+    if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before entering a home." };
+    const interior = this.homeInteriors?.getInterior?.(houseId);
+    if (!interior?.ok) return interior || { ok: false, reason: "That home could not be opened." };
+    if (focusFurnitureId && houseId !== PERSONAL_HOME_RENDER_HOUSE_ID) return { ok: false, reason: "Custom furniture belongs in Meadowlight House." };
+    const returnPosition = { x: this.player.x, y: this.player.y };
+    const returnFacing = this.player.direction;
+    this.transitioning = true;
+    this.movement.setEnabled(false);
+    this.interactions.setEnabled(false);
+    this.player.setMovement(0, 0, false);
+    this.gameState?.updatePlayer({ scene: "HouseInteriorScene", x: returnPosition.x, y: returnPosition.y, facing: returnFacing });
+    document.querySelector("#game")?.setAttribute("data-transition", "entering-home-interior");
+    this.cameras.main.fadeOut(220, 46, 39, 31);
+    this.time.delayedCall(240, () => this.scene.start("HouseInteriorScene", {
+      houseId,
+      focusFurnitureId,
+      returnPosition,
+      returnFacing,
+      transitionCount: Number(this.entryData.transitionCount || 0) + 1,
+    }));
+    return { ok: true, targetScene: "HouseInteriorScene", houseId, focusFurnitureId };
   }
 
   openShop(shopId) {

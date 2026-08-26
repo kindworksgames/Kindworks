@@ -19,6 +19,7 @@ import {
   normalizePersonalHome,
   validateResidentName,
 } from "../state/customResidentState.js";
+import { reconcileHomeFurnitureInto } from "./HomeInteriorService.js";
 
 const DIRECTIONS = new Set(["up", "down", "left", "right"]);
 
@@ -248,6 +249,7 @@ export class CustomResidentService {
       state.economy.lifetimeCoinsSpent += next.cost;
       resident.home = target;
       state.customResident = resident;
+      const furnitureReconciliation = reconcileHomeFurnitureInto(state);
       const ledger = appendHomeLedger(state, this.now, {
         amount: -next.cost,
         kind: "personal-home-upgrade",
@@ -260,7 +262,7 @@ export class CustomResidentService {
         from: before,
         to: structuredClone(target),
       });
-      return { ok: true, code: "home-upgraded", cost: next.cost, fromLevel: current.level, toLevel: next.level, capacity: next.capacity, home: structuredClone(target), ledger };
+      return { ok: true, code: "home-upgraded", cost: next.cost, fromLevel: current.level, toLevel: next.level, capacity: next.capacity, home: structuredClone(target), furnitureReconciliation, ledger };
     }, { failureMessage: "The home upgrade could not be saved, so the coins and previous home were restored." });
     this.lastResult = result;
     if (result.ok) this.emit();

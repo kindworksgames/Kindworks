@@ -121,6 +121,12 @@ import {
   projectLegacyRestorationMilestoneState,
   validateRestorationMilestoneState,
 } from "./restorationMilestoneState.js";
+import {
+  createFreshHomeInteriorState,
+  normalizeHomeInteriorState,
+  projectLegacyHomeInteriors,
+  validateHomeInteriorState,
+} from "./homeInteriorState.js";
 
 const DIRECTIONS = new Set(["up", "down", "left", "right"]);
 
@@ -173,6 +179,7 @@ export function createFreshGameState({ now = Date.now() } = {}) {
     municipalCollection: createFreshMunicipalCollectionState(world),
     restorationMilestones: createFreshRestorationMilestoneState(),
     customResident: createFreshCustomResidentState(),
+    homeInteriors: createFreshHomeInteriorState(),
     farming: createFreshFarmingState(world),
     environment: createFreshLivingEnvironmentState(world),
     animals: createFreshAnimalState(world),
@@ -217,6 +224,7 @@ export function createGameStateFromLegacy(legacy, report, { now = Date.now() } =
   state.npcs = projectLegacyNpcState(legacy, state.world);
   state.municipalCollection = projectLegacyMunicipalCollection(legacy, state.world);
   state.customResident = projectLegacyCustomResident(legacy);
+  state.homeInteriors = projectLegacyHomeInteriors(legacy);
   state.farming = projectLegacyFarming(legacy, state.world);
   state.environment = projectLegacyLivingEnvironment(legacy, state.world);
   state.animals = projectLegacyAnimals(legacy.animals, state.world);
@@ -409,6 +417,12 @@ export function upgradeGameState(value, { now = Date.now() } = {}) {
     state.houseRescue = normalizeHouseRescueState(state.houseRescue, { worldDay: state.world?.day });
     state.schemaVersion = 28;
   }
+  if (state.schemaVersion === 28) {
+    state.homeInteriors = state.source?.kind === "legacy-import"
+      ? projectLegacyHomeInteriors(state.legacySnapshot)
+      : normalizeHomeInteriorState(state.homeInteriors);
+    state.schemaVersion = 29;
+  }
   return state;
 }
 
@@ -441,6 +455,7 @@ export function validateGameState(value) {
   errors.push(...validateMunicipalCollectionState(value.municipalCollection).errors);
   errors.push(...validateRestorationMilestoneState(value.restorationMilestones).errors);
   errors.push(...validateCustomResidentState(value.customResident).errors);
+  errors.push(...validateHomeInteriorState(value.homeInteriors).errors);
   errors.push(...validateFarmingState(value.farming, value.world).errors);
   errors.push(...validateLivingEnvironmentState(value.environment, value.world).errors);
   errors.push(...validateAnimalState(value.animals, value.world).errors);
