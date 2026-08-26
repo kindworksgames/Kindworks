@@ -47,7 +47,7 @@ test("pins the original complete bakery catalogue and 150-shift campaign", () =>
 
 test("fresh Milestone 13 state is valid and begins at bakery level one", () => {
   const state = createFreshGameState({ now: 0 });
-  assert.equal(state.schemaVersion, 23);
+  assert.equal(state.schemaVersion, 24);
   assert.equal(state.bakery.unlockedLevel, 1);
   assert.equal(state.bakery.totalStars, 0);
   assert.equal(validateGameState(state).ok, true);
@@ -181,7 +181,7 @@ test("schema 9 saves gain bakery progress while preserving all prior milestones"
   old.schemaVersion = 9;
   old.identity.townName = "Baker's Hollow";
   const upgraded = upgradeGameState(old, { now: 1000 });
-  assert.equal(upgraded.schemaVersion, 23);
+  assert.equal(upgraded.schemaVersion, 24);
   assert.equal(upgraded.identity.townName, "Baker's Hollow");
   assert.equal(upgraded.bakery.unlockedLevel, 1);
   assert.equal(validateGameState(upgraded).ok, true);

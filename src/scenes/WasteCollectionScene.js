@@ -57,7 +57,7 @@ export class WasteCollectionScene extends Phaser.Scene {
       art.fillStyle(index % 3 ? 0x9bd17a : 0x477a3f, 0.35);
       art.fillCircle(35 + ((index * 137) % 1210), 35 + ((index * 83) % 650), 2 + (index % 3));
     }
-    this.add.text(ROOM.width / 2, 27, "WASTE COLLECTION · WILLOWMERE PARK TEAM", { color: "#fff6c9", fontFamily: "ui-monospace, monospace", fontSize: "17px", fontStyle: "bold", stroke: "#283d32", strokeThickness: 5 }).setOrigin(0.5);
+    this.backdropTitle = this.add.text(ROOM.width / 2, 27, "WASTE COLLECTION · WILLOWMERE PARK TEAM", { color: "#fff6c9", fontFamily: "ui-monospace, monospace", fontSize: "17px", fontStyle: "bold", stroke: "#283d32", strokeThickness: 5 }).setOrigin(0.5);
   }
 
   bindCampaignInterface() {
@@ -268,10 +268,11 @@ export class WasteCollectionScene extends Phaser.Scene {
   startTownJobPresentation() {
     this.job = this.cleanup.getJob(this.session.targetId);
     if (!this.job) { this.returnToTown(false); return; }
+    this.backdropTitle?.setText(`WASTE COLLECTION · ${this.job.title.toUpperCase()}`);
     this.campaignHud?.classList.add("hidden");
     this.townHud = document.querySelector("#cleanup-hud");
     this.townHud?.classList.remove("hidden");
-    setText("#cleanup-status", "Choose each piece of rubbish in Willow Commons.");
+    setText("#cleanup-status", `Choose each piece of rubbish in ${this.job.title}.`);
     const list = document.querySelector("#cleanup-item-list");
     if (list) list.innerHTML = this.job.items.map((item) => `<button type="button" data-cleanup-item="${item.id}"><span>${item.icon}</span><span>${item.label}</span></button>`).join("");
     this.onTownItem = (event) => { const button = event.target.closest("[data-cleanup-item]"); if (button) this.collectTownItem(button.dataset.cleanupItem); };
@@ -306,7 +307,7 @@ export class WasteCollectionScene extends Phaser.Scene {
     const count = this.collected.size; const total = this.job.items.length;
     const progress = document.querySelector("#cleanup-progress"); if (progress) { progress.max = total; progress.value = count; }
     setText("#cleanup-progress-text", `${count} / ${total} collected`);
-    setText("#cleanup-status", count === total ? "All six pieces are ready. Finish the cleanup to save the park." : `${total - count} pieces remain in Willow Commons.`);
+    setText("#cleanup-status", count === total ? `All ${total} pieces are ready. Finish to save this persistent cleanup.` : `${total - count} pieces remain in ${this.job.title}.`);
     const finish = document.querySelector("#cleanup-finish"); if (finish) finish.disabled = count !== total;
     for (const button of document.querySelectorAll("[data-cleanup-item]")) { const done = this.collected.has(button.dataset.cleanupItem); button.disabled = done; button.classList.toggle("collected", done); }
     this.updateDomState();

@@ -1,4 +1,4 @@
-export const FARMING_SCHEMA_VERSION = 2;
+export const FARMING_SCHEMA_VERSION = 3;
 
 export const ALLOTMENT_CONFIG = Object.freeze({
   bedCount: 6,
@@ -37,14 +37,53 @@ export const LAWN_CONFIG = Object.freeze({
   freshlyWeededPressure: 3,
   baseGrassPerDay: 7.7,
   baseWeedsPerDay: 3.1,
+  residentCareHour: 18,
+  residentCareWeedReductionMin: 3,
+  residentCareWeedReductionMax: 9,
   rewardCoins: 100,
 });
 
-export const LAWN_PLOTS = Object.freeze([
-  Object.freeze({ id: "lawn-house-1", title: "Rose Cottage Front Lawn", x: 305, y: 430, radius: 105, initialGrass: 82, initialWeeds: 48, growthRate: 1.08, weedRate: 1.05 }),
-  Object.freeze({ id: "lawn-house-2", title: "Amber Cottage Front Lawn", x: 695, y: 430, radius: 105, initialGrass: 54, initialWeeds: 27, growthRate: 0.92, weedRate: 0.88 }),
-  Object.freeze({ id: "lawn-house-3", title: "Bluebell Cottage Front Lawn", x: 1085, y: 430, radius: 105, initialGrass: 9, initialWeeds: 3, growthRate: 1.17, weedRate: 1.12 }),
-]);
+function hashUnit(text) {
+  let hash = 2166136261 >>> 0;
+  for (let index = 0; index < text.length; index += 1) {
+    hash ^= text.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0) / 4294967295;
+}
+
+function trait(id, name, minimum, maximum) {
+  return minimum + hashUnit(`${id}:${name}`) * (maximum - minimum);
+}
+
+const lawnLocations = [
+  [1, 305, 415, "south"], [2, 695, 415, "south"], [3, 1085, 415, "south"], [4, 1475, 415, "south"], [5, 1865, 415, "south"], [6, 2255, 415, "south"],
+  [7, 305, 1638, "north"], [8, 695, 1638, "north"], [9, 1865, 1638, "north"], [10, 2885, 1638, "north"], [11, 1085, 1638, "north"], [12, 1475, 1638, "north"],
+  [13, 2885, 1470, "south"], [14, 3215, 1470, "south"], [15, 3545, 1470, "south"], [16, 3875, 1470, "south"],
+  [17, 3215, 1638, "north"], [18, 3545, 1638, "north"],
+  // The legacy game reserves lawn/house 19 but never authored a physical house.
+  [19, 3875, 1638, "north", false], [20, 3875, 1638, "north"],
+];
+
+export const LAWN_PLOTS = Object.freeze(lawnLocations.map(([number, x, y, gate, active = true], index) => {
+  const id = `lawn-house-${number}`;
+  const initial = index === 0 ? [82, 48] : index === 1 ? [54, 27] : index === 2 ? [9, 3] : [trait(id, "grass", 4, 11), trait(id, "weeds", 0, 7)];
+  return Object.freeze({
+    id,
+    legacyId: `lawn-${String(number).padStart(2, "0")}`,
+    houseSourceId: `house-${String(number).padStart(2, "0")}`,
+    homeNodeId: `home${String(number).padStart(2, "0")}`,
+    title: `House ${number} Front Lawn`,
+    x, y, radius: 105, gate, active,
+    initialGrass: initial[0], initialWeeds: initial[1], initialMoisture: trait(id, "moisture", 42, 70),
+    soilHealth: trait(id, "soil", 72, 94),
+    growthRate: trait(id, "growth", 0.78, 1.18),
+    weedRate: trait(id, "weed", 0.8, 1.2),
+    maintenanceCadence: trait(id, "cadence", 0.45, 1.95),
+    shade: trait(id, "shade", 0.08, 0.38),
+    householdCare: trait(id, "care", 0.72, 1),
+  });
+}));
 
 export function absoluteWorldMinute(world) {
   return (Math.max(1, Math.floor(Number(world?.day) || 1)) - 1) * 1440

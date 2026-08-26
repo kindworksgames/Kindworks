@@ -62,6 +62,17 @@ export function createFreshFarmingState(world) {
       id: plot.id,
       grassHeight: plot.initialGrass,
       weedPressure: plot.initialWeeds,
+      moisture: plot.initialMoisture,
+      soilHealth: plot.soilHealth,
+      growthRate: plot.growthRate,
+      weedSusceptibility: plot.weedRate,
+      maintenanceCadence: plot.maintenanceCadence,
+      shade: plot.shade,
+      householdCare: plot.householdCare,
+      ecologyAgeGameMinutes: 0,
+      lastResidentCareDay: 0,
+      lastMowedDay: 0,
+      lastMowedGameMinute: 0,
       completedJobs: 0,
       lastCompletedAt: null,
     }])),
@@ -162,12 +173,23 @@ export function normalizeFarmingState(value, world) {
   next.orchard.nextTreeSerial = Math.max(largestSerial + 1, whole(value.orchard?.nextTreeSerial, 1));
   next.orchard.purchasedSaplings = whole(value.orchard?.purchasedSaplings, 0, ORCHARD_CONFIG.maxTrees - next.orchard.trees.length);
   for (const plot of LAWN_PLOTS) {
-    const lawn = value.lawns?.[plot.id];
+    const lawn = value.lawns?.[plot.id] ?? value.lawns?.[plot.legacyId];
     if (!lawn || typeof lawn !== "object") continue;
     next.lawns[plot.id] = {
       id: plot.id,
       grassHeight: bounded(lawn.grassHeight, 0, 100, plot.initialGrass),
       weedPressure: bounded(lawn.weedPressure, 0, 100, plot.initialWeeds),
+      moisture: bounded(lawn.moisture, 4, 100, plot.initialMoisture),
+      soilHealth: bounded(lawn.soilHealth, 55, 100, plot.soilHealth),
+      growthRate: bounded(lawn.growthRate, 0.65, 1.25, plot.growthRate),
+      weedSusceptibility: bounded(lawn.weedSusceptibility, 0.55, 1.45, plot.weedRate),
+      maintenanceCadence: bounded(lawn.maintenanceCadence, 0.45, 1.95, plot.maintenanceCadence),
+      shade: bounded(lawn.shade, 0, 0.65, plot.shade),
+      householdCare: bounded(lawn.householdCare, 0.65, 1, plot.householdCare),
+      ecologyAgeGameMinutes: bounded(lawn.ecologyAgeGameMinutes, 0, Number.MAX_SAFE_INTEGER, 0),
+      lastResidentCareDay: whole(lawn.lastResidentCareDay),
+      lastMowedDay: whole(lawn.lastMowedDay),
+      lastMowedGameMinute: bounded(lawn.lastMowedGameMinute, 0, Number.MAX_SAFE_INTEGER, 0),
       completedJobs: whole(lawn.completedJobs),
       lastCompletedAt: Number.isNaN(new Date(lawn.lastCompletedAt).getTime()) ? null : new Date(lawn.lastCompletedAt).toISOString(),
     };
@@ -227,7 +249,7 @@ export function projectLegacyFarming(legacy, world) {
   const lawns = legacy?.lawns;
   if (lawns && typeof lawns === "object") {
     LAWN_PLOTS.forEach((plot, index) => {
-      const raw = Object.values(lawns)[index];
+      const raw = lawns[plot.id] ?? lawns[plot.legacyId] ?? Object.values(lawns)[index];
       if (raw) normalized.lawns[plot.id] = { ...normalized.lawns[plot.id], grassHeight: bounded(raw.grassHeight, 0, 100, plot.initialGrass), weedPressure: bounded(raw.weedPressure, 0, 100, plot.initialWeeds) };
     });
   }
@@ -265,6 +287,7 @@ export function validateFarmingState(farming, world) {
   for (const plot of LAWN_PLOTS) {
     const lawn = farming.lawns?.[plot.id];
     if (!lawn || lawn.id !== plot.id || !Number.isFinite(lawn.grassHeight) || lawn.grassHeight < 0 || lawn.grassHeight > 100 || !Number.isFinite(lawn.weedPressure) || lawn.weedPressure < 0 || lawn.weedPressure > 100 || !Number.isInteger(lawn.completedJobs) || lawn.completedJobs < 0) errors.push(`${plot.id} lawn state is invalid.`);
+    else if (![lawn.moisture, lawn.soilHealth, lawn.growthRate, lawn.weedSusceptibility, lawn.maintenanceCadence, lawn.shade, lawn.householdCare, lawn.ecologyAgeGameMinutes, lawn.lastMowedGameMinute].every(Number.isFinite)) errors.push(`${plot.id} lawn ecology is invalid.`);
   }
   return { ok: errors.length === 0, errors };
 }

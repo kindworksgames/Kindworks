@@ -71,7 +71,7 @@ export class RiverClearoutScene extends Phaser.Scene {
     document.querySelector("#river-result")?.classList.add("hidden");
     this.buttons.qa?.classList.toggle("hidden", !this.qaMode);
     if (this.exitButton) this.exitButton.textContent = "Exit river";
-    this.setMessage("Choose any of the 750 river levels to begin.", "neutral");
+    this.setMessage(this.entryData.environmentTargetId ? "Choose a river challenge to remove the selected persistent debris when you succeed." : "Choose any of the 750 river levels to begin.", "neutral");
 
     this.onStart = () => this.startLevel(Number(this.levelSelect?.value || 1));
     this.onLevelChange = () => { if (this.startButton) this.startButton.textContent = `Start Level ${Number(this.levelSelect?.value || 1)}`; };
@@ -110,7 +110,7 @@ export class RiverClearoutScene extends Phaser.Scene {
 
   startLevel(level) {
     if (this.river.getActiveSession()) this.river.cancel();
-    const result = this.river.startLevel(level, { returnPosition: this.entryData.returnPosition, returnFacing: this.entryData.returnFacing || "down", autoFall: !this.qaMode });
+    const result = this.river.startLevel(level, { returnPosition: this.entryData.returnPosition, returnFacing: this.entryData.returnFacing || "down", autoFall: !this.qaMode, environmentTargetId: this.entryData.environmentTargetId || null });
     if (!result.ok) { this.setMessage(result.message, "error"); return false; }
     document.querySelector("#river-picker")?.classList.add("hidden");
     document.querySelector("#river-gameplay")?.classList.remove("hidden");

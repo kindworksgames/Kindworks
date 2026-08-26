@@ -21,6 +21,7 @@ import { EconomyService } from "./systems/EconomyService.js";
 import { ShopService } from "./systems/ShopService.js";
 import { CleanupJobService } from "./systems/CleanupJobService.js";
 import { WorldSimulationService } from "./systems/WorldSimulationService.js";
+import { LivingEnvironmentService } from "./systems/LivingEnvironmentService.js";
 import { NpcTownLifeService } from "./systems/NpcTownLifeService.js";
 import { CustomResidentService } from "./systems/CustomResidentService.js";
 import { FarmingService } from "./systems/FarmingService.js";
@@ -48,11 +49,15 @@ import { ITEM_IDS } from "./data/items.js";
 
 const stateRuntime = bootstrapState(window.localStorage);
 const worldSimulation = new WorldSimulationService(stateRuntime.gameState, stateRuntime.repository);
+const farming = new FarmingService(stateRuntime.gameState, stateRuntime.repository);
+const livingEnvironment = new LivingEnvironmentService(stateRuntime.gameState, stateRuntime.repository);
+worldSimulation.addStateAdvancer((state) => farming.resolveInto(state));
+worldSimulation.addStateAdvancer((state) => livingEnvironment.advanceInto(state));
 const offlineResolution = worldSimulation.resolveOffline();
 const npcTownLife = new NpcTownLifeService(stateRuntime.gameState, stateRuntime.repository);
 const customResident = new CustomResidentService(stateRuntime.gameState, stateRuntime.repository);
-const farming = new FarmingService(stateRuntime.gameState, stateRuntime.repository);
 farming.refresh({ persist: true });
+livingEnvironment.refresh({ persist: true });
 const animals = new AnimalService(stateRuntime.gameState, stateRuntime.repository);
 animals.refresh({ persist: true, offline: offlineResolution?.advancedGameMinutes > 0 });
 const fishing = new FishingService(stateRuntime.gameState, stateRuntime.repository);
@@ -62,7 +67,7 @@ const cafe = new CafeService(stateRuntime.gameState, stateRuntime.repository);
 const morningMug = new MorningMugService(stateRuntime.gameState, stateRuntime.repository);
 const riversideKitchen = new RiversideKitchenService(stateRuntime.gameState, stateRuntime.repository);
 const southShoreScoops = new SouthShoreScoopsService(stateRuntime.gameState, stateRuntime.repository);
-const river = new RiverClearoutService(stateRuntime.gameState, stateRuntime.repository);
+const river = new RiverClearoutService(stateRuntime.gameState, stateRuntime.repository, { environment: livingEnvironment });
 const houseRescue = new HouseRescueService(stateRuntime.gameState, stateRuntime.repository);
 const lawnCare = new LawnCareService(stateRuntime.gameState, stateRuntime.repository);
 const beachCleanup = new BeachCleanupService(stateRuntime.gameState, stateRuntime.repository);
@@ -93,6 +98,7 @@ game.registry.set("worldSimulation", worldSimulation);
 game.registry.set("npcTownLife", npcTownLife);
 game.registry.set("customResident", customResident);
 game.registry.set("farming", farming);
+game.registry.set("livingEnvironment", livingEnvironment);
 game.registry.set("animals", animals);
 game.registry.set("fishing", fishing);
 game.registry.set("bakery", bakery);
@@ -118,7 +124,7 @@ if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa")
   const balance = stateRuntime.gameState.getSnapshot().economy.coins;
   if (balance < 3000) economy.credit(3000 - balance, { kind: "development-fixture", reason: "Milestone 26 Village Grocer visual QA" });
 }
-const cleanupService = new CleanupJobService(stateRuntime.gameState, stateRuntime.repository);
+const cleanupService = new CleanupJobService(stateRuntime.gameState, stateRuntime.repository, { environment: livingEnvironment });
 game.registry.set("cleanupService", cleanupService);
 const shopService = new ShopService(economy, { farming });
 function activeTownScene() {
@@ -215,6 +221,7 @@ document.addEventListener("visibilitychange", handleVisibilityChange);
 window.addEventListener("pagehide", () => {
   customResident.persistLocation();
   farming.refresh({ persist: true });
+  livingEnvironment.refresh({ persist: true });
   animals.refresh({ persist: true });
   worldSimulation.persist();
   if (morningMug.getActiveSession() && !morningMug.getActiveSession().finished) morningMug.persistActiveSession();
@@ -313,6 +320,9 @@ window.__KINDWORKS_PHASER__ = {
   },
   getFarmingDiagnostics() {
     return { ...farming.getDiagnostics(), interface: farmingController.getDiagnostics() };
+  },
+  getLivingEnvironmentDiagnostics() {
+    return livingEnvironment.getDiagnostics();
   },
   getAnimalDiagnostics() {
     return { ...animals.getDiagnostics(), interface: animalFriendsController.getDiagnostics() };

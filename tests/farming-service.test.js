@@ -5,6 +5,7 @@ import { getWeatherForDay } from "../src/data/worldSimulation.js";
 import { createFreshGameState, GameStateService, upgradeGameState, validateGameState } from "../src/state/GameState.js";
 import { SaveRepository } from "../src/state/SaveRepository.js";
 import { createFreshFarmingState, projectLegacyFarming } from "../src/state/farmingState.js";
+import { createFreshLivingEnvironmentState } from "../src/state/livingEnvironmentState.js";
 import { advanceWorldState, normalizeWorldState } from "../src/state/worldState.js";
 import { FarmingService } from "../src/systems/FarmingService.js";
 import { MemoryStorage } from "./helpers/MemoryStorage.js";
@@ -19,13 +20,14 @@ function stateAtDay(day) {
   const state = createFreshGameState({ now: 0 });
   state.world = normalizeWorldState({ day, clockMinutes: 0, simulation: { lastResolvedAt: new Date(0).toISOString() } }, { now: 0 });
   state.farming = createFreshFarmingState(state.world);
+  state.environment = createFreshLivingEnvironmentState(state.world);
   return state;
 }
 
 test("fresh Milestone 26 state has six beds, one positioned starter tree and one lawn job", () => {
   const state = createFreshGameState({ now: 0 });
   assert.equal(validateGameState(state).ok, true);
-  assert.equal(state.schemaVersion, 23);
+  assert.equal(state.schemaVersion, 24);
   assert.equal(state.farming.allotment.beds.length, 6);
   assert.equal(state.farming.allotment.unlockedBeds, 1);
   assert.equal(state.inventory.consumables["carrot-seeds"], 1);
@@ -204,7 +206,7 @@ test("schema 6 saves gain farming without losing the preceding milestone systems
   old.schemaVersion = 6;
   old.identity.townName = "Keeperton";
   const upgraded = upgradeGameState(old, { now: 1000 });
-  assert.equal(upgraded.schemaVersion, 23);
+  assert.equal(upgraded.schemaVersion, 24);
   assert.equal(upgraded.identity.townName, "Keeperton");
   assert.equal(upgraded.farming.allotment.beds.length, 6);
   assert.equal(validateGameState(upgraded).ok, true);

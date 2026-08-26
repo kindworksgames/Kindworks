@@ -12,6 +12,7 @@ import {
   PROCESSED_CLEANUP_SESSION_LIMIT,
 } from "../state/cleanupState.js";
 import { COIN_LEDGER_LIMIT } from "../state/economyState.js";
+import { removeLandItemsInto } from "./LivingEnvironmentService.js";
 
 export const MIN_CLEANUP_REWARD_PERCENT = 50;
 export const MAX_CLEANUP_REWARD_COINS = 170;
@@ -31,11 +32,12 @@ function validReturnPosition(position, fallback) {
 }
 
 export class CleanupJobService {
-  constructor(gameState, repository, { now = () => Date.now(), jobs = CLEANUP_JOBS } = {}) {
+  constructor(gameState, repository, { now = () => Date.now(), jobs = CLEANUP_JOBS, environment = null } = {}) {
     this.gameState = gameState;
     this.repository = repository;
     this.now = now;
     this.jobs = jobs;
+    this.environment = environment;
     this.catalogueValidation = validateWasteCatalogue();
   }
 
@@ -62,7 +64,7 @@ export class CleanupJobService {
   }
 
   getJob(targetId) {
-    const job = this.jobs[targetId];
+    const job = this.jobs[targetId] || this.environment?.getLandJob?.(targetId);
     return job ? structuredClone(job) : null;
   }
 
@@ -76,16 +78,18 @@ export class CleanupJobService {
   }
 
   isAvailable(targetId) {
-    return Boolean(this.jobs[targetId] && this.getTargetState(targetId)?.status === "available");
+    if (this.jobs[targetId]) return this.getTargetState(targetId)?.status === "available";
+    return Boolean(this.environment?.getLandJob?.(targetId));
   }
 
   begin(targetId, { returnPosition = null, returnFacing = "down" } = {}) {
-    const job = this.jobs[targetId];
+    const job = this.getJob(targetId);
     if (!job) return { ok: false, code: "unknown-target", message: "That cleanup target does not exist." };
     return this.commit((state) => {
       const cleanup = state.progress.cleanup;
       if (cleanup.activeSession) return { ok: false, code: "session-active", message: "A cleanup job is already active." };
-      if (cleanup.targets[targetId]?.status !== "available") return { ok: false, code: "target-clean", message: `${job.title} is already clean.` };
+      const environmentJob = !this.jobs[targetId];
+      if (!environmentJob && cleanup.targets[targetId]?.status !== "available") return { ok: false, code: "target-clean", message: `${job.title} is already clean.` };
       const session = {
         id: `cleanup-${String(cleanup.nextSessionId).padStart(6, "0")}`,
         targetId,
@@ -98,6 +102,7 @@ export class CleanupJobService {
         status: "playing",
         startedAt: new Date(this.now()).toISOString(),
         itemIds: job.items.map((item) => item.id),
+        environmentJob,
         returnPosition: validReturnPosition(returnPosition, job.world.approach),
         returnFacing: ["up", "down", "left", "right"].includes(returnFacing) ? returnFacing : "down",
       };
@@ -283,7 +288,7 @@ export class CleanupJobService {
     }
     const active = cleanup.activeSession;
     if (!active || active.id !== sessionId || active.mode === "campaign") return { ok: false, code: "unknown-session", message: "That cleanup session is no longer active." };
-    const job = this.jobs[active.targetId];
+    const job = this.getJob(active.targetId);
     if (!job) return { ok: false, code: "unknown-target", message: "The cleanup target no longer exists." };
     const expected = new Set(active.itemIds);
     const collected = [...new Set(collectedItemIds.filter((id) => expected.has(id)))];
@@ -303,7 +308,7 @@ export class CleanupJobService {
       const nextCleanup = state.progress.cleanup;
       const session = nextCleanup.activeSession;
       if (!session || session.id !== sessionId) return { ok: false, code: "unknown-session", message: "That cleanup session is no longer active." };
-      if (nextCleanup.targets[session.targetId]?.status !== "available") return { ok: false, code: "target-clean", message: "This cleanup target has already been completed." };
+      if (!session.environmentJob && nextCleanup.targets[session.targetId]?.status !== "available") return { ok: false, code: "target-clean", message: "This cleanup target has already been completed." };
       const completedAt = new Date(this.now()).toISOString();
       const stars = 3;
       const rewardCoins = calculateCleanupReward(100, session.assignedLevel);
@@ -331,12 +336,14 @@ export class CleanupJobService {
       });
       state.economy.ledger = state.economy.ledger.slice(-COIN_LEDGER_LIMIT);
 
-      nextCleanup.targets[session.targetId] = {
-        status: "completed",
-        completedAt,
-        completionPercent: 100,
-        rewardCoins,
-      };
+      let environmentEffect = null;
+      if (session.environmentJob) environmentEffect = removeLandItemsInto(state, session.itemIds);
+      else nextCleanup.targets[session.targetId] = {
+          status: "completed",
+          completedAt,
+          completionPercent: 100,
+          rewardCoins,
+        };
       const progress = nextCleanup.progress.waste;
       const previous = progress.best[String(session.assignedLevel)] || { stars: 0, percent: 0 };
       progress.best[String(session.assignedLevel)] = {
@@ -380,6 +387,7 @@ export class CleanupJobService {
         completedJobCount: state.progress.completedJobCount,
         nextLevel: progress.nextLevel,
         ledger: structuredClone(state.economy.ledger.at(-1)),
+        environmentEffect,
       };
     });
   }
@@ -429,6 +437,7 @@ export class CleanupJobService {
       catalogueValid: this.catalogueValidation.ok,
       rubbishTypes: 40,
       certifiedSolutions: WASTE_TOTAL_LEVELS,
+      persistentEnvironmentJobs: this.environment?.getLandJobs?.().length || 0,
       build: "72.0.1-phase19-embedded-landscape",
     };
   }

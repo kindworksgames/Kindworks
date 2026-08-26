@@ -8,6 +8,7 @@ import {
   lawnNeedsCare,
 } from "../data/farming.js";
 import { WEATHER_KINDS, getWeatherForDay } from "../data/worldSimulation.js";
+import { NPC_RESIDENTS } from "../data/npcTownLife.js";
 import { validateTownPlacement } from "../data/townPlacement.js";
 import { COIN_LEDGER_LIMIT } from "../state/economyState.js";
 import { InventoryService } from "./InventoryService.js";
@@ -24,6 +25,69 @@ function weatherMinutes(from, to, property) {
     cursor += span;
   }
   return total;
+}
+
+function hashUnit(text) {
+  let hash = 2166136261 >>> 0;
+  for (let index = 0; index < String(text).length; index += 1) {
+    hash ^= String(text).charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0) / 4294967295;
+}
+
+function residentIsHome(state, plot) {
+  const residentIds = NPC_RESIDENTS.filter((entry) => entry.homeNodeId === plot.homeNodeId).map((entry) => entry.id);
+  if (plot.legacyId === "lawn-20" && state.customResident?.created) return state.customResident.location?.phase === "home" || state.customResident.location?.nodeId === plot.homeNodeId;
+  return state.npcs?.residents?.some((entry) => residentIds.includes(entry.id) && ["home", "sleeping"].includes(entry.phase));
+}
+
+export function resolveLawnEcology(state, from, to) {
+  if (to <= from) return { growthEvents: 0, weedEvents: 0, residentCareEvents: 0 };
+  let growthEvents = 0;
+  let weedEvents = 0;
+  let residentCareEvents = 0;
+  for (const plot of LAWN_PLOTS) {
+    if (!plot.active) continue;
+    const lawn = state.farming.lawns[plot.id];
+    let cursor = Math.max(from, Math.min(to, Number(state.environment?.calm?.untilGameMinute) || from));
+    while (cursor < to) {
+      const day = Math.floor(cursor / 1440) + 1;
+      const boundary = Math.min(to, day * 1440);
+      const minutes = boundary - cursor;
+      const fraction = minutes / 1440;
+      const weather = getWeatherForDay(day);
+      const beforeGrass = lawn.grassHeight;
+      const beforeWeeds = lawn.weedPressure;
+      lawn.moisture = Math.max(4, Math.min(100, lawn.moisture + weather.rain * 58 * fraction - (18 - lawn.shade * 7) * weather.evaporation * fraction));
+      const moistureFactor = 0.28 + 0.92 * Math.min(1, lawn.moisture / 62);
+      const soilFactor = 0.72 + (lawn.soilHealth / 100) * 0.38;
+      const shadeFactor = 1 - lawn.shade * 0.16;
+      const crowding = 1 - Math.max(0, lawn.grassHeight - 78) / 170;
+      const grassGain = LAWN_CONFIG.baseGrassPerDay * lawn.maintenanceCadence * lawn.growthRate * weather.growth * moistureFactor * soilFactor * shadeFactor * crowding * fraction;
+      lawn.grassHeight = Math.max(0, Math.min(100, lawn.grassHeight + grassGain));
+      const grassShelter = 0.45 + Math.min(1, lawn.grassHeight / 65) * 0.75;
+      const careSuppression = 0.58 + (1 - lawn.householdCare) * 0.75;
+      const weedCadence = 0.65 + lawn.maintenanceCadence * 0.35;
+      const weedGain = LAWN_CONFIG.baseWeedsPerDay * weedCadence * lawn.weedSusceptibility * weather.weeds * moistureFactor * grassShelter * careSuppression * fraction;
+      lawn.weedPressure = Math.max(0, Math.min(100, lawn.weedPressure + weedGain));
+      lawn.ecologyAgeGameMinutes += minutes;
+      if (lawn.grassHeight > beforeGrass) growthEvents += 1;
+      if (lawn.weedPressure > beforeWeeds) weedEvents += 1;
+      const careMinute = (day - 1) * 1440 + LAWN_CONFIG.residentCareHour * 60;
+      if (cursor < careMinute && boundary >= careMinute && lawn.lastResidentCareDay < day && lawn.weedPressure >= 8 && residentIsHome(state, plot)) {
+        lawn.lastResidentCareDay = day;
+        const chance = 0.08 + lawn.householdCare * 0.32;
+        if (hashUnit(`resident-care:${plot.id}:${day}`) < chance) {
+          const reduction = LAWN_CONFIG.residentCareWeedReductionMin + hashUnit(`resident-care-reduction:${plot.id}:${day}`) * (LAWN_CONFIG.residentCareWeedReductionMax - LAWN_CONFIG.residentCareWeedReductionMin);
+          lawn.weedPressure = Math.max(0, lawn.weedPressure - reduction);
+          residentCareEvents += 1;
+        }
+      }
+      cursor = boundary;
+    }
+  }
+  return { growthEvents, weedEvents, residentCareEvents };
 }
 
 function appendLedger(state, now, details) {
@@ -66,7 +130,6 @@ export class FarmingService {
     const to = absoluteWorldMinute(state.world);
     if (to <= from) return 0;
     const growthMinutes = weatherMinutes(from, to, "growth");
-    const weedMinutes = weatherMinutes(from, to, "weeds");
     for (const bed of farming.allotment.beds) {
       if (bed.status !== "growing") continue;
       const crop = FARMING_CROPS[bed.cropId];
@@ -88,11 +151,7 @@ export class FarmingService {
         if (tree.fruitProgressMinutes >= ORCHARD_CONFIG.productionMinutes) tree.availableFruit = 1;
       }
     }
-    for (const plot of LAWN_PLOTS) {
-      const lawn = farming.lawns[plot.id];
-      lawn.grassHeight = Math.min(100, lawn.grassHeight + LAWN_CONFIG.baseGrassPerDay * plot.growthRate * (growthMinutes / 1440));
-      lawn.weedPressure = Math.min(100, lawn.weedPressure + LAWN_CONFIG.baseWeedsPerDay * plot.weedRate * (weedMinutes / 1440));
-    }
+    resolveLawnEcology(state, from, to);
     farming.lastResolvedAbsoluteMinute = to;
     return to - from;
   }
@@ -349,6 +408,9 @@ export class FarmingService {
       const completedAt = new Date(this.now()).toISOString();
       lawn.grassHeight = LAWN_CONFIG.freshlyCutHeight;
       lawn.weedPressure = LAWN_CONFIG.freshlyWeededPressure;
+      lawn.moisture = Math.max(25, lawn.moisture);
+      lawn.lastMowedDay = state.world.day;
+      lawn.lastMowedGameMinute = absoluteWorldMinute(state.world);
       lawn.completedJobs += 1;
       lawn.lastCompletedAt = completedAt;
       state.economy.coins += LAWN_CONFIG.rewardCoins;
@@ -373,7 +435,9 @@ export class FarmingService {
       purchasedSaplings: state.farming.orchard.purchasedSaplings,
       orchardCapacity: ORCHARD_CONFIG.maxTrees,
       activeTreePlacement: Boolean(this.activeTreePlacement),
-      activeLawnJobs: LAWN_PLOTS.filter((plot) => lawnNeedsCare(state.farming.lawns[plot.id])).length,
+      lawnProfileSlots: LAWN_PLOTS.length,
+      authoredLawns: LAWN_PLOTS.filter((plot) => plot.active).length,
+      activeLawnJobs: LAWN_PLOTS.filter((plot) => plot.active && lawnNeedsCare(state.farming.lawns[plot.id])).length,
       lastResolvedAbsoluteMinute: state.farming.lastResolvedAbsoluteMinute,
       weatherIntegrated: true,
       offlineProgression: true,

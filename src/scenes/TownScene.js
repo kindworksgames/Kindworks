@@ -43,6 +43,7 @@ import { ANIMAL_DEFINITIONS, SOUTH_MEADOW } from "../data/animals.js";
 import { FISHING_SPOTS, MAGNET_FISHING_SPOT } from "../data/fishing.js";
 import { ITEM_CATALOG, placeableFootprintFor } from "../data/items.js";
 import { createTownPlacedObject } from "../entities/TownPlacedObject.js";
+import { RUBBISH_PRESENTATION, riverItemPosition } from "../data/livingEnvironment.js";
 
 const PLAYER_RADIUS = 17;
 const WALK_SPEED = 270;
@@ -84,6 +85,9 @@ export class TownScene extends Phaser.Scene {
     this.selectedPlacedObjectId = null;
     this.placementModeActive = false;
     this.baseInteractables = [];
+    this.environmentVisuals = [];
+    this.environmentSignature = null;
+    this.environmentBadge = null;
   }
 
   create() {
@@ -100,6 +104,7 @@ export class TownScene extends Phaser.Scene {
     this.customResident = this.registry.get("customResident");
     this.customResidentController = this.registry.get("customResidentController");
     this.farming = this.registry.get("farming");
+    this.livingEnvironment = this.registry.get("livingEnvironment");
     this.farmingController = this.registry.get("farmingController");
     this.animals = this.registry.get("animals");
     this.animalFriendsController = this.registry.get("animalFriendsController");
@@ -117,6 +122,7 @@ export class TownScene extends Phaser.Scene {
     const savedState = this.gameState?.getSnapshot();
     this.cameras.main.setBounds(0, 0, WORLD.width, WORLD.height);
     this.drawTown();
+    this.renderLivingEnvironment();
     this.renderTownPlacements();
 
     const qaTarget = import.meta.env.DEV
@@ -125,10 +131,15 @@ export class TownScene extends Phaser.Scene {
     const animalQaPresentation = qaTarget === "animals"
       ? this.animals?.getWorldPresentations?.().find((entry) => entry.visible && !entry.definition.rare)
       : null;
+    const environmentQaJob = qaTarget === "environment"
+      ? this.livingEnvironment?.getLandJobs?.()[0]
+      : null;
     const qaSpawn = qaTarget === "powerwash"
       ? PLAYGROUND_POWERWASH.approach
       : qaTarget === "placement"
         ? { x: 100, y: 200 }
+      : qaTarget === "environment" && environmentQaJob
+        ? environmentQaJob.world.approach
       : qaTarget === "beach"
       ? BEACH_CLEANUP.approach
       : qaTarget === "house-rescue"
@@ -398,7 +409,7 @@ export class TownScene extends Phaser.Scene {
     });
     this.baseInteractables = interactables;
     this.interactions = new InteractionSystem({
-      interactables: [...this.baseInteractables, ...this.placementInteractables()],
+      interactables: [...this.baseInteractables, ...this.environmentInteractables(), ...this.placementInteractables()],
       onChange: (interaction) => this.renderInteractionPrompt(interaction),
     });
     this.stateSyncElapsed = 0;
@@ -406,6 +417,7 @@ export class TownScene extends Phaser.Scene {
     this.unsubscribeFarming = this.farming?.subscribe?.((snapshot, result) => this.handleFarmingChange(snapshot, result));
     this.unsubscribeAnimals = this.animals?.subscribe?.(() => this.refreshAnimalPresentations(0));
     this.unsubscribeTownPlacement = this.townPlacement?.subscribe?.((snapshot, result) => this.handleTownPlacementChange(snapshot, result));
+    this.unsubscribeLivingEnvironment = this.livingEnvironment?.subscribe?.(() => this.refreshLivingEnvironment(true));
     this.refreshAnimalPresentations(0);
 
     const preferredZoom = window.matchMedia("(max-width: 720px)").matches ? 0.72 : 0.88;
@@ -698,6 +710,7 @@ export class TownScene extends Phaser.Scene {
       this.farmingLabels.push(label);
     }
     for (const plot of LAWN_PLOTS) {
+      if (!plot.active) continue;
       const lawn = state.lawns[plot.id];
       const tall = lawn.grassHeight / 100;
       graphics.fillStyle(lawnNeedsCare(lawn) ? 0x5f964d : 0x96cf78, 0.85);
@@ -967,7 +980,66 @@ export class TownScene extends Phaser.Scene {
   }
 
   refreshPlacementInteractables() {
-    this.interactions?.setInteractables([...this.baseInteractables, ...this.placementInteractables()]);
+    this.interactions?.setInteractables([...this.baseInteractables, ...this.environmentInteractables(), ...this.placementInteractables()]);
+  }
+
+  environmentInteractables() {
+    const land = (this.livingEnvironment?.getLandJobs?.() || []).map((job) => ({
+      id: `environment-${job.id}`,
+      kind: "environment-waste-job",
+      x: job.world.x,
+      y: job.world.y,
+      radius: job.world.interactionRadius,
+      icon: "♻️",
+      label: `Collect ${job.items.length} pieces of rubbish`,
+      detail: `${job.title} · persistent until cleaned`,
+      onActivate: () => this.startWasteCollection(job.id),
+    }));
+    const river = (this.livingEnvironment?.getRiverJobs?.() || []).map((job) => ({
+      id: `environment-${job.id}`,
+      kind: "environment-river-job",
+      x: job.position.x,
+      y: job.position.y,
+      radius: 94,
+      icon: "🌊",
+      label: `Clear ${job.title}`,
+      detail: `${job.count} persistent river item${job.count === 1 ? "" : "s"} · pollution ${job.pollution}/3`,
+      onActivate: () => this.enterRiverClearout(job.id),
+    }));
+    return [...land, ...river];
+  }
+
+  renderLivingEnvironment() {
+    for (const visual of this.environmentVisuals || []) visual.destroy();
+    this.environmentVisuals = [];
+    const state = this.livingEnvironment?.getSnapshot?.();
+    if (!state) return;
+    for (const item of state.land.items.filter((entry) => entry.active)) {
+      const presentation = RUBBISH_PRESENTATION[item.type] || RUBBISH_PRESENTATION.wrapper;
+      const shadow = this.add.ellipse(item.x, item.y + 9, 28, 10, 0x263d2d, 0.24).setDepth(120 + item.y / 100);
+      const icon = this.add.text(item.x, item.y, presentation.icon, { fontFamily: "Apple Color Emoji, system-ui", fontSize: "18px" }).setOrigin(0.5).setDepth(121 + item.y / 100);
+      this.environmentVisuals.push(shadow, icon);
+    }
+    for (const item of state.river.items) {
+      const position = riverItemPosition(item);
+      const presentation = RUBBISH_PRESENTATION[item.type] || RUBBISH_PRESENTATION.wrapper;
+      const ring = this.add.ellipse(position.x, position.y + 5, 34, 14, item.status === "stuck" ? 0x805d36 : 0xd9fbff, 0.38).setDepth(42 + position.y / 100);
+      const icon = this.add.text(position.x, position.y, presentation.icon, { fontFamily: "Apple Color Emoji, system-ui", fontSize: "17px" }).setOrigin(0.5).setDepth(43 + position.y / 100);
+      this.environmentVisuals.push(ring, icon);
+    }
+    const clean = state.cleanliness;
+    if (!this.environmentBadge) this.environmentBadge = this.add.text(18, 64, "", { color: "#294637", backgroundColor: "rgba(255,249,223,.94)", fontFamily: "system-ui, sans-serif", fontSize: "13px", fontStyle: "bold", padding: { x: 9, y: 6 } }).setScrollFactor(0).setDepth(1200);
+    this.environmentBadge.setText(`${clean.band === "calm" ? "✨" : "🌿"} Town care ${Math.round(clean.score)}% · ${clean.activeJobs} jobs`);
+  }
+
+  refreshLivingEnvironment(force = false) {
+    const snapshot = this.livingEnvironment?.getSnapshot?.();
+    if (!snapshot) return;
+    const signature = JSON.stringify({ land: snapshot.land.items.filter((item) => item.active).map((item) => [item.id, Math.round(item.x), Math.round(item.y)]), river: snapshot.river.items.map((item) => [item.id, item.sectionId, Math.round(item.t * 100), item.status]), clean: Math.round(snapshot.cleanliness.score), jobs: snapshot.cleanliness.activeJobs });
+    if (!force && signature === this.environmentSignature) return;
+    this.environmentSignature = signature;
+    this.renderLivingEnvironment();
+    this.refreshPlacementInteractables();
   }
 
   setPlacementModeActive(active) {
@@ -1228,6 +1300,7 @@ export class TownScene extends Phaser.Scene {
     this.unsubscribeFarming?.();
     this.unsubscribeAnimals?.();
     this.unsubscribeTownPlacement?.();
+    this.unsubscribeLivingEnvironment?.();
     if (this.townPlacement?.getSnapshot?.().active) this.townPlacement.cancel();
     if (this.farming?.getPlacementSnapshot?.().active) this.farming.cancelAppleTreePlacement();
     this.zoomIn?.removeEventListener("click", this.onZoomIn);
@@ -1244,6 +1317,8 @@ export class TownScene extends Phaser.Scene {
     document.removeEventListener("keydown", this.onPlacementKeyDown, true);
     this.placementPreviewVisual?.destroy();
     for (const visual of this.placedObjectVisuals?.values?.() || []) visual.destroy();
+    for (const visual of this.environmentVisuals || []) visual.destroy();
+    this.environmentBadge?.destroy();
     document.body.dataset.townPlacement = "false";
     document.querySelector("#town-placement-banner")?.classList.add("hidden");
     document.querySelector("#town-placement-rotate")?.classList.remove("hidden");
@@ -1258,8 +1333,8 @@ export class TownScene extends Phaser.Scene {
     document.body.dataset.gameScene = this.scene.key;
     const badge = document.querySelector(".milestone-badge");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 26";
-    if (hint) hint.textContent = "Walk with arrows or WASD · Visit Village Grocer, farm six beds and place apple trees";
+    if (badge) badge.textContent = "LIVING WILLOWMERE · MILESTONE 27";
+    if (hint) hint.textContent = "Walk with arrows or WASD · Care for persistent lawns, streets, shore and all five river reaches";
   }
 
   renderInteractionPrompt(interaction) {
@@ -1375,7 +1450,7 @@ export class TownScene extends Phaser.Scene {
     return { ok: true, targetScene: "SouthShoreScoopsScene" };
   }
 
-  enterRiverClearout() {
+  enterRiverClearout(environmentTargetId = null) {
     if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
     if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before starting River Clear-Out." };
     this.transitioning = true;
@@ -1389,6 +1464,7 @@ export class TownScene extends Phaser.Scene {
       this.scene.start("RiverClearoutScene", {
         returnPosition: { ...RIVER_CLEAROUT.approach },
         returnFacing: "down",
+        environmentTargetId,
         transitionCount: Number(this.entryData.transitionCount || 0) + 1,
       });
     });
@@ -1480,14 +1556,14 @@ export class TownScene extends Phaser.Scene {
     return { ok: true, targetScene: "FishingScene", mode, spotId };
   }
 
-  startWasteCollection() {
+  startWasteCollection(targetId = COMMONS_RUBBISH_JOB.id) {
     if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
     if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before starting a job." };
     if (!this.cleanupService) return { ok: false, reason: "The cleanup system is not ready." };
     const returnPosition = { x: this.player.x, y: this.player.y };
     const returnFacing = this.player.direction;
-    const firstJobAvailable = this.cleanupService.isAvailable(COMMONS_RUBBISH_JOB.id);
-    const result = firstJobAvailable ? this.cleanupService.begin(COMMONS_RUBBISH_JOB.id, { returnPosition, returnFacing }) : { ok: true, session: null };
+    const firstJobAvailable = this.cleanupService.isAvailable(targetId);
+    const result = firstJobAvailable ? this.cleanupService.begin(targetId, { returnPosition, returnFacing }) : { ok: true, session: null };
     if (!result.ok) return result;
     if (!firstJobAvailable) this.gameState?.updatePlayer({ scene: "WasteCollectionScene", x: returnPosition.x, y: returnPosition.y, facing: returnFacing });
     this.transitioning = true;
@@ -1660,6 +1736,8 @@ export class TownScene extends Phaser.Scene {
     if (this.farmingSyncElapsed >= 5000) {
       this.farmingSyncElapsed = 0;
       this.farming?.refresh?.({ persist: true });
+      this.livingEnvironment?.refresh?.({ persist: true });
+      this.refreshLivingEnvironment();
     }
     if (this.stateSyncElapsed >= 250) {
       this.stateSyncElapsed = 0;
@@ -1714,6 +1792,12 @@ export class TownScene extends Phaser.Scene {
       gameElement.dataset.farmingGrowingTrees = String(farming?.growingTrees || 0);
       gameElement.dataset.farmingSaplingsOwned = String(farming?.purchasedSaplings || 0);
       gameElement.dataset.farmingLawnJobs = String(farming?.activeLawnJobs || 0);
+      const environment = this.livingEnvironment?.getDiagnostics?.();
+      gameElement.dataset.environmentCleanliness = String(environment?.cleanliness?.score || 0);
+      gameElement.dataset.environmentJobs = String(environment?.cleanliness?.activeJobs || 0);
+      gameElement.dataset.environmentLandLitter = String(environment?.land?.total || 0);
+      gameElement.dataset.environmentRiverRubbish = String(environment?.river?.total || 0);
+      gameElement.dataset.environmentCalm = String(Boolean(environment?.calm?.active));
       const animals = this.animals?.getDiagnostics?.();
       gameElement.dataset.animalVisible = String(animals?.visibleWildAnimals || 0);
       gameElement.dataset.animalAdopted = String(animals?.adoptedAnimals || 0);
@@ -1791,6 +1875,7 @@ export class TownScene extends Phaser.Scene {
       camera: { zoom: Number(this.cameras.main.zoom.toFixed(2)), followingPlayer: !this.customResident?.getSnapshot?.().controlling },
       controls: { keyboard: true, touch: true, wheelZoom: true },
       interaction: this.interactions.getState(),
+      milestone27Systems: ["20-lawn-profile-slots", "19-authored-living-lawns", "soil-moisture-shade-and-resident-care", "persistent-land-litter", "five-section-persistent-river-rubbish", "wind-river-flow-snags-and-tide", "business-waste", "caretaker-sweeping", "exact-authored-cleanup-effects", "cleanliness-and-three-day-calm", "offline-environment-progression", "legacy-environment-import"],
       milestone26Systems: ["walkable-village-grocer", "nine-original-product-displays", "six-persistent-beds", "three-original-crops", "paid-saplings", "24-positioned-apple-trees", "weather-aware-growth-and-harvests", "offline-farm-progression", "legacy-crop-and-orchard-import"],
       milestone25Systems: ["35-placeable-catalogue", "purchase-and-inventory-placement", "tap-and-keyboard-preview", "quarter-turn-rotation", "atomic-place-move-store", "road-water-building-entrance-and-lawn-restrictions", "500-object-safety-limit", "player-collision", "npc-wildlife-and-rubbish-hooks", "exact-transform-persistence", "legacy-placement-import"],
       milestone23Systems: ["south-shore-scoops-scene-transition", "750-deterministic-shifts", "sequential-picture-orders", "60-percent-pass-rule", "ingredient-and-product-unlocks", "first-clear-rewards", "south-shore-restoration", "exact-save-resume", "legacy-progress-import", "landscape-controls"],
@@ -1798,6 +1883,7 @@ export class TownScene extends Phaser.Scene {
       npcTownLife: this.npcTownLife?.getDiagnostics?.(),
       customResident: this.customResident?.getDiagnostics?.(),
       farming: this.farming?.getDiagnostics?.(),
+      livingEnvironment: this.livingEnvironment?.getDiagnostics?.(),
       animals: this.animals?.getDiagnostics?.(),
       fishing: this.fishing?.getDiagnostics?.(),
       bakery: this.bakery?.getDiagnostics?.(),

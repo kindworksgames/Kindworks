@@ -18,7 +18,17 @@ export class WorldSimulationService {
     this.pauseReasons = new Set();
     this.fractionalGameMinutes = 0;
     this.unsavedGameMinutes = 0;
+    this.stateAdvancers = [];
     this.lastResult = { ok: true, status: "ready" };
+  }
+
+  addStateAdvancer(advancer) {
+    if (typeof advancer !== "function") throw new TypeError("A world state advancer must be a function.");
+    this.stateAdvancers.push(advancer);
+    return () => {
+      const index = this.stateAdvancers.indexOf(advancer);
+      if (index >= 0) this.stateAdvancers.splice(index, 1);
+    };
   }
 
   touch(now = this.now()) {
@@ -36,6 +46,11 @@ export class WorldSimulationService {
     const next = structuredClone(before);
     next.world = result.world;
     next.updatedAt = isoTime(now) || next.updatedAt;
+    try {
+      for (const advancer of this.stateAdvancers) advancer(next, before, result);
+    } catch (error) {
+      return { ok: false, status: "state-advancer-failed", message: String(error) };
+    }
     const replaced = this.gameState.replace(next);
     if (!replaced.ok) return { ...replaced, status: "state-rejected" };
     this.unsavedGameMinutes += result.advancedGameMinutes;

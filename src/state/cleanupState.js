@@ -123,7 +123,8 @@ export function validateCleanupState(cleanup) {
   if (session !== null) {
     if (!session || typeof session !== "object" || typeof session.id !== "string") errors.push("Active cleanup session is invalid.");
     else {
-      if (session.targetId !== COMMONS_RUBBISH_JOB.id || session.jobId !== COMMONS_RUBBISH_JOB.jobId || session.jobType !== "waste") errors.push("Active cleanup session target is invalid.");
+      const environmentJob = session.environmentJob === true;
+      if (environmentJob ? (!/^(?:litter-\d+|spill-[A-Za-z0-9_-]+)$/.test(session.targetId || "") || !String(session.jobId || "").startsWith("job-waste-") || session.jobType !== "waste") : (session.targetId !== COMMONS_RUBBISH_JOB.id || session.jobId !== COMMONS_RUBBISH_JOB.jobId || session.jobType !== "waste")) errors.push("Active cleanup session target is invalid.");
       if (!Number.isInteger(session.assignedLevel) || session.assignedLevel < 1 || session.assignedLevel > TOTAL_CLEANUP_LEVELS) errors.push("Active cleanup level is invalid.");
       if (!session.returnPosition || !Number.isFinite(session.returnPosition.x) || !Number.isFinite(session.returnPosition.y)) errors.push("Active cleanup return position is invalid.");
       if (!["up", "down", "left", "right"].includes(session.returnFacing)) errors.push("Active cleanup return direction is invalid.");
@@ -137,7 +138,9 @@ export function validateCleanupState(cleanup) {
       } else {
         const expectedIds = new Set(COMMONS_RUBBISH_JOB.items.map((item) => item.id));
         if (session.mode !== "town-job" || session.status !== "playing") errors.push("Active cleanup session lifecycle is invalid.");
-        if (!Array.isArray(session.itemIds) || session.itemIds.length !== expectedIds.size || new Set(session.itemIds).size !== session.itemIds.length || session.itemIds.some((id) => !expectedIds.has(id))) errors.push("Active cleanup item snapshot is invalid.");
+        if (environmentJob) {
+          if (!Array.isArray(session.itemIds) || session.itemIds.length < 1 || session.itemIds.length > 20 || new Set(session.itemIds).size !== session.itemIds.length || session.itemIds.some((id) => !/^(?:litter-\d+|spill-[A-Za-z0-9_-]+)$/.test(id))) errors.push("Active cleanup item snapshot is invalid.");
+        } else if (!Array.isArray(session.itemIds) || session.itemIds.length !== expectedIds.size || new Set(session.itemIds).size !== session.itemIds.length || session.itemIds.some((id) => !expectedIds.has(id))) errors.push("Active cleanup item snapshot is invalid.");
       }
     }
   }

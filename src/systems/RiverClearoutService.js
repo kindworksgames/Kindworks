@@ -8,6 +8,7 @@ import {
 } from "../data/riverClearout.js";
 import { COIN_LEDGER_LIMIT } from "../state/economyState.js";
 import { calculateCleanupReward } from "./CleanupJobService.js";
+import { removeRiverItemsInto } from "./LivingEnvironmentService.js";
 
 function appendLedger(state, now, details) {
   const id = `coin-${String(state.economy.nextTransactionId).padStart(6, "0")}`;
@@ -45,10 +46,11 @@ function restoreEngineState(engine, checkpoint) {
 }
 
 export class RiverClearoutService {
-  constructor(gameState, repository, { now = () => Date.now() } = {}) {
+  constructor(gameState, repository, { now = () => Date.now(), environment = null } = {}) {
     this.gameState = gameState;
     this.repository = repository;
     this.now = now;
+    this.environment = environment;
     this.activeSession = null;
     this.nextSessionId = 1;
     this.listeners = new Set();
@@ -93,6 +95,9 @@ export class RiverClearoutService {
       returnPosition: session.returnPosition,
       returnFacing: session.returnFacing,
       autoFall: session.autoFall,
+      mode: session.mode,
+      environmentTargetId: session.environmentTargetId,
+      environmentItemIds: session.environmentItemIds,
     });
   }
 
@@ -114,11 +119,12 @@ export class RiverClearoutService {
     return result;
   }
 
-  startLevel(number = this.getSnapshot().nextLevel, { returnPosition = null, returnFacing = "down", autoFall = true } = {}) {
+  startLevel(number = this.getSnapshot().nextLevel, { returnPosition = null, returnFacing = "down", autoFall = true, environmentTargetId = null } = {}) {
     if (this.activeSession && !this.activeSession.finished) return { ok: false, code: "river-level-active", message: "Finish or safely exit the current river level first." };
     const levelNumber = Math.max(1, Math.min(RIVER_TOTAL_LEVELS, Math.floor(Number(number) || 1)));
     const level = RIVER_LEVELS.get(levelNumber);
     const engine = new RiverClearoutEngine(level, RIVER_LEVELS.shapes, RIVER_LEVELS.icons);
+    const environmentJob = environmentTargetId ? this.environment?.getRiverJob?.(environmentTargetId) : null;
     this.activeSession = {
       id: `river-level-${String(this.nextSessionId).padStart(4, "0")}`,
       level,
@@ -130,6 +136,9 @@ export class RiverClearoutService {
       returnPosition: validPosition(returnPosition),
       returnFacing: ["up", "down", "left", "right"].includes(returnFacing) ? returnFacing : "down",
       autoFall: Boolean(autoFall),
+      mode: environmentJob ? "town-job" : "campaign",
+      environmentTargetId: environmentJob?.id || null,
+      environmentItemIds: environmentJob?.itemIds || [],
     };
     this.nextSessionId += 1;
     const result = { ok: true, code: "river-level-started", session: this.getActiveSession() };
@@ -299,7 +308,9 @@ export class RiverClearoutService {
         state.economy.lifetimeCoinsEarned += coins;
         ledger = appendLedger(state, this.now(), { amount: coins, kind: "river-clearout-first-clear", reason: `River Clear-Out Level ${level} first clear`, level, percent: result.percent, stars: result.stars, pieces: result.pieces });
       }
-      return { ok: true, code: "river-result-won", result: { ...result, won: true, coins, firstClear }, coins, firstClear, ledger };
+      const environmentEffect = session.mode === "town-job" ? removeRiverItemsInto(state, session.environmentItemIds) : null;
+      if (environmentEffect?.removed) state.progress.completedJobCount += 1;
+      return { ok: true, code: "river-result-won", result: { ...result, won: true, coins, firstClear }, coins, firstClear, ledger, environmentEffect };
     });
     if (!transaction.ok) return transaction;
     session.finished = true;
@@ -328,6 +339,7 @@ export class RiverClearoutService {
       completed: state.completed,
       totalStars: state.totalStars,
       activeSession: Boolean(this.activeSession && !this.activeSession.finished),
+      persistentEnvironmentConnected: Boolean(this.environment),
     };
   }
 }

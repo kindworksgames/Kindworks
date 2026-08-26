@@ -247,3 +247,35 @@ atomic, respect the complete town validation map, and roll back cleanly on a
 failed save. Schema 23 imports original crop beds, every original orchard slot,
 saved positions, fruit and growth state, and owned saplings without mutating
 the protected source snapshot. The protected HTML source remains unchanged.
+
+Milestone 27 completes the persistent living-environment simulation. The save
+now preserves all 20 legacy lawn profile slots while correctly treating House
+19 as the original reserved-but-unauthored identity and House 20 as the real
+personal home, leaving 19 physical lawns on the map. Each real property keeps
+its own soil health, moisture, shade, growth rate, weed susceptibility,
+maintenance cadence and household-care behaviour. Weather drives continuous
+moisture, grass and weed changes, and residents can perform bounded evening
+weeding without mowing work that belongs to the player.
+
+The original 66 land anchors now hold persistent street, park and beach litter.
+Light items move with the wind, nearby pieces form local Waste Collection
+snapshots, litter can enter the river, estuary rubbish can wash ashore, beach
+items can leave on the tide, and the Civic Assistant and Park Caretaker can
+perform bounded sweeps only while working. Twelve businesses retain customer,
+waste and overflow state and create correctly typed rubbish at nearby public
+anchors. The five exact river reaches hold individual persistent objects with
+stable IDs, type-specific flow, bridge/reed/bend snags, timed releases,
+downstream jams, shoreline transfer and escape-to-sea history. A successful
+authored cleanup removes only the exact land or river IDs snapshotted when the
+job began.
+
+Cleanliness is derived from land, river, lawn and business conditions and
+reports the live restoration workload in town. A first full restoration, or a
+later substantial backlog, starts the original three-game-day calm, defers new
+litter and river arrivals, pauses lawn regrowth, and prevents immediate
+re-dirtying. World-clock advancement, offline resolution and environment
+changes are committed in one validated transaction. Schema 24 upgrades schema
+23, converts original `lawns`, `litter`, `landRuntime`, `riverGarbage`,
+`riverRuntime`, `businesses` and `socialRestorationRuntime` records, and keeps
+the complete protected legacy snapshot untouched. All 270 automated tests and
+the production build pass. The protected HTML source remains unchanged.

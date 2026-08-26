@@ -102,6 +102,12 @@ import {
   projectLegacyTownPlacement,
   validateTownPlacementState,
 } from "./townPlacementState.js";
+import {
+  createFreshLivingEnvironmentState,
+  normalizeLivingEnvironmentState,
+  projectLegacyLivingEnvironment,
+  validateLivingEnvironmentState,
+} from "./livingEnvironmentState.js";
 
 const DIRECTIONS = new Set(["up", "down", "left", "right"]);
 
@@ -153,6 +159,7 @@ export function createFreshGameState({ now = Date.now() } = {}) {
     npcs: createFreshNpcState(),
     customResident: createFreshCustomResidentState(),
     farming: createFreshFarmingState(world),
+    environment: createFreshLivingEnvironmentState(world),
     animals: createFreshAnimalState(world),
     fishing: createFreshFishingState(world),
     bakery: createFreshBakeryState(),
@@ -194,6 +201,7 @@ export function createGameStateFromLegacy(legacy, report, { now = Date.now() } =
   state.townPlacement = projectLegacyTownPlacement(legacy, state.inventory, { now });
   state.customResident = projectLegacyCustomResident(legacy);
   state.farming = projectLegacyFarming(legacy, state.world);
+  state.environment = projectLegacyLivingEnvironment(legacy, state.world);
   state.animals = projectLegacyAnimals(legacy.animals, state.world);
   state.fishing = projectLegacyFishing(legacy.fishing, legacy.magnetFishing, state.world);
   state.bakery = projectLegacyBakery(legacy.bakery);
@@ -341,6 +349,13 @@ export function upgradeGameState(value, { now = Date.now() } = {}) {
     state.farming = currentFarming;
     state.schemaVersion = 23;
   }
+  if (state.schemaVersion === 23) {
+    state.farming = normalizeFarmingState(state.farming, state.world);
+    state.environment = state.source?.kind === "legacy-import"
+      ? projectLegacyLivingEnvironment(state.legacySnapshot, state.world)
+      : normalizeLivingEnvironmentState(state.environment, state.world);
+    state.schemaVersion = 24;
+  }
   return state;
 }
 
@@ -361,12 +376,18 @@ export function validateGameState(value) {
   if (typeof value.player?.scene !== "string" || !value.player.scene) errors.push("Player scene is missing.");
   if (!Number.isInteger(value.progress?.completedJobCount) || value.progress.completedJobCount < 0) errors.push("Completed-job count is invalid.");
   errors.push(...validateCleanupState(value.progress?.cleanup).errors);
+  const activeCleanup = value.progress?.cleanup?.activeSession;
+  if (activeCleanup?.environmentJob) {
+    const activeLandIds = new Set((value.environment?.land?.items || []).filter((item) => item.active).map((item) => item.id));
+    if (!activeCleanup.itemIds?.includes(activeCleanup.targetId) || activeCleanup.itemIds?.some((id) => !activeLandIds.has(id))) errors.push("Active environmental cleanup no longer matches persistent land litter.");
+  }
   errors.push(...validateEconomyState(value.economy).errors);
   errors.push(...validateInventoryState(value.inventory).errors);
   errors.push(...validateTownPlacementState(value.townPlacement).errors);
   errors.push(...validateNpcState(value.npcs).errors);
   errors.push(...validateCustomResidentState(value.customResident).errors);
   errors.push(...validateFarmingState(value.farming, value.world).errors);
+  errors.push(...validateLivingEnvironmentState(value.environment, value.world).errors);
   errors.push(...validateAnimalState(value.animals, value.world).errors);
   errors.push(...validateFishingState(value.fishing, value.world).errors);
   errors.push(...validateBakeryState(value.bakery).errors);
