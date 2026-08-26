@@ -1,9 +1,16 @@
 import {
   ANIMAL_BY_ID,
   ANIMAL_DEFINITIONS,
+  ANIMAL_SPECIES,
+  AERIAL_SPECIES,
   COMPANION_CARE_CONFIG,
+  RARE_ANIMAL_ENCOUNTERS,
+  SHOP_PET_DEFINITIONS,
+  WATER_SPECIES,
+  WILDLIFE_DEFINITIONS,
   adoptionChance,
   adoptionRulesFor,
+  missedRareEncounter,
   speciesFor,
   worldAnimalPresentations,
 } from "../data/animals.js";
@@ -81,7 +88,8 @@ export class AnimalService {
     const animals = state.animals;
     const fromDay = animals.lastResolvedDay;
     const toDay = state.world.day;
-    if (toDay <= fromDay) return { resolvedDays: 0, departures: [] };
+    const fromAbsoluteMinute = animals.lastResolvedAbsoluteMinute ?? absoluteWorldMinute(state.world);
+    const toAbsoluteMinute = absoluteWorldMinute(state.world);
     const departures = [];
     for (let day = fromDay + 1; day <= toDay; day += 1) {
       const grace = offline && day <= fromDay + COMPANION_CARE_CONFIG.offlineGraceDays;
@@ -98,13 +106,35 @@ export class AnimalService {
           resident.failedRequests = 0;
           resident.trust = Math.max(0, resident.trust);
           animals.departureEvents += 1;
+          animals.eventSerial += 1;
           departures.push(definition.id);
           if (animals.activeAnimalId === definition.id) animals.activeAnimalId = null;
         }
       }
     }
     animals.lastResolvedDay = toDay;
-    return { resolvedDays: toDay - fromDay, departures };
+    let rareReplay = null;
+    if (offline) {
+      const missed = missedRareEncounter(animals, fromAbsoluteMinute, toAbsoluteMinute);
+      if (missed) {
+        const resident = animals.residents[missed.definition.id];
+        const replayStart = toAbsoluteMinute + missed.config.replayDelayMinutes;
+        resident.rareReplayStartAbsoluteMinute = replayStart;
+        resident.lastRareNoticeKey = `offline:${missed.startAbsoluteMinute}`;
+        resident.rareVisitCount += 1;
+        animals.eventSerial += 1;
+        rareReplay = { animalId: missed.definition.id, startsAtAbsoluteMinute: replayStart };
+      }
+    }
+    for (const definition of WILDLIFE_DEFINITIONS) {
+      const config = RARE_ANIMAL_ENCOUNTERS[definition.species];
+      const resident = animals.residents[definition.id];
+      if (config && Number.isInteger(resident.rareReplayStartAbsoluteMinute)
+        && resident.rareReplayStartAbsoluteMinute + config.durationMinutes <= toAbsoluteMinute
+        && rareReplay?.animalId !== definition.id) resident.rareReplayStartAbsoluteMinute = null;
+    }
+    animals.lastResolvedAbsoluteMinute = toAbsoluteMinute;
+    return { resolvedDays: Math.max(0,toDay - fromDay), departures, rareReplay };
   }
 
   commit(mutator, { persist = true, offline = false } = {}) {
@@ -128,7 +158,7 @@ export class AnimalService {
 
   refresh({ persist = false, offline = false } = {}) {
     const current = this.gameState.getSnapshot();
-    if (current.animals.lastResolvedDay >= current.world.day) return { ok: true, code: "already-current", resolvedDays: 0, departures: [] };
+    if (current.animals.lastResolvedDay >= current.world.day && current.animals.lastResolvedAbsoluteMinute >= absoluteWorldMinute(current.world)) return { ok: true, code: "already-current", resolvedDays: 0, departures: [], rareReplay: null };
     return this.commit((_state, care) => ({ ok: true, code: "animal-care-refreshed", ...care }), { persist, offline });
   }
 
@@ -151,6 +181,7 @@ export class AnimalService {
       resident.lastCompanionCareDay = state.world.day;
       const requested = resident.adopted ? COMPANION_CARE_CONFIG.affectionGain : 7;
       const gainedTrust = trustGain(resident, requested);
+      state.animals.eventSerial += 1;
       return { ok: true, code: "animal-greeted", animalId, gainedTrust, trust: resident.trust };
     });
   }
@@ -171,6 +202,7 @@ export class AnimalService {
       const favorite = species.favorites.includes(itemId);
       const requested = (resident.adopted ? COMPANION_CARE_CONFIG.treatGain : 14) + (favorite ? 5 : 0);
       const gainedTrust = trustGain(resident, requested);
+      state.animals.eventSerial += 1;
       const ledger = appendConsumableUse(state, this.now(), { animalName: resident.name, itemId });
       return { ok: true, code: "animal-fed", animalId, itemId, favorite, gainedTrust, trust: resident.trust, ledger };
     });
@@ -179,6 +211,7 @@ export class AnimalService {
   requestAdoption(animalId, { roll = this.random() } = {}) {
     const definition = ANIMAL_BY_ID[animalId];
     if (!definition) return { ok: false, code: "unknown-animal", message: "That animal does not live in Willowmere." };
+    if (definition.shopPet) return { ok: false, code: "pet-shop-only", message: "This companion will be available through Paws & Wonders in Milestone 36." };
     return this.commit((state) => {
       const resident = state.animals.residents[animalId];
       if (!state.customResident?.profile) return { ok: false, code: "resident-required", message: "Create your Willowmere resident before adopting an animal." };
@@ -190,6 +223,7 @@ export class AnimalService {
       const guaranteed = resident.failedRequests >= rules.guaranteedAfterFailures;
       resident.lastRequestDay = state.world.day;
       resident.eventCount += 1;
+      state.animals.eventSerial += 1;
       if (!guaranteed && Number(roll) >= chance) {
         resident.failedRequests = Math.min(99, resident.failedRequests + 1);
         resident.trust = Math.min(100, resident.trust + rules.failureTrustGain);
@@ -199,6 +233,7 @@ export class AnimalService {
       resident.trust = Math.max(COMPANION_CARE_CONFIG.releaseThreshold, resident.trust);
       resident.failedRequests = 0;
       resident.lastCompanionCareDay = state.world.day;
+      resident.rareReplayStartAbsoluteMinute = null;
       if (!state.animals.activeAnimalId) {
         state.animals.activeAnimalId = animalId;
         resident.active = true;
@@ -215,6 +250,7 @@ export class AnimalService {
       for (const entry of Object.values(state.animals.residents)) entry.active = false;
       resident.active = true;
       state.animals.activeAnimalId = animalId;
+      state.animals.eventSerial += 1;
       return { ok: true, code: "companion-following", animalId };
     });
   }
@@ -225,6 +261,7 @@ export class AnimalService {
       const animalId = state.animals.activeAnimalId;
       state.animals.residents[animalId].active = false;
       state.animals.activeAnimalId = null;
+      state.animals.eventSerial += 1;
       return { ok: true, code: "companion-roaming", animalId };
     });
   }
@@ -236,6 +273,7 @@ export class AnimalService {
       const name = String(requestedName || "").replace(/[^\p{L}\p{N} '’\-]/gu, "").replace(/\s+/g, " ").trim().slice(0, 24);
       if (!name) return { ok: false, code: "invalid-name", message: "Choose a name with letters or numbers." };
       resident.name = name;
+      state.animals.eventSerial += 1;
       return { ok: true, code: "animal-renamed", animalId, name };
     });
   }
@@ -245,7 +283,14 @@ export class AnimalService {
     const presentations = worldAnimalPresentations(state.animals, state.world);
     return {
       totalAnimals: ANIMAL_DEFINITIONS.length,
-      visibleWildAnimals: presentations.filter((entry) => entry.visible && !entry.state.adopted).length,
+      speciesCount: Object.keys(ANIMAL_SPECIES).length,
+      wildlifeSpeciesCount: new Set(WILDLIFE_DEFINITIONS.map((definition) => definition.species)).size,
+      wildlifeIdentities: WILDLIFE_DEFINITIONS.length,
+      preservedShopPets: SHOP_PET_DEFINITIONS.length,
+      waterSpeciesCount: WATER_SPECIES.size,
+      aerialSpeciesCount: AERIAL_SPECIES.size,
+      rareSpeciesCount: Object.keys(RARE_ANIMAL_ENCOUNTERS).length,
+      visibleWildAnimals: presentations.filter((entry) => entry.visible && !entry.resident.adopted).length,
       adoptedAnimals: Object.values(state.animals.residents).filter((entry) => entry.adopted).length,
       activeAnimalId: state.animals.activeAnimalId,
       southMeadowResidents: presentations.filter((entry) => entry.location === "south-meadow").length,

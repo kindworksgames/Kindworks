@@ -505,3 +505,45 @@ production build pass. Desktop, 390×844 portrait and 844×390 landscape browser
 QA verified both reveal stages, keyboard focus, safe dismissal, immediate tool
 equipping, no overflow, 44-pixel-or-larger mobile tap targets and a clean console.
 The protected HTML source remains byte-for-byte unchanged.
+
+Milestone 35 completes the original wildlife system. All 37 original species
+now have persistent Phaser data, exact safe diets and favourites, day, night,
+crepuscular or all-day schedules, authored habitat anchors, bounded local
+territories and their original family-based animation metadata. The live town
+uses the original staggered weighted rotation: three regular visitors, never
+two of the same species, and no more than four wild animals when a rare visitor
+arrives. The 45 natural Willowmere identities are available in the wildlife
+panel; all 11 Paws & Wonders identities are preserved in state but remain
+unavailable for new shop adoption until Milestone 36.
+
+Land routes remain inside the world, keep clear of static buildings and the
+river, and return through safe territory anchors. Seven water species follow
+the Willow River corridor with ripples and water-aware depth. Seven aerial
+species retain obstacle overflight, while the original flutter rigs receive
+lift and aerial shadows. Every species uses its original animation family,
+motion, frame count and size class, with direction, cadence, scale, shadow and
+depth derived from its live movement.
+
+The five original rare visitors—wolf, sea otter, beaver, capybara and baby
+pig—retain their exact period, offset day, start time, visit duration, entry,
+exit, forest and town configuration. They visibly travel between forest and
+town during entry and return phases. A complete encounter missed while the
+game is closed receives one delayed ten-game-minute replay; expired replay
+state is cleaned safely. Clear, rain, wind and snow plus all four seasons now
+change appropriate land, water, bird and insect activity without changing
+their persistent friendship progress.
+
+Animal state format 2 records absolute wildlife resolution, rare replays and
+visit history. Schema 32 expands every schema-31 save from the former eight-
+animal foundation to all 56 identities, retains names, trust, adoption, active
+followers and care history, and recovers additional original HTML animal
+records without changing the protected legacy snapshot. Feeding, greeting,
+adoption, daily care, one active follower, South Meadow roaming, rollback and
+reload behaviour remain intact.
+
+All 356 automated tests and the production build pass. Desktop browser QA
+verified the 45-animal panel, three-to-four bounded live visitors, a water-
+animal interaction, saved trust after reload and a clean console. Responsive
+390×844 portrait and 844×390 landscape checks confirmed no page or panel
+overflow, a complete within-viewport landscape card and 44-pixel-or-larger
+controls. The protected HTML source remains byte-for-byte unchanged.

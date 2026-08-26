@@ -1,4 +1,4 @@
-import { ANIMAL_BY_ID, ANIMAL_DEFINITIONS, COMPANION_CARE_CONFIG, SOUTH_MEADOW, adoptionChance, speciesFor } from "../data/animals.js";
+import { ANIMAL_BY_ID, COMPANION_CARE_CONFIG, SOUTH_MEADOW, WILDLIFE_DEFINITIONS, adoptionChance, speciesFor } from "../data/animals.js";
 import { ITEM_CATALOG } from "../data/items.js";
 
 function locationLabel(entry) {
@@ -13,7 +13,7 @@ export class AnimalFriendsController {
     this.onModalChange = onModalChange;
     this.panel = document.querySelector("#animal-friends-panel");
     this.status = document.querySelector("#animal-friends-status");
-    this.selectedAnimalId = ANIMAL_DEFINITIONS[0].id;
+    this.selectedAnimalId = WILDLIFE_DEFINITIONS[0].id;
     this.qaGuaranteed = import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "animals";
     this.bind();
     this.unsubscribe = animals.subscribe(() => this.render());
@@ -86,9 +86,10 @@ export class AnimalFriendsController {
     const game = this.animals.gameState.getSnapshot();
     const presentations = this.animals.getWorldPresentations();
     const byId = Object.fromEntries(presentations.map((entry) => [entry.definition.id, entry]));
+    if (!byId[this.selectedAnimalId]) this.selectedAnimalId = presentations[0]?.definition.id || null;
     const list = document.querySelector("#animal-friends-list");
-    if (list) list.innerHTML = ANIMAL_DEFINITIONS.map((definition) => {
-      const entry = byId[definition.id];
+    if (list) list.innerHTML = presentations.map((entry) => {
+      const definition = entry.definition;
       const species = speciesFor(definition);
       const current = definition.id === this.selectedAnimalId;
       return `<button type="button" data-animal-id="${definition.id}" class="animal-list-card ${current ? "selected" : ""}" aria-pressed="${current}"><span>${species.icon}</span><div><strong>${entry.state.name}</strong><small>${definition.personality} ${species.label} · ${entry.state.trust}% trust</small></div><em>${entry.state.active ? "Following" : entry.state.adopted ? "Adopted" : entry.visible ? "Nearby" : "Away"}</em></button>`;
@@ -104,7 +105,8 @@ export class AnimalFriendsController {
     progress.value = resident.trust;
     progress.textContent = `${resident.trust}%`;
     document.querySelector("#animal-trust-label").textContent = `${resident.trust}% trust${resident.adopted && resident.trust <= COMPANION_CARE_CONFIG.warningThreshold ? " · needs care soon" : ""}`;
-    document.querySelector("#animal-habitat").textContent = `Habitat: ${species.habitat}. ${species.rare ? "Rare visitor." : "Wildlife routes rotate through the day."}`;
+    const rareStatus = species.rare ? ` Rare visitor · ${entry.rareVisit.phase.replaceAll("-", " ")}.` : " Wildlife routes rotate through the day.";
+    document.querySelector("#animal-habitat").textContent = `Habitat: ${species.habitat}. Usually ${entry.environment.behavior} in ${entry.environment.season} ${entry.environment.weather} weather.${rareStatus}`;
 
     const greet = document.querySelector("#animal-greet");
     greet.disabled = !entry.visible;

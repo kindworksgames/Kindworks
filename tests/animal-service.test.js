@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { ANIMAL_DEFINITIONS, SOUTH_MEADOW, worldAnimalPresentations } from "../src/data/animals.js";
+import { ANIMAL_DEFINITIONS, ANIMAL_SPECIES, SOUTH_MEADOW, worldAnimalPresentations } from "../src/data/animals.js";
 import { createFreshGameState, GameStateService, upgradeGameState, validateGameState } from "../src/state/GameState.js";
 import { projectLegacyAnimals } from "../src/state/animalState.js";
 import { normalizeWorldState } from "../src/state/worldState.js";
@@ -34,11 +34,27 @@ function createResident(gameState) {
   assert.equal(gameState.replace(state).ok, true);
 }
 
-test("fresh Milestone 11 state contains eight original named animals and at most four rotating visitors", () => {
+function makeAvailable(gameState, animalId, minimumDay = gameState.getSnapshot().world.day) {
+  const probe = gameState.getSnapshot();
+  for (let day = minimumDay; day <= minimumDay + 60; day += 1) {
+    for (let clockMinutes = 0; clockMinutes < 1440; clockMinutes += 80) {
+      probe.world.day = day;
+      probe.world.clockMinutes = clockMinutes;
+      if (worldAnimalPresentations(probe.animals, probe.world).some((entry) => entry.definition.id === animalId && entry.visible)) {
+        setDay(gameState, day, clockMinutes);
+        return;
+      }
+    }
+  }
+  assert.fail(`${animalId} never entered the rotating wildlife roster.`);
+}
+
+test("fresh Milestone 35 state contains all original wildlife and at most four rotating wild visitors", () => {
   const state = createFreshGameState({ now: 0 });
   assert.equal(validateGameState(state).ok, true);
-  assert.equal(Object.keys(state.animals.residents).length, 8);
-  assert.deepEqual(ANIMAL_DEFINITIONS.map((entry) => entry.name), ["Marmalade", "Bramble", "Clover", "Button", "Puddle", "Ember", "Inky", "Luna"]);
+  assert.equal(Object.keys(state.animals.residents).length, 56);
+  assert.equal(Object.keys(ANIMAL_SPECIES).length, 37);
+  assert.ok(["Marmalade", "Bramble", "Clover", "Button", "Puddle", "Ember", "Inky", "Luna"].every((name) => ANIMAL_DEFINITIONS.some((entry) => entry.name === name)));
   const visible = worldAnimalPresentations(state.animals, state.world).filter((entry) => entry.visible);
   assert.equal(visible.length, 3);
   assert.ok(visible.every((entry) => Number.isFinite(entry.position.x) && Number.isFinite(entry.position.y)));
@@ -58,6 +74,7 @@ test("a favourite treat is consumed exactly once and grants the original wild-an
   const state = createFreshGameState({ now: 0 });
   state.inventory.consumables["allotment-carrot"] = 2;
   const { gameState, animals, repository } = runtime({ state });
+  makeAvailable(gameState, RABBIT);
   const result = animals.feed(RABBIT, "allotment-carrot");
   assert.equal(result.ok, true);
   assert.equal(result.favorite, true);
@@ -73,7 +90,8 @@ test("a favourite treat is consumed exactly once and grants the original wild-an
 });
 
 test("gentle greetings obey the 120-game-minute cooldown", () => {
-  const { animals } = runtime();
+  const { gameState, animals } = runtime();
+  makeAvailable(gameState, DOG);
   const first = animals.greet(DOG);
   assert.equal(first.ok, true);
   assert.equal(first.gainedTrust, 7);
@@ -87,12 +105,12 @@ test("adoption requires a created resident and common animals are guaranteed on 
   assert.equal(animals.requestAdoption(RABBIT, { roll: 0 }).code, "resident-required");
   createResident(gameState);
   for (let attempt = 1; attempt <= 3; attempt += 1) {
-    setDay(gameState, attempt, 420);
+    makeAvailable(gameState, RABBIT, gameState.getSnapshot().world.day + 1);
     const result = animals.requestAdoption(RABBIT, { roll: 1 });
     assert.equal(result.code, "adoption-not-yet");
     assert.equal(result.failedRequests, attempt);
   }
-  setDay(gameState, 4, 420);
+  makeAvailable(gameState, RABBIT, gameState.getSnapshot().world.day + 1);
   const adopted = animals.requestAdoption(RABBIT, { roll: 1 });
   assert.equal(adopted.code, "animal-adopted");
   assert.equal(adopted.guaranteed, true);
@@ -116,7 +134,9 @@ test("rare Luna is guaranteed on the sixth valid visit request", () => {
 test("only one adopted companion follows while the others roam the exact South Meadow route", () => {
   const { gameState, animals } = runtime();
   createResident(gameState);
+  makeAvailable(gameState, DOG);
   assert.equal(animals.requestAdoption(DOG, { roll: 0 }).code, "animal-adopted");
+  makeAvailable(gameState, RABBIT, gameState.getSnapshot().world.day + 1);
   assert.equal(animals.requestAdoption(RABBIT, { roll: 0 }).code, "animal-adopted");
   assert.equal(gameState.getSnapshot().animals.activeAnimalId, DOG);
   let rabbit = animals.getWorldPresentations().find((entry) => entry.definition.id === RABBIT);
@@ -160,6 +180,7 @@ test("animal transactions roll back completely when saving fails", () => {
   const state = createFreshGameState({ now: 0 });
   state.inventory.consumables["allotment-carrot"] = 1;
   const { gameState, animals } = runtime({ state, repository: { save: () => ({ ok: false, status: "write-failed" }) } });
+  makeAvailable(gameState, RABBIT);
   const before = gameState.getSnapshot();
   const result = animals.feed(RABBIT, "allotment-carrot");
   assert.equal(result.code, "persistence-failed");
@@ -185,8 +206,8 @@ test("schema 7 saves gain animal friends without losing prior milestones", () =>
   old.schemaVersion = 7;
   old.identity.townName = "Friendship Bay";
   const upgraded = upgradeGameState(old, { now: 1000 });
-  assert.equal(upgraded.schemaVersion, 31);
+  assert.equal(upgraded.schemaVersion, 32);
   assert.equal(upgraded.identity.townName, "Friendship Bay");
-  assert.equal(Object.keys(upgraded.animals.residents).length, 8);
+  assert.equal(Object.keys(upgraded.animals.residents).length, 56);
   assert.equal(validateGameState(upgraded).ok, true);
 });

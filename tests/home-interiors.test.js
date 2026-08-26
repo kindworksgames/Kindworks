@@ -198,12 +198,12 @@ test("imports original HTML furniture positions, quarter-turns and serial safely
   assert.equal(validateHomeInteriorState(projected).ok, true);
 });
 
-test("upgrades schema 28 through schema 31 and projects legacy furniture without touching the snapshot", () => {
+test("upgrades schema 28 through schema 32 and projects legacy furniture without touching the snapshot", () => {
   const old = createFreshGameState({ now: 0 });
   old.schemaVersion = 28;
   delete old.homeInteriors;
   const upgraded = upgradeGameState(old, { now: 1000 });
-  assert.equal(upgraded.schemaVersion, 31);
+  assert.equal(upgraded.schemaVersion, 32);
   assert.deepEqual(upgraded.homeInteriors.placements, []);
   assert.equal(validateGameState(upgraded).ok, true);
   const legacy = createFreshGameState({ now: 0 });

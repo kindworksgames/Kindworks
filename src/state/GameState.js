@@ -27,6 +27,7 @@ import {
 } from "./farmingState.js";
 import {
   createFreshAnimalState,
+  expandAnimalState,
   normalizeAnimalState,
   projectLegacyAnimals,
   validateAnimalState,
@@ -445,6 +446,14 @@ export function upgradeGameState(value, { now = Date.now() } = {}) {
       ? projectLegacyHomeownerGiftState(state.legacySnapshot, state.inventory)
       : normalizeHomeownerGiftState(state.homeownerGifts, state.inventory);
     state.schemaVersion = 31;
+  }
+  if (state.schemaVersion === 31) {
+    state.animals = expandAnimalState(
+      state.animals,
+      state.source?.kind === "legacy-import" ? state.legacySnapshot?.animals : null,
+      state.world,
+    );
+    state.schemaVersion = 32;
   }
   return state;
 }

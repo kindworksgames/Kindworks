@@ -275,7 +275,7 @@ test("schema 26 upgrades add a valid restoration domain and failed saves roll ba
   old.economy.coins = 4321;
   old.economy.lifetimeCoinsEarned = 4321;
   const upgraded = upgradeGameState(old, { now: 1000 });
-  assert.equal(upgraded.schemaVersion, 31);
+  assert.equal(upgraded.schemaVersion, 32);
   assert.equal(upgraded.economy.coins, 4321);
   assert.equal(validateRestorationMilestoneState(upgraded.restorationMilestones).ok, true);
   assert.equal(validateGameState(upgraded).ok, true);

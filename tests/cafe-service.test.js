@@ -51,7 +51,7 @@ test("pins the original complete Corner Café catalogue and campaign", () => {
 
 test("fresh Milestone 14 state is valid and begins at café level one", () => {
   const state = createFreshGameState({ now: 0 });
-  assert.equal(state.schemaVersion, 31);
+  assert.equal(state.schemaVersion, 32);
   assert.equal(state.cafe.unlockedLevel, 1);
   assert.equal(state.cafe.totalStars, 0);
   assert.equal(validateGameState(state).ok, true);
@@ -193,7 +193,7 @@ test("schema 10 saves gain café progress while preserving the bakery milestone"
   old.bakery.best[1] = { score: 95, stars: 3, served: 3, accuracy: 100 };
   old.bakery.totalStars = 3;
   const upgraded = upgradeGameState(old, { now: 0 });
-  assert.equal(upgraded.schemaVersion, 31);
+  assert.equal(upgraded.schemaVersion, 32);
   assert.equal(upgraded.cafe.unlockedLevel, 1);
   assert.equal(upgraded.bakery.completed[1], true);
   assert.equal(validateGameState(upgraded).ok, true);
