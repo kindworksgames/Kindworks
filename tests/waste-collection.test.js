@@ -130,7 +130,7 @@ test("schema 13 saves gain normalized Waste Collection campaign state", () => {
   old.progress.cleanup.progress.waste.completed = 1;
   old.progress.cleanup.progress.waste.nextLevel = 2;
   const upgraded = upgradeGameState(old, { now: 0 });
-  assert.equal(upgraded.schemaVersion, 29);
+  assert.equal(upgraded.schemaVersion, 30);
   assert.equal(upgraded.progress.cleanup.schemaVersion, 2);
   assert.equal(upgraded.progress.cleanup.progress.waste.completed, 1);
   assert.equal(validateGameState(upgraded).ok, true);

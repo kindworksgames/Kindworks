@@ -16,6 +16,7 @@ import {
   pointInWater,
 } from "../data/fishing.js";
 import { COIN_LEDGER_LIMIT } from "../state/economyState.js";
+import { aquariumFishCount, aquariumSnapshot, placedFishTank, routeOrnamentalCatchInto } from "../state/aquariumState.js";
 import { InventoryService } from "./InventoryService.js";
 
 function clampQuality(value) {
@@ -32,11 +33,12 @@ function appendLedger(state, now, details) {
 }
 
 export class FishingService {
-  constructor(gameState, repository, { now = () => Date.now(), random = Math.random } = {}) {
+  constructor(gameState, repository, { now = () => Date.now(), random = Math.random, aquarium = null } = {}) {
     this.gameState = gameState;
     this.repository = repository;
     this.now = now;
     this.random = random;
+    this.aquarium = aquarium;
     this.inventory = new InventoryService();
     this.listeners = new Set();
     this.activeSession = null;
@@ -91,7 +93,7 @@ export class FishingService {
   getSnapshot() {
     const state = this.gameState.getSnapshot();
     this.syncDayInto(state);
-    return structuredClone(state.fishing);
+    return { ...structuredClone(state.fishing), aquarium: aquariumSnapshot(state) };
   }
 
   castsLeft(mode = "fish") {
@@ -176,15 +178,22 @@ export class FishingService {
     const spot = FISHING_SPOT_BY_ID[session?.spotId];
     if (!session || session.mode !== "fish" || session.phase !== "bite" || !spot) return { ok: false, code: "no-bite", message: "Wait for BITE before reeling in." };
     const safeQuality = clampQuality(quality);
-    const forcedAllowed = spot.catchTable.some((entry) => entry.itemId === forcedItemId) ? forcedItemId : null;
-    const itemId = forcedAllowed || chooseFishingCatch(spot, safeQuality, this.random);
+    const before = this.gameState.getSnapshot();
+    const tankPlaced = Boolean(placedFishTank(before));
+    const catchTable = spot.catchTable.filter((entry) => !ORNAMENTAL_FISH_IDS.includes(entry.itemId)
+      || !tankPlaced
+      || aquariumFishCount(before, entry.itemId) < FISHING_CONFIG.maxAquariumPerSpecies);
+    const availableSpot = { ...spot, catchTable: catchTable.length ? catchTable : spot.catchTable };
+    const forcedAllowed = availableSpot.catchTable.some((entry) => entry.itemId === forcedItemId) ? forcedItemId : null;
+    const itemId = forcedAllowed || chooseFishingCatch(availableSpot, safeQuality, this.random);
     const item = fishingItem(itemId);
     const ornamental = ORNAMENTAL_FISH_IDS.includes(itemId);
     const result = this.commit((state) => {
+      let aquariumRouting = null;
       if (!ornamental) {
         const added = this.inventory.add(state.inventory, itemId, 1);
         if (!added.ok) return { ...added, message: `${item.name} could not fit in your inventory. The fish was released safely.` };
-      } else state.fishing.releasedByItem[itemId] += 1;
+      } else aquariumRouting = routeOrnamentalCatchInto(state, itemId);
       state.fishing.caughtToday += 1;
       state.fishing.totalCaught += 1;
       state.fishing.currentStreak += 1;
@@ -198,8 +207,9 @@ export class FishingService {
         quality: safeQuality,
         excellent: safeQuality >= 1 - FISHING_CONFIG.excellentWindowFraction,
         rarity: FISH_RARITY[itemId],
-        disposition: ornamental ? "released-home-system-pending" : "inventory",
-        count: ornamental ? state.fishing.caughtByItem[itemId] : this.inventory.quantity(state.inventory, itemId),
+        disposition: ornamental ? aquariumRouting.disposition : "inventory",
+        count: ornamental ? aquariumRouting.speciesCount : this.inventory.quantity(state.inventory, itemId),
+        aquarium: aquariumSnapshot(state),
         castsLeft: FISHING_CONFIG.dailyCasts - state.fishing.castsToday,
       };
     });
@@ -270,7 +280,8 @@ export class FishingService {
       hiddenZonesPerSession: TARGETING_CONFIG.zonesPerSession,
       inventoryIntegrated: true,
       visibleRiverCleanupIntegrated: false,
-      aquariumHomeDisplayIntegrated: false,
+      aquariumHomeDisplayIntegrated: true,
+      aquarium: state.aquarium,
     };
   }
 }

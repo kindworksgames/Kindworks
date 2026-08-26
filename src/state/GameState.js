@@ -127,6 +127,7 @@ import {
   projectLegacyHomeInteriors,
   validateHomeInteriorState,
 } from "./homeInteriorState.js";
+import { reconcileAquariumHousingInto, validateAquariumHousing } from "./aquariumState.js";
 
 const DIRECTIONS = new Set(["up", "down", "left", "right"]);
 
@@ -249,6 +250,7 @@ export function createGameStateFromLegacy(legacy, report, { now = Date.now() } =
   const legacyApples = safeInteger(legacy.orchard?.apples, 0, 99);
   if (legacyCarrots) state.inventory.consumables["allotment-carrot"] = legacyCarrots;
   if (legacyApples) state.inventory.consumables["orchard-apple"] = legacyApples;
+  reconcileAquariumHousingInto(state, { reason: "A placed home fish tank was not available during legacy import", now });
   state.legacySnapshot = structuredClone(legacy);
   return state;
 }
@@ -423,6 +425,13 @@ export function upgradeGameState(value, { now = Date.now() } = {}) {
       : normalizeHomeInteriorState(state.homeInteriors);
     state.schemaVersion = 29;
   }
+  if (state.schemaVersion === 29) {
+    state.fishing = state.source?.kind === "legacy-import"
+      ? projectLegacyFishing(state.legacySnapshot?.fishing, state.legacySnapshot?.magnetFishing, state.world)
+      : normalizeFishingState(state.fishing, state.world);
+    reconcileAquariumHousingInto(state, { reason: "A placed home fish tank was not available after the Milestone 33 save upgrade", now });
+    state.schemaVersion = 30;
+  }
   return state;
 }
 
@@ -460,6 +469,7 @@ export function validateGameState(value) {
   errors.push(...validateLivingEnvironmentState(value.environment, value.world).errors);
   errors.push(...validateAnimalState(value.animals, value.world).errors);
   errors.push(...validateFishingState(value.fishing, value.world).errors);
+  errors.push(...validateAquariumHousing(value).errors);
   errors.push(...validateBakeryState(value.bakery).errors);
   errors.push(...validateCafeState(value.cafe).errors);
   errors.push(...validateRiverState(value.river).errors);

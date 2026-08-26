@@ -431,3 +431,37 @@ rotation, movement, storage, resident schedules and the House Rescue round trip.
 Responsive 400×842 portrait and 842×400 landscape browser checks confirmed the
 interior and controls remain readable and usable. The protected HTML source
 remains byte-for-byte unchanged.
+
+Milestone 33 completes the original home-aquarium system. The four exclusive
+Reedbank ornamental species are restored as separate, persistent residents:
+Goldfish, Koi, Angelfish and the legendary Oranda Goldfish. Each retains its
+original rarity, distinct silhouette and exact colour palette. A placed
+Ornamental Fish Tank is required to house them, every species has its original
+99-fish capacity, and none of these living fish can enter the ordinary food or
+consumable inventory.
+
+An ornamental catch now joins the placed tank atomically with its fishing
+counters. Without a placed tank it is safely returned to Reedbank; if that
+species has reached 99, the additional catch is also safely returned. Those
+outcomes are explained in the fishing interface, while full species are
+excluded from normal catch selection whenever other valid catches remain. A
+failed save restores the exact pre-catch aquarium, counters and inventory.
+
+The personal-home tank displays up to eight swimming fish in a fair
+species-by-species cycle, with water, sand, plants and bubbles. Inspection lists
+the exact species counts, the home badges show total fish and species, the
+inventory has a separate Home Aquarium collection, and the shop explains
+whether the unique tank is unowned, waiting to be placed or already housing
+fish. An occupied tank can be moved or rotated but cannot be stored; if a home
+redesign cannot retain the placed tank, its residents are safely released before
+the tank returns to furniture inventory.
+
+Schema 30 upgrades schema 29 with bounded per-species aquarium counts. Original
+HTML saves preserve fish when their tank is placed, safely release unhoused fish,
+convert any old ornamental consumable entries into releases, record those
+reconciliations in the bounded ledger and leave the protected legacy snapshot
+untouched. All 328 automated tests and the production build pass. Desktop,
+390×844 portrait and 844×390 landscape browser QA verified the animated tank,
+species inspection, inventory collection, occupied-tank safeguard, responsive
+layout and a clean console. The protected HTML source remains byte-for-byte
+unchanged.

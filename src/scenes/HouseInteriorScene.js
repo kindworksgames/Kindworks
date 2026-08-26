@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import { ITEM_CATALOG } from "../data/items.js";
 import { PERSONAL_HOME_HOUSE_ID } from "../data/customResident.js";
 import { HOME_INTERIOR_VIEW, validateFurniturePlacement } from "../data/homeInteriors.js";
+import { AQUARIUM_SPECIES_BY_ID } from "../data/aquarium.js";
 
 const VIEW = Object.freeze({ x: 20, y: 78, scale: 0.89 });
 const OBJECT_ICONS = Object.freeze({
@@ -32,6 +33,7 @@ export class HouseInteriorScene extends Phaser.Scene {
 
   create() {
     this.homeInteriors = this.registry.get("homeInteriors");
+    this.aquarium = this.registry.get("aquarium");
     this.gameState = this.registry.get("gameState");
     this.houseRescue = this.registry.get("houseRescue");
     this.worldSimulation = this.registry.get("worldSimulation");
@@ -99,7 +101,7 @@ export class HouseInteriorScene extends Phaser.Scene {
   setSceneInterface() {
     document.body.dataset.gameScene = this.scene.key;
     const badge = document.querySelector(".milestone-badge");
-    if (badge) badge.textContent = "HOME INTERIORS · MILESTONE 32";
+    if (badge) badge.textContent = "HOME AQUARIUM · MILESTONE 33";
     text("#location-status", "Inside a Willowmere home");
     text("#control-hint", "Tap to inspect · arrows browse/move · R rotates · Enter confirms");
   }
@@ -115,7 +117,10 @@ export class HouseInteriorScene extends Phaser.Scene {
   }
 
   clearVisuals() {
-    for (const visual of this.visuals) visual?.destroy?.();
+    for (const visual of this.visuals) {
+      this.tweens?.killTweensOf?.(visual);
+      visual?.destroy?.();
+    }
     this.visuals = [];
     this.hitAreas = [];
   }
@@ -157,12 +162,70 @@ export class HouseInteriorScene extends Phaser.Scene {
   drawFurniture(item, graphics) {
     const rect = this.mapRect(item);
     const selected = this.selectedId === item.id;
+    if (item.kind === "fish-tank" && item.customFurniture) {
+      this.drawFishTank(item, rect, selected, graphics);
+      return;
+    }
     const palette = item.floorLayer ? 0xa76665 : item.customFurniture ? 0x5b826c : ({ bed: 0x8f6c78, table: 0x8a6545, kitchen: 0x59766e, wardrobe: 0x775644, sofa: 0x668b78, bookshelf: 0x6d4d39, hearth: 0x925a3f }[item.kind] || 0x78906b);
     graphics.fillStyle(palette, item.floorLayer ? 0.68 : 1); graphics.fillRoundedRect(rect.x, rect.y, rect.w, rect.h, Math.min(10, rect.h / 4));
     graphics.lineStyle(selected ? 5 : 2, selected ? 0xffed75 : 0x3e3b2f, selected ? 1 : 0.55); graphics.strokeRoundedRect(rect.x, rect.y, rect.w, rect.h, Math.min(10, rect.h / 4));
     const icon = this.add.text(rect.x + rect.w / 2, rect.y + rect.h / 2, item.icon || OBJECT_ICONS[item.kind] || "🏠", { fontSize: `${Math.max(15, Math.min(31, rect.h * 0.54))}px`, fontFamily: "Apple Color Emoji, system-ui" }).setOrigin(0.5).setDepth(4);
     this.visuals.push(icon);
     this.hitAreas.push({ id: item.id, kind: item.kind, customFurniture: Boolean(item.customFurniture), x: rect.x, y: rect.y, w: rect.w, h: rect.h });
+  }
+
+  drawFishTank(item, rect, selected, graphics) {
+    const inset = Math.max(4, Math.min(8, rect.h * 0.12));
+    graphics.fillStyle(0x283b42, 1); graphics.fillRoundedRect(rect.x, rect.y, rect.w, rect.h, 7);
+    graphics.fillStyle(0x56b9c8, 0.92); graphics.fillRoundedRect(rect.x + inset, rect.y + inset, rect.w - inset * 2, rect.h - inset * 1.65, 4);
+    graphics.fillStyle(0xd7b873, 0.9); graphics.fillRect(rect.x + inset, rect.y + rect.h - inset * 1.45, rect.w - inset * 2, inset * 0.7);
+    graphics.lineStyle(Math.max(1.2, rect.h * 0.035), 0x397f5b, 0.9);
+    for (const fraction of [0.16, 0.82]) {
+      const plantX = rect.x + inset + (rect.w - inset * 2) * fraction;
+      const sandY = rect.y + rect.h - inset * 1.15;
+      graphics.lineBetween(plantX, sandY, plantX - inset * 0.35, sandY - inset * 1.8);
+      graphics.lineBetween(plantX, sandY, plantX + inset * 0.45, sandY - inset * 2.25);
+    }
+    graphics.lineStyle(selected ? 5 : 2, selected ? 0xffed75 : 0xb8e7e9, selected ? 1 : 0.8); graphics.strokeRoundedRect(rect.x, rect.y, rect.w, rect.h, 7);
+    const displayFish = this.aquarium?.getSnapshot?.().displayFish || [];
+    const columns = Math.max(1, Math.min(4, Math.ceil(displayFish.length / 2)));
+    displayFish.forEach((id, index) => {
+      const species = AQUARIUM_SPECIES_BY_ID[id];
+      if (!species) return;
+      const column = index % columns;
+      const row = Math.floor(index / columns);
+      const x = rect.x + inset + (column + 0.5) * ((rect.w - inset * 2) / columns);
+      const y = rect.y + inset + (row + 0.62) * ((rect.h - inset * 2.25) / Math.max(1, Math.ceil(displayFish.length / columns)));
+      const fish = this.add.graphics().setPosition(x, y).setDepth(5);
+      const scale = Math.max(0.55, Math.min(1, rect.h / 58));
+      fish.fillStyle(species.palette.fin, 1); fish.fillTriangle(-9 * scale, 0, -17 * scale, -6 * scale, -17 * scale, 6 * scale);
+      if (species.art === "angelfish") {
+        fish.fillTriangle(-3 * scale, -2 * scale, 2 * scale, -12 * scale, 7 * scale, -2 * scale);
+        fish.fillTriangle(-3 * scale, 2 * scale, 2 * scale, 12 * scale, 7 * scale, 2 * scale);
+      }
+      fish.fillStyle(species.palette.body, 1); fish.fillEllipse(0, 0, 22 * scale, (species.art === "angelfish" ? 17 : 13) * scale);
+      fish.fillStyle(species.palette.light, 0.95); fish.fillEllipse(2 * scale, 2 * scale, 11 * scale, 5 * scale);
+      if (species.art === "koi") {
+        fish.fillStyle(0xd9553f, 1); fish.fillCircle(-2 * scale, -2 * scale, 2.6 * scale); fish.fillCircle(5 * scale, 2 * scale, 2 * scale);
+      } else if (species.art === "angelfish") {
+        fish.fillStyle(0x5b5a61, 0.9); fish.fillRect(-4 * scale, -7 * scale, 2 * scale, 14 * scale); fish.fillRect(2 * scale, -7 * scale, 2 * scale, 14 * scale);
+      } else if (species.art === "oranda") {
+        fish.fillStyle(0xd94d3f, 1); fish.fillCircle(7 * scale, -5 * scale, 3.5 * scale); fish.fillCircle(4 * scale, -6 * scale, 3 * scale);
+      }
+      fish.fillStyle(0x15252b, 1); fish.fillCircle(7 * scale, -2 * scale, 1.25 * scale);
+      this.visuals.push(fish);
+      this.tweens.add({ targets: fish, x: x + (index % 2 ? -6 : 6), y: y + (index % 3 - 1) * 2, duration: 1450 + index * 140, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
+    });
+    for (let index = 0; index < Math.min(5, Math.max(2, displayFish.length)); index += 1) {
+      const bubble = this.add.circle(rect.x + inset * 1.5 + ((index + 1) / 6) * (rect.w - inset * 3), rect.y + rect.h * (0.38 + (index % 2) * 0.22), 1.5 + (index % 2), 0xd9fbff, 0.78).setDepth(4);
+      this.visuals.push(bubble);
+      this.tweens.add({ targets: bubble, y: rect.y + inset, alpha: 0.12, duration: 1200 + index * 180, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
+    }
+    if (!displayFish.length) {
+      const empty = this.add.text(rect.x + rect.w / 2, rect.y + rect.h / 2, "Ready for Reedbank fish", { color: "#e8ffff", fontFamily: "system-ui", fontSize: `${Math.max(7, Math.min(10, rect.h * 0.18))}px`, fontStyle: "bold" }).setOrigin(0.5).setDepth(5);
+      this.visuals.push(empty);
+    }
+    this.hitAreas.push({ id: item.id, kind: item.kind, customFurniture: true, x: rect.x, y: rect.y, w: rect.w, h: rect.h });
   }
 
   drawPreview(candidate, valid, graphics) {
@@ -200,6 +263,7 @@ export class HouseInteriorScene extends Phaser.Scene {
       `👥 ${people}`,
       interior.occupants.length + interior.animalOccupants.length ? `💚 ${interior.occupants.length + interior.animalOccupants.length} home now` : "🚪 Nobody home",
       interior.layout.personal ? `🛋️ ${interior.furniture.placements.length} / ${interior.furniture.limit} placed` : null,
+      interior.aquarium?.placed ? `🐠 ${interior.aquarium.totalFish} fish · ${interior.aquarium.species.length} species` : null,
     ].filter(Boolean).map((label) => `<span>${label}</span>`).join("");
     if (!this.selectedId) {
       const names = [...interior.occupants, ...interior.animalOccupants].map((entry) => entry.name);
@@ -355,7 +419,7 @@ export class HouseInteriorScene extends Phaser.Scene {
 
   getMilestoneState() {
     const interior = this.interior();
-    return { scene: this.scene.key, milestone: 32, houseId: this.houseId, clean: interior.clean, occupants: interior.occupants.length, animalOccupants: interior.animalOccupants.length, furniture: interior.furniture?.placements.length || 0, activePlacement: Boolean(interior.furniture?.activePlacement) };
+    return { scene: this.scene.key, milestone: 33, houseId: this.houseId, clean: interior.clean, occupants: interior.occupants.length, animalOccupants: interior.animalOccupants.length, furniture: interior.furniture?.placements.length || 0, aquarium: interior.aquarium, activePlacement: Boolean(interior.furniture?.activePlacement) };
   }
 
   shutdownScene() {

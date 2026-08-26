@@ -13,6 +13,7 @@ import { PERSONAL_HOME_HOUSE_ID, personalHomeCapacity } from "../data/customResi
 import { ITEM_CATALOG } from "../data/items.js";
 import { COIN_LEDGER_LIMIT } from "../state/economyState.js";
 import { normalizeHomeInteriorState } from "../state/homeInteriorState.js";
+import { aquariumFishCount, aquariumSnapshot, safelyReleaseAquariumFishInto } from "../state/aquariumState.js";
 
 function appendFurnitureLedger(state, now, kind, placement) {
   const serial = state.economy.nextTransactionId;
@@ -50,17 +51,21 @@ export function reconcileHomeFurnitureInto(state) {
     }
     state.homeInteriors.placements = state.homeInteriors.placements.filter((entry) => entry.id !== placement.id);
     state.inventory.furniture[placement.itemId] = (state.inventory.furniture[placement.itemId] || 0) + 1;
-    stored.push({ id: placement.id, itemId: placement.itemId, reason: current.reason });
+    const aquariumRelease = ITEM_CATALOG[placement.itemId]?.aquarium && aquariumFishCount(state) > 0
+      ? safelyReleaseAquariumFishInto(state, { reason: "A home redesign could not safely retain the placed fish tank" })
+      : null;
+    stored.push({ id: placement.id, itemId: placement.itemId, reason: current.reason, aquariumRelease });
   }
   return { ok: true, moved, stored };
 }
 
 export class HomeInteriorService {
-  constructor(gameState, repository, { now = () => Date.now(), customResident = null } = {}) {
+  constructor(gameState, repository, { now = () => Date.now(), customResident = null, aquarium = null } = {}) {
     this.gameState = gameState;
     this.repository = repository;
     this.now = now;
     this.customResident = customResident;
+    this.aquarium = aquarium;
     this.activePlacement = null;
     this.listeners = new Set();
     this.lastResult = { ok: true, code: "ready" };
@@ -102,6 +107,7 @@ export class HomeInteriorService {
       limit: HOME_FURNITURE_LIMIT,
       inventory: structuredClone(state.inventory.furniture),
       placements: home.placements.map((placement) => ({ ...placement, item: structuredClone(ITEM_CATALOG[placement.itemId]) })),
+      aquarium: aquariumSnapshot(state),
       activePlacement: this.activePlacement ? structuredClone(this.activePlacement) : null,
     };
   }
@@ -148,6 +154,7 @@ export class HomeInteriorService {
       layout,
       visit: structuredClone(state.homeInteriors?.visits?.[houseId] || null),
       furniture: houseId === PERSONAL_HOME_HOUSE_ID ? this.getSnapshot() : null,
+      aquarium: houseId === PERSONAL_HOME_HOUSE_ID ? aquariumSnapshot(state) : null,
     };
   }
 
@@ -180,7 +187,12 @@ export class HomeInteriorService {
       return { ok: true, code: "home-object-inspected", houseId, targetId };
     }, "The inspection could not be saved.");
     if (!result.ok) return result;
-    const detail = target.description || HOME_OBJECT_DESCRIPTIONS[target.kind] || "A familiar part of this home.";
+    const aquarium = aquariumSnapshot(this.gameState.getSnapshot());
+    const detail = target.itemId === aquarium.tankItemId
+      ? aquarium.totalFish > 0
+        ? `${aquarium.totalFish} ornamental fish live safely here across ${aquarium.species.length} species: ${aquarium.species.map((species) => `${species.name} × ${species.count}`).join(", ")}.`
+        : "The placed ornamental fish tank is ready for Reedbank catches."
+      : target.description || HOME_OBJECT_DESCRIPTIONS[target.kind] || "A familiar part of this home.";
     this.lastResult = { ...result, target: { id: target.id, label: target.label || target.name, detail, kind: target.kind, customFurniture: Boolean(target.customFurniture) } };
     this.emit(this.lastResult);
     return this.lastResult;
@@ -274,6 +286,8 @@ export class HomeInteriorService {
     const result = this.commit((state) => {
       const index = state.homeInteriors.placements.findIndex((entry) => entry.id === placementId);
       if (index < 0) return { ok: false, code: "placement-missing", message: "Choose placed furniture first." };
+      const selected = state.homeInteriors.placements[index];
+      if (ITEM_CATALOG[selected.itemId]?.aquarium && aquariumFishCount(state) > 0) return { ok: false, code: "aquarium-occupied", message: "The fish tank cannot be stored while ornamental fish are living in it. You can move the tank safely instead." };
       const [placement] = state.homeInteriors.placements.splice(index, 1);
       state.inventory.furniture[placement.itemId] = (state.inventory.furniture[placement.itemId] || 0) + 1;
       const ledger = appendFurnitureLedger(state, this.now(), "home-furniture-store", placement);
@@ -288,6 +302,7 @@ export class HomeInteriorService {
     const state = this.gameState.getSnapshot();
     const snapshot = this.getSnapshot();
     const interiors = state.houseRescue ? Object.keys(state.houseRescue.homes).length : 0;
+    const aquarium = aquariumSnapshot(state);
     return {
       enabled: true,
       homeCount: interiors,
@@ -297,7 +312,9 @@ export class HomeInteriorService {
       placementLimit: HOME_FURNITURE_LIMIT,
       visits: Object.keys(snapshot.visits).length,
       activePlacement: snapshot.activePlacement,
-      aquariumBehaviourDeferred: true,
+      aquariumIntegrated: true,
+      aquarium,
+      occupiedTankStorageBlocked: true,
       lastResult: structuredClone(this.lastResult),
     };
   }

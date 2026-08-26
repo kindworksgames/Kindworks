@@ -43,7 +43,7 @@ test("pins the original three fishing spots, catch tables, targeting and two fiv
 
 test("fresh Milestone 12 state is valid with separate fish and magnet progress", () => {
   const state = createFreshGameState({ now: 0 });
-  assert.equal(state.schemaVersion, 29);
+  assert.equal(state.schemaVersion, 30);
   assert.equal(validateGameState(state).ok, true);
   assert.equal(state.fishing.castsToday, 0);
   assert.equal(state.fishing.magnet.castsToday, 0);
@@ -78,12 +78,12 @@ test("a timed fish catch enters inventory exactly once and updates streaks", () 
   assert.equal(repository.load().state.inventory.consumables["river-minnows"], 1);
 });
 
-test("ornamental Reedbank catches are recorded and safely released until the home aquarium milestone", () => {
+test("ornamental Reedbank catches are recorded and safely released when no home tank is placed", () => {
   const { gameState, fishing } = runtime();
   beginAtHiddenZone(fishing, "fish", "fishing-reedbank");
   const result = fishing.reelFish({ forcedItemId: "reedbank-koi" });
   assert.equal(result.ok, true);
-  assert.equal(result.disposition, "released-home-system-pending");
+  assert.equal(result.disposition, "released-no-tank");
   assert.equal(gameState.getSnapshot().fishing.releasedByItem["reedbank-koi"], 1);
   assert.equal(gameState.getSnapshot().inventory.consumables["reedbank-koi"], undefined);
 });
@@ -169,7 +169,7 @@ test("persistence failure rolls a cast or reward back without duplication", () =
   assert.deepEqual(rewardFailure.gameState.getSnapshot(), before);
 });
 
-test("legacy fishing and magnet records project into schema 9 without ornamental inventory leakage", () => {
+test("legacy fishing and magnet records preserve aquarium and release counts separately", () => {
   const world = createFreshGameState({ now: 0 }).world;
   const projected = projectLegacyFishing({
     day: 1, castsToday: 2, caughtToday: 1, totalCasts: 6, totalCaught: 4, currentStreak: 1, bestStreak: 3,
@@ -179,7 +179,8 @@ test("legacy fishing and magnet records project into schema 9 without ornamental
     recoveredByItem: { "old-bolt": 1 }, lastCatchId: "old-bolt", bestCatchId: "old-bolt",
   }, world);
   assert.equal(projected.caughtByItem["river-minnows"], 2);
-  assert.equal(projected.releasedByItem["reedbank-koi"], 3);
+  assert.equal(projected.aquariumByItem["reedbank-koi"], 2);
+  assert.equal(projected.releasedByItem["reedbank-koi"], 1);
   assert.equal(projected.magnet.lastCatchId, "old-bolt");
   assert.equal(Object.keys(projected.releasedByItem).length, ORNAMENTAL_FISH_IDS.length);
 });
@@ -190,7 +191,7 @@ test("schema 8 saves gain fishing while preserving all prior milestone state", (
   old.schemaVersion = 8;
   old.identity.townName = "Angler's Rest";
   const upgraded = upgradeGameState(old, { now: 1000 });
-  assert.equal(upgraded.schemaVersion, 29);
+  assert.equal(upgraded.schemaVersion, 30);
   assert.equal(upgraded.identity.townName, "Angler's Rest");
   assert.equal(upgraded.fishing.castsToday, 0);
   assert.equal(validateGameState(upgraded).ok, true);

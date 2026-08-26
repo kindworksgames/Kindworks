@@ -12,10 +12,11 @@ function formatCoins(value) {
 }
 
 export class EconomyHudController {
-  constructor(runtime, { onModalChange = () => {}, economy = null, onUseConsumable = () => ({ ok: false }), onPlaceable = () => ({ ok: false }) } = {}) {
+  constructor(runtime, { onModalChange = () => {}, economy = null, aquarium = null, onUseConsumable = () => ({ ok: false }), onPlaceable = () => ({ ok: false }) } = {}) {
     this.runtime = runtime;
     this.onModalChange = onModalChange;
     this.economy = economy;
+    this.aquarium = aquarium;
     this.onUseConsumable = onUseConsumable;
     this.onPlaceable = onPlaceable;
     this.coinButton = document.querySelector("#coin-status-button");
@@ -60,7 +61,7 @@ export class EconomyHudController {
       .sort((a, b) => a.item.name.localeCompare(b.item.name));
   }
 
-  renderInventory(inventory) {
+  renderInventory(inventory, aquarium = null) {
     if (!this.inventoryGroups) return;
     this.inventoryGroups.replaceChildren();
     for (const bucket of INVENTORY_BUCKETS) {
@@ -125,6 +126,43 @@ export class EconomyHudController {
       }
       this.inventoryGroups.append(section);
     }
+    if (aquarium?.owned) {
+      const section = document.createElement("section");
+      section.className = "inventory-group inventory-aquarium";
+      const heading = document.createElement("h3");
+      heading.textContent = `Home aquarium · ${aquarium.species.length}`;
+      section.append(heading);
+      if (!aquarium.species.length) {
+        const empty = document.createElement("p");
+        empty.className = "inventory-empty";
+        empty.textContent = aquarium.placed ? "The tank is placed and ready for ornamental Reedbank catches." : "Place the tank in your resident's home before fishing to keep ornamental catches.";
+        section.append(empty);
+      } else {
+        const list = document.createElement("ul");
+        for (const species of aquarium.species) {
+          const entry = document.createElement("li");
+          const icon = document.createElement("span");
+          icon.className = "inventory-item-icon";
+          icon.setAttribute("aria-hidden", "true");
+          icon.textContent = species.icon;
+          const name = document.createElement("span");
+          name.textContent = species.name;
+          const count = document.createElement("strong");
+          count.textContent = `×${species.count}`;
+          const location = document.createElement("span");
+          location.className = "inventory-item-action";
+          location.textContent = aquarium.placed ? "At home" : "Safely released";
+          entry.append(icon, name, count, location);
+          list.append(entry);
+        }
+        section.append(list);
+      }
+      const summary = document.createElement("p");
+      summary.className = "inventory-empty";
+      summary.textContent = aquarium.placed ? `${aquarium.totalFish} fish at home` : "Place tank at home";
+      section.append(summary);
+      this.inventoryGroups.append(section);
+    }
   }
 
   handleInventoryClick(event) {
@@ -169,6 +207,7 @@ export class EconomyHudController {
 
   render() {
     const state = this.runtime.gameState.getSnapshot();
+    const aquarium = this.aquarium?.getSnapshot?.() || null;
     const ownedTypes = INVENTORY_BUCKETS.reduce((total, bucket) => total + Object.keys(state.inventory[bucket]).length, 0);
     const ownedUnits = INVENTORY_BUCKETS.reduce((total, bucket) => total + Object.values(state.inventory[bucket]).reduce((sum, quantity) => sum + quantity, 0), 0);
     if (this.coinButton) {
@@ -181,9 +220,9 @@ export class EconomyHudController {
     }
     if (this.balance) this.balance.textContent = formatCoins(state.economy.coins);
     if (this.lifetime) this.lifetime.textContent = `${formatCoins(state.economy.lifetimeCoinsEarned)} earned · ${formatCoins(state.economy.lifetimeCoinsSpent)} spent`;
-    if (this.catalogueStatus) this.catalogueStatus.textContent = `${ITEM_IDS.length} legacy item definitions ready · ${ownedTypes} types currently owned`;
+    if (this.catalogueStatus) this.catalogueStatus.textContent = `${ITEM_IDS.length} legacy item definitions ready · ${ownedTypes} types currently owned${aquarium?.owned ? ` · ${aquarium.totalFish} aquarium fish` : ""}`;
     this.renderLedger(state.economy);
-    this.renderInventory(state.inventory);
+    this.renderInventory(state.inventory, aquarium);
   }
 
   showView(view) {

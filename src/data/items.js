@@ -119,9 +119,8 @@ const LEGACY_ITEM_METADATA = Object.freeze({
   "town-centre-monument": { unlock: { game: "waste", perfects: 30 } },
 });
 
-// Authored indoor presentation from the final HTML game. Aquarium behaviour is
-// intentionally introduced in Milestone 33; Milestone 32 treats the tank as a
-// unique, placeable furnishing only.
+// Authored indoor presentation from the final HTML game. Milestone 33 restores
+// the tank's resident fish, safe-release rules and animated home display.
 const HOME_FURNITURE_METADATA = Object.freeze({
   "cosy-sofa": { description: "A roomy, comfortable sofa for the living area.", indoorKind: "sofa", indoorSize: [0.20, 0.12] },
   "reading-armchair": { description: "A soft armchair made for a quiet reading corner.", indoorKind: "armchair", indoorSize: [0.11, 0.13] },
@@ -132,7 +131,7 @@ const HOME_FURNITURE_METADATA = Object.freeze({
   "woven-home-rug": { description: "A woven rug that sits safely beneath other furniture.", indoorKind: "woven-rug", indoorSize: [0.20, 0.16], floorLayer: true },
   "record-player": { description: "A record player for music-filled evenings at home.", indoorKind: "record-player", indoorSize: [0.11, 0.10] },
   "companion-basket": { description: "A snug basket where an adopted companion can rest.", indoorKind: "companion-basket", indoorSize: [0.12, 0.11] },
-  "ornamental-fish-tank": { description: "An empty ornamental fish tank ready for Milestone 33's aquarium residents.", indoorKind: "fish-tank", indoorSize: [0.19, 0.13], aquarium: true },
+  "ornamental-fish-tank": { description: "Keeps ornamental Reedbank catches safely in your resident's home when the tank is placed.", indoorKind: "fish-tank", indoorSize: [0.19, 0.13], aquarium: true },
 });
 
 const placeableMetadata = (placeableType, minRiverDistance, minRoadClearance, description, effect = {}) => ({

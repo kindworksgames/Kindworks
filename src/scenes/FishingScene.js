@@ -197,8 +197,14 @@ export class FishingScene extends Phaser.Scene {
         this.refreshInterface(`${result.recovery.rarity.toUpperCase()} FIND · ${result.recovery.name} · +${result.rewardCoins} coins!`, "success", result);
       } else {
         this.showResult(result.item.icon);
-        const released = result.disposition !== "inventory";
-        this.refreshInterface(released ? `${result.item.name} discovered and safely released.` : `${result.item.name} added to your inventory.`, "success", result);
+        const message = result.disposition === "aquarium"
+          ? `${result.item.name} safely joined your home aquarium · ${result.aquarium.totalFish} fish across ${result.aquarium.species.length} species.`
+          : result.disposition === "released-no-tank"
+            ? `${result.item.name} was safely returned to Reedbank. Buy and place a home fish tank to keep future ornamental catches.`
+            : result.disposition === "released-full"
+              ? `${result.item.name} was safely returned because that species section of the tank is full.`
+              : `${result.item.name} added to your inventory.`;
+        this.refreshInterface(message, "success", result);
       }
     });
     return true;
@@ -267,12 +273,16 @@ export class FishingScene extends Phaser.Scene {
     const badge = document.querySelector(".milestone-badge");
     const location = document.querySelector("#location-status");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = `${this.mode === "magnet" ? "MAGNET FISHING" : "FISHING"} · MILESTONE 15`;
+    if (badge) badge.textContent = `${this.mode === "magnet" ? "MAGNET FISHING" : this.spot.id === "fishing-reedbank" ? "FISHING + HOME AQUARIUM" : "FISHING"} · MILESTONE ${this.mode === "magnet" ? 15 : 33}`;
     if (location) location.textContent = this.spot.title;
     if (hint) hint.textContent = "Tap water or use arrows to aim · Enter/Space casts or reels · Escape exits safely";
     document.querySelector("#fishing-mode-label").textContent = this.mode === "magnet" ? "MAGNET FISHING" : "FISHING";
     document.querySelector("#fishing-title").textContent = `${this.spot.icon} ${this.spot.shortTitle}`;
-    document.querySelector("#fishing-description").textContent = this.spot.description;
+    const aquarium = this.fishing.getSnapshot().aquarium;
+    const aquariumHelp = this.spot.id !== "fishing-reedbank" ? "" : aquarium.placed
+      ? ` ${aquarium.totalFish} ornamental fish currently live in your placed home tank.`
+      : " No tank is placed, so ornamental catches will be safely released.";
+    document.querySelector("#fishing-description").textContent = `${this.spot.description}${aquariumHelp}`;
     this.hud?.classList.remove("hidden");
   }
 
@@ -296,7 +306,9 @@ export class FishingScene extends Phaser.Scene {
       this.reelButton.classList.toggle("bite", ["bite", "ready"].includes(this.phase));
       this.reelButton.textContent = this.mode === "magnet" ? "🪢 Retrieve magnet" : "⚡ Reel in";
     }
-    if (result) document.querySelector("#fishing-last-result").textContent = this.mode === "magnet" ? `${result.recovery.icon} ${result.recovery.name} · +${result.rewardCoins} coins` : `${result.item.icon} ${result.item.name} · ${result.disposition === "inventory" ? "inventory" : "safely released"}`;
+    if (result) document.querySelector("#fishing-last-result").textContent = this.mode === "magnet"
+      ? `${result.recovery.icon} ${result.recovery.name} · +${result.rewardCoins} coins`
+      : `${result.item.icon} ${result.item.name} · ${result.disposition === "inventory" ? "inventory" : result.disposition === "aquarium" ? `home aquarium · ${result.aquarium.totalFish} fish` : "safely released"}`;
     this.updateDomState();
   }
 
@@ -333,6 +345,6 @@ export class FishingScene extends Phaser.Scene {
   }
 
   getMilestoneState() {
-    return { scene: this.scene.key, mode: this.mode, spotId: this.spot.id, phase: this.phase, castsLeft: this.fishing.castsLeft(this.mode), persistent: true, inventoryRewards: true };
+    return { scene: this.scene.key, mode: this.mode, spotId: this.spot.id, phase: this.phase, castsLeft: this.fishing.castsLeft(this.mode), persistent: true, inventoryRewards: true, aquarium: this.fishing.getSnapshot().aquarium };
   }
 }

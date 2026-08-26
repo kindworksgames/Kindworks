@@ -1,6 +1,6 @@
 import { ITEM_CATALOG } from "./items.js";
 
-export const FISHING_STATE_SCHEMA_VERSION = 1;
+export const FISHING_STATE_SCHEMA_VERSION = 2;
 
 export const FISHING_CONFIG = Object.freeze({
   dailyCasts: 5,
@@ -11,6 +11,7 @@ export const FISHING_CONFIG = Object.freeze({
   reelAnimationMs: 760,
   excellentWindowFraction: 0.2,
   maxInventoryPerFish: 99,
+  maxAquariumPerSpecies: 99,
 });
 
 export const TARGETING_CONFIG = Object.freeze({

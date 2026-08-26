@@ -29,6 +29,7 @@ export function createFreshFishingState(world) {
     currentStreak: 0,
     bestStreak: 0,
     caughtByItem: countsFor(FISHING_CATCH_IDS),
+    aquariumByItem: countsFor(ORNAMENTAL_FISH_IDS, null, FISHING_CONFIG.maxAquariumPerSpecies),
     releasedByItem: countsFor(ORNAMENTAL_FISH_IDS),
     magnet: {
       schemaVersion: MAGNET_FISHING_CONFIG.schemaVersion,
@@ -111,14 +112,14 @@ export function normalizeFishingState(value, world) {
     currentStreak,
     bestStreak: Math.max(currentStreak, whole(value.bestStreak, 0, totalCaught)),
     caughtByItem: countsFor(FISHING_CATCH_IDS, value.caughtByItem, totalCaught),
+    aquariumByItem: countsFor(ORNAMENTAL_FISH_IDS, value.aquariumByItem, FISHING_CONFIG.maxAquariumPerSpecies),
     releasedByItem: countsFor(ORNAMENTAL_FISH_IDS, value.releasedByItem),
     magnet: normalizeMagnet(value.magnet, world),
   };
 }
 
 export function projectLegacyFishing(fishing, magnetFishing, world) {
-  const legacyReleased = Object.fromEntries(ORNAMENTAL_FISH_IDS.map((id) => [id, whole(fishing?.releasedByItem?.[id]) + whole(fishing?.aquariumByItem?.[id])]));
-  return normalizeFishingState({ ...fishing, releasedByItem: legacyReleased, magnet: magnetFishing }, world);
+  return normalizeFishingState({ ...fishing, magnet: magnetFishing }, world);
 }
 
 export function validateFishingState(value, world) {
@@ -129,7 +130,10 @@ export function validateFishingState(value, world) {
   for (const key of ["castsToday", "caughtToday", "totalCasts", "totalCaught", "currentStreak", "bestStreak"]) if (!Number.isInteger(value[key]) || value[key] < 0) errors.push(`Fishing ${key} is invalid.`);
   if (value.castsToday > FISHING_CONFIG.dailyCasts || value.caughtToday > value.castsToday || value.totalCaught > value.totalCasts || value.currentStreak > value.caughtToday || value.bestStreak < value.currentStreak) errors.push("Fishing progress counters are inconsistent.");
   for (const id of FISHING_CATCH_IDS) if (!Number.isInteger(value.caughtByItem?.[id]) || value.caughtByItem[id] < 0) errors.push(`${id} catch count is invalid.`);
-  for (const id of ORNAMENTAL_FISH_IDS) if (!Number.isInteger(value.releasedByItem?.[id]) || value.releasedByItem[id] < 0) errors.push(`${id} release count is invalid.`);
+  for (const id of ORNAMENTAL_FISH_IDS) {
+    if (!Number.isInteger(value.aquariumByItem?.[id]) || value.aquariumByItem[id] < 0 || value.aquariumByItem[id] > FISHING_CONFIG.maxAquariumPerSpecies) errors.push(`${id} aquarium count is invalid.`);
+    if (!Number.isInteger(value.releasedByItem?.[id]) || value.releasedByItem[id] < 0) errors.push(`${id} release count is invalid.`);
+  }
   const magnet = value.magnet;
   if (!magnet || magnet.schemaVersion !== MAGNET_FISHING_CONFIG.schemaVersion) errors.push("Magnet-fishing state is invalid.");
   else {

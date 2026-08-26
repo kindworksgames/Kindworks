@@ -29,6 +29,7 @@ import { CustomResidentService } from "./systems/CustomResidentService.js";
 import { FarmingService } from "./systems/FarmingService.js";
 import { AnimalService } from "./systems/AnimalService.js";
 import { FishingService } from "./systems/FishingService.js";
+import { AquariumService } from "./systems/AquariumService.js";
 import { BakeryService } from "./systems/BakeryService.js";
 import { CafeService } from "./systems/CafeService.js";
 import { MorningMugService } from "./systems/MorningMugService.js";
@@ -51,6 +52,7 @@ import { FarmingController } from "./ui/FarmingController.js";
 import { AnimalFriendsController } from "./ui/AnimalFriendsController.js";
 import { RestorationMilestoneController } from "./ui/RestorationMilestoneController.js";
 import { ITEM_IDS } from "./data/items.js";
+import { findSafeFurniturePlacement } from "./data/homeInteriors.js";
 
 const stateRuntime = bootstrapState(window.localStorage);
 const worldSimulation = new WorldSimulationService(stateRuntime.gameState, stateRuntime.repository);
@@ -62,12 +64,13 @@ const offlineResolution = worldSimulation.resolveOffline();
 const npcTownLife = new NpcTownLifeService(stateRuntime.gameState, stateRuntime.repository);
 const municipalCollection = new MunicipalCollectionService(stateRuntime.gameState, stateRuntime.repository);
 const customResident = new CustomResidentService(stateRuntime.gameState, stateRuntime.repository);
-const homeInteriors = new HomeInteriorService(stateRuntime.gameState, stateRuntime.repository, { customResident });
+const aquarium = new AquariumService(stateRuntime.gameState, stateRuntime.repository);
+const homeInteriors = new HomeInteriorService(stateRuntime.gameState, stateRuntime.repository, { customResident, aquarium });
 farming.refresh({ persist: true });
 livingEnvironment.refresh({ persist: true });
 const animals = new AnimalService(stateRuntime.gameState, stateRuntime.repository);
 animals.refresh({ persist: true, offline: offlineResolution?.advancedGameMinutes > 0 });
-const fishing = new FishingService(stateRuntime.gameState, stateRuntime.repository);
+const fishing = new FishingService(stateRuntime.gameState, stateRuntime.repository, { aquarium });
 fishing.refresh({ persist: true });
 const bakery = new BakeryService(stateRuntime.gameState, stateRuntime.repository);
 const cafe = new CafeService(stateRuntime.gameState, stateRuntime.repository);
@@ -107,6 +110,7 @@ game.registry.set("npcTownLife", npcTownLife);
 game.registry.set("municipalCollection", municipalCollection);
 game.registry.set("customResident", customResident);
 game.registry.set("homeInteriors", homeInteriors);
+game.registry.set("aquarium", aquarium);
 game.registry.set("farming", farming);
 game.registry.set("livingEnvironment", livingEnvironment);
 game.registry.set("animals", animals);
@@ -125,6 +129,25 @@ game.registry.set("townPlacement", townPlacement);
 game.registry.set("restorationMilestones", restorationMilestones);
 const economy = new EconomyService(stateRuntime.gameState, stateRuntime.repository);
 game.registry.set("economy", economy);
+if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "aquarium") {
+  if (!customResident.getSnapshot().created) {
+    customResident.saveProfile({
+      name: "Meadow", skin: "warm", hair: 1, hairColor: "dark-brown", accessory: "badge", outfit: 1, bodyBuild: "average",
+      hobbies: ["gardening", "nature", "helping"], home: { wallColor: "sage", roofStyle: "gable", roofColor: "terracotta" },
+    });
+  }
+  let state = stateRuntime.gameState.getSnapshot();
+  if (!state.homeInteriors.placements.some((placement) => placement.itemId === "ornamental-fish-tank")) {
+    if (!state.inventory.furniture["ornamental-fish-tank"]) economy.grantItem("ornamental-fish-tank", 1, { reason: "Milestone 33 aquarium visual QA" });
+    state = stateRuntime.gameState.getSnapshot();
+    const safe = findSafeFurniturePlacement(state, { id: "aquarium-preview", itemId: "ornamental-fish-tank", rx: 0.76, ry: 0.72, rotation: 0 });
+    if (safe && homeInteriors.beginPlacement("ornamental-fish-tank").ok) {
+      homeInteriors.preview(safe.rx, safe.ry);
+      homeInteriors.confirmPlacement();
+    }
+  }
+  if (aquarium.getSnapshot().placed) aquarium.stockForQa();
+}
 if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "placement") {
   const snapshot = townPlacement.getSnapshot();
   const planterOwnedOrPlaced = Number(snapshot.inventory["town-planter"] || 0)
@@ -208,6 +231,7 @@ const saveStatus = new SaveStatusController(stateRuntime, {
 });
 const economyHud = new EconomyHudController(stateRuntime, {
   economy,
+  aquarium,
   onModalChange(open) {
     setModalOpen("economy", open);
   },
@@ -412,6 +436,16 @@ window.__KINDWORKS_PHASER__ = {
   },
   getFishingDiagnostics() {
     return fishing.getDiagnostics();
+  },
+  getAquariumState() {
+    return aquarium.getSnapshot();
+  },
+  getAquariumDiagnostics() {
+    return aquarium.getDiagnostics();
+  },
+  qaStockAquarium(counts) {
+    if (!import.meta.env.DEV) return { ok: false, message: "Visual QA helpers are available only in development." };
+    return aquarium.stockForQa(counts);
   },
   getBakeryDiagnostics() {
     return bakery.getDiagnostics();

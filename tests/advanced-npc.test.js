@@ -67,7 +67,7 @@ test("legacy advanced residents, public bins and community counters import into 
   const old = createFreshGameState({ now: 0 });
   old.schemaVersion = 24;
   const upgraded = upgradeGameState(old, { now: 0 });
-  assert.equal(upgraded.schemaVersion, 29);
+  assert.equal(upgraded.schemaVersion, 30);
   assert.equal(validateGameState(upgraded).ok, true);
 });
 

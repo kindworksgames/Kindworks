@@ -1,4 +1,5 @@
 import { placeableFootprintFor } from "../data/items.js";
+import { aquariumSnapshot } from "../state/aquariumState.js";
 
 function formatCoins(value) {
   return new Intl.NumberFormat("en-GB").format(value);
@@ -184,7 +185,16 @@ export class ShopController {
     if (!product?.ok) return;
     if (this.detailIcon) this.detailIcon.textContent = product.item.icon;
     if (this.detailName) this.detailName.textContent = product.item.name;
-    if (this.detailDescription) this.detailDescription.textContent = product.item.description || `${product.item.shopGroup} stock from the original Kindworks catalogue.`;
+    if (this.detailDescription) {
+      const base = product.item.description || `${product.item.shopGroup} stock from the original Kindworks catalogue.`;
+      const aquarium = product.item.aquarium ? aquariumSnapshot(this.runtime.gameState.getSnapshot()) : null;
+      const aquariumStatus = !aquarium ? "" : aquarium.placed
+        ? ` ${aquarium.totalFish} ornamental fish currently live in your placed home aquarium.`
+        : aquarium.owned
+          ? " You own the tank; place it inside your resident's home before fishing."
+          : " It keeps ornamental pond catches safely in your resident's home.";
+      this.detailDescription.textContent = `${base}${aquariumStatus}`;
+    }
     if (this.detailPrice) this.detailPrice.textContent = product.quote.upgradeCredit
       ? `🪙 ${formatCoins(product.quote.cost)} (${formatCoins(product.quote.upgradeCredit)} upgrade credit)`
       : `🪙 ${formatCoins(product.item.price)}`;
