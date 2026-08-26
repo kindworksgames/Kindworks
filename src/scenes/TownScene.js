@@ -14,6 +14,7 @@ import {
   PLAYGROUND_POWERWASH,
   PLAYER_START,
   RIVERSIDE_KITCHEN,
+  SOUTH_SHORE_SCOOPS,
   RIVER_CLEAROUT,
   RIVER_PATH,
   ROADS,
@@ -100,6 +101,7 @@ export class TownScene extends Phaser.Scene {
     this.cafe = this.registry.get("cafe");
     this.morningMug = this.registry.get("morningMug");
     this.riversideKitchen = this.registry.get("riversideKitchen");
+    this.southShoreScoops = this.registry.get("southShoreScoops");
     this.river = this.registry.get("river");
     this.houseRescue = this.registry.get("houseRescue");
     this.houseRescue?.refreshJobs?.();
@@ -128,6 +130,8 @@ export class TownScene extends Phaser.Scene {
         ? MORNING_MUG.approach
       : qaTarget === "riverside-kitchen"
         ? RIVERSIDE_KITCHEN.approach
+      : qaTarget === "scoops"
+        ? SOUTH_SHORE_SCOOPS.approach
       : qaTarget === "bakery"
         ? LITTLE_BAKERY.approach
         : qaTarget === "fresh-market"
@@ -221,6 +225,17 @@ export class TownScene extends Phaser.Scene {
           label: "Enter Riverside Kitchen",
           detail: "150 restaurant shifts · preparation and heat control",
           onActivate: () => this.enterRiversideKitchen(),
+        },
+        {
+          id: "south-shore-scoops-door",
+          kind: "door",
+          x: SOUTH_SHORE_SCOOPS.door.x,
+          y: SOUTH_SHORE_SCOOPS.door.y,
+          radius: SOUTH_SHORE_SCOOPS.interactionRadius,
+          icon: "🍦",
+          label: "Enter South Shore Scoops",
+          detail: "750 picture-order shifts · 60% accurate service passes",
+          onActivate: () => this.enterSouthShoreScoops(),
         },
         {
           id: "fresh-market-door",
@@ -440,6 +455,7 @@ export class TownScene extends Phaser.Scene {
     HOUSES.forEach((house) => this.drawHouse(house));
     this.drawHouseRescueMarkers();
     SHOPS.forEach((shop) => this.drawShop(shop));
+    this.drawSouthShoreScoopsRestoration();
     this.drawLandmarks();
     this.drawFarmingAreas();
     this.drawSouthMeadow();
@@ -581,6 +597,27 @@ export class TownScene extends Phaser.Scene {
       strokeThickness: 4,
     }).setOrigin(0.5).setDepth(95 + shop.y / 100);
     this.buildingCollisions.push({ x: shop.x - 8, y: shop.y - 8, width: shop.width + 16, height: shop.height + 16 });
+  }
+
+  drawSouthShoreScoopsRestoration() {
+    const tier = this.southShoreScoops?.getDiagnostics?.().restorationTier || 0;
+    if (!tier) return;
+    const x = 3560;
+    const layer = this.add.graphics().setDepth(95);
+    layer.lineStyle(5, tier >= 10 ? 0xffd34d : 0xfff1b0, 1);
+    layer.lineBetween(3448, 2060, 3672, 2060);
+    const decorations = ["🌸", "🏖️", "🌺", "✨", "🍦"];
+    for (let index = 0; index < Math.min(5, Math.ceil(tier / 2)); index += 1) {
+      this.add.text(3452 + index * 54, 2048, decorations[index], { fontSize: "20px" }).setOrigin(0.5).setDepth(100);
+    }
+    this.add.text(x, 2025, tier >= 10 ? "✨ SOUTH SHORE FULLY RESTORED ✨" : `🍦 SOUTH SHORE RESTORATION · TIER ${tier}`, {
+      color: tier >= 10 ? "#6c431d" : "#294637",
+      backgroundColor: tier >= 10 ? "rgba(255,222,91,.96)" : "rgba(255,249,223,.94)",
+      fontFamily: "system-ui, sans-serif",
+      fontSize: "11px",
+      fontStyle: "bold",
+      padding: { x: 7, y: 4 },
+    }).setOrigin(0.5).setDepth(101);
   }
 
   drawLandmarks() {
@@ -868,7 +905,7 @@ export class TownScene extends Phaser.Scene {
     document.body.dataset.gameScene = this.scene.key;
     const badge = document.querySelector(".milestone-badge");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 22";
+    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 23";
     if (hint) hint.textContent = "Arrow keys or WASD to walk · E or Space to interact · Shift to run";
   }
 
@@ -963,6 +1000,26 @@ export class TownScene extends Phaser.Scene {
       });
     });
     return { ok: true, targetScene: "RiversideKitchenScene" };
+  }
+
+  enterSouthShoreScoops() {
+    if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before entering a building." };
+    this.transitioning = true;
+    this.movement.setEnabled(false);
+    this.interactions.setEnabled(false);
+    this.player.setMovement(0, 0, false);
+    this.gameState?.updatePlayer({ scene: "SouthShoreScoopsScene", x: 640, y: 610, facing: "up" });
+    document.querySelector("#game")?.setAttribute("data-transition", "entering-south-shore-scoops");
+    this.cameras.main.fadeOut(220, 40, 91, 103);
+    this.time.delayedCall(240, () => {
+      this.scene.start("SouthShoreScoopsScene", {
+        returnPosition: { ...SOUTH_SHORE_SCOOPS.approach },
+        returnFacing: "down",
+        transitionCount: Number(this.entryData.transitionCount || 0) + 1,
+      });
+    });
+    return { ok: true, targetScene: "SouthShoreScoopsScene" };
   }
 
   enterRiverClearout() {
@@ -1301,6 +1358,12 @@ export class TownScene extends Phaser.Scene {
       gameElement.dataset.riversideKitchenCompleted = String(riversideKitchen?.completedLevels || 0);
       gameElement.dataset.riversideKitchenStars = String(riversideKitchen?.totalStars || 0);
       gameElement.dataset.riversideKitchenResumable = String(Boolean(riversideKitchen?.resumableSession));
+      const scoops = this.southShoreScoops?.getDiagnostics?.();
+      gameElement.dataset.scoopsUnlocked = String(scoops?.unlockedLevel || 1);
+      gameElement.dataset.scoopsCompleted = String(scoops?.completedLevels || 0);
+      gameElement.dataset.scoopsStars = String(scoops?.totalStars || 0);
+      gameElement.dataset.scoopsRestorationTier = String(scoops?.restorationTier || 0);
+      gameElement.dataset.scoopsResumable = String(Boolean(scoops?.resumableSession));
       const river = this.river?.getDiagnostics?.();
       gameElement.dataset.riverLevels = String(river?.totalLevels || 0);
       gameElement.dataset.riverCompleted = String(river?.completed || 0);
@@ -1338,6 +1401,7 @@ export class TownScene extends Phaser.Scene {
       camera: { zoom: Number(this.cameras.main.zoom.toFixed(2)), followingPlayer: !this.customResident?.getSnapshot?.().controlling },
       controls: { keyboard: true, touch: true, wheelZoom: true },
       interaction: this.interactions.getState(),
+      milestone23Systems: ["south-shore-scoops-scene-transition", "750-deterministic-shifts", "sequential-picture-orders", "60-percent-pass-rule", "ingredient-and-product-unlocks", "first-clear-rewards", "south-shore-restoration", "exact-save-resume", "legacy-progress-import", "landscape-controls"],
       migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "cafe-scene-transition", "morning-mug-scene-transition", "riverside-kitchen-scene-transition", "river-clearout-scene-transition", "house-rescue-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job", "world-time-weather-lighting", "basic-npc-town-life", "custom-resident-profile-home-control", "weather-aware-farming", "orchard-harvest", "persistent-lawn-jobs", "animal-habitat-routes", "animal-friendship-feeding", "animal-adoption", "active-companion-following", "south-meadow", "three-fishing-spots", "hidden-zone-fishing", "timed-reeling", "magnet-fishing", "fishing-inventory-rewards", "magnet-coin-rewards", "bakery-recipes", "bakery-customer-service", "bakery-first-clear-rewards", "bakery-level-unlocks", "shared-recipe-order-engine", "corner-cafe-recipes", "cafe-three-tray-service", "cafe-first-clear-rewards", "cafe-level-unlocks", "morning-mug-54-recipes", "morning-mug-150-levels", "morning-mug-first-clear-rewards", "morning-mug-save-resume", "morning-mug-landscape-controls", "riverside-kitchen-32-recipes", "riverside-kitchen-150-levels", "riverside-kitchen-preparation-heat-plating", "riverside-kitchen-first-clear-rewards", "riverside-kitchen-save-resume", "riverside-kitchen-landscape-controls", "river-750-level-catalogue", "river-falling-piece-engine", "river-first-clear-rewards", "river-portrait-controls", "house-rescue-750-level-catalogue", "house-rescue-sort-and-vacuum", "house-rescue-persistent-home-jobs", "house-rescue-landscape-controls", "waste-750-authored-boards", "waste-five-slot-triple-matching", "waste-certified-solutions", "waste-first-clear-rewards", "waste-landscape-controls", "lawn-750-authored-levels", "lawn-slide-mower-engine", "lawn-persistent-campaign", "lawn-town-job-effects", "lawn-first-clear-rewards", "lawn-landscape-controls", "beach-750-deterministic-levels", "beach-rake-and-rubbish-engine", "beach-native-town-rewards", "beach-first-clear-rewards", "south-shore-litter-restoration", "beach-landscape-controls", "powerwash-750-deterministic-levels", "powerwash-soap-resistant-stains", "powerwash-three-nozzles", "powerwash-97-percent-tolerance", "powerwash-native-town-rewards", "powerwash-first-clear-rewards", "commons-playground-restoration", "powerwash-landscape-controls"],
       npcTownLife: this.npcTownLife?.getDiagnostics?.(),
       customResident: this.customResident?.getDiagnostics?.(),
@@ -1348,6 +1412,7 @@ export class TownScene extends Phaser.Scene {
       cafe: this.cafe?.getDiagnostics?.(),
       morningMug: this.morningMug?.getDiagnostics?.(),
       riversideKitchen: this.riversideKitchen?.getDiagnostics?.(),
+      southShoreScoops: this.southShoreScoops?.getDiagnostics?.(),
       river: this.river?.getDiagnostics?.(),
       houseRescue: this.houseRescue?.getDiagnostics?.(),
       wasteCollection: this.cleanupService?.getDiagnostics?.(),

@@ -5,6 +5,7 @@ import { BakeryScene } from "./scenes/BakeryScene.js";
 import { CafeScene } from "./scenes/CafeScene.js";
 import { MorningMugScene } from "./scenes/MorningMugScene.js";
 import { RiversideKitchenScene } from "./scenes/RiversideKitchenScene.js";
+import { SouthShoreScoopsScene } from "./scenes/SouthShoreScoopsScene.js";
 import { RiverClearoutScene } from "./scenes/RiverClearoutScene.js";
 import { HouseRescueScene } from "./scenes/HouseRescueScene.js";
 import { TownScene } from "./scenes/TownScene.js";
@@ -28,6 +29,7 @@ import { BakeryService } from "./systems/BakeryService.js";
 import { CafeService } from "./systems/CafeService.js";
 import { MorningMugService } from "./systems/MorningMugService.js";
 import { RiversideKitchenService } from "./systems/RiversideKitchenService.js";
+import { SouthShoreScoopsService } from "./systems/SouthShoreScoopsService.js";
 import { RiverClearoutService } from "./systems/RiverClearoutService.js";
 import { HouseRescueService } from "./systems/HouseRescueService.js";
 import { LawnCareService } from "./systems/LawnCareService.js";
@@ -57,6 +59,7 @@ const bakery = new BakeryService(stateRuntime.gameState, stateRuntime.repository
 const cafe = new CafeService(stateRuntime.gameState, stateRuntime.repository);
 const morningMug = new MorningMugService(stateRuntime.gameState, stateRuntime.repository);
 const riversideKitchen = new RiversideKitchenService(stateRuntime.gameState, stateRuntime.repository);
+const southShoreScoops = new SouthShoreScoopsService(stateRuntime.gameState, stateRuntime.repository);
 const river = new RiverClearoutService(stateRuntime.gameState, stateRuntime.repository);
 const houseRescue = new HouseRescueService(stateRuntime.gameState, stateRuntime.repository);
 const lawnCare = new LawnCareService(stateRuntime.gameState, stateRuntime.repository);
@@ -77,7 +80,7 @@ const config = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene, TownScene, BakeryScene, CafeScene, MorningMugScene, RiversideKitchenScene, RiverClearoutScene, HouseRescueScene, WasteCollectionScene, LawnCareScene, BeachCleanupScene, PlaygroundPowerwashScene, FishingScene],
+  scene: [BootScene, TownScene, BakeryScene, CafeScene, MorningMugScene, RiversideKitchenScene, SouthShoreScoopsScene, RiverClearoutScene, HouseRescueScene, WasteCollectionScene, LawnCareScene, BeachCleanupScene, PlaygroundPowerwashScene, FishingScene],
 };
 
 const game = new Phaser.Game(config);
@@ -93,6 +96,7 @@ game.registry.set("bakery", bakery);
 game.registry.set("cafe", cafe);
 game.registry.set("morningMug", morningMug);
 game.registry.set("riversideKitchen", riversideKitchen);
+game.registry.set("southShoreScoops", southShoreScoops);
 game.registry.set("river", river);
 game.registry.set("houseRescue", houseRescue);
 game.registry.set("lawnCare", lawnCare);
@@ -184,6 +188,7 @@ window.addEventListener("pagehide", () => {
   worldSimulation.persist();
   if (morningMug.getActiveSession() && !morningMug.getActiveSession().finished) morningMug.persistActiveSession();
   if (riversideKitchen.getActiveSession() && !riversideKitchen.getActiveSession().finished) riversideKitchen.persistActiveSession();
+  if (southShoreScoops.getActiveSession() && !southShoreScoops.getActiveSession().finished) southShoreScoops.persistActiveSession();
 });
 
 window.__KINDWORKS_PHASER__ = {
@@ -260,6 +265,9 @@ window.__KINDWORKS_PHASER__ = {
   },
   getRiversideKitchenDiagnostics() {
     return riversideKitchen.getDiagnostics();
+  },
+  getSouthShoreScoopsDiagnostics() {
+    return southShoreScoops.getDiagnostics();
   },
   getRiverDiagnostics() {
     return river.getDiagnostics();

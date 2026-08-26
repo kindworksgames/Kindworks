@@ -89,6 +89,12 @@ import {
   projectLegacyRiversideKitchen,
   validateRiversideKitchenState,
 } from "./riversideKitchenState.js";
+import {
+  createFreshSouthShoreScoopsState,
+  normalizeSouthShoreScoopsState,
+  projectLegacySouthShoreScoops,
+  validateSouthShoreScoopsState,
+} from "./southShoreScoopsState.js";
 
 const DIRECTIONS = new Set(["up", "down", "left", "right"]);
 
@@ -150,6 +156,7 @@ export function createFreshGameState({ now = Date.now() } = {}) {
     playgroundPowerwash: createFreshPlaygroundPowerwashState(),
     morningMug: createFreshMorningMugState(),
     riversideKitchen: createFreshRiversideKitchenState(),
+    southShoreScoops: createFreshSouthShoreScoopsState(),
     legacySnapshot: null,
   };
 }
@@ -189,6 +196,7 @@ export function createGameStateFromLegacy(legacy, report, { now = Date.now() } =
   state.playgroundPowerwash = projectLegacyPlaygroundPowerwash(legacy);
   state.morningMug = projectLegacyMorningMug(legacy.morningMug);
   state.riversideKitchen = projectLegacyRiversideKitchen(legacy.riversideKitchen);
+  state.southShoreScoops = projectLegacySouthShoreScoops(legacy.southShoreScoops ?? legacy.scoops);
   const legacySeeds = legacy.farmingFoundation?.seedInventory || {};
   for (const id of ["carrot-seeds", "fresh-greens-seeds", "wild-berry-starters"]) {
     const quantity = safeInteger(legacySeeds[id], 0, 99);
@@ -297,6 +305,12 @@ export function upgradeGameState(value, { now = Date.now() } = {}) {
       : normalizeRiversideKitchenState(state.riversideKitchen);
     state.schemaVersion = 19;
   }
+  if (state.schemaVersion === 19) {
+    state.southShoreScoops = state.source?.kind === "legacy-import"
+      ? projectLegacySouthShoreScoops(state.legacySnapshot?.southShoreScoops ?? state.legacySnapshot?.scoops ?? state.southShoreScoops)
+      : normalizeSouthShoreScoopsState(state.southShoreScoops);
+    state.schemaVersion = 20;
+  }
   return state;
 }
 
@@ -333,6 +347,7 @@ export function validateGameState(value) {
   errors.push(...validatePlaygroundPowerwashState(value.playgroundPowerwash).errors);
   errors.push(...validateMorningMugState(value.morningMug).errors);
   errors.push(...validateRiversideKitchenState(value.riversideKitchen).errors);
+  errors.push(...validateSouthShoreScoopsState(value.southShoreScoops).errors);
   if (value.source?.kind === "legacy-import") {
     if (!Number.isInteger(value.source.legacyVersion)) errors.push("Imported legacy version is missing.");
     if (typeof value.source.legacySourceKey !== "string") errors.push("Imported legacy source key is missing.");

@@ -136,6 +136,14 @@ export const RIVERSIDE_KITCHEN = Object.freeze({
   interactionRadius: 92,
 });
 
+export const SOUTH_SHORE_SCOOPS = Object.freeze({
+  id: "shop-12",
+  title: "South Shore Scoops",
+  door: Object.freeze({ x: 3560, y: 2240 }),
+  approach: Object.freeze({ x: 3560, y: 2265 }),
+  interactionRadius: 92,
+});
+
 export const RIVER_CLEAROUT = Object.freeze({
   id: "river-clearout",
   title: "River Clear-Out",

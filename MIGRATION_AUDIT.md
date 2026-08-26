@@ -170,3 +170,25 @@ keyboard Escape, page exit, and a complete reload resume safely. Legacy
 `riversideKitchen` progress is projected separately, including the original
 completed-pilot Level 21 unlock. Riverside Kitchen requires landscape
 orientation on mobile. The protected HTML source remains unchanged.
+
+Milestone 23 completes South Shore Scoops. The protected component-counter
+source now generates the exact 750 deterministic shifts across 75 unique
+chapters, 19 product families, 24 containers/flavours/finishes/extras, and the
+original 48-customer roster. Only one customer is active while the next two
+remain visible; orders contain one or two products, two-item trays begin at
+Level 8, patience follows the original 50-to-26-second curve, and the original
+60-percent accuracy plus 60-percent-served requirement decides completion.
+Picture construction retains ordered parts, early-level next-part guidance,
+undo, discard, wrong-build penalties, waste, happiness, and sequential customer
+handoff. First clears award the original 18-to-45 coin formula once, with
+duplicate-payout rollback protection. Ten distinct completion thresholds now
+persistently decorate and restore the South Shore venue, ending at Level 750.
+Every part tap, tray action, service result, departure, and elapsed second is
+checkpointed into schema 20; Save & exit, keyboard Escape, page exit, and a
+complete reload restore the exact customer, patience, build, tray, queue and
+town return point. Legacy `southShoreScoops` progress projects separately,
+including the completed 150-level pilot's Level 151 unlock. South Shore Scoops
+requires landscape orientation on mobile, with its complete 844×390 counter
+fitting without scrolling. All 234 automated tests and the production build
+pass, and live browser QA reports no warnings or errors. The protected HTML
+source remains unchanged.
