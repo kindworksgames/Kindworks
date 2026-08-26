@@ -1,0 +1,327 @@
+import Phaser from "phaser";
+import {
+  RIVERSIDE_KITCHEN_APPLIANCES,
+  RIVERSIDE_KITCHEN_CONFIG,
+  RIVERSIDE_KITCHEN_RECIPES,
+  riversideKitchenStep,
+} from "../data/riversideKitchen.js";
+
+const ROOM = Object.freeze({ width: 1280, height: 720 });
+
+export class RiversideKitchenScene extends Phaser.Scene {
+  constructor() { super("RiversideKitchenScene"); this.entryData = {}; }
+
+  init(data = {}) {
+    this.entryData = data;
+    this.transitioning = false;
+    this.station = null;
+    this.lastTickResult = null;
+    this.renderElapsed = 0;
+  }
+
+  create() {
+    this.riversideKitchen = this.registry.get("riversideKitchen");
+    this.gameState = this.registry.get("gameState");
+    this.worldSimulation = this.registry.get("worldSimulation");
+    this.npcTownLife = this.registry.get("npcTownLife");
+    this.qaMode = import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "riverside-kitchen";
+    this.timingScale = this.qaMode ? 0.12 : 1;
+    this.worldSimulation?.setPaused("activity", true);
+    this.npcTownLife?.setPaused("activity", true);
+    this.drawInterior();
+    this.bindInterface();
+    this.setSceneInterface();
+    const resumed = this.riversideKitchen.restorePersistedSession();
+    if (resumed.ok) {
+      document.querySelector("#riverside-kitchen-picker")?.classList.add("hidden");
+      document.querySelector("#riverside-kitchen-shift")?.classList.remove("hidden");
+      this.setMessage(`Level ${resumed.session.level.level} resumed from its last safe checkpoint.`, "success");
+    }
+    this.render();
+    this.cameras.main.fadeIn(220, 58, 35, 28);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.shutdownScene());
+  }
+
+  drawInterior() {
+    this.add.rectangle(ROOM.width / 2, ROOM.height / 2, ROOM.width, ROOM.height, 0xc99b69);
+    const art = this.add.graphics();
+    art.fillStyle(0x8c573f, 1); art.fillRect(0, 0, 475, ROOM.height);
+    art.fillStyle(0xd8b881, 1); art.fillRect(475, 0, 405, ROOM.height);
+    art.fillStyle(0x53676a, 1); art.fillRect(880, 0, 400, ROOM.height);
+    art.lineStyle(7, 0x3b2a25, 1); art.lineBetween(475, 0, 475, ROOM.height); art.lineBetween(880, 0, 880, ROOM.height);
+    art.fillStyle(0x3b2a25, 1); art.fillRect(0, 0, ROOM.width, 68);
+    for (const [x, y] of [[110, 185], [350, 185], [110, 455], [350, 455]]) {
+      art.fillStyle(0x684338, 1); art.fillRoundedRect(x - 72, y - 50, 144, 100, 16);
+      art.fillStyle(0xf1dfbd, 1); art.fillCircle(x, y, 22);
+      art.lineStyle(3, 0x916343, 1); art.strokeCircle(x, y, 22);
+    }
+    art.fillStyle(0x76503e, 1); art.fillRoundedRect(505, 115, 340, 205, 14); art.fillRoundedRect(505, 382, 340, 218, 14);
+    art.fillStyle(0xf0d7ad, 1); art.fillRoundedRect(535, 415, 280, 150, 10);
+    for (const [x, color] of [[930, 0xc7d0cb], [1015, 0x9ba5a2], [1100, 0xb66a46], [1185, 0x6a7072]]) {
+      art.fillStyle(color, 1); art.fillRoundedRect(x - 35, 145, 70, 95, 8);
+      art.fillStyle(0x283537, 1); art.fillRoundedRect(x - 27, 158, 54, 66, 5);
+    }
+    this.add.text(24, 24, "RIVERSIDE KITCHEN · DINING ROOM", { color: "#fff0d5", fontFamily: "ui-monospace, monospace", fontSize: "17px", fontStyle: "bold" }).setDepth(5);
+    this.add.text(505, 24, "PASS & THREE MEAL TRAYS", { color: "#fff0d5", fontFamily: "ui-monospace, monospace", fontSize: "16px", fontStyle: "bold" }).setDepth(5);
+    this.add.text(915, 24, "PREP · PAN · POT · GRILL · OVEN", { color: "#fff0d5", fontFamily: "ui-monospace, monospace", fontSize: "15px", fontStyle: "bold" }).setDepth(5);
+    this.customerVisual = this.add.text(240, 325, "🧑  🍽️  🧑", { fontSize: "46px", backgroundColor: "#fff0d5", padding: { x: 16, y: 10 }, color: "#3b2a25" }).setOrigin(0.5).setDepth(6);
+    this.prepVisual = this.add.text(680, 488, "🍽️  ① ② ③", { fontSize: "50px" }).setOrigin(0.5).setDepth(6);
+    this.chefVisual = this.add.text(1080, 510, "🧑‍🍳", { fontSize: "78px" }).setOrigin(0.5).setDepth(6);
+  }
+
+  bindInterface() {
+    this.hud = document.querySelector("#riverside-kitchen-hud");
+    this.levelSelect = document.querySelector("#riverside-kitchen-level-select");
+    this.startButton = document.querySelector("#riverside-kitchen-start");
+    this.exitButton = document.querySelector("#riverside-kitchen-exit");
+    this.undoButton = document.querySelector("#riverside-kitchen-undo");
+    this.discardButton = document.querySelector("#riverside-kitchen-discard");
+    this.serveButton = document.querySelector("#riverside-kitchen-serve");
+    this.nextButton = document.querySelector("#riverside-kitchen-next");
+    this.replayButton = document.querySelector("#riverside-kitchen-replay");
+    this.returnButton = document.querySelector("#riverside-kitchen-return");
+    this.stepList = document.querySelector("#riverside-kitchen-step-list");
+    this.orderList = document.querySelector("#riverside-kitchen-orders");
+    this.trayList = document.querySelector("#riverside-kitchen-trays");
+    document.querySelector("#riverside-kitchen-picker")?.classList.remove("hidden");
+    document.querySelector("#riverside-kitchen-shift")?.classList.add("hidden");
+    document.querySelector("#riverside-kitchen-result")?.classList.add("hidden");
+    this.setMessage("Choose an available Riverside Kitchen level to begin.", "neutral");
+    this.onStart = () => this.startLevel(Number(this.levelSelect?.value || 1));
+    this.onLevelChange = () => { if (this.startButton) this.startButton.textContent = `Open for Level ${Number(this.levelSelect?.value || 1)}`; };
+    this.onExit = () => this.returnToTown(false);
+    this.onUndo = () => { const result = this.riversideKitchen.undoStep(); this.setMessage(result.ok ? `${riversideKitchenStep(result.removed).name} removed.` : result.message, result.ok ? "neutral" : "error"); this.render(); };
+    this.onDiscard = () => { const result = this.riversideKitchen.discardTray(); this.setMessage(result.ok ? "This meal tray was cleared. The diner is still waiting." : result.message, result.ok ? "error" : "neutral"); this.render(); };
+    this.onServe = () => this.serveActive();
+    this.onNext = () => this.startLevel(Math.min(RIVERSIDE_KITCHEN_CONFIG.levelCount, (this.riversideKitchen.getActiveSession()?.level.level || 1) + 1));
+    this.onReplay = () => this.startLevel(this.riversideKitchen.getActiveSession()?.level.level || 1);
+    this.onReturn = () => this.returnToTown(true);
+    this.onSteps = (event) => { const button = event.target.closest?.("[data-riverside-kitchen-step]"); if (button) this.useStep(button.dataset.riversideKitchenStep); };
+    this.onTrays = (event) => { const button = event.target.closest?.("[data-riverside-kitchen-tray]"); if (button && !this.station) { const result = this.riversideKitchen.selectTray(Number(button.dataset.riversideKitchenTray)); this.setMessage(result.ok ? `Meal tray ${Number(button.dataset.riversideKitchenTray) + 1} selected for ${result.order.customerName}.` : result.message, result.ok ? "neutral" : "error"); this.render(); } };
+    this.onOrders = (event) => { const button = event.target.closest?.("[data-riverside-kitchen-order-tray]"); if (button && !this.station) { this.riversideKitchen.selectTray(Number(button.dataset.riversideKitchenOrderTray)); this.render(); } };
+    this.onKeyDown = (event) => { if (event.key === "Escape") this.returnToTown(false); };
+    this.onPageHide = () => this.riversideKitchen.persistActiveSession();
+    this.startButton?.addEventListener("click", this.onStart); this.levelSelect?.addEventListener("change", this.onLevelChange); this.exitButton?.addEventListener("click", this.onExit);
+    this.undoButton?.addEventListener("click", this.onUndo); this.discardButton?.addEventListener("click", this.onDiscard); this.serveButton?.addEventListener("click", this.onServe);
+    this.nextButton?.addEventListener("click", this.onNext); this.replayButton?.addEventListener("click", this.onReplay); this.returnButton?.addEventListener("click", this.onReturn);
+    this.stepList?.addEventListener("click", this.onSteps); this.trayList?.addEventListener("click", this.onTrays); this.orderList?.addEventListener("click", this.onOrders);
+    window.addEventListener("keydown", this.onKeyDown); window.addEventListener("pagehide", this.onPageHide);
+    this.hud?.classList.remove("hidden");
+  }
+
+  setSceneInterface() {
+    document.body.dataset.gameScene = this.scene.key;
+    const badge = document.querySelector(".milestone-badge"); if (badge) badge.textContent = "RIVERSIDE KITCHEN · MILESTONE 22";
+    const status = document.querySelector("#location-status"); if (status) status.textContent = "Inside Riverside Kitchen";
+    const hint = document.querySelector("#control-hint"); if (hint) hint.textContent = "Choose a meal tray · Follow preparation and heat steps · Save & exit preserves the shift";
+    const landscapeMessage = document.querySelector("#landscape-required-message");
+    if (landscapeMessage) landscapeMessage.textContent = "Riverside Kitchen is designed for landscape play. Turn your phone sideways to continue this shift.";
+  }
+
+  startLevel(level) {
+    this.lastTickResult = null; this.renderElapsed = 0; this.station = null;
+    const result = this.riversideKitchen.startLevel(level, { returnPosition: this.entryData.returnPosition, returnFacing: this.entryData.returnFacing || "down", instantOrders: this.qaMode });
+    if (!result.ok) { this.setMessage(result.message, "error"); return false; }
+    document.querySelector("#riverside-kitchen-picker")?.classList.add("hidden");
+    document.querySelector("#riverside-kitchen-shift")?.classList.remove("hidden");
+    document.querySelector("#riverside-kitchen-result")?.classList.add("hidden");
+    this.setMessage("Choose a meal tray, then prepare, cook at the exact heat and plate every component in order.", "success");
+    this.render();
+    return true;
+  }
+
+  useStep(stepId) {
+    if (this.station && this.station.id !== stepId) return false;
+    const definition = riversideKitchenStep(stepId);
+    if (!definition) return false;
+    if (RIVERSIDE_KITCHEN_APPLIANCES[stepId]) {
+      if (this.riversideKitchen.expectedStep() !== stepId) {
+        const rejected = this.riversideKitchen.applyStep(stepId);
+        this.setMessage(rejected.message, "error"); this.render(); return false;
+      }
+      if (this.station?.status === "ready") {
+        this.station = null; this.chefVisual.setText("🧑‍🍳");
+        return this.finishStep(stepId);
+      }
+      if (this.station?.status === "burnt") {
+        const burnt = this.riversideKitchen.recordBurn();
+        this.station = null; this.chefVisual.setText("🧑‍🍳");
+        this.setMessage(burnt.message, "error"); this.render();
+        return false;
+      }
+      if (this.station) return false;
+      const station = { id: stepId, status: "working" };
+      this.station = station;
+      this.chefVisual.setText("🧑‍🍳💨");
+      this.setMessage(`${definition.name} cooking… wait for Ready, then tap it again.`, "working");
+      this.render();
+      this.time.delayedCall(Math.max(90, definition.seconds * 1000 * this.timingScale), () => {
+        if (this.transitioning || this.station !== station) return;
+        this.station.status = "ready";
+        this.chefVisual.setText("🧑‍🍳✨");
+        this.setMessage(`${definition.name} is ready—tap it again to return the cooked component to its tray.`, "success");
+        this.render();
+        this.time.delayedCall(Math.max(90, definition.burnWindow * 1000 * this.timingScale), () => {
+          if (this.transitioning || this.station !== station || station.status !== "ready") return;
+          station.status = "burnt";
+          this.chefVisual.setText("🧑‍🍳💥");
+          this.setMessage(`${definition.name} burnt—tap the station to clear it, then cook that component again.`, "error");
+          this.render();
+        });
+      });
+      return true;
+    }
+    return this.finishStep(stepId);
+  }
+
+  finishStep(stepId) {
+    const result = this.riversideKitchen.applyStep(stepId);
+    if (!result.ok) this.setMessage(result.message, "error");
+    else if (result.complete) this.setMessage(`${result.recipe.name} is ready—finish the meal.`, "success");
+    else this.setMessage(`${result.step.name} added. Next: ${riversideKitchenStep(result.expectedStep).name}.`, "neutral");
+    this.render();
+    return result.ok;
+  }
+
+  serveActive() {
+    if (this.station) return false;
+    const result = this.riversideKitchen.serveActive();
+    if (!result.ok) { this.setMessage(result.message, "error"); this.render(); return false; }
+    if (result.result) { this.showResult(result.result); return true; }
+    if (result.code === "meal-added") this.setMessage(`${result.message} Now prepare ${result.nextRecipe.name}.`, "success");
+    else this.setMessage(`${result.customerName} loved the order! The next occupied tray is ready.`, "success");
+    this.render();
+    return true;
+  }
+
+  showResult(result) {
+    document.querySelector("#riverside-kitchen-shift")?.classList.add("hidden"); document.querySelector("#riverside-kitchen-result")?.classList.remove("hidden");
+    document.querySelector("#riverside-kitchen-result-title").textContent = result.won ? "Restaurant shift complete!" : "Shift needs another try";
+    document.querySelector("#riverside-kitchen-result-stars").textContent = `${"★".repeat(result.stars)}${"☆".repeat(3 - result.stars)}`;
+    document.querySelector("#riverside-kitchen-result-message").textContent = result.won ? result.firstClear ? "Every diner was served. The next Riverside Kitchen level is unlocked." : "Best score saved. Replay coins are first-clear only." : result.failureReason || "A diner left before their meal was ready.";
+    document.querySelector("#riverside-kitchen-result-accuracy").textContent = `${result.accuracy}%`; document.querySelector("#riverside-kitchen-result-happiness").textContent = `${result.happiness}%`;
+    document.querySelector("#riverside-kitchen-result-waste").textContent = String(result.waste); document.querySelector("#riverside-kitchen-result-coins").textContent = `+${result.coins}`;
+    if (this.nextButton) this.nextButton.disabled = !result.won || this.riversideKitchen.getActiveSession().level.level >= RIVERSIDE_KITCHEN_CONFIG.levelCount;
+    this.setMessage(result.won ? "Riverside Kitchen shift complete." : result.failureReason, result.won ? "success" : "error");
+    this.render();
+  }
+
+  setMessage(message, status = "neutral") {
+    const element = document.querySelector("#riverside-kitchen-status");
+    if (element) { element.textContent = message || "Continue the Riverside Kitchen shift."; element.dataset.status = status; }
+  }
+
+  render() {
+    const progress = this.riversideKitchen.getSnapshot(); const session = this.riversideKitchen.getActiveSession();
+    if (this.levelSelect) {
+      const previous = Number(this.levelSelect.value || progress.unlockedLevel);
+      this.levelSelect.innerHTML = Array.from({ length: progress.unlockedLevel }, (_, index) => { const level = index + 1; const best = progress.best[level]; return `<option value="${level}">Level ${level}${best ? ` · ${"★".repeat(best.stars)}` : ""}</option>`; }).join("");
+      this.levelSelect.value = String(Math.min(previous, progress.unlockedLevel));
+    }
+    document.querySelector("#riverside-kitchen-progress-summary").textContent = `${Object.keys(progress.completed).length} cleared · ${progress.totalStars} stars · ${progress.lifetimeServed} served`;
+    document.querySelector("#riverside-kitchen-balance").textContent = `🪙 ${this.gameState.getSnapshot().economy.coins}`;
+    if (!session) { this.updateDomState(); return; }
+    const tray = session.trays[session.activeTray]; const customerOrder = tray?.orderId ? session.orders.find((candidate) => candidate.id === tray.orderId) : null;
+    const recipe = customerOrder ? RIVERSIDE_KITCHEN_RECIPES[customerOrder.recipes[tray.recipeIndex]] : null; const expected = recipe?.steps?.[tray.stepIndex] || null;
+    document.querySelector("#riverside-kitchen-level-name").textContent = `Level ${session.level.level} · ${session.level.name}`;
+    document.querySelector("#riverside-kitchen-queue-label").textContent = `${session.activeOrderIds.length} seated · no misses allowed`;
+    document.querySelector("#riverside-kitchen-served").textContent = `${session.served} / ${session.level.target}`;
+    const remaining = Math.max(0, session.level.duration - session.elapsed); document.querySelector("#riverside-kitchen-timer").textContent = `${Math.floor(remaining / 60)}:${String(Math.ceil(remaining % 60)).padStart(2, "0")}`;
+    if (this.orderList) this.orderList.innerHTML = session.activeOrderIds.map((id) => { const customer = session.orders.find((candidate) => candidate.id === id); const trayIndex = session.trays.findIndex((candidate) => candidate.orderId === id); const ratio = Math.max(0, Math.round(customer.patience / customer.maxPatience * 100)); return `<button type="button" data-riverside-kitchen-order-tray="${trayIndex}" class="${trayIndex === session.activeTray ? "active" : ""}"><strong>${customer.customerName}</strong><small>${customer.recipes.map((recipeId) => RIVERSIDE_KITCHEN_RECIPES[recipeId].icon).join(" ")} · ${ratio}% patience</small></button>`; }).join("");
+    if (this.trayList) this.trayList.innerHTML = session.trays.map((candidate) => { const customer = candidate.orderId ? session.orders.find((entry) => entry.id === candidate.orderId) : null; const item = customer ? RIVERSIDE_KITCHEN_RECIPES[customer.recipes[candidate.recipeIndex]] : null; return `<button type="button" data-riverside-kitchen-tray="${candidate.index}" class="${candidate.index === session.activeTray ? "active" : ""}" ${customer ? "" : "disabled"}><small>MEAL ${candidate.index + 1}</small><strong>${customer?.customerName || "Free tray"}</strong><span>${item ? `${item.icon} ${item.name}` : "Waiting…"}</span></button>`; }).join("");
+    document.querySelector("#riverside-kitchen-order-name").textContent = recipe ? `${recipe.icon} ${recipe.name}` : "Waiting for an order";
+    const sequence = document.querySelector("#riverside-kitchen-recipe-sequence");
+    if (sequence) sequence.innerHTML = recipe ? recipe.steps.map((step, index) => `<span class="${index < tray.stepIndex ? "done" : index === tray.stepIndex ? "next" : ""}">${riversideKitchenStep(step).icon}<small>${riversideKitchenStep(step).name}</small></span>`).join("") : "";
+    const availableIds = [...new Set(session.level.menu.flatMap((id) => RIVERSIDE_KITCHEN_RECIPES[id].steps))];
+    availableIds.sort((a, b) => a === expected ? -1 : b === expected ? 1 : (RIVERSIDE_KITCHEN_APPLIANCES[a] ? 1 : 0) - (RIVERSIDE_KITCHEN_APPLIANCES[b] ? 1 : 0));
+    if (this.stepList) this.stepList.innerHTML = availableIds.map((id) => { const item = riversideKitchenStep(id); const station = Boolean(RIVERSIDE_KITCHEN_APPLIANCES[id]); const stationState = this.station?.id === id ? this.station.status : ""; return `<button type="button" data-riverside-kitchen-step="${id}" class="${id === expected ? "next" : ""} ${station ? "station" : "ingredient"} ${stationState}" ${this.station && this.station.id !== id ? "disabled" : ""}><span>${item.icon}</span><strong>${item.name}</strong><small>${stationState === "working" ? "Cooking…" : stationState === "ready" ? "Ready · tap" : stationState === "burnt" ? "Burnt · clear" : station ? "Heat / station" : "Ingredient"}</small></button>`; }).join("");
+    if (this.undoButton) this.undoButton.disabled = Boolean(this.station) || !tray?.orderId || tray.stepIndex < 1;
+    if (this.discardButton) this.discardButton.disabled = Boolean(this.station) || !tray?.orderId || (tray.stepIndex < 1 && tray.completedRecipes.length < 1);
+    if (this.serveButton) { this.serveButton.disabled = Boolean(this.station) || !recipe || Boolean(expected); this.serveButton.textContent = tray?.recipeIndex < (customerOrder?.recipes.length || 0) - 1 ? "Finish meal" : "Serve diner"; }
+    this.customerVisual.setText(session.activeOrderIds.length ? `🧑 × ${session.activeOrderIds.length}  →  🍽️` : "😊  ✓");
+    this.prepVisual.setText(recipe ? expected ? riversideKitchenStep(expected).icon : recipe.icon : "✨");
+    this.updateDomState();
+  }
+
+  updateDomState() {
+    const game = document.querySelector("#game"); if (!game) return;
+    const session = this.riversideKitchen.getActiveSession(); const diagnostics = this.riversideKitchen.getDiagnostics();
+    game.dataset.scene = this.scene.key; game.dataset.riversideKitchenLevel = String(session?.level.level || diagnostics.unlockedLevel);
+    game.dataset.riversideKitchenPhase = session?.finished ? "result" : session ? this.station?.status || "playing" : "picker";
+    game.dataset.riversideKitchenExpectedStep = this.riversideKitchen.expectedStep() || "none"; game.dataset.riversideKitchenServed = String(session?.served || 0);
+    game.dataset.riversideKitchenActiveOrders = String(session?.activeOrderIds.length || 0); game.dataset.riversideKitchenUnlocked = String(diagnostics.unlockedLevel); game.dataset.riversideKitchenCompleted = String(diagnostics.completedLevels);
+    game.dataset.riversideKitchenResumable = String(diagnostics.resumableSession);
+  }
+
+  renderLiveMetrics() {
+    const session = this.riversideKitchen.getActiveSession();
+    if (!session || session.finished) return;
+    const remaining = Math.max(0, session.level.duration - session.elapsed);
+    const timer = document.querySelector("#riverside-kitchen-timer");
+    if (timer) timer.textContent = `${Math.floor(remaining / 60)}:${String(Math.ceil(remaining % 60)).padStart(2, "0")}`;
+    const orderButtons = this.orderList?.querySelectorAll("[data-riverside-kitchen-order-tray]") || [];
+    session.activeOrderIds.forEach((id, index) => {
+      const customerOrder = session.orders.find((candidate) => candidate.id === id);
+      const summary = orderButtons[index]?.querySelector("small");
+      if (!customerOrder || !summary) return;
+      const ratio = Math.max(0, Math.round(customerOrder.patience / customerOrder.maxPatience * 100));
+      summary.textContent = `${customerOrder.recipes.map((recipeId) => RIVERSIDE_KITCHEN_RECIPES[recipeId].icon).join(" ")} · ${ratio}% patience`;
+    });
+    this.updateDomState();
+  }
+
+  update(_time, delta) {
+    const session = this.riversideKitchen.getActiveSession();
+    if (session && !session.finished && !this.transitioning) {
+      const result = this.riversideKitchen.tick(delta / 1000);
+      if (result?.result && !this.lastTickResult) { this.lastTickResult = result.result; this.showResult(result.result); }
+      else if (!result?.ok && result?.code === "persistence-failed") this.setMessage(result.message, "error");
+      else {
+        this.renderElapsed += delta;
+        if (result?.spawned) { this.renderElapsed = 0; this.render(); }
+        else if (this.renderElapsed >= 100) { this.renderElapsed = 0; this.renderLiveMetrics(); }
+      }
+    }
+  }
+
+  returnToTown(complete) {
+    if (this.transitioning) return false;
+    const session = this.riversideKitchen.getActiveSession();
+    if (session && !session.finished) {
+      const suspended = this.riversideKitchen.suspend();
+      if (!suspended.ok) { this.setMessage(suspended.message, "error"); return false; }
+    } else if (session?.finished) this.riversideKitchen.cancel();
+    this.transitioning = true;
+    const returnPosition = session?.returnPosition || this.entryData.returnPosition;
+    const returnFacing = session?.returnFacing || this.entryData.returnFacing || "down";
+    this.gameState?.updatePlayer({ scene: "TownScene", x: returnPosition?.x, y: returnPosition?.y, facing: returnFacing });
+    document.querySelector("#game")?.setAttribute("data-transition", complete ? "riverside-kitchen-complete" : "leaving-riverside-kitchen");
+    this.cameras.main.fadeOut(220, 58, 35, 28);
+    this.time.delayedCall(240, () => this.scene.start("TownScene", { returnPosition, returnFacing, transitionCount: Number(this.entryData.transitionCount || 0) + 1 }));
+    return true;
+  }
+
+  shutdownScene() {
+    this.startButton?.removeEventListener("click", this.onStart); this.levelSelect?.removeEventListener("change", this.onLevelChange); this.exitButton?.removeEventListener("click", this.onExit);
+    this.undoButton?.removeEventListener("click", this.onUndo); this.discardButton?.removeEventListener("click", this.onDiscard); this.serveButton?.removeEventListener("click", this.onServe);
+    this.nextButton?.removeEventListener("click", this.onNext); this.replayButton?.removeEventListener("click", this.onReplay); this.returnButton?.removeEventListener("click", this.onReturn);
+    this.stepList?.removeEventListener("click", this.onSteps); this.trayList?.removeEventListener("click", this.onTrays); this.orderList?.removeEventListener("click", this.onOrders);
+    window.removeEventListener("keydown", this.onKeyDown); window.removeEventListener("pagehide", this.onPageHide); this.hud?.classList.add("hidden");
+    if (this.riversideKitchen.getActiveSession() && !this.riversideKitchen.getActiveSession().finished) this.riversideKitchen.persistActiveSession();
+    this.worldSimulation?.setPaused("activity", false); this.npcTownLife?.setPaused("activity", false);
+  }
+
+  getMilestoneState() {
+    return {
+      scene: this.scene.key,
+      milestone: 22,
+      controls: { keyboard: true, touch: true, landscapeRequired: true },
+      campaign: this.riversideKitchen.getDiagnostics(),
+      session: this.riversideKitchen.getActiveSession(),
+      saveResume: true,
+      firstClearRewards: true,
+      legacyImport: true,
+      preparationAndHeat: true,
+    };
+  }
+}

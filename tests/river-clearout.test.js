@@ -111,7 +111,7 @@ test("L and J pieces keep stable clockwise rotations and heavy rows weaken befor
 
 test("fresh Milestone 15 state is valid and every river level is selectable", () => {
   const state = createFreshGameState({ now: 0 });
-  assert.equal(state.schemaVersion, 18);
+  assert.equal(state.schemaVersion, 19);
   assert.equal(state.river.nextLevel, 1);
   assert.equal(state.river.completed, 0);
   assert.equal(validateGameState(state).ok, true);
@@ -208,7 +208,7 @@ test("schema 11 saves gain river progress while preserving the café milestone",
   old.cafe.best[1] = { score: 95, stars: 3, served: 3, accuracy: 100 };
   old.cafe.totalStars = 3;
   const upgraded = upgradeGameState(old, { now: 0 });
-  assert.equal(upgraded.schemaVersion, 18);
+  assert.equal(upgraded.schemaVersion, 19);
   assert.equal(upgraded.river.nextLevel, 1);
   assert.equal(upgraded.cafe.completed[1], true);
   assert.equal(validateGameState(upgraded).ok, true);

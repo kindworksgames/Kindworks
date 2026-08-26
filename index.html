@@ -24,7 +24,7 @@
           <button id="custom-resident-button" class="economy-hud-button resident-hud-button" type="button" aria-label="Create your personal resident">💚 Create resident</button>
           <button id="animal-friends-button" class="economy-hud-button animal-hud-button" type="button" aria-label="Open Animal Friends">🐾 Animal Friends</button>
           <button id="save-status-button" class="save-status-button" type="button" data-status="new">Save not started</button>
-          <div class="milestone-badge">PHASER TOWN · MILESTONE 21</div>
+          <div class="milestone-badge">PHASER TOWN · MILESTONE 22</div>
         </div>
       </section>
       <section id="interaction-prompt" class="interaction-prompt hidden" aria-label="Nearby interaction" aria-hidden="true">
@@ -460,6 +460,32 @@
           <h3 id="morning-mug-result-title">Coffee shift complete!</h3><div id="morning-mug-result-stars">★★★</div><p id="morning-mug-result-message">Every customer was served.</p>
           <div class="cafe-result-stats"><span>Accuracy<strong id="morning-mug-result-accuracy">100%</strong></span><span>Happiness<strong id="morning-mug-result-happiness">100%</strong></span><span>Waste<strong id="morning-mug-result-waste">0</strong></span><span>Coins<strong id="morning-mug-result-coins">+62</strong></span></div>
           <div class="cafe-result-actions"><button id="morning-mug-replay" type="button">Replay</button><button id="morning-mug-next" type="button">Next level</button><button id="morning-mug-return" type="button">Return to Willowmere</button></div>
+        </section>
+      </section>
+      <section id="riverside-kitchen-hud" class="cafe-hud hidden" aria-labelledby="riverside-kitchen-hud-title">
+        <header class="cafe-hud-header">
+          <div><p>MILESTONE 22 · 150-LEVEL RESTAURANT CAMPAIGN</p><h2 id="riverside-kitchen-hud-title">🍽️ Riverside Kitchen</h2><small id="riverside-kitchen-progress-summary">0 cleared · 0 stars · 0 served</small></div>
+          <span id="riverside-kitchen-balance">🪙 100</span>
+          <button id="riverside-kitchen-exit" type="button">Save &amp; exit</button>
+        </header>
+        <section id="riverside-kitchen-picker" class="cafe-picker" aria-label="Choose a Riverside Kitchen level">
+          <div><strong>150 restaurant shifts · 32 exact recipes</strong><small>Prepare, control the heat and plate every meal. First clears award coins once.</small></div>
+          <label for="riverside-kitchen-level-select">Available shift<select id="riverside-kitchen-level-select"><option value="1">Level 1</option></select></label>
+          <button id="riverside-kitchen-start" type="button">Open for Level 1</button>
+        </section>
+        <section id="riverside-kitchen-shift" class="cafe-shift hidden" aria-label="Active Riverside Kitchen shift">
+          <div class="cafe-shift-heading"><div><small id="riverside-kitchen-level-name">Level 1 · First Burger</small><strong id="riverside-kitchen-queue-label">No misses allowed</strong></div><span>Served<strong id="riverside-kitchen-served">0 / 3</strong></span><span>Time<strong id="riverside-kitchen-timer">2:44</strong></span></div>
+          <div id="riverside-kitchen-orders" class="cafe-orders" aria-label="Diner meal orders"></div>
+          <div id="riverside-kitchen-trays" class="cafe-trays" aria-label="Meal preparation trays"></div>
+          <div class="cafe-current"><small>CURRENT MEAL</small><h3 id="riverside-kitchen-order-name">🍔 Burger</h3><div id="riverside-kitchen-recipe-sequence" class="cafe-recipe-sequence"></div></div>
+          <div><p class="cafe-worktop-label">Tap the highlighted ingredient, preparation step or exact heat station</p><div id="riverside-kitchen-step-list" class="cafe-step-list"></div></div>
+          <div class="cafe-controls"><button id="riverside-kitchen-undo" type="button" disabled>↶ Undo</button><button id="riverside-kitchen-discard" type="button" disabled>🗑 Discard</button><button id="riverside-kitchen-serve" class="primary" type="button" disabled>Serve diner</button></div>
+        </section>
+        <p id="riverside-kitchen-status" class="cafe-status" data-status="neutral" role="status" aria-live="assertive">Choose an available Riverside Kitchen level to begin.</p>
+        <section id="riverside-kitchen-result" class="cafe-result hidden" aria-labelledby="riverside-kitchen-result-title">
+          <h3 id="riverside-kitchen-result-title">Restaurant shift complete!</h3><div id="riverside-kitchen-result-stars">★★★</div><p id="riverside-kitchen-result-message">Every diner was served.</p>
+          <div class="cafe-result-stats"><span>Accuracy<strong id="riverside-kitchen-result-accuracy">100%</strong></span><span>Happiness<strong id="riverside-kitchen-result-happiness">100%</strong></span><span>Waste<strong id="riverside-kitchen-result-waste">0</strong></span><span>Coins<strong id="riverside-kitchen-result-coins">+81</strong></span></div>
+          <div class="cafe-result-actions"><button id="riverside-kitchen-replay" type="button">Replay</button><button id="riverside-kitchen-next" type="button">Next level</button><button id="riverside-kitchen-return" type="button">Return to Willowmere</button></div>
         </section>
       </section>
       <section id="bakery-hud" class="bakery-hud hidden" aria-labelledby="bakery-hud-title">

@@ -153,3 +153,20 @@ page exit, and a complete reload resume safely. Legacy `morningMug` progress is
 projected separately, including the original completed-pilot Level 21 unlock.
 Morning Mug requires landscape orientation on mobile. The protected HTML source
 remains unchanged.
+
+Milestone 22 completes Riverside Kitchen. Its protected catalogue now runs as a
+separate Phaser restaurant with all 32 exact meals, 58 ingredients, nine
+preparation and heat stations, 15 chapters, the original first 20 pilot shifts,
+and the deterministic Level 21–150 difficulty tiers. Every shift is no-miss,
+uses three meal trays, supports one-to-three-course diner orders, and validates
+the complete plating, preparation-board, low/medium/high pan, simmer/boil pot,
+medium/high grill, and roasting sequences, including every ready-to-burn heat
+window and the original waste and mistake penalties. First clears award the original
+35 + level + 15-per-star formula once, capped at 170 coins, through a
+Riverside-specific ledger entry; Corner Café and Morning Mug progress are never
+changed. Active time, diner patience, orders, trays, completed meal components,
+return position, and exact next step checkpoint into schema 19 so Save & exit,
+keyboard Escape, page exit, and a complete reload resume safely. Legacy
+`riversideKitchen` progress is projected separately, including the original
+completed-pilot Level 21 unlock. Riverside Kitchen requires landscape
+orientation on mobile. The protected HTML source remains unchanged.

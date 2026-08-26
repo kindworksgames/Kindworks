@@ -85,7 +85,7 @@ test("the exact original tier boundaries increase rubbish, stain strength and di
 
 test("fresh Milestone 16 state tracks all homes, four original dirty cottages and a protected personal home", () => {
   const state = createFreshGameState({ now: 0 });
-  assert.equal(state.schemaVersion, 18);
+  assert.equal(state.schemaVersion, 19);
   assert.equal(validateGameState(state).ok, true);
   assert.equal(Object.keys(state.houseRescue.homes).length, 19);
   assert.deepEqual(Object.values(state.houseRescue.homes).filter((home) => home.dirty).map((home) => home.houseId), ["house-1", "house-6", "house-11", "house-16"]);
@@ -233,7 +233,7 @@ test("schema 12 saves gain House Rescue while preserving the River campaign", ()
   old.river.totalStars = 3;
   old.river.restorationPoints = 400;
   const upgraded = upgradeGameState(old, { now: 0 });
-  assert.equal(upgraded.schemaVersion, 18);
+  assert.equal(upgraded.schemaVersion, 19);
   assert.equal(upgraded.river.completed, 1);
   assert.equal(upgraded.houseRescue.unlockedLevel, 1);
   assert.equal(validateGameState(upgraded).ok, true);
