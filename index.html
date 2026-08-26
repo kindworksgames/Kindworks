@@ -24,7 +24,7 @@
           <button id="custom-resident-button" class="economy-hud-button resident-hud-button" type="button" aria-label="Create your personal resident">💚 Create resident</button>
           <button id="animal-friends-button" class="economy-hud-button animal-hud-button" type="button" aria-label="Open Animal Friends">🐾 Animal Friends</button>
           <button id="save-status-button" class="save-status-button" type="button" data-status="new">Save not started</button>
-          <div class="milestone-badge">PHASER TOWN · MILESTONE 20</div>
+          <div class="milestone-badge">PHASER TOWN · MILESTONE 21</div>
         </div>
       </section>
       <section id="interaction-prompt" class="interaction-prompt hidden" aria-label="Nearby interaction" aria-hidden="true">
@@ -434,6 +434,32 @@
           <h3 id="cafe-result-title">Shift complete!</h3><div id="cafe-result-stars">★★★</div><p id="cafe-result-message">Every customer was served.</p>
           <div class="cafe-result-stats"><span>Accuracy<strong id="cafe-result-accuracy">100%</strong></span><span>Happiness<strong id="cafe-result-happiness">100%</strong></span><span>Waste<strong id="cafe-result-waste">0</strong></span><span>Coins<strong id="cafe-result-coins">+59</strong></span></div>
           <div class="cafe-result-actions"><button id="cafe-replay" type="button">Replay</button><button id="cafe-next" type="button">Next level</button><button id="cafe-return" type="button">Return to Willowmere</button></div>
+        </section>
+      </section>
+      <section id="morning-mug-hud" class="cafe-hud hidden" aria-labelledby="morning-mug-hud-title">
+        <header class="cafe-hud-header">
+          <div><p>MILESTONE 21 · 150-LEVEL COFFEE CAMPAIGN</p><h2 id="morning-mug-hud-title">☕ Morning Mug Coffee</h2><small id="morning-mug-progress-summary">0 cleared · 0 stars · 0 served</small></div>
+          <span id="morning-mug-balance">🪙 100</span>
+          <button id="morning-mug-exit" type="button">Save &amp; exit</button>
+        </header>
+        <section id="morning-mug-picker" class="cafe-picker" aria-label="Choose a Morning Mug level">
+          <div><strong>150 specialist coffee shifts</strong><small>Grind, pour, steam and finish every drink. First clears award coins once.</small></div>
+          <label for="morning-mug-level-select">Available shift<select id="morning-mug-level-select"><option value="1">Level 1</option></select></label>
+          <button id="morning-mug-start" type="button">Open for Level 1</button>
+        </section>
+        <section id="morning-mug-shift" class="cafe-shift hidden" aria-label="Active Morning Mug shift">
+          <div class="cafe-shift-heading"><div><small id="morning-mug-level-name">Level 1 · First Grind</small><strong id="morning-mug-queue-label">No misses allowed</strong></div><span>Served<strong id="morning-mug-served">0 / 3</strong></span><span>Time<strong id="morning-mug-timer">1:55</strong></span></div>
+          <div id="morning-mug-orders" class="cafe-orders" aria-label="Customer drink orders"></div>
+          <div id="morning-mug-trays" class="cafe-trays" aria-label="Drink preparation trays"></div>
+          <div class="cafe-current"><small>CURRENT DRINK</small><h3 id="morning-mug-order-name">☕ Small espresso</h3><div id="morning-mug-recipe-sequence" class="cafe-recipe-sequence"></div></div>
+          <div><p class="cafe-worktop-label">Tap the highlighted next ingredient or barista station</p><div id="morning-mug-step-list" class="cafe-step-list"></div></div>
+          <div class="cafe-controls"><button id="morning-mug-undo" type="button" disabled>↶ Undo</button><button id="morning-mug-discard" type="button" disabled>🗑 Discard</button><button id="morning-mug-serve" class="primary" type="button" disabled>Serve customer</button></div>
+        </section>
+        <p id="morning-mug-status" class="cafe-status" data-status="neutral" role="status" aria-live="assertive">Choose an available Morning Mug level to begin.</p>
+        <section id="morning-mug-result" class="cafe-result hidden" aria-labelledby="morning-mug-result-title">
+          <h3 id="morning-mug-result-title">Coffee shift complete!</h3><div id="morning-mug-result-stars">★★★</div><p id="morning-mug-result-message">Every customer was served.</p>
+          <div class="cafe-result-stats"><span>Accuracy<strong id="morning-mug-result-accuracy">100%</strong></span><span>Happiness<strong id="morning-mug-result-happiness">100%</strong></span><span>Waste<strong id="morning-mug-result-waste">0</strong></span><span>Coins<strong id="morning-mug-result-coins">+62</strong></span></div>
+          <div class="cafe-result-actions"><button id="morning-mug-replay" type="button">Replay</button><button id="morning-mug-next" type="button">Next level</button><button id="morning-mug-return" type="button">Return to Willowmere</button></div>
         </section>
       </section>
       <section id="bakery-hud" class="bakery-hud hidden" aria-labelledby="bakery-hud-title">

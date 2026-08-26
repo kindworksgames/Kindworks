@@ -180,7 +180,7 @@ test("schema 7 saves gain animal friends without losing prior milestones", () =>
   old.schemaVersion = 7;
   old.identity.townName = "Friendship Bay";
   const upgraded = upgradeGameState(old, { now: 1000 });
-  assert.equal(upgraded.schemaVersion, 17);
+  assert.equal(upgraded.schemaVersion, 18);
   assert.equal(upgraded.identity.townName, "Friendship Bay");
   assert.equal(Object.keys(upgraded.animals.residents).length, 8);
   assert.equal(validateGameState(upgraded).ok, true);

@@ -138,3 +138,18 @@ after a deterministic two or three game days. Exact active grime, soap, tool,
 supply, and return-position state resumes from schema 17 saves. Playground
 Power Wash requires landscape on mobile, so River Clear-Out remains the only
 portrait-friendly migrated mini-game. The protected HTML remains unchanged.
+
+Milestone 21 completes Morning Mug Coffee. Its protected catalogue now runs as
+a separate Phaser venue with all 54 exact drinks, 28 ingredients, five barista
+stations, four cup sizes, 15 chapters, the original first 20 pilot shifts, and
+the deterministic Level 21–150 difficulty tiers. Every shift is no-miss, uses
+three preparation trays, and validates the complete grind, espresso, water,
+milk, foam, syrup, topping, iced-drink, alternative-milk, and tea sequences.
+First clears award the original 25 + level + star formula once, capped at 170
+coins, through a Morning Mug-specific ledger entry; Corner Café progress is
+never changed. Active time, customer patience, orders, trays, completed steps,
+return position, and exact next step checkpoint into schema 18 so Save & exit,
+page exit, and a complete reload resume safely. Legacy `morningMug` progress is
+projected separately, including the original completed-pilot Level 21 unlock.
+Morning Mug requires landscape orientation on mobile. The protected HTML source
+remains unchanged.

@@ -3,6 +3,7 @@ import "./style.css";
 import { BootScene } from "./scenes/BootScene.js";
 import { BakeryScene } from "./scenes/BakeryScene.js";
 import { CafeScene } from "./scenes/CafeScene.js";
+import { MorningMugScene } from "./scenes/MorningMugScene.js";
 import { RiverClearoutScene } from "./scenes/RiverClearoutScene.js";
 import { HouseRescueScene } from "./scenes/HouseRescueScene.js";
 import { TownScene } from "./scenes/TownScene.js";
@@ -24,6 +25,7 @@ import { AnimalService } from "./systems/AnimalService.js";
 import { FishingService } from "./systems/FishingService.js";
 import { BakeryService } from "./systems/BakeryService.js";
 import { CafeService } from "./systems/CafeService.js";
+import { MorningMugService } from "./systems/MorningMugService.js";
 import { RiverClearoutService } from "./systems/RiverClearoutService.js";
 import { HouseRescueService } from "./systems/HouseRescueService.js";
 import { LawnCareService } from "./systems/LawnCareService.js";
@@ -51,6 +53,7 @@ const fishing = new FishingService(stateRuntime.gameState, stateRuntime.reposito
 fishing.refresh({ persist: true });
 const bakery = new BakeryService(stateRuntime.gameState, stateRuntime.repository);
 const cafe = new CafeService(stateRuntime.gameState, stateRuntime.repository);
+const morningMug = new MorningMugService(stateRuntime.gameState, stateRuntime.repository);
 const river = new RiverClearoutService(stateRuntime.gameState, stateRuntime.repository);
 const houseRescue = new HouseRescueService(stateRuntime.gameState, stateRuntime.repository);
 const lawnCare = new LawnCareService(stateRuntime.gameState, stateRuntime.repository);
@@ -71,7 +74,7 @@ const config = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene, TownScene, BakeryScene, CafeScene, RiverClearoutScene, HouseRescueScene, WasteCollectionScene, LawnCareScene, BeachCleanupScene, PlaygroundPowerwashScene, FishingScene],
+  scene: [BootScene, TownScene, BakeryScene, CafeScene, MorningMugScene, RiverClearoutScene, HouseRescueScene, WasteCollectionScene, LawnCareScene, BeachCleanupScene, PlaygroundPowerwashScene, FishingScene],
 };
 
 const game = new Phaser.Game(config);
@@ -85,6 +88,7 @@ game.registry.set("animals", animals);
 game.registry.set("fishing", fishing);
 game.registry.set("bakery", bakery);
 game.registry.set("cafe", cafe);
+game.registry.set("morningMug", morningMug);
 game.registry.set("river", river);
 game.registry.set("houseRescue", houseRescue);
 game.registry.set("lawnCare", lawnCare);
@@ -174,6 +178,7 @@ window.addEventListener("pagehide", () => {
   farming.refresh({ persist: true });
   animals.refresh({ persist: true });
   worldSimulation.persist();
+  if (morningMug.getActiveSession() && !morningMug.getActiveSession().finished) morningMug.persistActiveSession();
 });
 
 window.__KINDWORKS_PHASER__ = {
@@ -244,6 +249,9 @@ window.__KINDWORKS_PHASER__ = {
   },
   getCafeDiagnostics() {
     return cafe.getDiagnostics();
+  },
+  getMorningMugDiagnostics() {
+    return morningMug.getDiagnostics();
   },
   getRiverDiagnostics() {
     return river.getDiagnostics();

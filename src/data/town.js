@@ -120,6 +120,14 @@ export const CORNER_CAFE = Object.freeze({
   interactionRadius: 92,
 });
 
+export const MORNING_MUG = Object.freeze({
+  id: "shop-06",
+  title: "Morning Mug Coffee",
+  door: Object.freeze({ x: 3460, y: 780 }),
+  approach: Object.freeze({ x: 3460, y: 805 }),
+  interactionRadius: 92,
+});
+
 export const RIVER_CLEAROUT = Object.freeze({
   id: "river-clearout",
   title: "River Clear-Out",

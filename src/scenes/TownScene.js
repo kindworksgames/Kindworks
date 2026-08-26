@@ -9,6 +9,7 @@ import {
   HOUSES,
   LANDMARKS,
   LITTLE_BAKERY,
+  MORNING_MUG,
   PATHS,
   PLAYGROUND_POWERWASH,
   PLAYER_START,
@@ -96,6 +97,7 @@ export class TownScene extends Phaser.Scene {
     this.fishing = this.registry.get("fishing");
     this.bakery = this.registry.get("bakery");
     this.cafe = this.registry.get("cafe");
+    this.morningMug = this.registry.get("morningMug");
     this.river = this.registry.get("river");
     this.houseRescue = this.registry.get("houseRescue");
     this.houseRescue?.refreshJobs?.();
@@ -120,6 +122,8 @@ export class TownScene extends Phaser.Scene {
       ? RIVER_CLEAROUT.approach
       : qaTarget === "cafe"
         ? CORNER_CAFE.approach
+      : qaTarget === "morning-mug"
+        ? MORNING_MUG.approach
       : qaTarget === "bakery"
         ? LITTLE_BAKERY.approach
         : qaTarget === "fresh-market"
@@ -191,6 +195,17 @@ export class TownScene extends Phaser.Scene {
           label: "Enter Little Bakery",
           detail: "Freshly baked, made to order",
           onActivate: () => this.enterBakery(),
+        },
+        {
+          id: "morning-mug-door",
+          kind: "door",
+          x: MORNING_MUG.door.x,
+          y: MORNING_MUG.door.y,
+          radius: MORNING_MUG.interactionRadius,
+          icon: "☕",
+          label: "Enter Morning Mug Coffee",
+          detail: "150 specialist coffee shifts",
+          onActivate: () => this.enterMorningMug(),
         },
         {
           id: "fresh-market-door",
@@ -838,7 +853,7 @@ export class TownScene extends Phaser.Scene {
     document.body.dataset.gameScene = this.scene.key;
     const badge = document.querySelector(".milestone-badge");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 20";
+    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 21";
     if (hint) hint.textContent = "Arrow keys or WASD to walk · E or Space to interact · Shift to run";
   }
 
@@ -893,6 +908,26 @@ export class TownScene extends Phaser.Scene {
       });
     });
     return { ok: true, targetScene: "CafeScene" };
+  }
+
+  enterMorningMug() {
+    if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before entering a building." };
+    this.transitioning = true;
+    this.movement.setEnabled(false);
+    this.interactions.setEnabled(false);
+    this.player.setMovement(0, 0, false);
+    this.gameState?.updatePlayer({ scene: "MorningMugScene", x: 640, y: 610, facing: "up" });
+    document.querySelector("#game")?.setAttribute("data-transition", "entering-morning-mug");
+    this.cameras.main.fadeOut(220, 30, 52, 53);
+    this.time.delayedCall(240, () => {
+      this.scene.start("MorningMugScene", {
+        returnPosition: { ...MORNING_MUG.approach },
+        returnFacing: "down",
+        transitionCount: Number(this.entryData.transitionCount || 0) + 1,
+      });
+    });
+    return { ok: true, targetScene: "MorningMugScene" };
   }
 
   enterRiverClearout() {
@@ -1221,6 +1256,11 @@ export class TownScene extends Phaser.Scene {
       gameElement.dataset.cafeUnlocked = String(cafe?.unlockedLevel || 1);
       gameElement.dataset.cafeCompleted = String(cafe?.completedLevels || 0);
       gameElement.dataset.cafeStars = String(cafe?.totalStars || 0);
+      const morningMug = this.morningMug?.getDiagnostics?.();
+      gameElement.dataset.morningMugUnlocked = String(morningMug?.unlockedLevel || 1);
+      gameElement.dataset.morningMugCompleted = String(morningMug?.completedLevels || 0);
+      gameElement.dataset.morningMugStars = String(morningMug?.totalStars || 0);
+      gameElement.dataset.morningMugResumable = String(Boolean(morningMug?.resumableSession));
       const river = this.river?.getDiagnostics?.();
       gameElement.dataset.riverLevels = String(river?.totalLevels || 0);
       gameElement.dataset.riverCompleted = String(river?.completed || 0);
@@ -1258,13 +1298,15 @@ export class TownScene extends Phaser.Scene {
       camera: { zoom: Number(this.cameras.main.zoom.toFixed(2)), followingPlayer: !this.customResident?.getSnapshot?.().controlling },
       controls: { keyboard: true, touch: true, wheelZoom: true },
       interaction: this.interactions.getState(),
-      migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "cafe-scene-transition", "river-clearout-scene-transition", "house-rescue-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job", "world-time-weather-lighting", "basic-npc-town-life", "custom-resident-profile-home-control", "weather-aware-farming", "orchard-harvest", "persistent-lawn-jobs", "animal-habitat-routes", "animal-friendship-feeding", "animal-adoption", "active-companion-following", "south-meadow", "three-fishing-spots", "hidden-zone-fishing", "timed-reeling", "magnet-fishing", "fishing-inventory-rewards", "magnet-coin-rewards", "bakery-recipes", "bakery-customer-service", "bakery-first-clear-rewards", "bakery-level-unlocks", "shared-recipe-order-engine", "corner-cafe-recipes", "cafe-three-tray-service", "cafe-first-clear-rewards", "cafe-level-unlocks", "river-750-level-catalogue", "river-falling-piece-engine", "river-first-clear-rewards", "river-portrait-controls", "house-rescue-750-level-catalogue", "house-rescue-sort-and-vacuum", "house-rescue-persistent-home-jobs", "house-rescue-landscape-controls", "waste-750-authored-boards", "waste-five-slot-triple-matching", "waste-certified-solutions", "waste-first-clear-rewards", "waste-landscape-controls", "lawn-750-authored-levels", "lawn-slide-mower-engine", "lawn-persistent-campaign", "lawn-town-job-effects", "lawn-first-clear-rewards", "lawn-landscape-controls", "beach-750-deterministic-levels", "beach-rake-and-rubbish-engine", "beach-native-town-rewards", "beach-first-clear-rewards", "south-shore-litter-restoration", "beach-landscape-controls", "powerwash-750-deterministic-levels", "powerwash-soap-resistant-stains", "powerwash-three-nozzles", "powerwash-97-percent-tolerance", "powerwash-native-town-rewards", "powerwash-first-clear-rewards", "commons-playground-restoration", "powerwash-landscape-controls"],
+      migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "cafe-scene-transition", "morning-mug-scene-transition", "river-clearout-scene-transition", "house-rescue-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job", "world-time-weather-lighting", "basic-npc-town-life", "custom-resident-profile-home-control", "weather-aware-farming", "orchard-harvest", "persistent-lawn-jobs", "animal-habitat-routes", "animal-friendship-feeding", "animal-adoption", "active-companion-following", "south-meadow", "three-fishing-spots", "hidden-zone-fishing", "timed-reeling", "magnet-fishing", "fishing-inventory-rewards", "magnet-coin-rewards", "bakery-recipes", "bakery-customer-service", "bakery-first-clear-rewards", "bakery-level-unlocks", "shared-recipe-order-engine", "corner-cafe-recipes", "cafe-three-tray-service", "cafe-first-clear-rewards", "cafe-level-unlocks", "morning-mug-54-recipes", "morning-mug-150-levels", "morning-mug-first-clear-rewards", "morning-mug-save-resume", "morning-mug-landscape-controls", "river-750-level-catalogue", "river-falling-piece-engine", "river-first-clear-rewards", "river-portrait-controls", "house-rescue-750-level-catalogue", "house-rescue-sort-and-vacuum", "house-rescue-persistent-home-jobs", "house-rescue-landscape-controls", "waste-750-authored-boards", "waste-five-slot-triple-matching", "waste-certified-solutions", "waste-first-clear-rewards", "waste-landscape-controls", "lawn-750-authored-levels", "lawn-slide-mower-engine", "lawn-persistent-campaign", "lawn-town-job-effects", "lawn-first-clear-rewards", "lawn-landscape-controls", "beach-750-deterministic-levels", "beach-rake-and-rubbish-engine", "beach-native-town-rewards", "beach-first-clear-rewards", "south-shore-litter-restoration", "beach-landscape-controls", "powerwash-750-deterministic-levels", "powerwash-soap-resistant-stains", "powerwash-three-nozzles", "powerwash-97-percent-tolerance", "powerwash-native-town-rewards", "powerwash-first-clear-rewards", "commons-playground-restoration", "powerwash-landscape-controls"],
       npcTownLife: this.npcTownLife?.getDiagnostics?.(),
       customResident: this.customResident?.getDiagnostics?.(),
       farming: this.farming?.getDiagnostics?.(),
       animals: this.animals?.getDiagnostics?.(),
       fishing: this.fishing?.getDiagnostics?.(),
       bakery: this.bakery?.getDiagnostics?.(),
+      cafe: this.cafe?.getDiagnostics?.(),
+      morningMug: this.morningMug?.getDiagnostics?.(),
       river: this.river?.getDiagnostics?.(),
       houseRescue: this.houseRescue?.getDiagnostics?.(),
       wasteCollection: this.cleanupService?.getDiagnostics?.(),

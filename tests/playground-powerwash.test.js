@@ -150,12 +150,12 @@ test("an exact active washer, supplies, tool and return point survive a safe rel
   assert.equal(validateGameState(resumed.gameState.getSnapshot()).ok, true);
 });
 
-test("schema 16 and legacy playground data upgrade to schema 17 while failed saves roll back exactly", () => {
+test("schema 16 and legacy playground data upgrade to schema 18 while failed saves roll back exactly", () => {
   const old = createFreshGameState({ now: 0 });
   delete old.playgroundPowerwash;
   old.schemaVersion = 16;
   const upgraded = upgradeGameState(old, { now: 0 });
-  assert.equal(upgraded.schemaVersion, 17);
+  assert.equal(upgraded.schemaVersion, 18);
   assert.equal(upgraded.playgroundPowerwash.playground.dirty, true);
   const legacy = projectLegacyPlaygroundPowerwash({ miniGames: { progress: { playground: { nextLevel: 4, best: { 3: { stars: 3, percent: 100 } } } } }, playgroundPowerwashing: { dirty: false, lastCleanedDay: 5, nextDirtyDay: 8, cleanings: 2 } });
   assert.equal(legacy.progress.completed, 1);

@@ -122,12 +122,12 @@ test("an in-progress beach and its return point survive a safe reload", () => {
   assert.equal(validateGameState(resumed.gameState.getSnapshot()).ok, true);
 });
 
-test("schema 15 saves and original beach progress upgrade through schema 17", () => {
+test("schema 15 saves and original beach progress upgrade through schema 18", () => {
   const old = createFreshGameState({ now: 0 });
   delete old.beachCleanup;
   old.schemaVersion = 15;
   const upgraded = upgradeGameState(old, { now: 0 });
-  assert.equal(upgraded.schemaVersion, 17);
+  assert.equal(upgraded.schemaVersion, 18);
   assert.equal(upgraded.beachCleanup.progress.nextLevel, 1);
   assert.equal(validateGameState(upgraded).ok, true);
   const projected = projectLegacyBeachCleanup({ miniGames: { progress: { beach: { nextLevel: 44, best: { 1: { stars: 3, percent: 100 }, 43: { stars: 3, percent: 100 } } } } }, environment: { beachLitter: 7 } });

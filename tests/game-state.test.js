@@ -12,7 +12,7 @@ import { legacyFixtures } from "./fixtures/legacy-saves.js";
 test("creates a valid deterministic fresh state", () => {
   const state = createFreshGameState({ now: 0 });
   assert.equal(validateGameState(state).ok, true);
-  assert.equal(state.schemaVersion, 17);
+  assert.equal(state.schemaVersion, 18);
   assert.equal(state.world.clockMinutes, 420);
   assert.equal(state.world.weather.current.day, 1);
   assert.equal(state.source.kind, "new");
@@ -49,7 +49,7 @@ test("upgrades a Milestone 3 state without losing its existing fields", () => {
   oldState.schemaVersion = 1;
   oldState.world.day = 9;
   const upgraded = upgradeGameState(oldState, { now: 1000 });
-  assert.equal(upgraded.schemaVersion, 17);
+  assert.equal(upgraded.schemaVersion, 18);
   assert.equal(upgraded.world.day, 9);
   assert.equal(upgraded.economy.coins, 100);
   assert.equal(validateGameState(upgraded).ok, true);
