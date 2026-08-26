@@ -752,3 +752,25 @@ monthly coin and gift grant, duplicate-safe restoration, persistence after
 reload, the disconnected production-safe state, and a clean console. Desktop,
 390×844 portrait and 844×390 landscape layouts have bounded scrolling, no page
 overflow, one-row navigation and 44-pixel controls.
+
+Milestone 42 completes legacy-save reconciliation. Every compatible HTML save
+version from 12 through 82 now receives a schema-37 reconciliation record with
+a deterministic source fingerprint, explicit final-domain ownership, applied
+stable-ID mappings, domain counts, compact campaign-clear ranges, and the
+processed identifiers that prevent gifts, restorations, commerce benefits and
+first-clear rewards from replaying.
+
+The dense version-82 fixture verifies exact coins and lifetime totals,
+inventory and equipment, town placement, separate crop and tree state, the
+four-level personal home, furniture and aquarium housing, adopted animals,
+permanent restorations, Harbour General stock, homeowner gift history, NPC
+narrative history, and all migrated campaign families. Historical lawn and
+personal-home aliases are repaired only on an in-memory copy; the complete
+source remains unchanged in `legacySnapshot`. Existing schema-36 imported saves
+derive the same audit record without rerunning rewards, while fresh games keep
+the field null.
+
+All 422 automated tests and the production build pass. The protected HTML and
+Desktop source both retain SHA-256
+`0b85bd71385b83e7a13676f7593ce376245959fa4ebf1a6b9a0e6765297aa5a5`.
+The detailed contract is recorded in `LEGACY_SAVE_RECONCILIATION.md`.

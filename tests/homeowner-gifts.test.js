@@ -58,7 +58,7 @@ test("pins the original homeowner gift odds, care windows, limits and exact pric
 
 test("fresh schema 33 state has a valid empty homeowner gift domain", () => {
   const state = createFreshGameState({ now: 0 });
-  assert.equal(state.schemaVersion, 36);
+  assert.equal(state.schemaVersion, 37);
   assert.equal(validateGameState(state).ok, true);
   assert.deepEqual(state.homeownerGifts, {
     format: 2, misses: 0, totalGifts: 0, totalGiftValueReceived: 0, households: {}, processedEventIds: [], history: [], queue: [],
@@ -199,7 +199,7 @@ test("schema 30 legacy cooldowns and waiting gifts convert without touching the 
   };
   const snapshot = structuredClone(old.legacySnapshot);
   const upgraded = upgradeGameState(old, { now: 2000 });
-  assert.equal(upgraded.schemaVersion, 36);
+  assert.equal(upgraded.schemaVersion, 37);
   assert.equal(upgraded.homeownerGifts.misses, 7);
   assert.equal(upgraded.homeownerGifts.households.home01.lastGiftDay, 12);
   assert.equal(upgraded.homeownerGifts.queue[0].houseId, "house-1");

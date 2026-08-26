@@ -151,7 +151,7 @@ test("schema 31 expansion preserves existing progress and recovers original lega
     {id:"pet-macaw",name:"Captain Rio",friendliness:88,adopted:true,active:true,purchasedDay:1,events:7},
   ]}};
   const upgraded = upgradeGameState(old,{now:1000});
-  assert.equal(upgraded.schemaVersion,36);
+  assert.equal(upgraded.schemaVersion,37);
   assert.equal(Object.keys(upgraded.animals.residents).length,56);
   assert.equal(upgraded.animals.residents["animal-capybara-1"].trust,73);
   assert.equal(upgraded.animals.residents["pet-macaw"].name,"Captain Rio");

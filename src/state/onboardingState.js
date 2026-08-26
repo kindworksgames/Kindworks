@@ -135,7 +135,7 @@ export function projectLegacyOnboarding(legacy, state, { now = Date.now() } = {}
     firstRestorationGiftGranted: legacy?.onboarding?.firstRestorationGiftGranted,
   }, { state, now });
   for (const key of ONBOARDING_TRACKED_GAME_KEYS) {
-    const completed = Number(legacy?.miniGameProgress?.[key]?.completed) > 0;
+    const completed = Number((legacy?.miniGames?.progress || legacy?.miniGameProgress)?.[key]?.completed) > 0;
     if (completed) projected.tutorialSeen[key] = projected.tried[key] = true;
   }
   return projected;

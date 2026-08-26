@@ -42,7 +42,7 @@ test("Milestone 39 preserves all 35 authored four-stage resident arcs and 19 hom
 
 test("fresh residents contain valid bounded persistent narrative history", () => {
   const state = createFreshGameState({ now: 0 });
-  assert.equal(state.schemaVersion, 36);
+  assert.equal(state.schemaVersion, 37);
   assert.equal(validateGameState(state).ok, true);
   for (const resident of state.npcs.residents) {
     assert.equal(validateNpcNarrativeState(resident.narrativeState).ok, true);
@@ -125,7 +125,7 @@ test("legacy version-82 narrative records and schema-33 saves convert without ch
   old.schemaVersion = 33;
   delete old.npcs.residents[0].narrativeState;
   const upgraded = upgradeGameState(old);
-  assert.equal(upgraded.schemaVersion, 36);
+  assert.equal(upgraded.schemaVersion, 37);
   assert.equal(validateNpcNarrativeState(upgraded.npcs.residents[0].narrativeState).ok, true);
 });
 

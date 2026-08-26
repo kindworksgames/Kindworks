@@ -1,11 +1,11 @@
 # Kindworks Phaser save contract
 
-> Current migration status: Milestone 41 uses game-state and envelope schema
-> 36. Schemas 1 through 35 upgrade in order. Schema 36 adds the optional secure
-> commerce and KindlyClub entitlement boundary.
+> Current migration status: Milestone 42 uses game-state and envelope schema
+> 37. Schemas 1 through 36 upgrade in order. Schema 37 adds the complete,
+> auditable legacy-save reconciliation record.
 > Historical foundation notes remain for traceability.
 
-Milestone 3 introduced the protected save foundation alongside the preserved HTML game. Milestone 4 added the shared item catalogue, inventory, KindlyCoin ledger, and atomic economy transactions. Milestone 6 added the first persistent cleanup session, exact-target result, and job reward. Subsequent milestones migrated the remaining shared systems and mini-games; Milestone 37 completes Harbour General ownership, stock management, in-person sales and NPC wardrobe demand. Milestone 38 adds validated, read-only Impact content without changing schema 33. Milestone 39 adds the authored resident and household story layer through schema 34. Milestone 40 adds the first-run and returning-player flow through schema 35. Milestone 41 adds the optional secure commerce domain through schema 36.
+Milestone 3 introduced the protected save foundation alongside the preserved HTML game. Milestone 4 added the shared item catalogue, inventory, KindlyCoin ledger, and atomic economy transactions. Milestone 6 added the first persistent cleanup session, exact-target result, and job reward. Subsequent milestones migrated the remaining shared systems and mini-games; Milestone 37 completes Harbour General ownership, stock management, in-person sales and NPC wardrobe demand. Milestone 38 adds validated, read-only Impact content without changing schema 33. Milestone 39 adds the authored resident and household story layer through schema 34. Milestone 40 adds the first-run and returning-player flow through schema 35. Milestone 41 adds the optional secure commerce domain through schema 36. Milestone 42 reconciles every useful version-82 domain into its final Phaser owner and records the result through schema 37.
 
 ## Storage namespaces
 
@@ -22,14 +22,14 @@ The Phaser build owns only:
 - `kindworks_phaser_v1_backup`
 - `kindworks_phaser_v1_recovery`
 
-## Current Phaser envelope schema 36
+## Current Phaser envelope schema 37
 
 Every current and backup save is a JSON envelope:
 
 ```json
 {
   "format": "kindworks-phaser",
-  "schemaVersion": 36,
+  "schemaVersion": 37,
   "writtenAt": "2026-08-25T00:00:00.000Z",
   "appVersion": "0.1.0",
   "data": {},
@@ -37,7 +37,31 @@ Every current and backup save is a JSON envelope:
 }
 ```
 
-The checksum covers every envelope field except the checksum itself. A save is accepted only when its format, schema, timestamp, checksum, and inner game state all validate. Valid schemas 1 through 35 upgrade to schema 36, and the original verified envelope becomes the Phaser backup before replacement.
+The checksum covers every envelope field except the checksum itself. A save is accepted only when its format, schema, timestamp, checksum, and inner game state all validate. Valid schemas 1 through 36 upgrade to schema 37, and the original verified envelope becomes the Phaser backup before replacement.
+
+## Complete legacy reconciliation schema-37 contract
+
+- Every imported HTML save records its source version, deterministic source
+  fingerprint, reconciliation time, immutable domain-owner map, stable-ID
+  conversions, bounded domain counts, and replay barriers.
+- Stable conversion repairs the original version-12–15 lawn ordering, the
+  temporary `house-19`/`home20` personal-home aliases, missing deterministic
+  furniture/object identities, the old `scoops` key, and the historical
+  `miniGameProgress` shape before projection.
+- Final owners cover coins and inventory, town placements, crops and positioned
+  trees, personal home and furniture, aquarium fish, all animals and pets,
+  eight restorations, Harbour General, homeowner gifts, all resident stories,
+  and every migrated campaign.
+- Completed levels are stored as compact ranges in the reconciliation record
+  while the final campaign states remain authoritative. Homeowner event IDs,
+  restoration event IDs, commerce transactions/periods, starter ownership, and
+  the first-restoration gift prevent each reward from being replayed.
+- Unknown inventory is retained in `inventory.unresolvedLegacy`; the complete
+  original payload remains unchanged in `legacySnapshot`.
+- Fresh games have `legacyReconciliation: null`. Existing schema-36 imported
+  saves derive the record from their preserved snapshot and already-normalized
+  final state without replaying any migration or reward.
+- The complete contract is recorded in `LEGACY_SAVE_RECONCILIATION.md`.
 
 ## Optional commerce schema-36 contract
 
@@ -108,6 +132,7 @@ The checksum covers every envelope field except the checksum itself. A save is a
 | `progress.cleanup` | object | first target available | Active `JobSession`, processed session IDs, bounded history, exact target state, and Waste Collection level progress. |
 | `economy` | object | 100 starter coins | Validated balance, lifetime totals, next transaction ID, and bounded ledger. |
 | `inventory` | object | two starter tools | Four owned-item buckets, equipped tools, and unresolved legacy records. |
+| `legacyReconciliation` | object/null | `null` | Schema-37 audit and duplicate-protection record for imported HTML saves. |
 | `legacySnapshot` | object/null | `null` | Complete read-only copy used by later domain migrations. |
 
 ## Economy and inventory contract
@@ -374,7 +399,7 @@ Missing optional fields produce explicit warnings and safe defaults. Unsupported
 2. Select the first compatible valid candidate.
 3. Show the candidate version to the player.
 4. Create a Phaser copy only after the player presses the import button.
-5. Preserve the complete legacy snapshot in the Phaser state for later staged migration.
+5. Reconcile every known domain into its final Phaser owner and preserve the complete original payload in `legacySnapshot`.
 6. Never remove, rename, overwrite, or repair a legacy key from Phaser.
 7. Validate a Phaser candidate before writing it.
 8. Back up the previous valid Phaser save before replacement.

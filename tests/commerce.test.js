@@ -170,7 +170,7 @@ test("schema-35 saves gain the commerce domain without changing wallet or invent
   delete old.commerce;
   const before = { economy: structuredClone(old.economy), inventory: structuredClone(old.inventory) };
   const upgraded = upgradeGameState(old, { now: NOW });
-  assert.equal(upgraded.schemaVersion, 36);
+  assert.equal(upgraded.schemaVersion, 37);
   assert.deepEqual(upgraded.economy, before.economy);
   assert.deepEqual(upgraded.inventory, before.inventory);
   assert.equal(validateGameState(upgraded).ok, true);

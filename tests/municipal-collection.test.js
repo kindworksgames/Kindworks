@@ -149,7 +149,7 @@ test("legacy collection progress and schema 25 saves migrate without losing prio
   old.economy.coins = 4321;
   old.economy.lifetimeCoinsEarned = 4321;
   const upgraded = upgradeGameState(old, { now: 1000 });
-  assert.equal(upgraded.schemaVersion, 36);
+  assert.equal(upgraded.schemaVersion, 37);
   assert.equal(upgraded.economy.coins, 4321);
   assert.equal(upgraded.municipalCollection.nextServiceDay, 7);
   assert.equal(validateGameState(upgraded).ok, true);

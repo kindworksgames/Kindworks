@@ -50,7 +50,7 @@ test("pins the original four aquarium species, distinct art and 99-per-species c
 test("fresh schema 33 state has a valid empty unowned aquarium", () => {
   const state = createFreshGameState({ now: 0 });
   const aquarium = aquariumSnapshot(state);
-  assert.equal(state.schemaVersion, 36);
+  assert.equal(state.schemaVersion, 37);
   assert.equal(validateGameState(state).ok, true);
   assert.equal(aquarium.owned, false);
   assert.equal(aquarium.placed, false);
@@ -153,7 +153,7 @@ test("schema 29 legacy saves retain housed fish, but safely release fish without
   housed.legacySnapshot = { version: 82, fishing: { totalCasts: 4, totalCaught: 3, caughtByItem: { "reedbank-koi": 3 }, aquariumByItem: { "reedbank-koi": 2 }, releasedByItem: { "reedbank-koi": 1 } }, magnetFishing: {} };
   const originalSnapshot = structuredClone(housed.legacySnapshot);
   const upgradedHoused = upgradeGameState(housed, { now: 1000 });
-  assert.equal(upgradedHoused.schemaVersion, 36);
+  assert.equal(upgradedHoused.schemaVersion, 37);
   assert.equal(upgradedHoused.fishing.aquariumByItem["reedbank-koi"], 2);
   assert.equal(upgradedHoused.fishing.releasedByItem["reedbank-koi"], 1);
   assert.deepEqual(upgradedHoused.legacySnapshot, originalSnapshot);

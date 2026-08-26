@@ -153,6 +153,11 @@ import {
   projectLegacyCommerce,
   validateCommerceState,
 } from "./commerceState.js";
+import {
+  canonicalizeLegacySave,
+  createLegacyReconciliationState,
+  validateLegacyReconciliationState,
+} from "./legacyReconciliationState.js";
 
 const DIRECTIONS = new Set(["up", "down", "left", "right"]);
 
@@ -224,6 +229,7 @@ export function createFreshGameState({ now = Date.now() } = {}) {
     southShoreScoops: createFreshSouthShoreScoopsState(),
     homeownerGifts: createFreshHomeownerGiftState(),
     harbourGeneral: createFreshHarbourGeneralState(),
+    legacyReconciliation: null,
     legacySnapshot: null,
   };
 }
@@ -231,6 +237,9 @@ export function createFreshGameState({ now = Date.now() } = {}) {
 export function createGameStateFromLegacy(legacy, report, { now = Date.now() } = {}) {
   if (!legacy || typeof legacy !== "object") throw new TypeError("A parsed legacy save is required.");
   if (!report?.ok) throw new TypeError("A successful legacy validation report is required.");
+  const originalLegacy = structuredClone(legacy);
+  const canonical = canonicalizeLegacySave(legacy);
+  legacy = canonical.legacy;
   const state = createFreshGameState({ now });
   state.source = {
     kind: "legacy-import",
@@ -284,7 +293,12 @@ export function createGameStateFromLegacy(legacy, report, { now = Date.now() } =
   if (legacyCarrots) state.inventory.consumables["allotment-carrot"] = legacyCarrots;
   if (legacyApples) state.inventory.consumables["orchard-apple"] = legacyApples;
   reconcileAquariumHousingInto(state, { reason: "A placed home fish tank was not available during legacy import", now });
-  state.legacySnapshot = structuredClone(legacy);
+  state.legacyReconciliation = createLegacyReconciliationState(originalLegacy, state, {
+    now,
+    mappings: canonical.mappings,
+    sourceVersion: legacy.version,
+  });
+  state.legacySnapshot = originalLegacy;
   return state;
 }
 
@@ -504,6 +518,17 @@ export function upgradeGameState(value, { now = Date.now() } = {}) {
       : normalizeCommerceState(state.commerce);
     state.schemaVersion = 36;
   }
+  if (state.schemaVersion === 36) {
+    if (state.source?.kind === "legacy-import" && state.legacySnapshot) {
+      const canonical = canonicalizeLegacySave(state.legacySnapshot);
+      state.legacyReconciliation = createLegacyReconciliationState(state.legacySnapshot, state, {
+        now,
+        mappings: canonical.mappings,
+        sourceVersion: state.source.legacyVersion,
+      });
+    } else state.legacyReconciliation = null;
+    state.schemaVersion = 37;
+  }
   return state;
 }
 
@@ -537,6 +562,7 @@ export function validateGameState(value) {
   errors.push(...validateRestorationMilestoneState(value.restorationMilestones).errors);
   errors.push(...validateOnboardingState(value.onboarding, value).errors);
   errors.push(...validateCommerceState(value.commerce).errors);
+  errors.push(...validateLegacyReconciliationState(value.legacyReconciliation, { source: value.source, legacySnapshot: value.legacySnapshot }).errors);
   errors.push(...validateCustomResidentState(value.customResident).errors);
   errors.push(...validateHomeInteriorState(value.homeInteriors).errors);
   errors.push(...validateFarmingState(value.farming, value.world).errors);
