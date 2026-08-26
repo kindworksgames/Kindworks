@@ -7,6 +7,7 @@ import {
   NPC_TOWN_LIFE_CONFIG,
 } from "../data/npcTownLife.js";
 import { NavigationGraph } from "../systems/NavigationGraph.js";
+import { createInitialHarbourWardrobe, HARBOUR_GENERAL_CATALOG, HARBOUR_GENERAL_WARDROBE_KEYS } from "../data/harbourGeneral.js";
 
 export const NPC_STATE_SCHEMA_VERSION = 2;
 const graph = new NavigationGraph(NPC_NAVIGATION_NODES, NPC_NAVIGATION_LINKS);
@@ -66,6 +67,7 @@ function freshResident(definition, index) {
     greetingIcon: null, greetingText: null, greetingUntil: 0,
     reactionIcon: "🌱", reactionText: "Willowmere still needs care", reactionUntil: 0,
     lastActivityFloorAt: 0, activityFloorInterventions: 0,
+    weatherWardrobe: createInitialHarbourWardrobe(definition.id), lastHarbourPurchaseId: null, lastHarbourPurchaseDay: 0,
   };
 }
 
@@ -165,6 +167,9 @@ function normalizeResident(value, definition, index) {
     reactionUntil: bounded(value.reactionUntil, 0, Number.MAX_SAFE_INTEGER, 0),
     lastActivityFloorAt: bounded(value.lastActivityFloorAt, 0, Number.MAX_SAFE_INTEGER, 0),
     activityFloorInterventions: whole(value.activityFloorInterventions),
+    weatherWardrobe: Object.fromEntries(HARBOUR_GENERAL_WARDROBE_KEYS.map((key) => [key, Boolean(value.weatherWardrobe?.[key] ?? fresh.weatherWardrobe[key])])),
+    lastHarbourPurchaseId: HARBOUR_GENERAL_CATALOG[value.lastHarbourPurchaseId] ? value.lastHarbourPurchaseId : null,
+    lastHarbourPurchaseDay: whole(value.lastHarbourPurchaseDay),
   };
 }
 
@@ -250,6 +255,9 @@ export function validateNpcState(value, world = { day: 1, clockMinutes: 0 }) {
     if (!resident.needs || Object.values(resident.needs).some((need) => !Number.isFinite(need) || need < 0 || need > 100)) errors.push(`${resident.id} needs are invalid.`);
     if (!resident.relationships || Object.keys(resident.relationships).length !== NPC_RESIDENTS.length - 1 || Object.values(resident.relationships).some((score) => !Number.isFinite(score) || score < 0 || score > 100)) errors.push(`${resident.id} relationships are invalid.`);
     if (!CARRY_STAGES.has(resident.carryStage) || (resident.carryStage === "none" && resident.carryItem !== null)) errors.push(`${resident.id} carried item is invalid.`);
+    if (!resident.weatherWardrobe || HARBOUR_GENERAL_WARDROBE_KEYS.some((key) => typeof resident.weatherWardrobe[key] !== "boolean")) errors.push(`${resident.id} weather wardrobe is invalid.`);
+    if (resident.lastHarbourPurchaseId !== null && !HARBOUR_GENERAL_CATALOG[resident.lastHarbourPurchaseId]) errors.push(`${resident.id} Harbour General purchase is invalid.`);
+    if (!Number.isInteger(resident.lastHarbourPurchaseDay) || resident.lastHarbourPurchaseDay < 0) errors.push(`${resident.id} Harbour General purchase day is invalid.`);
   }
   if (!Array.isArray(value.publicBins) || value.publicBins.length !== NPC_PUBLIC_BINS.length) errors.push("The five public bins are incomplete.");
   else for (const definition of NPC_PUBLIC_BINS) {

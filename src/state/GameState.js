@@ -135,6 +135,12 @@ import {
   projectLegacyHomeownerGiftState,
   validateHomeownerGiftState,
 } from "./homeownerGiftState.js";
+import {
+  createFreshHarbourGeneralState,
+  normalizeHarbourGeneralState,
+  projectLegacyHarbourGeneral,
+  validateHarbourGeneralState,
+} from "./harbourGeneralState.js";
 
 const DIRECTIONS = new Set(["up", "down", "left", "right"]);
 
@@ -203,6 +209,7 @@ export function createFreshGameState({ now = Date.now() } = {}) {
     riversideKitchen: createFreshRiversideKitchenState(),
     southShoreScoops: createFreshSouthShoreScoopsState(),
     homeownerGifts: createFreshHomeownerGiftState(),
+    harbourGeneral: createFreshHarbourGeneralState(),
     legacySnapshot: null,
   };
 }
@@ -249,6 +256,7 @@ export function createGameStateFromLegacy(legacy, report, { now = Date.now() } =
   state.riversideKitchen = projectLegacyRiversideKitchen(legacy.riversideKitchen);
   state.southShoreScoops = projectLegacySouthShoreScoops(legacy.southShoreScoops ?? legacy.scoops);
   state.homeownerGifts = projectLegacyHomeownerGiftState(legacy, state.inventory);
+  state.harbourGeneral = projectLegacyHarbourGeneral(legacy);
   state.restorationMilestones = projectLegacyRestorationMilestoneState(legacy, state);
   const legacySeeds = legacy.farmingFoundation?.seedInventory || {};
   for (const id of ["carrot-seeds", "fresh-greens-seeds", "wild-berry-starters"]) {
@@ -455,6 +463,13 @@ export function upgradeGameState(value, { now = Date.now() } = {}) {
     );
     state.schemaVersion = 32;
   }
+  if (state.schemaVersion === 32) {
+    state.harbourGeneral = state.source?.kind === "legacy-import"
+      ? projectLegacyHarbourGeneral(state.legacySnapshot)
+      : normalizeHarbourGeneralState(state.harbourGeneral);
+    state.npcs = normalizeNpcState(state.npcs, state.world);
+    state.schemaVersion = 33;
+  }
   return state;
 }
 
@@ -494,6 +509,7 @@ export function validateGameState(value) {
   errors.push(...validateFishingState(value.fishing, value.world).errors);
   errors.push(...validateAquariumHousing(value).errors);
   errors.push(...validateHomeownerGiftState(value.homeownerGifts, value.inventory).errors);
+  errors.push(...validateHarbourGeneralState(value.harbourGeneral).errors);
   errors.push(...validateBakeryState(value.bakery).errors);
   errors.push(...validateCafeState(value.cafe).errors);
   errors.push(...validateRiverState(value.river).errors);

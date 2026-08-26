@@ -50,6 +50,7 @@ body {
 .town-hud,
 .grocer-hud,
 .paws-hud,
+.harbour-hud,
 .touch-controls,
 .zoom-controls,
 .interaction-prompt,
@@ -3736,15 +3737,16 @@ body[data-game-scene="RiverClearoutScene"] .town-hud { display: none; }
 .farming-orchard-actions button:disabled { opacity: .45; cursor: not-allowed; }
 .town-placement-actions button.hidden { display: none; }
 
-.grocer-hud, .paws-hud { top: max(14px,env(safe-area-inset-top)); left: max(14px,env(safe-area-inset-left)); right: max(14px,env(safe-area-inset-right)); z-index: 21; display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 2px solid rgba(255,244,193,.48); border-radius: 18px; background: rgba(35,73,52,.94); color: #fff7d1; box-shadow: 0 12px 34px rgba(9,30,20,.32); pointer-events: auto; }
+.grocer-hud, .paws-hud, .harbour-hud { top: max(14px,env(safe-area-inset-top)); left: max(14px,env(safe-area-inset-left)); right: max(14px,env(safe-area-inset-right)); z-index: 21; display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 2px solid rgba(255,244,193,.48); border-radius: 18px; background: rgba(35,73,52,.94); color: #fff7d1; box-shadow: 0 12px 34px rgba(9,30,20,.32); pointer-events: auto; }
 .paws-hud { background: rgba(48,85,63,.96); }
-.grocer-hud.hidden, .paws-hud.hidden { display: none; }
-.grocer-hud > div, .paws-hud > div { min-width: 0; display: grid; gap: 1px; margin-right: auto; }
-.grocer-hud small, .paws-hud small { color: #cbe0bd; font-size: 9px; font-weight: 850; letter-spacing: .1em; }
-.grocer-hud strong, .paws-hud strong { font-size: 20px; }
-.grocer-hud span, .paws-hud span { color: #e1efd8; font-size: 12px; }
-.grocer-hud > span, .paws-hud > span { flex: 0 0 auto; padding: 8px 11px; border-radius: 999px; background: rgba(255,255,255,.1); color: #fff3b8; font-weight: 850; }
-.grocer-hud button, .paws-hud button { min-height: 40px; padding: 8px 12px; border: 2px solid #f0d176; border-radius: 12px; background: #fff3bd; color: #294637; font-weight: 850; cursor: pointer; }
+.harbour-hud { background: rgba(38,83,80,.96); }
+.grocer-hud.hidden, .paws-hud.hidden, .harbour-hud.hidden { display: none; }
+.grocer-hud > div, .paws-hud > div, .harbour-hud > div { min-width: 0; display: grid; gap: 1px; margin-right: auto; }
+.grocer-hud small, .paws-hud small, .harbour-hud small { color: #cbe0bd; font-size: 9px; font-weight: 850; letter-spacing: .1em; }
+.grocer-hud strong, .paws-hud strong, .harbour-hud strong { font-size: 20px; }
+.grocer-hud span, .paws-hud span, .harbour-hud span { color: #e1efd8; font-size: 12px; }
+.grocer-hud > span, .paws-hud > span, .harbour-hud > span { flex: 0 0 auto; padding: 8px 11px; border-radius: 999px; background: rgba(255,255,255,.1); color: #fff3b8; font-weight: 850; }
+.grocer-hud button, .paws-hud button, .harbour-hud button { min-height: 40px; padding: 8px 12px; border: 2px solid #f0d176; border-radius: 12px; background: #fff3bd; color: #294637; font-weight: 850; cursor: pointer; }
 body[data-game-scene="VillageGrocerScene"] .town-hud,
 body[data-game-scene="VillageGrocerScene"] .zoom-controls,
 body[data-game-scene="VillageGrocerScene"] .world-lighting-overlay,
@@ -3753,13 +3755,29 @@ body[data-game-scene="PawsWondersScene"] .town-hud,
 body[data-game-scene="PawsWondersScene"] .zoom-controls,
 body[data-game-scene="PawsWondersScene"] .world-lighting-overlay,
 body[data-game-scene="PawsWondersScene"] .weather-effects { display: none; }
+body[data-game-scene="HarbourGeneralScene"] .town-hud,
+body[data-game-scene="HarbourGeneralScene"] .zoom-controls,
+body[data-game-scene="HarbourGeneralScene"] .world-lighting-overlay,
+body[data-game-scene="HarbourGeneralScene"] .weather-effects { display: none; }
 
 @media (max-width: 720px) {
   .orchard-tree-grid { grid-template-columns: 1fr; }
-  .grocer-hud, .paws-hud { padding: 8px 10px; }
-  .grocer-hud small, .grocer-hud > div > span, .paws-hud small, .paws-hud > div > span { display: none; }
-  .grocer-hud strong, .paws-hud strong { font-size: 16px; }
-  .grocer-hud button, .paws-hud button { min-height: 36px; padding: 6px 9px; font-size: 11px; }
+  .grocer-hud, .paws-hud, .harbour-hud { padding: 8px 10px; }
+  .grocer-hud small, .grocer-hud > div > span, .paws-hud small, .paws-hud > div > span, .harbour-hud small, .harbour-hud > div > span { display: none; }
+  .grocer-hud strong, .paws-hud strong, .harbour-hud strong { font-size: 16px; }
+  .grocer-hud button, .paws-hud button, .harbour-hud button { min-height: 36px; padding: 6px 9px; font-size: 11px; }
+}
+
+@media (max-width: 720px) and (orientation: portrait) {
+  body[data-game-scene="HarbourGeneralScene"] #game canvas,
+  body[data-game-scene="HarbourGeneralScene"] .harbour-hud,
+  body[data-game-scene="HarbourGeneralScene"] .touch-controls,
+  body[data-game-scene="HarbourGeneralScene"] .interaction-prompt,
+  body[data-game-scene="HarbourGeneralScene"] .control-hint { visibility: hidden; pointer-events: none; }
+  body[data-game-scene="HarbourGeneralScene"] .landscape-required { position: fixed; z-index: 90; inset: 0; display: grid; place-content: center; justify-items: center; gap: 10px; padding: 24px; border: 0; border-radius: 0; color: #294637; background: linear-gradient(155deg, #fff5cf, #b9dfdc); text-align: center; box-shadow: none; }
+  body[data-game-scene="HarbourGeneralScene"] .landscape-required span { font-size: 42px; }
+  body[data-game-scene="HarbourGeneralScene"] .landscape-required h2 { margin: 0; font: 900 24px/1.1 ui-monospace, monospace; }
+  body[data-game-scene="HarbourGeneralScene"] .landscape-required p { max-width: 310px; margin: 0; color: #486b68; font: 800 12px/1.45 system-ui, sans-serif; }
 }
 .lawn-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
 .lawn-card span { font-size: 28px; }

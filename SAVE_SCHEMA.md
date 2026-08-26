@@ -1,12 +1,11 @@
 # Kindworks Phaser save contract
 
-> Current migration status: Milestone 31 uses game-state and envelope schema
-> 28. Schemas 1 through 27 upgrade in order. Schema 28 resolves the personal
-> cottage to its original `house-20` identity and adds the complete home-level,
-> redesign-pricing and legacy-conversion contract described below. Historical
-> foundation notes remain for traceability.
+> Current migration status: Milestone 37 uses game-state and envelope schema
+> 33. Schemas 1 through 32 upgrade in order. Schema 33 adds the complete
+> Harbour General business domain and persistent resident weather wardrobes.
+> Historical foundation notes remain for traceability.
 
-Milestone 3 introduced the protected save foundation alongside the preserved HTML game. Milestone 4 added the shared item catalogue, inventory, KindlyCoin ledger, and atomic economy transactions. Milestone 6 added the first persistent cleanup session, exact-target result, and job reward. Subsequent milestones migrated the remaining shared systems and mini-games; Milestone 31 completes personal-home progression and paid exterior redesigns.
+Milestone 3 introduced the protected save foundation alongside the preserved HTML game. Milestone 4 added the shared item catalogue, inventory, KindlyCoin ledger, and atomic economy transactions. Milestone 6 added the first persistent cleanup session, exact-target result, and job reward. Subsequent milestones migrated the remaining shared systems and mini-games; Milestone 37 completes Harbour General ownership, stock management, in-person sales and NPC wardrobe demand.
 
 ## Storage namespaces
 
@@ -23,14 +22,14 @@ The Phaser build owns only:
 - `kindworks_phaser_v1_backup`
 - `kindworks_phaser_v1_recovery`
 
-## Current Phaser envelope schema 28
+## Current Phaser envelope schema 33
 
 Every current and backup save is a JSON envelope:
 
 ```json
 {
   "format": "kindworks-phaser",
-  "schemaVersion": 28,
+  "schemaVersion": 33,
   "writtenAt": "2026-08-25T00:00:00.000Z",
   "appVersion": "0.1.0",
   "data": {},
@@ -38,7 +37,7 @@ Every current and backup save is a JSON envelope:
 }
 ```
 
-The checksum covers every envelope field except the checksum itself. A save is accepted only when its format, schema, timestamp, checksum, and inner game state all validate. Valid schemas 1 through 27 upgrade to schema 28, and the original verified envelope becomes the Phaser backup before replacement.
+The checksum covers every envelope field except the checksum itself. A save is accepted only when its format, schema, timestamp, checksum, and inner game state all validate. Valid schemas 1 through 32 upgrade to schema 33, and the original verified envelope becomes the Phaser backup before replacement.
 
 ## Historical game-state schema 3 foundation
 

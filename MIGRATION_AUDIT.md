@@ -580,3 +580,37 @@ to town and a clean console. Responsive 844×390 landscape and 390×844 portrait
 checks confirmed no page overflow, a complete playable landscape room and clear
 orientation guidance. The protected HTML SHA-256 remains
 `0b85bd71385b83e7a13676f7593ce376245959fa4ebf1a6b9a0e6765297aa5a5`.
+
+Milestone 37 completes the original Harbour General business. The existing
+`shop-07` building and `biz_takeaway` navigation node now open a walkable
+top-down store run by Amelia. The exact 5,000-coin deed, 07:00–21:00 hours, six
+display slots, four-unit immediate wholesale cases, 24-unit product cap and all
+17 original products, prices and demand values are preserved. The six original
+starter displays each receive four units when the deed is purchased.
+
+The player can select any live display, assign or swap every catalogue item,
+clear a shelf without losing warehouse stock, restock at wholesale and collect
+the complete till. Ownership, balance, lifetime spending, stock, till and ledger
+changes are validated and saved together; any failed write restores the exact
+checkpoint. The business records lifetime gross, stock spend, sales, lost sales,
+per-product totals and the latest eight in-person purchases.
+
+Residents now route to Harbour General when their errand need and schedule make
+them eligible. A 12 percent browse-only chance and exact clear, rain, wind and
+snow demand multipliers choose among displayed stock. Umbrellas, raincoats,
+winter jackets, gloves, scarves and wool hats enter each resident's persistent
+weather wardrobe and are not purchased twice. Successful shoppers leave with a
+visible bag; Harbour General intentionally has no delivery system.
+
+Schema 33 adds the bounded Harbour General domain and normalizes all 35 resident
+wardrobes while preserving schema-32 progress and original legacy snapshots.
+The dedicated Phase 37 contract and QA notes are recorded in
+`HARBOUR_GENERAL_SYSTEM.md`.
+
+All 378 automated tests and the production build pass. Desktop browser QA
+verified the 5,000-coin deed, shop entry, six starter displays, all 17 catalogue
+items, immediate stock changes, saved ownership and stock after reload, and a
+clean console. Responsive 844×390 landscape and 390×844 portrait checks
+confirmed no page overflow, a complete playable store and the required
+orientation guidance. The protected HTML SHA-256 remains
+`0b85bd71385b83e7a13676f7593ce376245959fa4ebf1a6b9a0e6765297aa5a5`.

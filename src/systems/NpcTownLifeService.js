@@ -13,6 +13,7 @@ import { WEATHER_CONFIG } from "../data/worldSimulation.js";
 import { normalizeNpcState, validateNpcState } from "../state/npcState.js";
 import { createBinSpillInto, placeNpcLandLitterInto, removeLandItemsInto, updateEnvironmentMetricsInto } from "./LivingEnvironmentService.js";
 import { NavigationGraph } from "./NavigationGraph.js";
+import { HARBOUR_GENERAL_CONFIG } from "../data/harbourGeneral.js";
 import { restorationFestivalActive } from "../state/restorationMilestoneState.js";
 
 const PHASES = new Set(["sleeping", "home", "commuting", "working", "leisure"]);
@@ -94,10 +95,11 @@ function savedResident(resident) {
 }
 
 export class NpcTownLifeService {
-  constructor(gameState, repository, { now = () => Date.now() } = {}) {
+  constructor(gameState, repository, { now = () => Date.now(), harbourGeneral = null } = {}) {
     this.gameState = gameState;
     this.repository = repository;
     this.now = now;
+    this.harbourGeneral = harbourGeneral;
     this.graph = new NavigationGraph(NPC_NAVIGATION_NODES, NPC_NAVIGATION_LINKS);
     this.definitions = new Map(NPC_RESIDENTS.map((definition) => [definition.id, definition]));
     const snapshot = gameState.getSnapshot();
@@ -336,6 +338,12 @@ export class NpcTownLifeService {
       if (resident.intent === "dispose") this.completeDisposal(state, resident, target);
       this.maybeResolveCarry(state, resident, definition, minutes, target);
       const node = this.graph.getNode(resident.currentNodeId);
+      if (this.harbourGeneral && node?.id === "biz_takeaway" && resident.actionState === "SHOPPING"
+        && target - Number(resident.lastActivityFloorAt || 0) >= HARBOUR_GENERAL_CONFIG.purchaseCooldownGameMinutes) {
+        resident.name = definition.name;
+        this.harbourGeneral.resolveNpcPurchaseInto(state, resident);
+        delete resident.name;
+      }
       if (!resident.carryItem && node && TAKEAWAY_BY_KIND[node.kind] && target - resident.lastActivityFloorAt >= 60
         && hashUnit(`npc-carry:${resident.id}:${Math.floor(target / 60)}`) < 0.34) this.startCarry(resident, node, target);
       this.maybeCommunityCare(state, resident, definition, target);
@@ -420,7 +428,9 @@ export class NpcTownLifeService {
     const currentState = this.gameState.getSnapshot();
     for (const definition of NPC_RESIDENTS) {
       const resident = this.residents.get(definition.id);
-      const schedule = this.effectiveSchedule(resident, getNpcSchedule(definition, day, clockMinutes, currentState));
+      const regular = getNpcSchedule(definition, day, clockMinutes, currentState);
+      const shopping = this.harbourGeneral?.shoppingSchedule?.(currentState, resident) || null;
+      const schedule = this.effectiveSchedule(resident, shopping || regular);
       this.planResident(resident, definition, schedule);
       if (elapsedSeconds > 0 && resident.phase === "commuting") this.moveResident(resident, definition, schedule, definition.speed * weatherSpeed * elapsedSeconds);
     }
@@ -573,6 +583,11 @@ export class NpcTownLifeService {
           green: NPC_SOCIAL_CONFIG.greenTownMultiplier,
           festival: NPC_SOCIAL_CONFIG.festivalMultiplier,
         },
+      },
+      harbourGeneral: {
+        enabled: Boolean(this.harbourGeneral),
+        customersToday: residents.filter((resident) => resident.lastHarbourPurchaseDay === this.gameState.getSnapshot().world.day).length,
+        wardrobeOwners: residents.filter((resident) => Object.values(resident.weatherWardrobe || {}).some(Boolean)).length,
       },
       lastResult: { ...this.lastResult },
     };

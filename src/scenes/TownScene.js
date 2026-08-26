@@ -25,6 +25,7 @@ import { PlayerCharacter } from "../entities/PlayerCharacter.js";
 import { COMMONS_RUBBISH_JOB } from "../data/cleanupJobs.js";
 import { FRESH_MARKET, VILLAGE_GROCER } from "../data/shops.js";
 import { PAWS_WONDERS } from "../data/pawsWonders.js";
+import { HARBOUR_GENERAL } from "../data/harbourGeneral.js";
 import { InteractionSystem } from "../systems/InteractionSystem.js";
 import { MovementController } from "../systems/MovementController.js";
 import { NpcCharacter } from "../entities/NpcCharacter.js";
@@ -113,6 +114,7 @@ export class TownScene extends Phaser.Scene {
     this.municipalCollection = this.registry.get("municipalCollection");
     this.restorationMilestones = this.registry.get("restorationMilestones");
     this.pawsWonders = this.registry.get("pawsWonders");
+    this.harbourGeneral = this.registry.get("harbourGeneral");
     this.restorationMilestoneController = this.registry.get("restorationMilestoneController");
     this.customResident = this.registry.get("customResident");
     this.homeInteriors = this.registry.get("homeInteriors");
@@ -181,6 +183,8 @@ export class TownScene extends Phaser.Scene {
         ? LITTLE_BAKERY.approach
         : qaTarget === "paws"
         ? PAWS_WONDERS.approach
+        : qaTarget === "harbour-general"
+        ? HARBOUR_GENERAL.approach
         : qaTarget === "fresh-market"
         ? FRESH_MARKET.approach
         : qaTarget === "village-grocer"
@@ -318,6 +322,17 @@ export class TownScene extends Phaser.Scene {
           label: `Enter ${PAWS_WONDERS.name}`,
           detail: "Walkable adoption room · eleven permanent companions",
           onActivate: () => this.enterPawsWonders(),
+        },
+        {
+          id: "harbour-general-door",
+          kind: "shop",
+          x: HARBOUR_GENERAL.door.x,
+          y: HARBOUR_GENERAL.door.y,
+          radius: HARBOUR_GENERAL.interactionRadius,
+          icon: HARBOUR_GENERAL.icon,
+          label: this.harbourGeneral?.getSnapshot?.().owned ? `Enter ${HARBOUR_GENERAL.name}` : `Buy ${HARBOUR_GENERAL.name} · 🪙 ${HARBOUR_GENERAL.deedPrice.toLocaleString()}`,
+          detail: this.harbourGeneral?.getSnapshot?.().owned ? "Manage six displays, stock and saved till sales" : "Player-owned convenience shop · includes six starter cases",
+          onActivate: () => this.enterHarbourGeneral(),
         },
         {
           id: "willow-allotments",
@@ -1548,7 +1563,7 @@ export class TownScene extends Phaser.Scene {
     document.body.dataset.gameScene = this.scene.key;
     const badge = document.querySelector(".milestone-badge");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = "TOWN RESTORATION · MILESTONE 30";
+    if (badge) badge.textContent = "TOWN RESTORATION · MILESTONE 37";
     if (hint) hint.textContent = "Walk with arrows or WASD · Care for persistent lawns, streets, shore and all five river reaches";
   }
 
@@ -1783,6 +1798,29 @@ export class TownScene extends Phaser.Scene {
     this.cameras.main.fadeOut(220, 35, 57, 43);
     this.time.delayedCall(240, () => this.scene.start("PawsWondersScene", { returnPosition, returnFacing, focusItemId, transitionCount: Number(this.entryData.transitionCount || 0) + 1 }));
     return { ok: true, targetScene: "PawsWondersScene", focusItemId };
+  }
+
+  enterHarbourGeneral({ slot = 0, itemId = null } = {}) {
+    if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before entering Harbour General." };
+    let purchasedDeed = false;
+    if (!this.harbourGeneral?.getSnapshot?.().owned) {
+      const purchased = this.harbourGeneral?.purchaseDeed?.() || { ok: false, message: "Harbour General is not ready." };
+      if (!purchased.ok) return { ...purchased, reason: purchased.message };
+      purchasedDeed = true;
+      this.interactions.current = null;
+    }
+    this.transitioning = true;
+    this.movement.setEnabled(false);
+    this.interactions.setEnabled(false);
+    this.player.setMovement(0, 0, false);
+    const returnPosition = this.activePosition();
+    const returnFacing = this.player.direction;
+    this.gameState?.updatePlayer({ scene: "HarbourGeneralScene", x: returnPosition.x, y: returnPosition.y, facing: returnFacing });
+    document.querySelector("#game")?.setAttribute("data-transition", "entering-harbour-general");
+    this.cameras.main.fadeOut(220, 28, 64, 63);
+    this.time.delayedCall(240, () => this.scene.start("HarbourGeneralScene", { returnPosition, returnFacing, slot, itemId, transitionCount: Number(this.entryData.transitionCount || 0) + 1 }));
+    return { ok: true, targetScene: "HarbourGeneralScene", purchased: purchasedDeed };
   }
 
   openFarming(tab, targetId = null) {
@@ -2158,6 +2196,10 @@ export class TownScene extends Phaser.Scene {
       gameElement.dataset.townPlacementCount = String(placement?.placed || 0);
       gameElement.dataset.townPlacementActive = String(Boolean(placement?.active));
       gameElement.dataset.townPlacementValid = String(Boolean(placement?.valid));
+      const harbour = this.harbourGeneral?.getDiagnostics?.();
+      gameElement.dataset.harbourOwned = String(Boolean(harbour?.owned));
+      gameElement.dataset.harbourTill = String(harbour?.tillCoins || 0);
+      gameElement.dataset.harbourSales = String(harbour?.lifetimeSales || 0);
     }
   }
 
@@ -2177,11 +2219,13 @@ export class TownScene extends Phaser.Scene {
       milestone28Systems: ["35-resident-needs", "symmetric-relationships", "resident-conversations", "business-takeaway-carrying", "public-and-player-bin-decisions", "causal-persistent-littering", "bounded-bin-tipping", "community-cleanup", "resident-lawn-care", "contextual-greetings", "restoration-reactions", "five-original-public-bins", "legacy-advanced-npc-import"],
       milestone23Systems: ["south-shore-scoops-scene-transition", "750-deterministic-shifts", "sequential-picture-orders", "60-percent-pass-rule", "ingredient-and-product-unlocks", "first-clear-rewards", "south-shore-restoration", "exact-save-resume", "legacy-progress-import", "landscape-controls"],
       milestone36Systems: ["stable-shop-11-identity", "walkable-top-down-adoption-room", "eleven-physical-enclosures", "six-distinct-dog-breeds", "four-unusual-companions", "three-restoration-mystery-egg", "one-time-permanent-coin-adoptions", "active-follower-preservation", "south-meadow-resting", "unlimited-companion-family", "atomic-adoption-save"],
+      milestone37Systems: ["5000-coin-player-owned-business", "walkable-harbour-general", "six-unique-display-slots", "four-item-immediate-cases", "24-per-product-stock-cap", "17-original-products", "weather-dependent-demand", "persistent-npc-weather-wardrobes", "in-person-npc-sales", "till-and-lifetime-statistics", "atomic-deed-restock-and-till-save", "legacy-business-import"],
       migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "cafe-scene-transition", "morning-mug-scene-transition", "riverside-kitchen-scene-transition", "river-clearout-scene-transition", "house-rescue-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job", "weekly-municipal-bin-collection", "world-time-weather-lighting", "basic-npc-town-life", "advanced-npc-social-life", "resident-public-bin-behaviour", "custom-resident-profile-home-control", "personal-home-four-level-progression", "personal-home-paid-redesign", "personal-home-stable-house-20-identity", "weather-aware-farming", "orchard-harvest", "persistent-lawn-jobs", "animal-habitat-routes", "animal-friendship-feeding", "animal-adoption", "active-companion-following", "south-meadow", "three-fishing-spots", "hidden-zone-fishing", "timed-reeling", "magnet-fishing", "fishing-inventory-rewards", "magnet-coin-rewards", "bakery-recipes", "bakery-customer-service", "bakery-first-clear-rewards", "bakery-level-unlocks", "shared-recipe-order-engine", "corner-cafe-recipes", "cafe-three-tray-service", "cafe-first-clear-rewards", "cafe-level-unlocks", "morning-mug-54-recipes", "morning-mug-150-levels", "morning-mug-first-clear-rewards", "morning-mug-save-resume", "morning-mug-landscape-controls", "riverside-kitchen-32-recipes", "riverside-kitchen-150-levels", "riverside-kitchen-preparation-heat-plating", "riverside-kitchen-first-clear-rewards", "riverside-kitchen-save-resume", "riverside-kitchen-landscape-controls", "river-750-level-catalogue", "river-falling-piece-engine", "river-first-clear-rewards", "river-portrait-controls", "house-rescue-750-level-catalogue", "house-rescue-sort-and-vacuum", "house-rescue-persistent-home-jobs", "house-rescue-landscape-controls", "waste-750-authored-boards", "waste-five-slot-triple-matching", "waste-certified-solutions", "waste-first-clear-rewards", "waste-landscape-controls", "lawn-750-authored-levels", "lawn-slide-mower-engine", "lawn-persistent-campaign", "lawn-town-job-effects", "lawn-first-clear-rewards", "lawn-landscape-controls", "beach-750-deterministic-levels", "beach-rake-and-rubbish-engine", "beach-native-town-rewards", "beach-first-clear-rewards", "south-shore-litter-restoration", "beach-landscape-controls", "powerwash-750-deterministic-levels", "powerwash-soap-resistant-stains", "powerwash-three-nozzles", "powerwash-97-percent-tolerance", "powerwash-native-town-rewards", "powerwash-first-clear-rewards", "commons-playground-restoration", "powerwash-landscape-controls"],
       npcTownLife: this.npcTownLife?.getDiagnostics?.(),
       municipalCollection: this.municipalCollection?.getDiagnostics?.(),
       restorationMilestones: this.restorationMilestones?.getDiagnostics?.(),
       pawsWonders: this.pawsWonders?.getDiagnostics?.(),
+      harbourGeneral: this.harbourGeneral?.getDiagnostics?.(),
       customResident: this.customResident?.getDiagnostics?.(),
       farming: this.farming?.getDiagnostics?.(),
       livingEnvironment: this.livingEnvironment?.getDiagnostics?.(),

@@ -17,6 +17,7 @@ import { PlaygroundPowerwashScene } from "./scenes/PlaygroundPowerwashScene.js";
 import { FishingScene } from "./scenes/FishingScene.js";
 import { VillageGrocerScene } from "./scenes/VillageGrocerScene.js";
 import { PawsWondersScene } from "./scenes/PawsWondersScene.js";
+import { HarbourGeneralScene } from "./scenes/HarbourGeneralScene.js";
 import { bootstrapState } from "./state/bootstrapState.js";
 import { GAME_STATE_SCHEMA_VERSION } from "./state/constants.js";
 import { EconomyService } from "./systems/EconomyService.js";
@@ -46,6 +47,7 @@ import { TownPlacementService } from "./systems/TownPlacementService.js";
 import { RestorationMilestoneService } from "./systems/RestorationMilestoneService.js";
 import { HomeownerGiftService } from "./systems/HomeownerGiftService.js";
 import { PawsWondersService } from "./systems/PawsWondersService.js";
+import { HarbourGeneralService } from "./systems/HarbourGeneralService.js";
 import { EconomyHudController } from "./ui/EconomyHudController.js";
 import { SaveStatusController } from "./ui/SaveStatusController.js";
 import { ShopController } from "./ui/ShopController.js";
@@ -65,7 +67,8 @@ const livingEnvironment = new LivingEnvironmentService(stateRuntime.gameState, s
 worldSimulation.addStateAdvancer((state) => farming.resolveInto(state));
 worldSimulation.addStateAdvancer((state) => livingEnvironment.advanceInto(state));
 const offlineResolution = worldSimulation.resolveOffline();
-const npcTownLife = new NpcTownLifeService(stateRuntime.gameState, stateRuntime.repository);
+const harbourGeneral = new HarbourGeneralService(stateRuntime.gameState, stateRuntime.repository);
+const npcTownLife = new NpcTownLifeService(stateRuntime.gameState, stateRuntime.repository, { harbourGeneral });
 const municipalCollection = new MunicipalCollectionService(stateRuntime.gameState, stateRuntime.repository);
 const customResident = new CustomResidentService(stateRuntime.gameState, stateRuntime.repository);
 const aquarium = new AquariumService(stateRuntime.gameState, stateRuntime.repository);
@@ -105,7 +108,7 @@ const config = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene, TownScene, HouseInteriorScene, VillageGrocerScene, PawsWondersScene, BakeryScene, CafeScene, MorningMugScene, RiversideKitchenScene, SouthShoreScoopsScene, RiverClearoutScene, HouseRescueScene, WasteCollectionScene, LawnCareScene, BeachCleanupScene, PlaygroundPowerwashScene, FishingScene],
+  scene: [BootScene, TownScene, HouseInteriorScene, VillageGrocerScene, PawsWondersScene, HarbourGeneralScene, BakeryScene, CafeScene, MorningMugScene, RiversideKitchenScene, SouthShoreScoopsScene, RiverClearoutScene, HouseRescueScene, WasteCollectionScene, LawnCareScene, BeachCleanupScene, PlaygroundPowerwashScene, FishingScene],
 };
 
 const game = new Phaser.Game(config);
@@ -134,6 +137,7 @@ game.registry.set("playgroundPowerwash", playgroundPowerwash);
 game.registry.set("townPlacement", townPlacement);
 game.registry.set("restorationMilestones", restorationMilestones);
 game.registry.set("pawsWonders", pawsWonders);
+game.registry.set("harbourGeneral", harbourGeneral);
 game.registry.set("homeownerGifts", homeownerGifts);
 const economy = new EconomyService(stateRuntime.gameState, stateRuntime.repository);
 game.registry.set("economy", economy);
@@ -141,6 +145,10 @@ if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa")
   restorationMilestones.unlockForQa("highstreet", { revealed: true });
   const balance = stateRuntime.gameState.getSnapshot().economy.coins;
   if (balance < 10_000) economy.credit(10_000 - balance, { kind: "development-fixture", reason: "Milestone 36 Paws & Wonders visual QA" });
+}
+if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "harbour-general") {
+  const state = stateRuntime.gameState.getSnapshot();
+  if (state.economy.coins < 20_000) economy.credit(20_000 - state.economy.coins, { kind: "development-fixture", reason: "Milestone 37 Harbour General visual QA" });
 }
 if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "aquarium") {
   if (!customResident.getSnapshot().created) {
@@ -388,6 +396,30 @@ window.__KINDWORKS_PHASER__ = {
   },
   getPawsWondersState() {
     return pawsWonders.getCatalogue();
+  },
+  getHarbourGeneralDiagnostics() {
+    return harbourGeneral.getDiagnostics();
+  },
+  getHarbourGeneralState() {
+    return harbourGeneral.getCatalogue();
+  },
+  qaPurchaseHarbourGeneral() {
+    if (!import.meta.env.DEV) return { ok: false, message: "Visual QA helpers are available only in development." };
+    return harbourGeneral.purchaseDeed();
+  },
+  qaHarbourNpcPurchase(npcId = "npc-01") {
+    if (!import.meta.env.DEV) return { ok: false, message: "Visual QA helpers are available only in development." };
+    const state = stateRuntime.gameState.getSnapshot();
+    const resident = state.npcs.residents.find((entry) => entry.id === npcId) || state.npcs.residents[0];
+    resident.name = npcTownLife.getResidents().find((entry) => entry.id === resident.id)?.name || resident.id;
+    const result = harbourGeneral.resolveNpcPurchaseInto(state, resident, { random: () => 0 });
+    delete resident.name;
+    if (!result.ok) return result;
+    state.updatedAt = new Date().toISOString();
+    const replaced = stateRuntime.gameState.replace(state);
+    if (!replaced.ok) return replaced;
+    const saved = stateRuntime.repository.save(state);
+    return saved.ok ? result : saved;
   },
   qaAdoptPawsCompanion(itemId = "pet-labrador") {
     if (!import.meta.env.DEV) return { ok: false, message: "Visual QA helpers are available only in development." };
