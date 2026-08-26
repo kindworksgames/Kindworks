@@ -482,6 +482,15 @@ export class NpcTownLifeService {
     return NPC_RESIDENTS.map((definition) => ({ ...definition, ...savedResident(this.residents.get(definition.id)) }));
   }
 
+  setNarrativeState(residentId, narrativeState) {
+    const resident = this.residents.get(residentId);
+    if (!resident || !narrativeState) return false;
+    resident.narrativeState = structuredClone(narrativeState);
+    const saved = this.npcState.residents.find((entry) => entry.id === residentId);
+    if (saved) saved.narrativeState = structuredClone(narrativeState);
+    return true;
+  }
+
   getPublicBins() {
     return NPC_PUBLIC_BINS.map((definition) => ({ ...definition, ...structuredClone(this.npcState.publicBins.find((bin) => bin.id === definition.id)) }));
   }

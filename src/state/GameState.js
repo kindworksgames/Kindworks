@@ -470,6 +470,12 @@ export function upgradeGameState(value, { now = Date.now() } = {}) {
     state.npcs = normalizeNpcState(state.npcs, state.world);
     state.schemaVersion = 33;
   }
+  if (state.schemaVersion === 33) {
+    state.npcs = state.source?.kind === "legacy-import"
+      ? projectLegacyNpcState(state.legacySnapshot, state.world)
+      : normalizeNpcState(state.npcs, state.world);
+    state.schemaVersion = 34;
+  }
   return state;
 }
 

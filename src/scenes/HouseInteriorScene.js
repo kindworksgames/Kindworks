@@ -38,6 +38,7 @@ export class HouseInteriorScene extends Phaser.Scene {
     this.houseRescue = this.registry.get("houseRescue");
     this.worldSimulation = this.registry.get("worldSimulation");
     this.npcTownLife = this.registry.get("npcTownLife");
+    this.npcNarrativeController = this.registry.get("npcNarrativeController");
     this.worldSimulation?.setPaused("activity", true);
     this.npcTownLife?.setPaused("activity", true);
     const entered = this.homeInteriors.enter(this.houseId);
@@ -320,6 +321,7 @@ export class HouseInteriorScene extends Phaser.Scene {
     text("#home-interior-readout-detail", result.target.detail);
     this.setStatus(`${result.target.label} inspected and saved.`, "success");
     this.render();
+    if (result.target.kind === "resident") this.npcNarrativeController?.open?.(result.target.id, { selectThought: true });
     return result;
   }
 

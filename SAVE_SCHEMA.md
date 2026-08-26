@@ -1,11 +1,11 @@
 # Kindworks Phaser save contract
 
-> Current migration status: Milestone 38 uses game-state and envelope schema
-> 33. Schemas 1 through 32 upgrade in order. Schema 33 adds the complete
-> Harbour General business domain and persistent resident weather wardrobes.
+> Current migration status: Milestone 39 uses game-state and envelope schema
+> 34. Schemas 1 through 33 upgrade in order. Schema 34 adds persistent authored
+> NPC chapters, contextual-thought history, evidence gates, and home stories.
 > Historical foundation notes remain for traceability.
 
-Milestone 3 introduced the protected save foundation alongside the preserved HTML game. Milestone 4 added the shared item catalogue, inventory, KindlyCoin ledger, and atomic economy transactions. Milestone 6 added the first persistent cleanup session, exact-target result, and job reward. Subsequent milestones migrated the remaining shared systems and mini-games; Milestone 37 completes Harbour General ownership, stock management, in-person sales and NPC wardrobe demand. Milestone 38 adds validated, read-only Impact project content and reuses the existing persisted Station restoration unlock for cinema access, so it intentionally leaves schema 33 unchanged.
+Milestone 3 introduced the protected save foundation alongside the preserved HTML game. Milestone 4 added the shared item catalogue, inventory, KindlyCoin ledger, and atomic economy transactions. Milestone 6 added the first persistent cleanup session, exact-target result, and job reward. Subsequent milestones migrated the remaining shared systems and mini-games; Milestone 37 completes Harbour General ownership, stock management, in-person sales and NPC wardrobe demand. Milestone 38 adds validated, read-only Impact content without changing schema 33. Milestone 39 adds the authored resident and household story layer through schema 34.
 
 ## Storage namespaces
 
@@ -22,14 +22,14 @@ The Phaser build owns only:
 - `kindworks_phaser_v1_backup`
 - `kindworks_phaser_v1_recovery`
 
-## Current Phaser envelope schema 33
+## Current Phaser envelope schema 34
 
 Every current and backup save is a JSON envelope:
 
 ```json
 {
   "format": "kindworks-phaser",
-  "schemaVersion": 33,
+  "schemaVersion": 34,
   "writtenAt": "2026-08-25T00:00:00.000Z",
   "appVersion": "0.1.0",
   "data": {},
@@ -37,7 +37,19 @@ Every current and backup save is a JSON envelope:
 }
 ```
 
-The checksum covers every envelope field except the checksum itself. A save is accepted only when its format, schema, timestamp, checksum, and inner game state all validate. Valid schemas 1 through 32 upgrade to schema 33, and the original verified envelope becomes the Phaser backup before replacement.
+The checksum covers every envelope field except the checksum itself. A save is accepted only when its format, schema, timestamp, checksum, and inner game state all validate. Valid schemas 1 through 33 upgrade to schema 34, and the original verified envelope becomes the Phaser backup before replacement.
+
+## NPC narrative schema-34 contract
+
+- Every one of the 35 stable resident records owns a schema-3 `narrativeState`.
+- `storyStage` is bounded from 0 through 3 and corresponds to Introduction, Opening, Growth, and Resolution.
+- `selectionCount` and the latest 12 unique `selectedDays` retain deliberate conversation evidence without unbounded growth.
+- `stageHistory` contains exactly one ordered record for every unlocked post-introduction chapter, with its game day, trigger, and explanation.
+- `recentThoughtIds` retains the latest six choices; `seenBeatIds` retains at most 64 story beats.
+- The latest thought stores its stable id, bounded text, category, source, and the context that produced it.
+- Chapter gates depend on multi-day conversations, completed resident activities, shared town jobs, relationship scores, and persisted restoration milestones.
+- Legacy version-82 `npcNarratives` data projects by stable NPC id. Missing narrative data receives a fresh safe state, and the legacy snapshot is never rewritten.
+- A failed narrative save restores the full pre-conversation game-state checkpoint and the NPC simulation's in-memory record.
 
 ## Historical game-state schema 3 foundation
 

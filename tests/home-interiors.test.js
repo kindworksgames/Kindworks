@@ -203,7 +203,7 @@ test("upgrades schema 28 through schema 33 and projects legacy furniture without
   old.schemaVersion = 28;
   delete old.homeInteriors;
   const upgraded = upgradeGameState(old, { now: 1000 });
-  assert.equal(upgraded.schemaVersion, 33);
+  assert.equal(upgraded.schemaVersion, 34);
   assert.deepEqual(upgraded.homeInteriors.placements, []);
   assert.equal(validateGameState(upgraded).ok, true);
   const legacy = createFreshGameState({ now: 0 });

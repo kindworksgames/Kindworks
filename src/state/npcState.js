@@ -8,8 +8,9 @@ import {
 } from "../data/npcTownLife.js";
 import { NavigationGraph } from "../systems/NavigationGraph.js";
 import { createInitialHarbourWardrobe, HARBOUR_GENERAL_CATALOG, HARBOUR_GENERAL_WARDROBE_KEYS } from "../data/harbourGeneral.js";
+import { createFreshNpcNarrativeState, normalizeNpcNarrativeState, validateNpcNarrativeState } from "./npcNarrativeState.js";
 
-export const NPC_STATE_SCHEMA_VERSION = 2;
+export const NPC_STATE_SCHEMA_VERSION = 3;
 const graph = new NavigationGraph(NPC_NAVIGATION_NODES, NPC_NAVIGATION_LINKS);
 const residentDefinitions = new Map(NPC_RESIDENTS.map((resident) => [resident.id, resident]));
 const ACTIONS = new Set(NPC_ACTIONS);
@@ -68,6 +69,7 @@ function freshResident(definition, index) {
     reactionIcon: "🌱", reactionText: "Willowmere still needs care", reactionUntil: 0,
     lastActivityFloorAt: 0, activityFloorInterventions: 0,
     weatherWardrobe: createInitialHarbourWardrobe(definition.id), lastHarbourPurchaseId: null, lastHarbourPurchaseDay: 0,
+    narrativeState: createFreshNpcNarrativeState(),
   };
 }
 
@@ -170,6 +172,7 @@ function normalizeResident(value, definition, index) {
     weatherWardrobe: Object.fromEntries(HARBOUR_GENERAL_WARDROBE_KEYS.map((key) => [key, Boolean(value.weatherWardrobe?.[key] ?? fresh.weatherWardrobe[key])])),
     lastHarbourPurchaseId: HARBOUR_GENERAL_CATALOG[value.lastHarbourPurchaseId] ? value.lastHarbourPurchaseId : null,
     lastHarbourPurchaseDay: whole(value.lastHarbourPurchaseDay),
+    narrativeState: normalizeNpcNarrativeState(value.narrativeState),
   };
 }
 
@@ -218,11 +221,12 @@ export function projectLegacyNpcState(legacy, world = { day: 1, clockMinutes: 0 
   const runtime = legacy.socialRestorationRuntime || {};
   return normalizeNpcState({
     ...fresh,
-    residents: Array.isArray(legacy.npcs) ? legacy.npcs.map((resident) => ({
+    residents: Array.isArray(legacy.npcs) && legacy.npcs.length ? legacy.npcs.map((resident) => ({
       ...resident,
       phase: resident.phase || (resident.actionState === "SLEEPING" ? "sleeping" : resident.actionState === "WORKING" ? "working" : resident.actionState === "WALKING" ? "commuting" : "leisure"),
       actionState: resident.actionState || resident.state,
-    })) : fresh.residents,
+      narrativeState: legacy.npcNarratives?.[resident.id] || resident.narrativeState,
+    })) : fresh.residents.map((resident) => ({ ...resident, narrativeState: legacy.npcNarratives?.[resident.id] || resident.narrativeState })),
     publicBins: Array.isArray(runtime.publicBins) ? runtime.publicBins : fresh.publicBins,
     socialRuntime: runtime,
   }, world);
@@ -258,6 +262,7 @@ export function validateNpcState(value, world = { day: 1, clockMinutes: 0 }) {
     if (!resident.weatherWardrobe || HARBOUR_GENERAL_WARDROBE_KEYS.some((key) => typeof resident.weatherWardrobe[key] !== "boolean")) errors.push(`${resident.id} weather wardrobe is invalid.`);
     if (resident.lastHarbourPurchaseId !== null && !HARBOUR_GENERAL_CATALOG[resident.lastHarbourPurchaseId]) errors.push(`${resident.id} Harbour General purchase is invalid.`);
     if (!Number.isInteger(resident.lastHarbourPurchaseDay) || resident.lastHarbourPurchaseDay < 0) errors.push(`${resident.id} Harbour General purchase day is invalid.`);
+    errors.push(...validateNpcNarrativeState(resident.narrativeState).errors.map((error) => `${resident.id}: ${error}`));
   }
   if (!Array.isArray(value.publicBins) || value.publicBins.length !== NPC_PUBLIC_BINS.length) errors.push("The five public bins are incomplete.");
   else for (const definition of NPC_PUBLIC_BINS) {

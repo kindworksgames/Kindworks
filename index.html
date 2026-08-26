@@ -25,8 +25,9 @@
           <button id="custom-resident-button" class="economy-hud-button resident-hud-button" type="button" aria-label="Create your personal resident">💚 Create resident</button>
           <button id="animal-friends-button" class="economy-hud-button animal-hud-button" type="button" aria-label="Open Animal Friends">🐾 Animal Friends</button>
           <button id="impact-button" class="economy-hud-button impact-hud-button" type="button" aria-label="Open KindWorks Impact">❤️ Impact</button>
+          <button id="npc-stories-button" class="economy-hud-button npc-stories-hud-button" type="button" aria-label="Open Willowmere resident stories">📖 Stories</button>
           <button id="save-status-button" class="save-status-button" type="button" data-status="new">Save not started</button>
-          <div class="milestone-badge">PHASER TOWN · MILESTONE 38</div>
+          <div class="milestone-badge">PHASER TOWN · MILESTONE 39</div>
         </div>
       </section>
       <div id="impact-panel" class="impact-panel hidden" role="dialog" aria-modal="true" aria-labelledby="impact-title" aria-hidden="true">
@@ -65,6 +66,30 @@
           </div>
         </section>
       </div>
+      <section id="npc-story-panel" class="npc-story-panel hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="npc-story-name">
+        <div class="npc-story-card">
+          <header class="npc-story-header">
+            <div id="npc-story-portrait" class="npc-story-portrait" aria-hidden="true">📖</div>
+            <div><p>MILESTONE 39 · WILLOWMERE STORIES</p><h2 id="npc-story-name">Resident story</h2><span id="npc-story-identity">Willowmere resident</span></div>
+            <button id="npc-story-close" type="button" aria-label="Close resident stories">✕</button>
+          </header>
+          <div class="npc-story-layout">
+            <aside id="npc-story-list" class="npc-story-list" aria-label="Willowmere residents"></aside>
+            <article class="npc-story-detail">
+              <section class="npc-story-chapter"><strong id="npc-story-stage">CHAPTER 1 OF 4 · INTRODUCTION</strong><p id="npc-story-summary"></p><span id="npc-story-traits"></span></section>
+              <blockquote class="npc-story-thought"><small id="npc-story-thought-kind">No thought shared yet</small><p id="npc-story-thought-text"></p><button id="npc-story-thought" type="button">Talk with this resident</button></blockquote>
+              <div class="npc-story-columns">
+                <section><h3>What matters to them</h3><dl><dt>Hope</dt><dd id="npc-story-ambition"></dd><dt>Concern</dt><dd id="npc-story-concern"></dd></dl></section>
+                <section><h3 id="npc-story-home-name">Their home</h3><p id="npc-story-home-description"></p></section>
+              </div>
+              <section><h3>Chapter path</h3><ol id="npc-story-history" class="npc-story-history"></ol></section>
+              <section><h3>Next chapter evidence</h3><ul id="npc-story-progress" class="npc-story-progress"></ul></section>
+              <section><h3>Trusted neighbours</h3><ul id="npc-story-bonds" class="npc-story-bonds"></ul></section>
+              <p id="npc-story-status" class="npc-story-status" data-status="neutral" aria-live="polite">Thoughts and chapters save only after a deliberate conversation.</p>
+            </article>
+          </div>
+        </div>
+      </section>
       <section id="grocer-hud" class="grocer-hud hidden" aria-label="Village Grocer information">
         <div><small>MILESTONE 26 · TOP-DOWN INTERIOR</small><strong>🥕 Village Grocer</strong><span>Walk to a shelf or tap a product row</span></div>
         <span id="grocer-balance">🪙 100</span>

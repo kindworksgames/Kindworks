@@ -113,6 +113,7 @@ export class TownScene extends Phaser.Scene {
     this.playgroundPowerwash?.refresh?.();
     this.worldSimulation = this.registry.get("worldSimulation");
     this.npcTownLife = this.registry.get("npcTownLife");
+    this.npcNarrativeController = this.registry.get("npcNarrativeController");
     this.municipalCollection = this.registry.get("municipalCollection");
     this.restorationMilestones = this.registry.get("restorationMilestones");
     this.impactController = this.registry.get("impactController");
@@ -369,6 +370,23 @@ export class TownScene extends Phaser.Scene {
           onActivate: () => this.openFarming("orchard"),
         },
     ];
+    this.npcInteractables = new Map();
+    for (const resident of this.npcTownLife?.getResidents?.() || []) {
+      const interaction = {
+        id: `story-${resident.id}`,
+        kind: "npc-story",
+        x: resident.x,
+        y: resident.y,
+        radius: 78,
+        enabled: resident.visible,
+        icon: "💬",
+        label: `Talk with ${resident.name}`,
+        detail: `${resident.role} · hear a saved contextual thought`,
+        onActivate: () => this.npcNarrativeController?.open?.(resident.id, { selectThought: true }),
+      };
+      this.npcInteractables.set(resident.id, interaction);
+      interactables.push(interaction);
+    }
     for (const house of HOUSES) {
       const interior = this.homeInteriors?.getInterior?.(house.id);
       interactables.push({
@@ -1585,7 +1603,7 @@ export class TownScene extends Phaser.Scene {
     document.body.dataset.gameScene = this.scene.key;
     const badge = document.querySelector(".milestone-badge");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = "IMPACT & CINEMA · MILESTONE 38";
+    if (badge) badge.textContent = "RESIDENT STORIES · MILESTONE 39";
     if (hint) hint.textContent = "Walk with arrows or WASD · Restore the Station to reopen KindWorks Cinema";
   }
 
@@ -2060,6 +2078,13 @@ export class TownScene extends Phaser.Scene {
     for (const resident of residents) {
       const nearby = Math.hypot(resident.x - activePosition.x, resident.y - activePosition.y) <= 92;
       this.npcCharacters.get(resident.id)?.applyResident(resident, delta, nearby);
+      const interaction = this.npcInteractables?.get(resident.id);
+      if (interaction) {
+        interaction.x = resident.x;
+        interaction.y = resident.y;
+        interaction.enabled = resident.visible;
+        interaction.detail = `${resident.role} · ${resident.activity}`;
+      }
     }
     const { dx, dy, sprinting } = this.movement.getVector();
     const speed = sprinting ? SPRINT_SPEED : WALK_SPEED;

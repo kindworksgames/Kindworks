@@ -49,6 +49,7 @@ import { HomeownerGiftService } from "./systems/HomeownerGiftService.js";
 import { PawsWondersService } from "./systems/PawsWondersService.js";
 import { HarbourGeneralService } from "./systems/HarbourGeneralService.js";
 import { ImpactProjectService } from "./systems/ImpactProjectService.js";
+import { NpcNarrativeService } from "./systems/NpcNarrativeService.js";
 import { EconomyHudController } from "./ui/EconomyHudController.js";
 import { SaveStatusController } from "./ui/SaveStatusController.js";
 import { ShopController } from "./ui/ShopController.js";
@@ -59,6 +60,7 @@ import { AnimalFriendsController } from "./ui/AnimalFriendsController.js";
 import { RestorationMilestoneController } from "./ui/RestorationMilestoneController.js";
 import { HomeownerGiftController } from "./ui/HomeownerGiftController.js";
 import { ImpactController } from "./ui/ImpactController.js";
+import { NpcNarrativeController } from "./ui/NpcNarrativeController.js";
 import { ITEM_IDS } from "./data/items.js";
 import { findSafeFurniturePlacement } from "./data/homeInteriors.js";
 
@@ -71,6 +73,7 @@ worldSimulation.addStateAdvancer((state) => livingEnvironment.advanceInto(state)
 const offlineResolution = worldSimulation.resolveOffline();
 const harbourGeneral = new HarbourGeneralService(stateRuntime.gameState, stateRuntime.repository);
 const npcTownLife = new NpcTownLifeService(stateRuntime.gameState, stateRuntime.repository, { harbourGeneral });
+const npcNarratives = new NpcNarrativeService(stateRuntime.gameState, stateRuntime.repository, { npcTownLife });
 const municipalCollection = new MunicipalCollectionService(stateRuntime.gameState, stateRuntime.repository);
 const customResident = new CustomResidentService(stateRuntime.gameState, stateRuntime.repository);
 const aquarium = new AquariumService(stateRuntime.gameState, stateRuntime.repository);
@@ -119,6 +122,7 @@ game.registry.set("gameState", stateRuntime.gameState);
 game.registry.set("saveRepository", stateRuntime.repository);
 game.registry.set("worldSimulation", worldSimulation);
 game.registry.set("npcTownLife", npcTownLife);
+game.registry.set("npcNarratives", npcNarratives);
 game.registry.set("municipalCollection", municipalCollection);
 game.registry.set("customResident", customResident);
 game.registry.set("homeInteriors", homeInteriors);
@@ -271,6 +275,13 @@ const impactController = new ImpactController(impactProjects, {
   },
 });
 game.registry.set("impactController", impactController);
+const npcNarrativeController = new NpcNarrativeController(npcNarratives, {
+  onModalChange(open) {
+    setModalOpen("npc-stories", open);
+  },
+});
+game.registry.set("npcNarrativeController", npcNarrativeController);
+if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "narrative") setTimeout(() => npcNarrativeController.open("npc-01"), 420);
 setTimeout(() => homeownerGiftController.maybeOpen(), 520);
 const saveStatus = new SaveStatusController(stateRuntime, {
   onModalChange(open) {
@@ -495,7 +506,20 @@ window.__KINDWORKS_PHASER__ = {
     };
   },
   getNpcDiagnostics() {
-    return npcTownLife.getDiagnostics();
+    return { ...npcTownLife.getDiagnostics(), narratives: npcNarratives.getDiagnostics(), storyInterface: npcNarrativeController.getDiagnostics() };
+  },
+  getNpcStory(id = "npc-01") {
+    return npcNarratives.getStory(id);
+  },
+  getNpcNarrativeDiagnostics() {
+    return { ...npcNarratives.getDiagnostics(), interface: npcNarrativeController.getDiagnostics() };
+  },
+  openNpcStory(id = "npc-01") {
+    return npcNarrativeController.open(id);
+  },
+  qaSelectNpcThought(id = "npc-01") {
+    if (!import.meta.env.DEV) return { ok: false, message: "Visual QA helpers are available only in development." };
+    return npcNarratives.selectThought(id, { source: "qa" });
   },
   getMunicipalCollectionDiagnostics() {
     return municipalCollection.getDiagnostics();

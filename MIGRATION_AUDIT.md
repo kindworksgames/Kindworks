@@ -650,3 +650,39 @@ Responsive 390×844 portrait and 844×390 landscape checks confirmed no page
 overflow, a bounded scrolling panel, top-reset on each opening and a 44×44 close
 control. The protected HTML SHA-256 remains
 `0b85bd71385b83e7a13676f7593ce376245959fa4ebf1a6b9a0e6765297aa5a5`.
+
+Milestone 39 restores the original authored Willowmere story layer. All 35
+principal residents now have their exact traits, hope, concern, trusted-neighbour
+notes and four-stage arc, for 140 persistent story chapters in total. The 19
+physical household identities also preserve their authored names, districts,
+approaches and descriptions. Story data is isolated from simulation logic and
+validated against every stable resident and home identity.
+
+Contextual thoughts now draw from the resident's live activity, destination,
+job, home, time, weather, town condition, relationship, story chapter, completed
+jobs, open business and restoration progress. A thought changes only after a
+deliberate player conversation, never from a clock tick or panel refresh. The
+latest six identities prevent immediate repetition, and the chosen text and
+context persist in the shared save.
+
+Opening, Growth and Resolution chapters require increasingly durable evidence:
+conversations on different days, completed resident routines, shared cleanup
+work, stronger authored relationships, relevant area restoration and finally
+town-wide restoration. One evaluation unlocks at most one chapter, and every
+unlock records its game day, trigger and explanation. Repeated same-day clicks
+cannot rush a story.
+
+Residents can be approached directly through the existing keyboard and touch
+interaction prompt, selected from the new Stories HUD view, or met as physical
+occupants inside their authored homes. The responsive story panel exposes the
+current chapter, saved thought, complete revealed history, next evidence, home
+story and relationship notes. Schema 34 safely converts schema-33 records and
+original version-82 `npcNarratives` by stable id, while failed writes restore the
+exact checkpoint. The contract is recorded in `NPC_NARRATIVE_SYSTEM.md`.
+
+All 397 automated tests and the production build pass. Browser QA verified all
+35 resident cards, saved non-repeating thoughts, keyboard dismissal, resident
+switching, a clean console, no page overflow, independent panel scrolling and
+44-pixel controls at 1280×720, 844×390 landscape and 390×844 portrait. The
+protected HTML SHA-256 remains
+`0b85bd71385b83e7a13676f7593ce376245959fa4ebf1a6b9a0e6765297aa5a5`.
