@@ -164,11 +164,12 @@ test("schema 31 expansion preserves existing progress and recovers original lega
   assert.equal(validateGameState(upgraded).ok,true);
 });
 
-test("Paws & Wonders stock is preserved but cannot be newly adopted before Milestone 36", () => {
+test("Paws & Wonders stock can only be adopted through the dedicated Milestone 36 shop", () => {
   const state = createFreshGameState({ now: 0 });
   state.customResident.profile = {name:"Mae",skin:"warm",hair:0,hairColor:"dark-brown",accessory:"none",outfit:0,bodyBuild:"average",hobbies:["nature"]};
   const animals = new AnimalService(new GameStateService(state),new SaveRepository(new MemoryStorage()));
   const result = animals.requestAdoption("pet-chinchilla",{roll:0});
   assert.equal(result.code,"pet-shop-only");
+  assert.match(result.message,/inside Paws & Wonders/);
   assert.equal(animals.getSnapshot().residents["pet-chinchilla"].adopted,false);
 });

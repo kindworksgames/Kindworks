@@ -211,7 +211,7 @@ export class AnimalService {
   requestAdoption(animalId, { roll = this.random() } = {}) {
     const definition = ANIMAL_BY_ID[animalId];
     if (!definition) return { ok: false, code: "unknown-animal", message: "That animal does not live in Willowmere." };
-    if (definition.shopPet) return { ok: false, code: "pet-shop-only", message: "This companion will be available through Paws & Wonders in Milestone 36." };
+    if (definition.shopPet) return { ok: false, code: "pet-shop-only", message: "Meet and adopt this companion inside Paws & Wonders." };
     return this.commit((state) => {
       const resident = state.animals.residents[animalId];
       if (!state.customResident?.profile) return { ok: false, code: "resident-required", message: "Create your Willowmere resident before adopting an animal." };

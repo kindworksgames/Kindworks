@@ -547,3 +547,36 @@ animal interaction, saved trust after reload and a clean console. Responsive
 390×844 portrait and 844×390 landscape checks confirmed no page or panel
 overflow, a complete within-viewport landscape card and 44-pixel-or-larger
 controls. The protected HTML source remains byte-for-byte unchanged.
+
+Milestone 36 completes the original Paws & Wonders adoption shop. The stable
+`shop-11` building and `biz_arcade` navigation node now open a walkable top-down
+Phaser interior instead of changing the town map identity. The original dog
+lounges, specialist habitats, mystery nest, Evie's keeper desk, Noah visitor and
+right-side adoption panel are restored as physical shop-floor features. All
+eleven permanent animal identities from Milestone 35 are connected to their
+original catalogue entries: six distinct dog breeds, four unusual companions,
+and Sprout the featured Baby Triceratops.
+
+Names, breeds, personalities, descriptions, safe care foods and exact prices
+remain pinned. Sprout's patterned mystery egg stays locked until exactly three
+restoration milestones. Ordinary KindlyCoins fund each permanent one-time
+adoption, with no companion-family cap. The adopted animal begins at 100 trust
+and roams in South Meadow, while any existing active follower remains unchanged.
+The animal record, care dates, wallet, lifetime spend and dedicated bounded
+ledger entry commit in one verified save; duplicate, locked and unaffordable
+requests change nothing, and any failed write restores the full checkpoint.
+
+Keyboard, pointer and touch interaction share the normal character controls;
+habitats can be approached or tapped, `A` adopts the selected companion, and
+the shop returns the player to the exact Willowmere position. Mobile landscape
+keeps the complete floor and detail panel usable, while portrait uses the
+established rotate-phone screen. The wildlife panel now directs these preserved
+shop-only identities into Paws & Wonders rather than advertising a future phase.
+
+All 364 automated tests and the production build pass. Desktop browser QA
+verified entry, all eleven visible habitats, a real 420-coin Sunny adoption,
+permanent sold state, South Meadow confirmation, balance reconciliation, return
+to town and a clean console. Responsive 844×390 landscape and 390×844 portrait
+checks confirmed no page overflow, a complete playable landscape room and clear
+orientation guidance. The protected HTML SHA-256 remains
+`0b85bd71385b83e7a13676f7593ce376245959fa4ebf1a6b9a0e6765297aa5a5`.

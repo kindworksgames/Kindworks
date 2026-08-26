@@ -16,6 +16,7 @@ import { BeachCleanupScene } from "./scenes/BeachCleanupScene.js";
 import { PlaygroundPowerwashScene } from "./scenes/PlaygroundPowerwashScene.js";
 import { FishingScene } from "./scenes/FishingScene.js";
 import { VillageGrocerScene } from "./scenes/VillageGrocerScene.js";
+import { PawsWondersScene } from "./scenes/PawsWondersScene.js";
 import { bootstrapState } from "./state/bootstrapState.js";
 import { GAME_STATE_SCHEMA_VERSION } from "./state/constants.js";
 import { EconomyService } from "./systems/EconomyService.js";
@@ -44,6 +45,7 @@ import { PlaygroundPowerwashService } from "./systems/PlaygroundPowerwashService
 import { TownPlacementService } from "./systems/TownPlacementService.js";
 import { RestorationMilestoneService } from "./systems/RestorationMilestoneService.js";
 import { HomeownerGiftService } from "./systems/HomeownerGiftService.js";
+import { PawsWondersService } from "./systems/PawsWondersService.js";
 import { EconomyHudController } from "./ui/EconomyHudController.js";
 import { SaveStatusController } from "./ui/SaveStatusController.js";
 import { ShopController } from "./ui/ShopController.js";
@@ -89,6 +91,7 @@ playgroundPowerwash.refresh();
 const townPlacement = new TownPlacementService(stateRuntime.gameState, stateRuntime.repository);
 const restorationMilestones = new RestorationMilestoneService(stateRuntime.gameState, stateRuntime.repository);
 const homeownerGifts = new HomeownerGiftService(stateRuntime.gameState, stateRuntime.repository);
+const pawsWonders = new PawsWondersService(stateRuntime.gameState, stateRuntime.repository);
 
 const config = {
   type: Phaser.AUTO,
@@ -102,7 +105,7 @@ const config = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene, TownScene, HouseInteriorScene, VillageGrocerScene, BakeryScene, CafeScene, MorningMugScene, RiversideKitchenScene, SouthShoreScoopsScene, RiverClearoutScene, HouseRescueScene, WasteCollectionScene, LawnCareScene, BeachCleanupScene, PlaygroundPowerwashScene, FishingScene],
+  scene: [BootScene, TownScene, HouseInteriorScene, VillageGrocerScene, PawsWondersScene, BakeryScene, CafeScene, MorningMugScene, RiversideKitchenScene, SouthShoreScoopsScene, RiverClearoutScene, HouseRescueScene, WasteCollectionScene, LawnCareScene, BeachCleanupScene, PlaygroundPowerwashScene, FishingScene],
 };
 
 const game = new Phaser.Game(config);
@@ -130,9 +133,15 @@ game.registry.set("beachCleanup", beachCleanup);
 game.registry.set("playgroundPowerwash", playgroundPowerwash);
 game.registry.set("townPlacement", townPlacement);
 game.registry.set("restorationMilestones", restorationMilestones);
+game.registry.set("pawsWonders", pawsWonders);
 game.registry.set("homeownerGifts", homeownerGifts);
 const economy = new EconomyService(stateRuntime.gameState, stateRuntime.repository);
 game.registry.set("economy", economy);
+if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "paws") {
+  restorationMilestones.unlockForQa("highstreet", { revealed: true });
+  const balance = stateRuntime.gameState.getSnapshot().economy.coins;
+  if (balance < 10_000) economy.credit(10_000 - balance, { kind: "development-fixture", reason: "Milestone 36 Paws & Wonders visual QA" });
+}
 if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "aquarium") {
   if (!customResident.getSnapshot().created) {
     customResident.saveProfile({
@@ -373,6 +382,16 @@ window.__KINDWORKS_PHASER__ = {
   },
   getShopDiagnostics() {
     return shopController.getDiagnostics();
+  },
+  getPawsWondersDiagnostics() {
+    return pawsWonders.getDiagnostics();
+  },
+  getPawsWondersState() {
+    return pawsWonders.getCatalogue();
+  },
+  qaAdoptPawsCompanion(itemId = "pet-labrador") {
+    if (!import.meta.env.DEV) return { ok: false, message: "Visual QA helpers are available only in development." };
+    return pawsWonders.adopt(itemId);
   },
   getTownPlacementDiagnostics() {
     return townPlacement.getDiagnostics();
