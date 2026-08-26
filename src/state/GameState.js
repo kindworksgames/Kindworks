@@ -15,6 +15,7 @@ import { createFreshNpcState, normalizeNpcState, projectLegacyNpcState, validate
 import {
   createFreshCustomResidentState,
   normalizeCustomResidentState,
+  normalizePersonalHome,
   projectLegacyCustomResident,
   validateCustomResidentState,
 } from "./customResidentState.js";
@@ -392,6 +393,21 @@ export function upgradeGameState(value, { now = Date.now() } = {}) {
       ? projectLegacyRestorationMilestoneState(state.legacySnapshot, state)
       : normalizeRestorationMilestoneState(state.restorationMilestones);
     state.schemaVersion = 27;
+  }
+  if (state.schemaVersion === 27) {
+    const currentResident = normalizeCustomResidentState(state.customResident);
+    if (state.source?.kind === "legacy-import") {
+      const projected = projectLegacyCustomResident(state.legacySnapshot);
+      if (!currentResident.profile && projected.profile) currentResident.profile = projected.profile;
+      const legacyHome = state.legacySnapshot?.playerSetup?.home
+        || state.legacySnapshot?.economy?.kindlyClub?.creatorProfile?.home;
+      if (legacyHome && typeof legacyHome === "object") currentResident.home = normalizePersonalHome(legacyHome);
+    }
+    state.customResident = currentResident;
+    // Replace the old temporary house-19 render alias with the original
+    // house-20 identity while preserving all real neighbour-home records.
+    state.houseRescue = normalizeHouseRescueState(state.houseRescue, { worldDay: state.world?.day });
+    state.schemaVersion = 28;
   }
   return state;
 }

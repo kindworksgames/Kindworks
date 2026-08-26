@@ -76,7 +76,16 @@ export const HOUSES = Object.freeze([
   [1378, 1680, 195, 145, 0xb95746], [1768, 1680, 195, 145, 0x627e96],
   [2790, 1280, 190, 140, 0xd78363], [3120, 1280, 190, 140, 0x6f91aa], [3450, 1280, 190, 140, 0x9b79a9], [3780, 1280, 190, 140, 0x78a16c],
   [2790, 1680, 190, 140, 0xb95746], [3120, 1680, 190, 140, 0xd2a04f], [3450, 1680, 190, 140, 0xc96b73], [3780, 1680, 190, 140, 0x6489a6],
-].map(([x, y, width, height, roof], index) => ({ id: `house-${index + 1}`, x, y, width, height, roof })));
+].map(([x, y, width, height, roof], index) => ({
+  // The preserved HTML has no authored physical house-19. Its nineteenth rendered
+  // cottage is the personal house-20/home20 on South Shore.
+  id: index === 18 ? "house-20" : `house-${index + 1}`,
+  x,
+  y,
+  width,
+  height,
+  roof,
+})));
 
 export const SHOPS = Object.freeze([
   { title: "Corner Café", icon: "☕", x: 190, y: 890, width: 230, height: 210, color: 0xd99a59 },

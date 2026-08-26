@@ -133,6 +133,23 @@ if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa")
 }
 if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "collection") municipalCollection.start({ force: true, persist: true });
 if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "restoration") restorationMilestones.unlockForQa("festival", { revealed: false });
+if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "home") {
+  if (!customResident.getSnapshot().created) {
+    customResident.saveProfile({
+      name: "Meadow",
+      skin: "warm",
+      hair: 1,
+      hairColor: "dark-brown",
+      accessory: "badge",
+      outfit: 1,
+      bodyBuild: "average",
+      hobbies: ["gardening", "nature", "helping"],
+      home: { wallColor: "cream", roofStyle: "gable", roofColor: "terracotta" },
+    });
+  }
+  const balance = stateRuntime.gameState.getSnapshot().economy.coins;
+  if (balance < 200_000) economy.credit(200_000 - balance, { kind: "development-fixture", reason: "Milestone 31 personal-home visual QA" });
+}
 const cleanupService = new CleanupJobService(stateRuntime.gameState, stateRuntime.repository, { environment: livingEnvironment });
 game.registry.set("cleanupService", cleanupService);
 const shopService = new ShopService(economy, { farming });

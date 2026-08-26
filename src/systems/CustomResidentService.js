@@ -2,10 +2,17 @@ import {
   CUSTOM_RESIDENT_APPEARANCE,
   CUSTOM_RESIDENT_HOBBIES,
   CUSTOM_RESIDENT_ID,
+  PERSONAL_HOME_HOUSE_ID,
+  PERSONAL_HOME_LEVELS,
   PERSONAL_HOME_NAME,
+  PERSONAL_HOME_NODE_ID,
   PERSONAL_HOME_OPTIONS,
   customResidentPalette,
+  personalHomeCapacity,
+  personalHomeLevel,
+  personalHomeRedesignQuote,
 } from "../data/customResident.js";
+import { COIN_LEDGER_LIMIT } from "../state/economyState.js";
 import {
   normalizeCustomResidentProfile,
   normalizeCustomResidentState,
@@ -17,6 +24,23 @@ const DIRECTIONS = new Set(["up", "down", "left", "right"]);
 
 function choiceExists(catalogue, value) {
   return Object.prototype.hasOwnProperty.call(catalogue, value);
+}
+
+function appendHomeLedger(state, now, details) {
+  const serial = state.economy.nextTransactionId;
+  const entry = {
+    id: `coin-${String(serial).padStart(6, "0")}`,
+    itemId: null,
+    quantity: null,
+    shopId: "personal-home",
+    balance: state.economy.coins,
+    occurredAt: new Date(now()).toISOString(),
+    ...details,
+  };
+  state.economy.nextTransactionId += 1;
+  state.economy.ledger.push(entry);
+  state.economy.ledger = state.economy.ledger.slice(-COIN_LEDGER_LIMIT);
+  return entry;
 }
 
 export class CustomResidentService {
@@ -98,7 +122,7 @@ export class CustomResidentService {
     };
   }
 
-  commit(mutator) {
+  commit(mutator, { failureMessage = "Your resident was not changed because the new profile could not be saved." } = {}) {
     const checkpoint = this.gameState.getSnapshot();
     const working = structuredClone(checkpoint);
     const mutation = mutator(working);
@@ -109,7 +133,7 @@ export class CustomResidentService {
     const save = this.repository.save(working, { now: this.now() });
     if (!save.ok) {
       this.gameState.replace(checkpoint);
-      return { ok: false, code: "persistence-failed", message: "Your resident was not changed because the new profile could not be saved.", save };
+      return { ok: false, code: "persistence-failed", message: failureMessage, save };
     }
     return { ...mutation, state: this.getSnapshot(), save };
   }
@@ -121,7 +145,9 @@ export class CustomResidentService {
     const result = this.commit((state) => {
       const current = normalizeCustomResidentState(state.customResident);
       current.profile = validation.profile;
-      current.home = validation.home;
+      // The first design is included with creation. Once the home exists, profile
+      // edits cannot bypass Milestone 31's paid redesign and upgrade paths.
+      if (!wasCreated) current.home = validation.home;
       current.location = { ...this.runtimeLocation };
       state.customResident = current;
       return { ok: true, code: wasCreated ? "profile-updated" : "resident-created" };
@@ -131,6 +157,113 @@ export class CustomResidentService {
       this.locationDirty = false;
       this.emit();
     }
+    return result;
+  }
+
+  getHomeProgression(rawDesign = null) {
+    const state = this.gameState.getSnapshot();
+    const resident = normalizeCustomResidentState(state.customResident);
+    const home = resident.home;
+    const definition = personalHomeLevel(home.level);
+    const next = PERSONAL_HOME_LEVELS[definition.level] || null;
+    const target = normalizePersonalHome({ ...home, ...(rawDesign || {}), level: home.level });
+    const redesign = personalHomeRedesignQuote(home, target, state.economy.coins);
+    return {
+      created: Boolean(resident.profile),
+      nodeId: PERSONAL_HOME_NODE_ID,
+      houseId: PERSONAL_HOME_HOUSE_ID,
+      home: structuredClone(home),
+      name: definition.name,
+      capacity: definition.capacity,
+      scale: definition.scale,
+      coins: state.economy.coins,
+      levels: PERSONAL_HOME_LEVELS.map((level) => ({
+        ...level,
+        current: level.level === definition.level,
+        complete: level.level < definition.level,
+        locked: level.level > definition.level + 1,
+      })),
+      nextUpgrade: next ? { ...next, affordable: state.economy.coins >= next.cost, shortfall: Math.max(0, next.cost - state.economy.coins) } : null,
+      redesign: {
+        ...redesign,
+        changes: redesign.changes.map((change) => ({ ...change })),
+        from: structuredClone(home),
+        to: structuredClone(target),
+      },
+    };
+  }
+
+  quoteHomeRedesign(rawDesign) {
+    return this.getHomeProgression(rawDesign).redesign;
+  }
+
+  redesignHome(rawDesign) {
+    if (!this.getSnapshot().profile) return { ok: false, code: "resident-not-created", message: "Create your resident first." };
+    const preview = this.quoteHomeRedesign(rawDesign);
+    if (!preview.cost) return { ok: true, code: "design-unchanged", unchanged: true, cost: 0, home: this.getHomeProgression().home };
+    if (!preview.affordable) return { ok: false, code: "insufficient-funds", message: `You need ${preview.shortfall.toLocaleString()} more coins for this redesign.`, required: preview.cost, available: preview.balance };
+    const result = this.commit((state) => {
+      const resident = normalizeCustomResidentState(state.customResident);
+      if (!resident.profile) return { ok: false, code: "resident-not-created", message: "Create your resident first." };
+      const target = normalizePersonalHome({ ...resident.home, ...(rawDesign || {}), level: resident.home.level });
+      const quote = personalHomeRedesignQuote(resident.home, target, state.economy.coins);
+      if (!quote.cost) return { ok: true, code: "design-unchanged", unchanged: true, cost: 0, home: resident.home };
+      if (!quote.affordable) return { ok: false, code: "insufficient-funds", message: "Not enough KindlyCoins.", required: quote.cost, available: state.economy.coins };
+      const before = structuredClone(resident.home);
+      state.economy.coins -= quote.cost;
+      state.economy.lifetimeCoinsSpent += quote.cost;
+      resident.home = target;
+      state.customResident = resident;
+      const ledger = appendHomeLedger(state, this.now, {
+        amount: -quote.cost,
+        kind: "personal-home-redesign",
+        reason: `Redesigned ${PERSONAL_HOME_NAME}`,
+        level: before.level,
+        from: before,
+        to: structuredClone(target),
+        changes: quote.changes.map(({ key, label, cost }) => ({ key, label, cost })),
+      });
+      return { ok: true, code: "home-redesigned", cost: quote.cost, changes: quote.changes.map((change) => ({ ...change })), home: structuredClone(target), ledger };
+    }, { failureMessage: "The home redesign could not be saved, so the coins and previous design were restored." });
+    this.lastResult = result;
+    if (result.ok) this.emit();
+    return result;
+  }
+
+  upgradeHome(rawDesign = null) {
+    if (!this.getSnapshot().profile) return { ok: false, code: "resident-not-created", message: "Create your resident first." };
+    const preview = this.getHomeProgression(rawDesign);
+    if (!preview.nextUpgrade) return { ok: false, code: "fully-upgraded", message: "Your resident's home is already fully upgraded." };
+    if (!preview.nextUpgrade.affordable) return { ok: false, code: "insufficient-funds", message: `You need ${preview.nextUpgrade.shortfall.toLocaleString()} more coins for this upgrade.`, required: preview.nextUpgrade.cost, available: preview.coins };
+    const result = this.commit((state) => {
+      const resident = normalizeCustomResidentState(state.customResident);
+      if (!resident.profile) return { ok: false, code: "resident-not-created", message: "Create your resident first." };
+      const current = personalHomeLevel(resident.home.level);
+      const next = PERSONAL_HOME_LEVELS[current.level] || null;
+      if (!next) return { ok: false, code: "fully-upgraded", message: "Your resident's home is already fully upgraded." };
+      if (state.economy.coins < next.cost) return { ok: false, code: "insufficient-funds", message: "Not enough KindlyCoins.", required: next.cost, available: state.economy.coins };
+      const before = structuredClone(resident.home);
+      const target = normalizePersonalHome({ ...resident.home, ...(rawDesign || {}), level: next.level });
+      state.economy.coins -= next.cost;
+      state.economy.lifetimeCoinsSpent += next.cost;
+      resident.home = target;
+      state.customResident = resident;
+      const ledger = appendHomeLedger(state, this.now, {
+        amount: -next.cost,
+        kind: "personal-home-upgrade",
+        reason: `Upgraded ${PERSONAL_HOME_NAME} to Level ${next.level}`,
+        fromLevel: current.level,
+        toLevel: next.level,
+        homeName: next.name,
+        fromCapacity: personalHomeCapacity(current.level),
+        toCapacity: personalHomeCapacity(next.level),
+        from: before,
+        to: structuredClone(target),
+      });
+      return { ok: true, code: "home-upgraded", cost: next.cost, fromLevel: current.level, toLevel: next.level, capacity: next.capacity, home: structuredClone(target), ledger };
+    }, { failureMessage: "The home upgrade could not be saved, so the coins and previous home were restored." });
+    this.lastResult = result;
+    if (result.ok) this.emit();
     return result;
   }
 
@@ -196,6 +329,9 @@ export class CustomResidentService {
       homeNodeId: state.home.nodeId,
       homeName: state.home.name,
       homeLevel: state.home.level,
+      homeHouseId: state.home.houseId,
+      homeCapacity: personalHomeCapacity(state.home.level),
+      nextHomeUpgrade: this.getHomeProgression().nextUpgrade,
       hobbyCount: state.profile?.hobbies.length || 0,
       controlling: state.controlling,
       location: { ...state.location },

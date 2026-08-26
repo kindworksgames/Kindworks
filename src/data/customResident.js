@@ -1,10 +1,31 @@
 export const CUSTOM_RESIDENT_ID = "npc-kindly-member";
 export const PERSONAL_HOME_NODE_ID = "home20";
 export const PERSONAL_HOME_HOUSE_ID = "house-20";
-// The current Phaser town has 19 rendered cottage records; its final South Shore sprite
-// is the visual counterpart of the original save's stable house-20 identity.
-export const PERSONAL_HOME_RENDER_HOUSE_ID = "house-19";
+// Milestone 31 resolves the earlier temporary house-19 render alias. The town still
+// contains 19 physical cottages, but the final South Shore record now carries the
+// original house-20/home20 identity while house-19 remains reserved and unauthored.
+export const PERSONAL_HOME_RENDER_HOUSE_ID = PERSONAL_HOME_HOUSE_ID;
 export const PERSONAL_HOME_NAME = "Meadowlight House";
+
+export const PERSONAL_HOME_LEVELS = Object.freeze([
+  Object.freeze({ level: 1, name: "Small Starter Cottage", scale: 0.68, cost: 0, capacity: 1 }),
+  Object.freeze({ level: 2, name: "Family Cottage", scale: 0.86, cost: 15_000, capacity: 2 }),
+  Object.freeze({ level: 3, name: "Spacious Home", scale: 1.04, cost: 40_000, capacity: 3 }),
+  Object.freeze({ level: 4, name: "Grand Home", scale: 1.22, cost: 90_000, capacity: 5 }),
+]);
+
+export const PERSONAL_HOME_REDESIGN_BASE_COSTS = Object.freeze({
+  wallColor: 600,
+  roofColor: 900,
+  roofStyle: 2_200,
+});
+
+export const PERSONAL_HOME_REDESIGN_LEVEL_MULTIPLIERS = Object.freeze([1, 1.35, 1.75, 2.25]);
+export const PERSONAL_HOME_REDESIGN_LABELS = Object.freeze({
+  wallColor: "Wall paint",
+  roofColor: "Roof paint",
+  roofStyle: "Roof renovation",
+});
 
 export const CUSTOM_RESIDENT_APPEARANCE = Object.freeze({
   skin: Object.freeze({
@@ -69,6 +90,45 @@ export const PERSONAL_HOME_OPTIONS = Object.freeze({
   roofColor: Object.freeze({ terracotta: "Terracotta", slate: "Slate grey", forest: "Forest green", navy: "Deep navy", plum: "Soft plum", gold: "Harvest gold" }),
   roofPalette: Object.freeze({ terracotta: 0xb65f48, slate: 0x667481, forest: 0x52735b, navy: 0x4b627d, plum: 0x856987, gold: 0xb58a45 }),
 });
+
+export function personalHomeLevel(value) {
+  const level = Math.max(1, Math.min(PERSONAL_HOME_LEVELS.length, Math.floor(Number(value) || 1)));
+  return PERSONAL_HOME_LEVELS[level - 1];
+}
+
+export function personalHomeCapacity(value) {
+  return personalHomeLevel(value).capacity;
+}
+
+export function personalHomeRedesignQuote(fromHome, toHome, balance = 0) {
+  const level = personalHomeLevel(fromHome?.level).level;
+  const multiplier = PERSONAL_HOME_REDESIGN_LEVEL_MULTIPLIERS[level - 1] || 1;
+  const changes = [];
+  for (const key of ["wallColor", "roofColor", "roofStyle"]) {
+    if (fromHome?.[key] === toHome?.[key]) continue;
+    const baseCost = PERSONAL_HOME_REDESIGN_BASE_COSTS[key];
+    const cost = Math.round((baseCost * multiplier) / 50) * 50;
+    changes.push(Object.freeze({
+      key,
+      label: PERSONAL_HOME_REDESIGN_LABELS[key],
+      from: fromHome?.[key],
+      to: toHome?.[key],
+      baseCost,
+      cost,
+    }));
+  }
+  const cost = changes.reduce((sum, change) => sum + change.cost, 0);
+  const available = Math.max(0, Math.floor(Number(balance) || 0));
+  return Object.freeze({
+    level,
+    multiplier,
+    cost,
+    changes: Object.freeze(changes),
+    balance: available,
+    affordable: available >= cost,
+    shortfall: Math.max(0, cost - available),
+  });
+}
 
 export function customResidentPalette(profile) {
   const outfit = CUSTOM_RESIDENT_APPEARANCE.outfit[profile?.outfit] || CUSTOM_RESIDENT_APPEARANCE.outfit[0];

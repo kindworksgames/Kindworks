@@ -146,7 +146,10 @@ export function normalizeHouseRescueState(value, { worldDay = 1 } = {}) {
   const savedHomes = source.homes && typeof source.homes === "object" ? source.homes : {};
   const homes = { ...fresh.homes };
   for (const [savedId, saved] of Object.entries(savedHomes)) {
-    const id = currentHouseId(savedId);
+    // Schema 27 temporarily rendered the personal house under house-19. It was
+    // always clean, so normalize that alias into the stable house-20 record.
+    const currentId = currentHouseId(savedId);
+    const id = currentId === "house-19" ? PERSONAL_HOME_RENDER_HOUSE_ID : currentId;
     if (homes[id]) homes[id] = normalizeHome(homes[id], saved);
   }
   const records = Object.values(best);

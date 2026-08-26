@@ -1,12 +1,12 @@
 # Kindworks Phaser save contract
 
-> Current migration status: Milestone 26 uses game-state and envelope schema
-> 23. Schemas 1 through 22 upgrade in order. Schema 22 added complete town-object
-> placement; schema 23 adds the complete positioned-orchard and agricultural
-> legacy-import contract described below. Historical foundation notes remain for
-> traceability.
+> Current migration status: Milestone 31 uses game-state and envelope schema
+> 28. Schemas 1 through 27 upgrade in order. Schema 28 resolves the personal
+> cottage to its original `house-20` identity and adds the complete home-level,
+> redesign-pricing and legacy-conversion contract described below. Historical
+> foundation notes remain for traceability.
 
-Milestone 3 introduced the protected save foundation alongside the preserved HTML game. Milestone 4 added the shared item catalogue, inventory, KindlyCoin ledger, and atomic economy transactions. Milestone 6 added the first persistent cleanup session, exact-target result, and job reward. Subsequent milestones migrated the remaining shared systems and mini-games; Milestone 26 completes the Grocer, farming, and positioned-orchard loop.
+Milestone 3 introduced the protected save foundation alongside the preserved HTML game. Milestone 4 added the shared item catalogue, inventory, KindlyCoin ledger, and atomic economy transactions. Milestone 6 added the first persistent cleanup session, exact-target result, and job reward. Subsequent milestones migrated the remaining shared systems and mini-games; Milestone 31 completes personal-home progression and paid exterior redesigns.
 
 ## Storage namespaces
 
@@ -23,14 +23,14 @@ The Phaser build owns only:
 - `kindworks_phaser_v1_backup`
 - `kindworks_phaser_v1_recovery`
 
-## Current Phaser envelope schema 23
+## Current Phaser envelope schema 28
 
 Every current and backup save is a JSON envelope:
 
 ```json
 {
   "format": "kindworks-phaser",
-  "schemaVersion": 23,
+  "schemaVersion": 28,
   "writtenAt": "2026-08-25T00:00:00.000Z",
   "appVersion": "0.1.0",
   "data": {},
@@ -38,7 +38,7 @@ Every current and backup save is a JSON envelope:
 }
 ```
 
-The checksum covers every envelope field except the checksum itself. A save is accepted only when its format, schema, timestamp, checksum, and inner game state all validate. Valid schemas 1 through 22 upgrade to schema 23, and the original verified envelope becomes the Phaser backup before replacement.
+The checksum covers every envelope field except the checksum itself. A save is accepted only when its format, schema, timestamp, checksum, and inner game state all validate. Valid schemas 1 through 27 upgrade to schema 28, and the original verified envelope becomes the Phaser backup before replacement.
 
 ## Historical game-state schema 3 foundation
 
@@ -179,7 +179,7 @@ The checksum covers every envelope field except the checksum itself. A save is a
   mistakes/completion count, campaign totals, lifetime work, all 19 rendered
   cottages, and one resumable active session.
 - Each home has a stable job serial, dirty flag, completion history, next due
-  game day, best result, and last reward. `house-19`, the rendered personal
+  game day, best result, and last reward. `house-20`, the rendered personal
   home, can never become dirty.
 - Active data contains the deterministic item and stain snapshots, sorted
   flags, stain layers remaining, vacuum position, score, mistakes, house/job
@@ -189,6 +189,31 @@ The checksum covers every envelope field except the checksum itself. A save is a
   repository. A persistence failure restores the whole pre-action checkpoint.
 - Completion records one `house-rescue-job-reward` ledger entry and increments
   the shared completed-job count in the same atomic save.
+
+## Personal home schema-28 contract
+
+- `home20` and `house-20` are the stable original node and cottage identities.
+  The town still contains 19 physical cottages; the unauthored `house-19` alias
+  is skipped and schema-27 House Rescue records migrate safely to `house-20`.
+- Home levels are exact and sequential: Small Starter Cottage at Level 1
+  (included, scale 0.68, one-companion capacity), Family Cottage at Level 2
+  (15,000 coins, scale 0.86, capacity two), Spacious Home at Level 3 (40,000
+  coins, scale 1.04, capacity three), and Grand Home at Level 4 (90,000 coins,
+  scale 1.22, capacity five).
+- The first wall, roof colour and roof style are included when the resident is
+  created. Later profile edits cannot change the paid home state. Exterior
+  redesigns use base prices of 600, 900 and 2,200 coins, multiplied by the
+  current level's 1.00, 1.35, 1.75 or 2.25 rate and rounded to the nearest 50.
+- An upgrade may apply the selected exterior design as part of its fixed level
+  price, matching the original game. Redesign-only purchases charge every
+  changed exterior field and record the exact before/after design.
+- Every redesign and upgrade debits the shared wallet once, reconciles lifetime
+  spending, appends a bounded transaction with home metadata, validates the
+  complete candidate state and persists immediately. Failed validation or
+  persistence restores the exact home, wallet and ledger checkpoint.
+- Schema 28 normalizes existing Phaser home state, converts the original HTML
+  creator/home records without losing the saved level or design, and leaves the
+  complete protected legacy snapshot unchanged.
 
 ## Waste Collection schema-14 contract
 

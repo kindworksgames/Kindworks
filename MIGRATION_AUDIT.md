@@ -372,3 +372,34 @@ replaying completed work. Schema 27 upgrades schema 26, imports the original
 history without changing the protected legacy snapshot. All 295 automated tests,
 the production build, desktop browser QA and 390×844 mobile browser QA pass. The
 protected HTML source remains byte-for-byte unchanged.
+
+Milestone 31 completes the original personal-home progression. The last South
+Shore cottage now uses the stable `home20`/`house-20` identity throughout town
+rendering, collision, House Rescue protection, diagnostics and saved state;
+the temporary unauthored `house-19` alias migrates without creating or losing a
+physical home. All existing Phaser and original-HTML creator/home records retain
+their level and exterior design when upgraded to schema 28.
+
+Meadowlight House now has the exact four original tiers: the included Level 1
+Small Starter Cottage, 15,000-coin Level 2 Family Cottage, 40,000-coin Level 3
+Spacious Home and 90,000-coin Level 4 Grand Home. Their original 0.68, 0.86,
+1.04 and 1.22 scales drive the visible town cottage and expand companion
+capacity from one to two, three and five. Higher tiers add visible wings,
+dormers and the grand porch while keeping the authored doorway approach stable
+and updating collision to the new footprint.
+
+The resident panel exposes all four tiers, current wallet, capacity, next price
+and affordability. The first wall, roof colour and roof style remain included;
+later redesigns charge the original 600, 900 and 2,200 base prices with the
+current tier's exact multiplier and nearest-50 rounding. An upgrade can apply
+the selected exterior within its fixed price, as in the protected game. Profile
+editing can no longer bypass those purchase paths. Every redesign and upgrade
+updates the shared wallet, lifetime spending, bounded ledger and home in one
+validated save, with an exact rollback if persistence fails.
+
+All 305 automated tests and the production build pass. Desktop browser QA
+verified live quoting, one-time redesign and upgrade charges, capacity changes,
+schema-28 reload persistence, the on-map cottage and a clean console. A 390×844
+mobile browser check confirmed the complete progression controls remain
+readable, tappable and free of horizontal overflow. The protected HTML source
+remains byte-for-byte unchanged.

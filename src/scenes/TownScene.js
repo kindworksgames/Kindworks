@@ -29,6 +29,7 @@ import { MovementController } from "../systems/MovementController.js";
 import { NpcCharacter } from "../entities/NpcCharacter.js";
 import { AnimalCharacter } from "../entities/AnimalCharacter.js";
 import {
+  PERSONAL_HOME_LEVELS,
   PERSONAL_HOME_RENDER_HOUSE_ID,
   PERSONAL_HOME_OPTIONS,
 } from "../data/customResident.js";
@@ -80,7 +81,6 @@ export class TownScene extends Phaser.Scene {
     this.transitioning = false;
     this.personalHomeGraphics = null;
     this.personalHomeLabel = null;
-    this.personalHomeCollisionAdded = false;
     this.personalHomeSignature = null;
     this.placedObjectVisuals = new Map();
     this.placementPreviewVisual = null;
@@ -150,6 +150,8 @@ export class TownScene extends Phaser.Scene {
       : null;
     const qaSpawn = qaTarget === "collection"
       ? { x: 970, y: 1260 }
+      : qaTarget === "home"
+        ? { x: 3875, y: 1880 }
       : qaTarget === "powerwash"
       ? PLAYGROUND_POWERWASH.approach
       : qaTarget === "advanced-npc"
@@ -573,6 +575,14 @@ export class TownScene extends Phaser.Scene {
       this.personalHomeGraphics?.destroy();
       this.personalHomeLabel?.destroy();
     }
+    const level = personalHome ? PERSONAL_HOME_LEVELS[personalHome.level - 1] || PERSONAL_HOME_LEVELS[0] : null;
+    const scale = level?.scale || 1;
+    const width = house.width * scale;
+    const height = house.height * scale;
+    const x = house.x + (house.width - width) / 2;
+    // Keep the authored doorway/approach edge stable while the home grows upward
+    // and outward through the four original scale tiers.
+    const y = house.y + house.height - height;
     const wallColor = personalHome ? PERSONAL_HOME_OPTIONS.wallPalette[personalHome.wallColor] : COLORS.wall;
     const roofColor = personalHome ? PERSONAL_HOME_OPTIONS.roofPalette[personalHome.roofColor] : house.roof;
     const layer = this.add.graphics().setDepth(60 + house.y / 100);
@@ -580,43 +590,66 @@ export class TownScene extends Phaser.Scene {
     layer.fillStyle(0x5c864e, 0.5);
     layer.fillRoundedRect(house.x - 36, house.y - 38, house.width + 72, house.height + 78, 18);
     layer.fillStyle(wallColor, 1);
-    layer.fillRoundedRect(house.x, house.y + 32, house.width, house.height - 32, 10);
+    if (personalHome?.level >= 2) {
+      const wingWidth = width * (personalHome.level >= 4 ? 0.24 : 0.18);
+      const wingHeight = height * 0.4;
+      layer.fillRoundedRect(x - wingWidth * 0.62, y + height - wingHeight, wingWidth, wingHeight, 7);
+      if (personalHome.level >= 3) layer.fillRoundedRect(x + width - wingWidth * 0.38, y + height - wingHeight, wingWidth, wingHeight, 7);
+    }
+    layer.fillRoundedRect(x, y + height * 0.22, width, height * 0.78, 10);
     layer.fillStyle(roofColor, 1);
     if (personalHome?.roofStyle === "hip") {
       layer.fillPoints([
-        { x: house.x + house.width * 0.28, y: house.y - 7 },
-        { x: house.x + house.width * 0.72, y: house.y - 7 },
-        { x: house.x + house.width + 12, y: house.y + 47 },
-        { x: house.x - 12, y: house.y + 47 },
+        { x: x + width * 0.28, y: y - height * 0.05 },
+        { x: x + width * 0.72, y: y - height * 0.05 },
+        { x: x + width + 12 * scale, y: y + height * 0.32 },
+        { x: x - 12 * scale, y: y + height * 0.32 },
       ], true);
     } else if (personalHome?.roofStyle === "gambrel") {
       layer.fillPoints([
-        { x: house.x + house.width * 0.37, y: house.y - 12 },
-        { x: house.x + house.width * 0.63, y: house.y - 12 },
-        { x: house.x + house.width * 0.84, y: house.y + 14 },
-        { x: house.x + house.width + 12, y: house.y + 47 },
-        { x: house.x - 12, y: house.y + 47 },
-        { x: house.x + house.width * 0.16, y: house.y + 14 },
+        { x: x + width * 0.37, y: y - height * 0.08 },
+        { x: x + width * 0.63, y: y - height * 0.08 },
+        { x: x + width * 0.84, y: y + height * 0.1 },
+        { x: x + width + 12 * scale, y: y + height * 0.32 },
+        { x: x - 12 * scale, y: y + height * 0.32 },
+        { x: x + width * 0.16, y: y + height * 0.1 },
       ], true);
     } else {
-      layer.fillTriangle(house.x - 12, house.y + 47, house.x + house.width / 2, house.y - 12, house.x + house.width + 12, house.y + 47);
+      layer.fillTriangle(x - 12 * scale, y + height * 0.32, x + width / 2, y - height * 0.08, x + width + 12 * scale, y + height * 0.32);
     }
-    layer.fillRect(house.x + 13, house.y + 38, house.width - 26, 28);
+    layer.fillRect(x + 13 * scale, y + height * 0.27, width - 26 * scale, 28 * scale);
     layer.fillStyle(0x6f4c35, 1);
-    layer.fillRect(house.x + house.width / 2 - 16, house.y + house.height - 54, 32, 54);
+    layer.fillRect(x + width / 2 - 16 * scale, y + height - 54 * scale, 32 * scale, 54 * scale);
     layer.fillStyle(0x8ac5d5, 1);
-    layer.fillRect(house.x + 28, house.y + 82, 34, 30);
-    layer.fillRect(house.x + house.width - 62, house.y + 82, 34, 30);
+    layer.fillRect(x + 28 * scale, y + height * 0.57, 34 * scale, 30 * scale);
+    layer.fillRect(x + width - 62 * scale, y + height * 0.57, 34 * scale, 30 * scale);
+    if (personalHome?.level >= 3) {
+      layer.fillStyle(roofColor, 1);
+      for (const offset of [-0.2, 0.2]) {
+        const dormerX = x + width * (0.5 + offset);
+        layer.fillTriangle(dormerX - 13 * scale, y + height * 0.22, dormerX, y + height * 0.08, dormerX + 13 * scale, y + height * 0.22);
+        layer.fillStyle(0xa9d6df, 1);
+        layer.fillRect(dormerX - 6 * scale, y + height * 0.14, 12 * scale, 12 * scale);
+        layer.fillStyle(roofColor, 1);
+      }
+    }
+    if (personalHome?.level >= 4) {
+      layer.fillStyle(0xf5e8bd, 1);
+      layer.fillRoundedRect(x + width * 0.3, y + height - 12 * scale, width * 0.4, 10 * scale, 4);
+      layer.fillStyle(0x7aab5b, 1);
+      layer.fillCircle(x + width * 0.23, y + height - 5, 7 * scale);
+      layer.fillCircle(x + width * 0.77, y + height - 5, 7 * scale);
+    }
     if (personalHome && this.customResident?.getSnapshot?.().created) {
-      this.personalHomeLabel = this.add.text(house.x + house.width / 2, house.y - 33, "💚 Meadowlight House", {
+      this.personalHomeLabel = this.add.text(house.x + house.width / 2, y - 27, `💚 Meadowlight House · Level ${personalHome.level}`, {
         color: "#294637", fontFamily: "system-ui, sans-serif", fontSize: "11px", fontStyle: "bold",
         backgroundColor: "rgba(255, 253, 241, 0.94)", padding: { x: 6, y: 3 },
       }).setOrigin(0.5).setDepth(90 + house.y / 100);
     }
-    if (!personalHome || !this.personalHomeCollisionAdded) {
-      this.buildingCollisions.push({ x: house.x - 8, y: house.y - 15, width: house.width + 16, height: house.height + 18 });
-      if (personalHome) this.personalHomeCollisionAdded = true;
-    }
+    const collision = { id: `building-${house.id}`, x: x - 8, y: y - 15, width: width + 16, height: height + 18 };
+    const collisionIndex = this.buildingCollisions.findIndex((entry) => entry.id === collision.id);
+    if (collisionIndex >= 0) this.buildingCollisions[collisionIndex] = collision;
+    else this.buildingCollisions.push(collision);
   }
 
   drawHouseRescueMarkers() {
@@ -970,7 +1003,7 @@ export class TownScene extends Phaser.Scene {
   refreshCustomResident() {
     const state = this.customResident?.getSnapshot?.();
     const resident = this.customResident?.getResident?.();
-    const homeSignature = state?.home ? `${state.home.wallColor}:${state.home.roofStyle}:${state.home.roofColor}:${state.created}` : null;
+    const homeSignature = state?.home ? `${state.home.level}:${state.home.wallColor}:${state.home.roofStyle}:${state.home.roofColor}:${state.created}` : null;
     if (homeSignature && homeSignature !== this.personalHomeSignature) {
       this.personalHomeSignature = homeSignature;
       const house = HOUSES.find((entry) => entry.id === PERSONAL_HOME_RENDER_HOUSE_ID);
@@ -2087,7 +2120,7 @@ export class TownScene extends Phaser.Scene {
       milestone25Systems: ["35-placeable-catalogue", "purchase-and-inventory-placement", "tap-and-keyboard-preview", "quarter-turn-rotation", "atomic-place-move-store", "road-water-building-entrance-and-lawn-restrictions", "500-object-safety-limit", "player-collision", "npc-wildlife-and-rubbish-hooks", "exact-transform-persistence", "legacy-placement-import"],
       milestone28Systems: ["35-resident-needs", "symmetric-relationships", "resident-conversations", "business-takeaway-carrying", "public-and-player-bin-decisions", "causal-persistent-littering", "bounded-bin-tipping", "community-cleanup", "resident-lawn-care", "contextual-greetings", "restoration-reactions", "five-original-public-bins", "legacy-advanced-npc-import"],
       milestone23Systems: ["south-shore-scoops-scene-transition", "750-deterministic-shifts", "sequential-picture-orders", "60-percent-pass-rule", "ingredient-and-product-unlocks", "first-clear-rewards", "south-shore-restoration", "exact-save-resume", "legacy-progress-import", "landscape-controls"],
-      migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "cafe-scene-transition", "morning-mug-scene-transition", "riverside-kitchen-scene-transition", "river-clearout-scene-transition", "house-rescue-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job", "weekly-municipal-bin-collection", "world-time-weather-lighting", "basic-npc-town-life", "advanced-npc-social-life", "resident-public-bin-behaviour", "custom-resident-profile-home-control", "weather-aware-farming", "orchard-harvest", "persistent-lawn-jobs", "animal-habitat-routes", "animal-friendship-feeding", "animal-adoption", "active-companion-following", "south-meadow", "three-fishing-spots", "hidden-zone-fishing", "timed-reeling", "magnet-fishing", "fishing-inventory-rewards", "magnet-coin-rewards", "bakery-recipes", "bakery-customer-service", "bakery-first-clear-rewards", "bakery-level-unlocks", "shared-recipe-order-engine", "corner-cafe-recipes", "cafe-three-tray-service", "cafe-first-clear-rewards", "cafe-level-unlocks", "morning-mug-54-recipes", "morning-mug-150-levels", "morning-mug-first-clear-rewards", "morning-mug-save-resume", "morning-mug-landscape-controls", "riverside-kitchen-32-recipes", "riverside-kitchen-150-levels", "riverside-kitchen-preparation-heat-plating", "riverside-kitchen-first-clear-rewards", "riverside-kitchen-save-resume", "riverside-kitchen-landscape-controls", "river-750-level-catalogue", "river-falling-piece-engine", "river-first-clear-rewards", "river-portrait-controls", "house-rescue-750-level-catalogue", "house-rescue-sort-and-vacuum", "house-rescue-persistent-home-jobs", "house-rescue-landscape-controls", "waste-750-authored-boards", "waste-five-slot-triple-matching", "waste-certified-solutions", "waste-first-clear-rewards", "waste-landscape-controls", "lawn-750-authored-levels", "lawn-slide-mower-engine", "lawn-persistent-campaign", "lawn-town-job-effects", "lawn-first-clear-rewards", "lawn-landscape-controls", "beach-750-deterministic-levels", "beach-rake-and-rubbish-engine", "beach-native-town-rewards", "beach-first-clear-rewards", "south-shore-litter-restoration", "beach-landscape-controls", "powerwash-750-deterministic-levels", "powerwash-soap-resistant-stains", "powerwash-three-nozzles", "powerwash-97-percent-tolerance", "powerwash-native-town-rewards", "powerwash-first-clear-rewards", "commons-playground-restoration", "powerwash-landscape-controls"],
+      migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "cafe-scene-transition", "morning-mug-scene-transition", "riverside-kitchen-scene-transition", "river-clearout-scene-transition", "house-rescue-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job", "weekly-municipal-bin-collection", "world-time-weather-lighting", "basic-npc-town-life", "advanced-npc-social-life", "resident-public-bin-behaviour", "custom-resident-profile-home-control", "personal-home-four-level-progression", "personal-home-paid-redesign", "personal-home-stable-house-20-identity", "weather-aware-farming", "orchard-harvest", "persistent-lawn-jobs", "animal-habitat-routes", "animal-friendship-feeding", "animal-adoption", "active-companion-following", "south-meadow", "three-fishing-spots", "hidden-zone-fishing", "timed-reeling", "magnet-fishing", "fishing-inventory-rewards", "magnet-coin-rewards", "bakery-recipes", "bakery-customer-service", "bakery-first-clear-rewards", "bakery-level-unlocks", "shared-recipe-order-engine", "corner-cafe-recipes", "cafe-three-tray-service", "cafe-first-clear-rewards", "cafe-level-unlocks", "morning-mug-54-recipes", "morning-mug-150-levels", "morning-mug-first-clear-rewards", "morning-mug-save-resume", "morning-mug-landscape-controls", "riverside-kitchen-32-recipes", "riverside-kitchen-150-levels", "riverside-kitchen-preparation-heat-plating", "riverside-kitchen-first-clear-rewards", "riverside-kitchen-save-resume", "riverside-kitchen-landscape-controls", "river-750-level-catalogue", "river-falling-piece-engine", "river-first-clear-rewards", "river-portrait-controls", "house-rescue-750-level-catalogue", "house-rescue-sort-and-vacuum", "house-rescue-persistent-home-jobs", "house-rescue-landscape-controls", "waste-750-authored-boards", "waste-five-slot-triple-matching", "waste-certified-solutions", "waste-first-clear-rewards", "waste-landscape-controls", "lawn-750-authored-levels", "lawn-slide-mower-engine", "lawn-persistent-campaign", "lawn-town-job-effects", "lawn-first-clear-rewards", "lawn-landscape-controls", "beach-750-deterministic-levels", "beach-rake-and-rubbish-engine", "beach-native-town-rewards", "beach-first-clear-rewards", "south-shore-litter-restoration", "beach-landscape-controls", "powerwash-750-deterministic-levels", "powerwash-soap-resistant-stains", "powerwash-three-nozzles", "powerwash-97-percent-tolerance", "powerwash-native-town-rewards", "powerwash-first-clear-rewards", "commons-playground-restoration", "powerwash-landscape-controls"],
       npcTownLife: this.npcTownLife?.getDiagnostics?.(),
       municipalCollection: this.municipalCollection?.getDiagnostics?.(),
       restorationMilestones: this.restorationMilestones?.getDiagnostics?.(),

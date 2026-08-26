@@ -159,7 +159,7 @@
           <header class="custom-resident-header">
             <div class="custom-resident-heart" aria-hidden="true">💚</div>
             <div>
-              <p class="custom-resident-eyebrow">MILESTONE 9 · YOUR PERSONAL RESIDENT</p>
+              <p class="custom-resident-eyebrow">MILESTONES 9 &amp; 31 · RESIDENT &amp; HOME</p>
               <h2 id="custom-resident-title">Create your resident</h2>
               <p id="custom-resident-description">One custom resident and their Level 1 starter cottage are included free.</p>
             </div>
@@ -172,8 +172,8 @@
               </div>
               <strong id="custom-resident-preview-name">Your resident</strong>
               <small id="custom-resident-preview-summary">Choose up to three hobbies</small>
-              <div id="personal-home-preview" class="personal-home-preview" data-roof="gable" aria-hidden="true"><span class="home-roof"></span><span class="home-building"><i></i><b></b><i></i></span></div>
-              <div class="personal-home-label"><strong>🏡 Meadowlight House</strong><small>Level 1 · Small Starter Cottage · South Shore</small></div>
+              <div id="personal-home-preview" class="personal-home-preview" data-level="1" data-roof="gable" aria-hidden="true"><span class="home-extension left"></span><span class="home-extension right"></span><span class="home-roof"></span><span class="home-building"><i></i><b></b><i></i></span><span class="home-dormer left"></span><span class="home-dormer right"></span><span class="home-porch"></span></div>
+              <div class="personal-home-label"><strong>🏡 Meadowlight House</strong><small id="personal-home-preview-label">Level 1 · Small Starter Cottage · South Shore</small></div>
             </aside>
             <form id="custom-resident-form" class="custom-resident-form" novalidate>
               <fieldset>
@@ -207,12 +207,21 @@
                 </div>
               </fieldset>
               <fieldset>
-                <legend>Starter-home design</legend>
+                <legend id="personal-home-design-legend">Starter-home design</legend>
                 <div class="resident-fields-grid">
                   <label class="resident-field" for="home-wall-colour">Wall colour<select id="home-wall-colour" name="wallColor"><option value="cream">Warm cream</option><option value="sage">Garden sage</option><option value="sky">Soft sky</option><option value="rose">Dusty rose</option><option value="yellow">Sunny yellow</option><option value="lavender">Lavender</option></select></label>
                   <label class="resident-field" for="home-roof-style">Roof style<select id="home-roof-style" name="roofStyle"><option value="gable">Classic gable</option><option value="hip">Hipped roof</option><option value="gambrel">Cottage gambrel</option></select></label>
                   <label class="resident-field" for="home-roof-colour">Roof colour<select id="home-roof-colour" name="roofColor"><option value="terracotta">Terracotta</option><option value="slate">Slate grey</option><option value="forest">Forest green</option><option value="navy">Deep navy</option><option value="plum">Soft plum</option><option value="gold">Harvest gold</option></select></label>
                 </div>
+                <section id="personal-home-progression" class="personal-home-progression hidden" aria-label="Personal home progression">
+                  <div id="personal-home-levels" class="personal-home-levels" aria-label="Four personal home upgrade levels"></div>
+                  <div class="personal-home-summary"><span id="personal-home-capacity">🐾 Room for 1 companion</span><strong id="personal-home-balance">🪙 100</strong></div>
+                  <p id="personal-home-quote" class="personal-home-quote" role="status" aria-live="polite">Your current design is already saved.</p>
+                  <div class="personal-home-actions">
+                    <button id="personal-home-redesign" type="button">Design already saved</button>
+                    <button id="personal-home-upgrade" class="upgrade" type="button">Upgrade to Level 2 — 🪙 15,000</button>
+                  </div>
+                </section>
               </fieldset>
               <p id="custom-resident-status" class="custom-resident-status" data-status="neutral" role="status" aria-live="polite">Every option and the starter cottage are free.</p>
               <div class="custom-resident-actions">

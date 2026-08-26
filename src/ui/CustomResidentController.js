@@ -2,6 +2,7 @@ import {
   CUSTOM_RESIDENT_APPEARANCE,
   CUSTOM_RESIDENT_HOBBIES,
   PERSONAL_HOME_OPTIONS,
+  personalHomeLevel,
 } from "../data/customResident.js";
 
 function cssColor(number) {
@@ -36,6 +37,15 @@ export class CustomResidentController {
     this.previewName = document.querySelector("#custom-resident-preview-name");
     this.previewSummary = document.querySelector("#custom-resident-preview-summary");
     this.homePreview = document.querySelector("#personal-home-preview");
+    this.homePreviewLabel = document.querySelector("#personal-home-preview-label");
+    this.homeDesignLegend = document.querySelector("#personal-home-design-legend");
+    this.homeProgression = document.querySelector("#personal-home-progression");
+    this.homeLevels = document.querySelector("#personal-home-levels");
+    this.homeCapacity = document.querySelector("#personal-home-capacity");
+    this.homeBalance = document.querySelector("#personal-home-balance");
+    this.homeQuote = document.querySelector("#personal-home-quote");
+    this.homeRedesignButton = document.querySelector("#personal-home-redesign");
+    this.homeUpgradeButton = document.querySelector("#personal-home-upgrade");
     this.controlBanner = document.querySelector("#resident-control-banner");
     this.controlBannerName = document.querySelector("#resident-control-name");
     this.returnButton = document.querySelector("#resident-control-return");
@@ -49,6 +59,8 @@ export class CustomResidentController {
     this.onLocateClick = () => this.locate();
     this.onControlClick = () => this.startControl();
     this.onReturnClick = () => this.endControl();
+    this.onHomeRedesignClick = () => this.redesignHome();
+    this.onHomeUpgradeClick = () => this.upgradeHome();
     this.onKeyDown = (event) => this.handleKeyDown(event);
     this.openButton?.addEventListener("click", this.onOpenClick);
     this.closeButton?.addEventListener("click", this.onCloseClick);
@@ -58,6 +70,8 @@ export class CustomResidentController {
     this.locateButton?.addEventListener("click", this.onLocateClick);
     this.controlButton?.addEventListener("click", this.onControlClick);
     this.returnButton?.addEventListener("click", this.onReturnClick);
+    this.homeRedesignButton?.addEventListener("click", this.onHomeRedesignClick);
+    this.homeUpgradeButton?.addEventListener("click", this.onHomeUpgradeClick);
     document.addEventListener("keydown", this.onKeyDown);
     this.unsubscribe = service.subscribe(() => this.render());
     this.populateForm();
@@ -129,7 +143,43 @@ export class CustomResidentController {
     this.homePreview?.style.setProperty("--home-wall", cssColor(PERSONAL_HOME_OPTIONS.wallPalette[draft.home.wallColor] || PERSONAL_HOME_OPTIONS.wallPalette.cream));
     this.homePreview?.style.setProperty("--home-roof", cssColor(PERSONAL_HOME_OPTIONS.roofPalette[draft.home.roofColor] || PERSONAL_HOME_OPTIONS.roofPalette.terracotta));
     this.homePreview?.setAttribute("data-roof", draft.home.roofStyle || "gable");
+    const progression = this.service.getHomeProgression(draft.home);
+    this.homePreview?.setAttribute("data-level", String(progression.home.level));
+    if (this.homePreviewLabel) this.homePreviewLabel.textContent = `Level ${progression.home.level} · ${progression.name} · South Shore`;
     if (this.hobbyCount) this.hobbyCount.textContent = `${draft.hobbies.length} / 3 selected`;
+    this.renderHomeProgression(progression);
+  }
+
+  renderHomeProgression(progression = this.service.getHomeProgression(this.readDraft().home)) {
+    this.homeProgression?.classList.toggle("hidden", !progression.created);
+    if (this.homeDesignLegend) this.homeDesignLegend.textContent = progression.created ? "Personal-home design & progression" : "Starter-home design";
+    if (!progression.created) return;
+    if (this.homeLevels) {
+      this.homeLevels.innerHTML = progression.levels.map((level) => {
+        const classes = [level.current ? "current" : "", level.complete ? "complete" : "", level.locked ? "locked" : ""].filter(Boolean).join(" ");
+        const cost = level.level === 1 ? "Included" : `🪙 ${level.cost.toLocaleString()}`;
+        return `<span class="personal-home-level ${classes}"><strong>Level ${level.level}</strong>${level.name}<small>${cost} · 🐾 ${level.capacity}</small></span>`;
+      }).join("");
+    }
+    if (this.homeCapacity) this.homeCapacity.textContent = `🐾 Room for ${progression.capacity} companion${progression.capacity === 1 ? "" : "s"}`;
+    if (this.homeBalance) this.homeBalance.textContent = `🪙 ${progression.coins.toLocaleString()}`;
+    const quote = progression.redesign;
+    if (this.homeQuote) this.homeQuote.textContent = quote.cost
+      ? `${quote.changes.map((change) => `${change.label} 🪙 ${change.cost.toLocaleString()}`).join(" · ")} · Total 🪙 ${quote.cost.toLocaleString()}${quote.affordable ? "" : ` · Need ${quote.shortfall.toLocaleString()} more`}`
+      : "Your current design is already saved.";
+    if (this.homeRedesignButton) {
+      this.homeRedesignButton.disabled = !quote.cost || !quote.affordable;
+      this.homeRedesignButton.textContent = quote.cost
+        ? `${quote.affordable ? "Buy redesign" : "Need more coins"} — 🪙 ${quote.cost.toLocaleString()}`
+        : "Design already saved";
+    }
+    if (this.homeUpgradeButton) {
+      const next = progression.nextUpgrade;
+      this.homeUpgradeButton.disabled = !next || !next.affordable;
+      this.homeUpgradeButton.textContent = next
+        ? `${next.affordable ? `Upgrade to Level ${next.level}` : "Need more coins"} — 🪙 ${next.cost.toLocaleString()}`
+        : "✓ Fully upgraded";
+    }
   }
 
   handleHobbyChange(event) {
@@ -153,6 +203,7 @@ export class CustomResidentController {
     this.controlBanner?.classList.toggle("hidden", !state.controlling);
     this.controlBanner?.setAttribute("aria-hidden", state.controlling ? "false" : "true");
     if (this.controlBannerName) this.controlBannerName.textContent = state.profile?.name || "Your resident";
+    if (this.form) this.renderHomeProgression(this.service.getHomeProgression(this.readDraft().home));
   }
 
   open() {
@@ -160,7 +211,7 @@ export class CustomResidentController {
     this.previousFocus = document.activeElement;
     this.populateForm();
     this.clearError();
-    this.showStatus(this.service.getSnapshot().created ? "Edit the profile or choose an action." : "Every option and the starter cottage are free.", "neutral");
+    this.showStatus(this.service.getSnapshot().created ? "Edit the resident, redesign the home, or buy its next permanent upgrade." : "Every option and the starter cottage are free.", "neutral");
     this.panel.classList.remove("hidden");
     this.panel.setAttribute("aria-hidden", "false");
     this.onModalChange(true);
@@ -201,8 +252,37 @@ export class CustomResidentController {
       return result;
     }
     this.populateForm();
-    this.showStatus(result.code === "resident-created" ? `Welcome to town, ${result.state.profile.name}! Meadowlight House is ready.` : `${result.state.profile.name}'s profile and home were saved.`, "success");
+    this.showStatus(result.code === "resident-created" ? `Welcome to town, ${result.state.profile.name}! Meadowlight House is ready.` : `${result.state.profile.name}'s resident profile was saved. Home changes use the redesign or upgrade buttons.`, "success");
     this.submitButton?.focus({ preventScroll: true });
+    return result;
+  }
+
+  redesignHome() {
+    const result = this.service.redesignHome(this.readDraft().home);
+    if (!result.ok) {
+      this.showStatus(result.message || "The home redesign could not be completed.", "error");
+      this.renderHomeProgression();
+      return result;
+    }
+    this.populateForm();
+    this.render();
+    this.showStatus(result.unchanged ? "That home design is already saved." : `Home redesign saved for 🪙 ${result.cost.toLocaleString()}.`, "success");
+    this.homeRedesignButton?.focus({ preventScroll: true });
+    return result;
+  }
+
+  upgradeHome() {
+    const result = this.service.upgradeHome(this.readDraft().home);
+    if (!result.ok) {
+      this.showStatus(result.message || "The home upgrade could not be completed.", "error");
+      this.renderHomeProgression();
+      return result;
+    }
+    this.populateForm();
+    this.render();
+    const level = personalHomeLevel(result.toLevel);
+    this.showStatus(`Meadowlight House is now Level ${level.level}: ${level.name}, with room for ${level.capacity} companions.`, "success");
+    this.homeUpgradeButton?.focus({ preventScroll: true });
     return result;
   }
 

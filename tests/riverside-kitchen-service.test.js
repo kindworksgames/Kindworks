@@ -98,7 +98,7 @@ test("every ingredient and all nine preparation and exact-heat stations are used
 
 test("fresh Milestone 22 state is valid and separate from Café and Morning Mug", () => {
   const state = createFreshGameState({ now: 0 });
-  assert.equal(state.schemaVersion, 27);
+  assert.equal(state.schemaVersion, 28);
   assert.equal(state.riversideKitchen.unlockedLevel, 1);
   assert.equal(state.riversideKitchen.activeShift, null);
   assert.equal(state.cafe.unlockedLevel, 1);
@@ -262,7 +262,7 @@ test("schema 18 saves gain Riverside Kitchen while preserving Milestone 21", () 
   old.morningMug.best[1] = { score: 100, stars: 3, served: 3, accuracy: 100 };
   old.morningMug.totalStars = 3;
   const upgraded = upgradeGameState(old, { now: 0 });
-  assert.equal(upgraded.schemaVersion, 27);
+  assert.equal(upgraded.schemaVersion, 28);
   assert.equal(upgraded.riversideKitchen.unlockedLevel, 1);
   assert.deepEqual(upgraded.morningMug.best[1], { score: 100, stars: 3, served: 3, accuracy: 100 });
   assert.equal(validateGameState(upgraded).ok, true);

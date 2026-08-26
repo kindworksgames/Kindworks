@@ -241,7 +241,7 @@ test("schema 20 saves convert existing inventory safely while preserving equipme
   old.economy.ledger.at(-1).shopId = "town-grocer";
   old.economy.ledger.at(-1).upgradeCredit = 250;
   const upgraded = upgradeGameState(old, { now: 1000 });
-  assert.equal(upgraded.schemaVersion, 27);
+  assert.equal(upgraded.schemaVersion, 28);
   assert.equal(upgraded.inventory.consumables["river-minnows"], 99);
   assert.equal(upgraded.inventory.consumables["retired-snack"], undefined);
   assert.equal(upgraded.inventory.equipment["cherry-compact-mower"], 1);

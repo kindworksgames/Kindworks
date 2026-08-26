@@ -122,7 +122,7 @@ test("upgrades every schema-5 save with a safe empty custom-resident state", () 
   oldState.schemaVersion = 5;
   delete oldState.customResident;
   const upgraded = upgradeGameState(oldState, { now: 1000 });
-  assert.equal(upgraded.schemaVersion, 27);
+  assert.equal(upgraded.schemaVersion, 28);
   assert.equal(upgraded.customResident.profile, null);
   assert.equal(upgraded.customResident.home.nodeId, "home20");
   assert.equal(validateGameState(upgraded).ok, true);
@@ -135,6 +135,6 @@ test("projects an original-HTML creator profile and cottage design", () => {
   });
   assert.equal(projected.profile.name, "Mae O'River");
   assert.equal(projected.home.wallColor, "lavender");
-  assert.equal(projected.home.level, 1);
+  assert.equal(projected.home.level, 4);
   assert.equal(projected.home.nodeId, "home20");
 });

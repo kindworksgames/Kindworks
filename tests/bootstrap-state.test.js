@@ -27,8 +27,8 @@ test("atomically upgrades a Milestone 3 save while preserving its envelope as ba
   const storage = new MemoryStorage({ [PHASER_SAVE_KEY]: oldRaw, [LEGACY_SAVE_KEY]: legacyRaw });
   const runtime = bootstrapState(storage, { now: 2000 });
   assert.equal(runtime.loaded.migrated, true);
-  assert.equal(runtime.gameState.getSnapshot().schemaVersion, 27);
-  assert.equal(JSON.parse(storage.getItem(PHASER_SAVE_KEY)).schemaVersion, 27);
+  assert.equal(runtime.gameState.getSnapshot().schemaVersion, 28);
+  assert.equal(JSON.parse(storage.getItem(PHASER_SAVE_KEY)).schemaVersion, 28);
   assert.equal(storage.getItem(PHASER_BACKUP_KEY), oldRaw);
   assert.equal(storage.getItem(LEGACY_SAVE_KEY), legacyRaw);
 });

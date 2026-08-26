@@ -3,12 +3,13 @@ import {
   CUSTOM_RESIDENT_HOBBIES,
   CUSTOM_RESIDENT_ID,
   PERSONAL_HOME_HOUSE_ID,
+  PERSONAL_HOME_LEVELS,
   PERSONAL_HOME_NAME,
   PERSONAL_HOME_NODE_ID,
   PERSONAL_HOME_OPTIONS,
 } from "../data/customResident.js";
 
-export const CUSTOM_RESIDENT_STATE_SCHEMA_VERSION = 1;
+export const CUSTOM_RESIDENT_STATE_SCHEMA_VERSION = 2;
 export const PERSONAL_HOME_POSITION = Object.freeze({ x: 3875, y: 1620 });
 const DIRECTIONS = new Set(["up", "down", "left", "right"]);
 
@@ -47,11 +48,12 @@ export function normalizeCustomResidentProfile(raw) {
 }
 
 export function normalizePersonalHome(raw = {}) {
+  const level = Math.max(1, Math.min(PERSONAL_HOME_LEVELS.length, Math.floor(Number(raw.level) || 1)));
   return {
     nodeId: PERSONAL_HOME_NODE_ID,
     houseId: PERSONAL_HOME_HOUSE_ID,
     name: PERSONAL_HOME_NAME,
-    level: 1,
+    level,
     wallColor: allowedKey(PERSONAL_HOME_OPTIONS.wallColor, raw.wallColor, "cream"),
     roofStyle: allowedKey(PERSONAL_HOME_OPTIONS.roofStyle, raw.roofStyle, "gable"),
     roofColor: allowedKey(PERSONAL_HOME_OPTIONS.roofColor, raw.roofColor, "terracotta"),
