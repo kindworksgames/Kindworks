@@ -8,6 +8,7 @@ import {
   DISTRICTS,
   HOUSES,
   LANDMARKS,
+  KINDWORKS_CINEMA,
   LITTLE_BAKERY,
   MORNING_MUG,
   PATHS,
@@ -48,6 +49,7 @@ import { ITEM_CATALOG, placeableFootprintFor } from "../data/items.js";
 import { createTownPlacedObject } from "../entities/TownPlacedObject.js";
 import { createMunicipalCollectionVehicle } from "../entities/MunicipalCollectionVehicle.js";
 import { RESTORATION_MILESTONE_ORDER } from "../data/restorationMilestones.js";
+import { cinemaAccess } from "../data/impactProjects.js";
 import { RUBBISH_PRESENTATION, riverItemPosition } from "../data/livingEnvironment.js";
 
 const PLAYER_RADIUS = 17;
@@ -113,6 +115,7 @@ export class TownScene extends Phaser.Scene {
     this.npcTownLife = this.registry.get("npcTownLife");
     this.municipalCollection = this.registry.get("municipalCollection");
     this.restorationMilestones = this.registry.get("restorationMilestones");
+    this.impactController = this.registry.get("impactController");
     this.pawsWonders = this.registry.get("pawsWonders");
     this.harbourGeneral = this.registry.get("harbourGeneral");
     this.restorationMilestoneController = this.registry.get("restorationMilestoneController");
@@ -183,8 +186,10 @@ export class TownScene extends Phaser.Scene {
         ? LITTLE_BAKERY.approach
         : qaTarget === "paws"
         ? PAWS_WONDERS.approach
-        : qaTarget === "harbour-general"
+      : qaTarget === "harbour-general"
         ? HARBOUR_GENERAL.approach
+        : qaTarget === "impact" || qaTarget === "impact-locked"
+        ? KINDWORKS_CINEMA.approach
         : qaTarget === "fresh-market"
         ? FRESH_MARKET.approach
         : qaTarget === "village-grocer"
@@ -333,6 +338,17 @@ export class TownScene extends Phaser.Scene {
           label: this.harbourGeneral?.getSnapshot?.().owned ? `Enter ${HARBOUR_GENERAL.name}` : `Buy ${HARBOUR_GENERAL.name} · 🪙 ${HARBOUR_GENERAL.deedPrice.toLocaleString()}`,
           detail: this.harbourGeneral?.getSnapshot?.().owned ? "Manage six displays, stock and saved till sales" : "Player-owned convenience shop · includes six starter cases",
           onActivate: () => this.enterHarbourGeneral(),
+        },
+        {
+          id: "kindworks-cinema-door",
+          kind: "cinema",
+          x: KINDWORKS_CINEMA.door.x,
+          y: KINDWORKS_CINEMA.door.y,
+          radius: KINDWORKS_CINEMA.interactionRadius,
+          icon: "🎬",
+          label: cinemaAccess(this.restorationMilestones?.getSnapshot?.()).open ? "Enter KindWorks Cinema" : "KindWorks Cinema · closed",
+          detail: cinemaAccess(this.restorationMilestones?.getSnapshot?.()).open ? "Real restoration films and verified impact stories" : "Complete the Station restoration milestone to reopen it",
+          onActivate: () => this.openCinema(),
         },
         {
           id: "willow-allotments",
@@ -835,6 +851,12 @@ export class TownScene extends Phaser.Scene {
   refreshRestorationPresentation(force = false) {
     const snapshot = this.restorationMilestones?.getSnapshot?.();
     if (!snapshot) return;
+    const cinema = this.baseInteractables?.find?.(({ id }) => id === "kindworks-cinema-door");
+    if (cinema) {
+      const access = cinemaAccess(snapshot);
+      cinema.label = access.open ? "Enter KindWorks Cinema" : "KindWorks Cinema · closed";
+      cinema.detail = access.open ? "Real restoration films and verified impact stories" : "Complete the Station restoration milestone to reopen it";
+    }
     const signature = `${RESTORATION_MILESTONE_ORDER.map((id) => Number(Boolean(snapshot.unlocked[id]))).join("")}:${Number(snapshot.festivalActive)}`;
     if (!force && signature === this.restorationSignature) return;
     this.restorationSignature = signature;
@@ -1563,8 +1585,8 @@ export class TownScene extends Phaser.Scene {
     document.body.dataset.gameScene = this.scene.key;
     const badge = document.querySelector(".milestone-badge");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = "TOWN RESTORATION · MILESTONE 37";
-    if (hint) hint.textContent = "Walk with arrows or WASD · Care for persistent lawns, streets, shore and all five river reaches";
+    if (badge) badge.textContent = "IMPACT & CINEMA · MILESTONE 38";
+    if (hint) hint.textContent = "Walk with arrows or WASD · Restore the Station to reopen KindWorks Cinema";
   }
 
   renderInteractionPrompt(interaction) {
@@ -1821,6 +1843,14 @@ export class TownScene extends Phaser.Scene {
     this.cameras.main.fadeOut(220, 28, 64, 63);
     this.time.delayedCall(240, () => this.scene.start("HarbourGeneralScene", { returnPosition, returnFacing, slot, itemId, transitionCount: Number(this.entryData.transitionCount || 0) + 1 }));
     return { ok: true, targetScene: "HarbourGeneralScene", purchased: purchasedDeed };
+  }
+
+  openCinema() {
+    if (this.transitioning) return { ok: false, code: "transition-active", message: "Wait for the town transition to finish." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, code: "resident-control-active", message: "Return to your character before entering the cinema." };
+    const access = cinemaAccess(this.restorationMilestones?.getSnapshot?.());
+    if (!access.open) return access;
+    return this.impactController?.open?.({ mode: "cinema" }) || { ok: false, code: "cinema-interface-unavailable", message: "The cinema programme is not ready." };
   }
 
   openFarming(tab, targetId = null) {

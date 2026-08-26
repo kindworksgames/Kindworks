@@ -153,6 +153,15 @@ export const SOUTH_SHORE_SCOOPS = Object.freeze({
   interactionRadius: 92,
 });
 
+export const KINDWORKS_CINEMA = Object.freeze({
+  id: "shop-13",
+  title: "KindWorks Cinema",
+  door: Object.freeze({ x: 3965, y: 462 }),
+  approach: Object.freeze({ x: 3965, y: 486 }),
+  interactionRadius: 94,
+  restorationMilestoneId: "station",
+});
+
 export const RIVER_CLEAROUT = Object.freeze({
   id: "river-clearout",
   title: "River Clear-Out",

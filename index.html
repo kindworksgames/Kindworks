@@ -24,10 +24,47 @@
           <button id="inventory-button" class="economy-hud-button" type="button" aria-label="Open inventory">🎒 2</button>
           <button id="custom-resident-button" class="economy-hud-button resident-hud-button" type="button" aria-label="Create your personal resident">💚 Create resident</button>
           <button id="animal-friends-button" class="economy-hud-button animal-hud-button" type="button" aria-label="Open Animal Friends">🐾 Animal Friends</button>
+          <button id="impact-button" class="economy-hud-button impact-hud-button" type="button" aria-label="Open KindWorks Impact">❤️ Impact</button>
           <button id="save-status-button" class="save-status-button" type="button" data-status="new">Save not started</button>
-          <div class="milestone-badge">PHASER TOWN · MILESTONE 37</div>
+          <div class="milestone-badge">PHASER TOWN · MILESTONE 38</div>
         </div>
       </section>
+      <div id="impact-panel" class="impact-panel hidden" role="dialog" aria-modal="true" aria-labelledby="impact-title" aria-hidden="true">
+        <section class="impact-card">
+          <header class="impact-top">
+            <div id="impact-top-icon" class="impact-top-icon" aria-hidden="true">❤️</div>
+            <div><strong id="impact-title">KindWorks Impact</strong><small id="impact-subtitle">Real people restoring real places</small></div>
+            <button id="impact-close" type="button" aria-label="Close KindWorks Impact">✕</button>
+          </header>
+          <div class="impact-scroll">
+            <div class="impact-hero">
+              <section class="impact-promise">
+                <span>KindWorks in the real world</span>
+                <h2>Restore a town. Help restore the real world.</h2>
+                <p>Our goal is to use a portion of KindWorks revenue to support independent creators and community projects that clean waterways, clear rubbish, and provide free lawn or garden care for people who need a hand.</p>
+              </section>
+              <aside class="impact-transparency">
+                <span>Transparent by design</span>
+                <strong>Only verified support counts here.</strong>
+                <p>Totals stay at zero until KindWorks has actually funded a project. Preview cards are clearly marked and do not count toward impact totals.</p>
+              </aside>
+            </div>
+            <section class="impact-metrics" aria-label="KindWorks impact totals">
+              <div><small>Verified contributions</small><strong id="impact-amount">£0</strong><span>Actually funded</span></div>
+              <div><small>Projects supported</small><strong id="impact-project-count">0</strong><span>Verified projects</span></div>
+              <div><small>Focus areas</small><strong>3</strong><span>River · rubbish · lawns</span></div>
+            </section>
+            <div class="impact-data-bar" aria-live="polite"><strong>Project data</strong><span id="impact-data-status">Showing built-in preview stories.</span><span class="impact-data-badge">Validated · offline ready</span></div>
+            <section class="impact-section-head">
+              <div><h3>Real Restoration Stories</h3><p>Sponsored projects and their creator-hosted YouTube stories will live here.</p></div>
+              <div id="impact-filters" class="impact-filters" aria-label="Filter impact projects"></div>
+            </section>
+            <div id="impact-projects" class="impact-projects" aria-live="polite"></div>
+            <p id="impact-empty" class="impact-empty hidden">No stories are available in this category yet.</p>
+            <footer class="impact-footer"><strong>Privacy and transparency:</strong> project records must pass validation before they can count toward totals. YouTube content is never loaded until you explicitly choose it, and the built-in previews remain available offline.</footer>
+          </div>
+        </section>
+      </div>
       <section id="grocer-hud" class="grocer-hud hidden" aria-label="Village Grocer information">
         <div><small>MILESTONE 26 · TOP-DOWN INTERIOR</small><strong>🥕 Village Grocer</strong><span>Walk to a shelf or tap a product row</span></div>
         <span id="grocer-balance">🪙 100</span>

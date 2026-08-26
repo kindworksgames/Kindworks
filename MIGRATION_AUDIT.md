@@ -614,3 +614,39 @@ clean console. Responsive 844×390 landscape and 390×844 portrait checks
 confirmed no page overflow, a complete playable store and the required
 orientation guidance. The protected HTML SHA-256 remains
 `0b85bd71385b83e7a13676f7593ce376245959fa4ebf1a6b9a0e6765297aa5a5`.
+
+Milestone 38 completes the original KindWorks Impact presentation and connects
+it to the existing KindWorks Cinema building. The preserved schema-2 dataset,
+three preview records, River cleaning, Free lawn care and Rubbish cleaning
+filters, verified contribution totals, project count and three focus areas now
+run through a dedicated validated content service. Missing and duplicate ids,
+unsupported categories or statuses, unsafe links, negative amounts and
+dishonest demo or completed claims cannot enter verified totals. The embedded
+preview data remains available after network, timeout, response or validation
+failure, so the panel never becomes empty offline and correctly begins at £0
+and zero supported projects.
+
+YouTube watch, short, embed, Shorts and Live links are accepted only from exact
+YouTube hosts. Preview cards make no video request. A privacy-enhanced
+`youtube-nocookie.com` player is created only after an explicit player action,
+while a separate canonical YouTube action uses `noopener,noreferrer`. The
+interface preserves the original transparency promise, adds accessible filters,
+Escape dismissal, trapped keyboard focus, 44-pixel touch controls and distinct
+Impact and Cinema headings.
+
+The original `shop-13` cinema building is now interactive at its physical door.
+It remains visibly closed and refuses entry until the already-persisted Station
+restoration milestone unlocks. Once restored, the door opens the cinema view of
+the Impact programme, while the existing permanent marquee, crowd and resident
+schedule integration remain active. The global Impact button is available
+before reopening so players can always inspect the transparency promise. No new
+save data is introduced and schema 33 remains unchanged. The dedicated contract
+is recorded in `IMPACT_CINEMA_SYSTEM.md`.
+
+All 389 automated tests and the production build pass. Browser QA verified the
+locked and restored door states, exact zero totals, three preview cards, category
+filtering, deferred video loading, keyboard dismissal and a clean console.
+Responsive 390×844 portrait and 844×390 landscape checks confirmed no page
+overflow, a bounded scrolling panel, top-reset on each opening and a 44×44 close
+control. The protected HTML SHA-256 remains
+`0b85bd71385b83e7a13676f7593ce376245959fa4ebf1a6b9a0e6765297aa5a5`.

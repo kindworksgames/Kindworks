@@ -1,11 +1,11 @@
 # Kindworks Phaser save contract
 
-> Current migration status: Milestone 37 uses game-state and envelope schema
+> Current migration status: Milestone 38 uses game-state and envelope schema
 > 33. Schemas 1 through 32 upgrade in order. Schema 33 adds the complete
 > Harbour General business domain and persistent resident weather wardrobes.
 > Historical foundation notes remain for traceability.
 
-Milestone 3 introduced the protected save foundation alongside the preserved HTML game. Milestone 4 added the shared item catalogue, inventory, KindlyCoin ledger, and atomic economy transactions. Milestone 6 added the first persistent cleanup session, exact-target result, and job reward. Subsequent milestones migrated the remaining shared systems and mini-games; Milestone 37 completes Harbour General ownership, stock management, in-person sales and NPC wardrobe demand.
+Milestone 3 introduced the protected save foundation alongside the preserved HTML game. Milestone 4 added the shared item catalogue, inventory, KindlyCoin ledger, and atomic economy transactions. Milestone 6 added the first persistent cleanup session, exact-target result, and job reward. Subsequent milestones migrated the remaining shared systems and mini-games; Milestone 37 completes Harbour General ownership, stock management, in-person sales and NPC wardrobe demand. Milestone 38 adds validated, read-only Impact project content and reuses the existing persisted Station restoration unlock for cinema access, so it intentionally leaves schema 33 unchanged.
 
 ## Storage namespaces
 

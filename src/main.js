@@ -48,6 +48,7 @@ import { RestorationMilestoneService } from "./systems/RestorationMilestoneServi
 import { HomeownerGiftService } from "./systems/HomeownerGiftService.js";
 import { PawsWondersService } from "./systems/PawsWondersService.js";
 import { HarbourGeneralService } from "./systems/HarbourGeneralService.js";
+import { ImpactProjectService } from "./systems/ImpactProjectService.js";
 import { EconomyHudController } from "./ui/EconomyHudController.js";
 import { SaveStatusController } from "./ui/SaveStatusController.js";
 import { ShopController } from "./ui/ShopController.js";
@@ -57,6 +58,7 @@ import { FarmingController } from "./ui/FarmingController.js";
 import { AnimalFriendsController } from "./ui/AnimalFriendsController.js";
 import { RestorationMilestoneController } from "./ui/RestorationMilestoneController.js";
 import { HomeownerGiftController } from "./ui/HomeownerGiftController.js";
+import { ImpactController } from "./ui/ImpactController.js";
 import { ITEM_IDS } from "./data/items.js";
 import { findSafeFurniturePlacement } from "./data/homeInteriors.js";
 
@@ -95,6 +97,7 @@ const townPlacement = new TownPlacementService(stateRuntime.gameState, stateRunt
 const restorationMilestones = new RestorationMilestoneService(stateRuntime.gameState, stateRuntime.repository);
 const homeownerGifts = new HomeownerGiftService(stateRuntime.gameState, stateRuntime.repository);
 const pawsWonders = new PawsWondersService(stateRuntime.gameState, stateRuntime.repository);
+const impactProjects = new ImpactProjectService();
 
 const config = {
   type: Phaser.AUTO,
@@ -139,6 +142,7 @@ game.registry.set("restorationMilestones", restorationMilestones);
 game.registry.set("pawsWonders", pawsWonders);
 game.registry.set("harbourGeneral", harbourGeneral);
 game.registry.set("homeownerGifts", homeownerGifts);
+game.registry.set("impactProjects", impactProjects);
 const economy = new EconomyService(stateRuntime.gameState, stateRuntime.repository);
 game.registry.set("economy", economy);
 if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "paws") {
@@ -150,6 +154,7 @@ if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa")
   const state = stateRuntime.gameState.getSnapshot();
   if (state.economy.coins < 20_000) economy.credit(20_000 - state.economy.coins, { kind: "development-fixture", reason: "Milestone 37 Harbour General visual QA" });
 }
+if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "impact") restorationMilestones.unlockForQa("station", { revealed: true });
 if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "aquarium") {
   if (!customResident.getSnapshot().created) {
     customResident.saveProfile({
@@ -260,6 +265,12 @@ const homeownerGiftController = new HomeownerGiftController(homeownerGifts, {
   },
 });
 game.registry.set("homeownerGiftController", homeownerGiftController);
+const impactController = new ImpactController(impactProjects, {
+  onModalChange(open) {
+    setModalOpen("impact", open);
+  },
+});
+game.registry.set("impactController", impactController);
 setTimeout(() => homeownerGiftController.maybeOpen(), 520);
 const saveStatus = new SaveStatusController(stateRuntime, {
   onModalChange(open) {
@@ -399,6 +410,19 @@ window.__KINDWORKS_PHASER__ = {
   },
   getHarbourGeneralDiagnostics() {
     return harbourGeneral.getDiagnostics();
+  },
+  getImpactDiagnostics() {
+    return { ...impactProjects.getDiagnostics(), interface: impactController.getDiagnostics() };
+  },
+  getImpactState(category = "all") {
+    return impactProjects.getSnapshot(category);
+  },
+  openImpact() {
+    return impactController.open({ mode: "impact" });
+  },
+  qaOpenCinema() {
+    if (!import.meta.env.DEV) return { ok: false, message: "Visual QA helpers are available only in development." };
+    return activeTownScene()?.openCinema?.() || { ok: false, message: "Willowmere town is not active." };
   },
   getHarbourGeneralState() {
     return harbourGeneral.getCatalogue();
