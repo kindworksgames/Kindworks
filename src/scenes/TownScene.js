@@ -258,8 +258,8 @@ export class TownScene extends Phaser.Scene {
           radius: VILLAGE_GROCER.interactionRadius,
           icon: VILLAGE_GROCER.icon,
           label: `Enter ${VILLAGE_GROCER.name}`,
-          detail: "Seeds, produce and everyday animal foods",
-          onActivate: () => this.openShop(VILLAGE_GROCER.id),
+          detail: "Walkable top-down shop · nine original product displays",
+          onActivate: () => this.enterVillageGrocer(),
         },
         {
           id: "fresh-market-door",
@@ -403,7 +403,7 @@ export class TownScene extends Phaser.Scene {
     });
     this.stateSyncElapsed = 0;
     this.farmingSyncElapsed = 0;
-    this.unsubscribeFarming = this.farming?.subscribe?.(() => this.drawFarmingAreas());
+    this.unsubscribeFarming = this.farming?.subscribe?.((snapshot, result) => this.handleFarmingChange(snapshot, result));
     this.unsubscribeAnimals = this.animals?.subscribe?.(() => this.refreshAnimalPresentations(0));
     this.unsubscribeTownPlacement = this.townPlacement?.subscribe?.((snapshot, result) => this.handleTownPlacementChange(snapshot, result));
     this.refreshAnimalPresentations(0);
@@ -690,8 +690,13 @@ export class TownScene extends Phaser.Scene {
       }
     });
 
-    const tree = state.orchard.trees[0];
-    this.farmingLabels.push(this.add.text(3070, 230, tree.availableFruit ? "🌳🍎" : "🌳", { fontSize: "58px" }).setOrigin(0.5).setDepth(118));
+    for (const tree of state.orchard.trees) {
+      const progress = tree.status === "growing" ? tree.growthMinutes / ORCHARD_CONFIG.maturityMinutes : 1;
+      const icon = tree.status === "growing" ? "🌱" : tree.availableFruit ? "🌳🍎" : "🌳";
+      const label = this.add.text(tree.x, tree.y, icon, { fontSize: tree.status === "growing" ? `${Math.round(30 + progress * 22)}px` : "58px" }).setOrigin(0.5).setDepth(118 + tree.y / 100);
+      label.setData("orchardTreeId", tree.id);
+      this.farmingLabels.push(label);
+    }
     for (const plot of LAWN_PLOTS) {
       const lawn = state.lawns[plot.id];
       const tall = lawn.grassHeight / 100;
@@ -919,21 +924,24 @@ export class TownScene extends Phaser.Scene {
     this.placementPreviewVisual?.destroy();
     this.placementPreviewVisual = null;
     const active = this.townPlacement?.getSnapshot?.().active;
-    if (!active || !Number.isFinite(active.previewX) || !Number.isFinite(active.previewY)) return;
-    const validation = this.townPlacement.validate(active.itemId, active.previewX, active.previewY, {
-      ignoreObjectId: active.existingObjectId,
-    });
+    const orchardPlacement = this.farming?.getPlacementSnapshot?.();
+    const orchardActive = orchardPlacement?.active;
+    const draft = active || (orchardActive ? { ...orchardActive, itemId: ORCHARD_CONFIG.placementItemId, rotation: 0 } : null);
+    if (!draft || !Number.isFinite(draft.previewX) || !Number.isFinite(draft.previewY)) return;
+    const validation = active
+      ? this.townPlacement.validate(active.itemId, active.previewX, active.previewY, { ignoreObjectId: active.existingObjectId })
+      : this.farming.validateAppleTreePlacement(draft.previewX, draft.previewY);
     this.placementPreviewVisual = createTownPlacedObject(this, {
       id: "placement-preview",
-      itemId: active.itemId,
-      x: active.previewX,
-      y: active.previewY,
-      rotation: active.rotation,
+      itemId: draft.itemId,
+      x: draft.previewX,
+      y: draft.previewY,
+      rotation: draft.rotation,
     }, { preview: true, valid: validation.ok });
   }
 
   placementInteractables() {
-    return (this.townPlacement?.getObjects?.() || []).map((object) => ({
+    const placed = (this.townPlacement?.getObjects?.() || []).map((object) => ({
       id: `manage-${object.id}`,
       kind: "placed-object",
       x: object.x,
@@ -944,6 +952,18 @@ export class TownScene extends Phaser.Scene {
       detail: "Move, rotate or return this item to inventory",
       onActivate: () => this.openPlacedObjectManager(object.id),
     }));
+    const trees = (this.farming?.getSnapshot?.().orchard?.trees || []).map((tree, index) => ({
+      id: `orchard-${tree.id}`,
+      kind: "apple-tree",
+      x: tree.x,
+      y: tree.y,
+      radius: 78,
+      icon: tree.status === "growing" ? "🌱" : tree.availableFruit ? "🍎" : "🌳",
+      label: tree.availableFruit ? `Harvest Apple Tree ${index + 1}` : `Check Apple Tree ${index + 1}`,
+      detail: tree.status === "growing" ? "This sapling is still growing" : tree.availableFruit ? "One apple is ready" : "Producing its next apple",
+      onActivate: () => this.openFarming("orchard", tree.id),
+    }));
+    return [...placed, ...trees];
   }
 
   refreshPlacementInteractables() {
@@ -969,44 +989,70 @@ export class TownScene extends Phaser.Scene {
   updatePlacementInterface(snapshot = this.townPlacement?.getSnapshot?.(), result = null) {
     const banner = document.querySelector("#town-placement-banner");
     if (!banner || !snapshot) return;
-    const active = snapshot.active;
+    const orchardPlacement = this.farming?.getPlacementSnapshot?.();
+    const orchardActive = orchardPlacement?.active;
+    const active = snapshot.active || (orchardActive ? { ...orchardActive, itemId: ORCHARD_CONFIG.placementItemId, rotation: 0, orchard: true } : null);
     banner.classList.toggle("hidden", !active);
     banner.setAttribute("aria-hidden", active ? "false" : "true");
     const count = document.querySelector("#town-placement-count");
-    if (count) count.textContent = `${snapshot.objects.length} / ${snapshot.limit} placed`;
-    if (!active) return;
+    if (count) count.textContent = active?.orchard ? `${orchardPlacement.treeCount} / ${orchardPlacement.limit} apple trees` : `${snapshot.objects.length} / ${snapshot.limit} placed`;
+    if (!active) {
+      const rotate = document.querySelector("#town-placement-rotate");
+      if (rotate) {
+        rotate.disabled = false;
+        rotate.classList.remove("hidden");
+      }
+      return;
+    }
     const item = ITEM_CATALOG[active.itemId];
     const icon = document.querySelector("#town-placement-icon");
     const title = document.querySelector("#town-placement-title");
     const status = document.querySelector("#town-placement-status");
     const confirm = document.querySelector("#town-placement-confirm");
     const validation = Number.isFinite(active.previewX) && Number.isFinite(active.previewY)
-      ? this.townPlacement.validate(active.itemId, active.previewX, active.previewY, { ignoreObjectId: active.existingObjectId })
+      ? active.orchard
+        ? this.farming.validateAppleTreePlacement(active.previewX, active.previewY)
+        : this.townPlacement.validate(active.itemId, active.previewX, active.previewY, { ignoreObjectId: active.existingObjectId })
       : { ok: false, message: "Tap a clear position in town to preview it." };
     if (icon) icon.textContent = item?.icon || "✨";
-    if (title) title.textContent = `${active.existingObjectId ? "Move" : "Place"} ${item?.name || "town item"}`;
+    if (title) title.textContent = active.orchard ? "Plant Apple Sapling" : `${active.existingObjectId ? "Move" : "Place"} ${item?.name || "town item"}`;
     if (status) {
       status.textContent = result?.message || (validation.ok
-        ? `Clear position · ${Math.round((active.rotation * 180) / Math.PI)}° rotation`
+        ? active.orchard ? "Clear open ground · this exact position will be saved" : `Clear position · ${Math.round((active.rotation * 180) / Math.PI)}° rotation`
         : validation.message);
       status.dataset.status = validation.ok ? "valid" : "invalid";
     }
     if (confirm) {
       confirm.disabled = !validation.ok;
-      confirm.textContent = active.existingObjectId ? "Save move" : "Place";
+      confirm.textContent = active.orchard ? "Plant sapling" : active.existingObjectId ? "Save move" : "Place";
+    }
+    const rotate = document.querySelector("#town-placement-rotate");
+    if (rotate) {
+      rotate.disabled = Boolean(active.orchard);
+      rotate.classList.toggle("hidden", Boolean(active.orchard));
     }
   }
 
   handleTownPlacementChange(snapshot, result) {
     this.renderTownPlacements();
     this.refreshPlacementInteractables();
-    this.setPlacementModeActive(Boolean(snapshot.active));
+    this.setPlacementModeActive(Boolean(snapshot.active || this.farming?.getPlacementSnapshot?.().active));
     this.updatePlacementInterface(snapshot, result);
     if (result?.ok && ["object-placed", "object-moved", "object-stored"].includes(result.code)) this.closePlacedObjectManager();
   }
 
+  handleFarmingChange(_snapshot, result) {
+    this.drawFarmingAreas();
+    this.renderPlacementPreview();
+    this.refreshPlacementInteractables();
+    const orchardActive = Boolean(this.farming?.getPlacementSnapshot?.().active);
+    this.setPlacementModeActive(Boolean(this.townPlacement?.getSnapshot?.().active || orchardActive));
+    this.updatePlacementInterface(this.townPlacement?.getSnapshot?.(), result);
+  }
+
   beginTownPlacement(itemId, { existingObjectId = null } = {}) {
     if (this.transitioning) return { ok: false, message: "Wait for the town transition to finish." };
+    if (this.farming?.getPlacementSnapshot?.().active) return { ok: false, message: "Finish planting the current apple sapling first." };
     if (this.customResident?.getSnapshot?.().controlling) return { ok: false, message: "Return to your character before placing town items." };
     this.closePlacedObjectManager();
     const { x, y } = this.activePosition();
@@ -1035,6 +1081,31 @@ export class TownScene extends Phaser.Scene {
     const active = this.townPlacement?.getSnapshot?.().active;
     if (!active) return { ok: false, message: "No placement is active." };
     return this.previewTownPlacement((active.previewX || this.player.x) + dx, (active.previewY || this.player.y) + dy);
+  }
+
+  beginAppleTreePlacement() {
+    if (this.transitioning) return { ok: false, message: "Wait for the town transition to finish." };
+    if (this.townPlacement?.getSnapshot?.().active) return { ok: false, message: "Finish the current town placement first." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, message: "Return to your character before planting apple trees." };
+    this.closePlacedObjectManager();
+    const { x, y } = this.activePosition();
+    const facing = this.activeCharacter()?.direction || "down";
+    const offsets = { up: [0, -115], down: [0, 115], left: [-115, 0], right: [115, 0] };
+    const [offsetX, offsetY] = offsets[facing] || offsets.down;
+    const started = this.farming?.beginAppleTreePlacement?.({ previewX: x + offsetX, previewY: y + offsetY }) || { ok: false, message: "Apple-tree placement is not ready." };
+    if (!started.ok) return started;
+    return this.farming.previewAppleTreePlacement(x + offsetX, y + offsetY);
+  }
+
+  previewAppleTreePlacement(x, y) {
+    if (!this.farming?.getPlacementSnapshot?.().active) return { ok: false, message: "No apple sapling placement is active." };
+    return this.farming.previewAppleTreePlacement(Phaser.Math.Clamp(x, 0, WORLD.width), Phaser.Math.Clamp(y, 0, WORLD.height));
+  }
+
+  nudgeAppleTreePlacement(dx, dy) {
+    const active = this.farming?.getPlacementSnapshot?.().active;
+    if (!active) return { ok: false, message: "No apple sapling placement is active." };
+    return this.previewAppleTreePlacement((active.previewX || this.player.x) + dx, (active.previewY || this.player.y) + dy);
   }
 
   openPlacedObjectManager(objectId) {
@@ -1099,17 +1170,21 @@ export class TownScene extends Phaser.Scene {
     this.onZoomIn = () => this.setZoom(this.cameras.main.zoom * 1.12);
     this.onZoomOut = () => this.setZoom(this.cameras.main.zoom / 1.12);
     this.onInteraction = () => this.interactions.activateCurrent();
-    this.onPlacementRotate = () => this.townPlacement?.rotate?.();
-    this.onPlacementConfirm = () => this.townPlacement?.confirm?.();
-    this.onPlacementCancel = () => this.townPlacement?.cancel?.();
+    this.onPlacementRotate = () => this.townPlacement?.getSnapshot?.().active ? this.townPlacement.rotate() : { ok: false };
+    this.onPlacementConfirm = () => this.farming?.getPlacementSnapshot?.().active ? this.farming.confirmAppleTreePlacement() : this.townPlacement?.confirm?.();
+    this.onPlacementCancel = () => this.farming?.getPlacementSnapshot?.().active ? this.farming.cancelAppleTreePlacement() : this.townPlacement?.cancel?.();
     this.onPlacedObjectMove = () => this.moveSelectedPlacedObject();
     this.onPlacedObjectStore = () => this.storeSelectedPlacedObject();
     this.onPlacedObjectClose = () => this.closePlacedObjectManager();
     this.onPlacementPointerDown = (pointer) => {
-      if (this.placementModeActive) this.previewTownPlacement(pointer.worldX, pointer.worldY);
+      if (!this.placementModeActive) return;
+      if (this.farming?.getPlacementSnapshot?.().active) this.previewAppleTreePlacement(pointer.worldX, pointer.worldY);
+      else this.previewTownPlacement(pointer.worldX, pointer.worldY);
     };
     this.onPlacementPointerMove = (pointer) => {
-      if (this.placementModeActive && pointer.isDown) this.previewTownPlacement(pointer.worldX, pointer.worldY);
+      if (!this.placementModeActive || !pointer.isDown) return;
+      if (this.farming?.getPlacementSnapshot?.().active) this.previewAppleTreePlacement(pointer.worldX, pointer.worldY);
+      else this.previewTownPlacement(pointer.worldX, pointer.worldY);
     };
     this.onPlacementKeyDown = (event) => {
       if (!this.placementModeActive) {
@@ -1117,14 +1192,15 @@ export class TownScene extends Phaser.Scene {
         return;
       }
       const key = event.key.toLowerCase();
+      const orchardActive = Boolean(this.farming?.getPlacementSnapshot?.().active);
       let handled = true;
-      if (key === "r") this.townPlacement.rotate();
-      else if (event.key === "Enter") this.townPlacement.confirm();
-      else if (event.key === "Escape") this.townPlacement.cancel();
-      else if (event.key === "ArrowUp") this.nudgeTownPlacement(0, -18);
-      else if (event.key === "ArrowDown") this.nudgeTownPlacement(0, 18);
-      else if (event.key === "ArrowLeft") this.nudgeTownPlacement(-18, 0);
-      else if (event.key === "ArrowRight") this.nudgeTownPlacement(18, 0);
+      if (key === "r" && !orchardActive) this.townPlacement.rotate();
+      else if (event.key === "Enter") orchardActive ? this.farming.confirmAppleTreePlacement() : this.townPlacement.confirm();
+      else if (event.key === "Escape") orchardActive ? this.farming.cancelAppleTreePlacement() : this.townPlacement.cancel();
+      else if (event.key === "ArrowUp") orchardActive ? this.nudgeAppleTreePlacement(0, -18) : this.nudgeTownPlacement(0, -18);
+      else if (event.key === "ArrowDown") orchardActive ? this.nudgeAppleTreePlacement(0, 18) : this.nudgeTownPlacement(0, 18);
+      else if (event.key === "ArrowLeft") orchardActive ? this.nudgeAppleTreePlacement(-18, 0) : this.nudgeTownPlacement(-18, 0);
+      else if (event.key === "ArrowRight") orchardActive ? this.nudgeAppleTreePlacement(18, 0) : this.nudgeTownPlacement(18, 0);
       else handled = false;
       if (handled) {
         event.preventDefault();
@@ -1153,6 +1229,7 @@ export class TownScene extends Phaser.Scene {
     this.unsubscribeAnimals?.();
     this.unsubscribeTownPlacement?.();
     if (this.townPlacement?.getSnapshot?.().active) this.townPlacement.cancel();
+    if (this.farming?.getPlacementSnapshot?.().active) this.farming.cancelAppleTreePlacement();
     this.zoomIn?.removeEventListener("click", this.onZoomIn);
     this.zoomOut?.removeEventListener("click", this.onZoomOut);
     this.interactionButton?.removeEventListener("click", this.onInteraction);
@@ -1169,6 +1246,7 @@ export class TownScene extends Phaser.Scene {
     for (const visual of this.placedObjectVisuals?.values?.() || []) visual.destroy();
     document.body.dataset.townPlacement = "false";
     document.querySelector("#town-placement-banner")?.classList.add("hidden");
+    document.querySelector("#town-placement-rotate")?.classList.remove("hidden");
     document.querySelector("#placed-object-panel")?.classList.add("hidden");
     this.worldSimulation?.setPaused?.("placement", false);
     this.npcTownLife?.setPaused?.("placement", false);
@@ -1180,8 +1258,8 @@ export class TownScene extends Phaser.Scene {
     document.body.dataset.gameScene = this.scene.key;
     const badge = document.querySelector(".milestone-badge");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 25";
-    if (hint) hint.textContent = "Walk with arrows or WASD · Place owned town items from Shop or Inventory";
+    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 26";
+    if (hint) hint.textContent = "Walk with arrows or WASD · Visit Village Grocer, farm six beds and place apple trees";
   }
 
   renderInteractionPrompt(interaction) {
@@ -1350,6 +1428,27 @@ export class TownScene extends Phaser.Scene {
     return this.shopController.open(shopId);
   }
 
+  enterVillageGrocer({ focusItemId = null } = {}) {
+    if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before entering Village Grocer." };
+    this.transitioning = true;
+    this.movement.setEnabled(false);
+    this.interactions.setEnabled(false);
+    this.player.setMovement(0, 0, false);
+    const returnPosition = this.activePosition();
+    const returnFacing = this.player.direction;
+    this.gameState?.updatePlayer({ scene: "VillageGrocerScene", x: returnPosition.x, y: returnPosition.y, facing: returnFacing });
+    document.querySelector("#game")?.setAttribute("data-transition", "entering-village-grocer");
+    this.cameras.main.fadeOut(220, 29, 54, 36);
+    this.time.delayedCall(240, () => this.scene.start("VillageGrocerScene", {
+      returnPosition,
+      returnFacing,
+      focusItemId,
+      transitionCount: Number(this.entryData.transitionCount || 0) + 1,
+    }));
+    return { ok: true, targetScene: "VillageGrocerScene", focusItemId };
+  }
+
   openFreshMarket() {
     return this.openShop(FRESH_MARKET.id);
   }
@@ -1485,6 +1584,7 @@ export class TownScene extends Phaser.Scene {
     const edge = 34;
     if (x < edge || y < edge || x > WORLD.width - edge || y > WORLD.height - edge) return true;
     if ([...COLLISION_RECTS, ...this.buildingCollisions].some((rect) => containsWithRadius(rect, x, y))) return true;
+    if (this.farming?.treeCollisionAt?.(x, y, PLAYER_RADIUS)?.blocked) return true;
     return Boolean(this.townPlacement?.collisionAt?.(x, y, PLAYER_RADIUS)?.blocked);
   }
 
@@ -1610,6 +1710,9 @@ export class TownScene extends Phaser.Scene {
       gameElement.dataset.farmingReadyBeds = String(farming?.readyBeds || 0);
       gameElement.dataset.farmingGrowingBeds = String(farming?.growingBeds || 0);
       gameElement.dataset.farmingApplesReady = String(farming?.applesReady || 0);
+      gameElement.dataset.farmingOrchardTrees = String(farming?.orchardTrees || 0);
+      gameElement.dataset.farmingGrowingTrees = String(farming?.growingTrees || 0);
+      gameElement.dataset.farmingSaplingsOwned = String(farming?.purchasedSaplings || 0);
       gameElement.dataset.farmingLawnJobs = String(farming?.activeLawnJobs || 0);
       const animals = this.animals?.getDiagnostics?.();
       gameElement.dataset.animalVisible = String(animals?.visibleWildAnimals || 0);
@@ -1688,6 +1791,7 @@ export class TownScene extends Phaser.Scene {
       camera: { zoom: Number(this.cameras.main.zoom.toFixed(2)), followingPlayer: !this.customResident?.getSnapshot?.().controlling },
       controls: { keyboard: true, touch: true, wheelZoom: true },
       interaction: this.interactions.getState(),
+      milestone26Systems: ["walkable-village-grocer", "nine-original-product-displays", "six-persistent-beds", "three-original-crops", "paid-saplings", "24-positioned-apple-trees", "weather-aware-growth-and-harvests", "offline-farm-progression", "legacy-crop-and-orchard-import"],
       milestone25Systems: ["35-placeable-catalogue", "purchase-and-inventory-placement", "tap-and-keyboard-preview", "quarter-turn-rotation", "atomic-place-move-store", "road-water-building-entrance-and-lawn-restrictions", "500-object-safety-limit", "player-collision", "npc-wildlife-and-rubbish-hooks", "exact-transform-persistence", "legacy-placement-import"],
       milestone23Systems: ["south-shore-scoops-scene-transition", "750-deterministic-shifts", "sequential-picture-orders", "60-percent-pass-rule", "ingredient-and-product-unlocks", "first-clear-rewards", "south-shore-restoration", "exact-save-resume", "legacy-progress-import", "landscape-controls"],
       migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "cafe-scene-transition", "morning-mug-scene-transition", "riverside-kitchen-scene-transition", "river-clearout-scene-transition", "house-rescue-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job", "world-time-weather-lighting", "basic-npc-town-life", "custom-resident-profile-home-control", "weather-aware-farming", "orchard-harvest", "persistent-lawn-jobs", "animal-habitat-routes", "animal-friendship-feeding", "animal-adoption", "active-companion-following", "south-meadow", "three-fishing-spots", "hidden-zone-fishing", "timed-reeling", "magnet-fishing", "fishing-inventory-rewards", "magnet-coin-rewards", "bakery-recipes", "bakery-customer-service", "bakery-first-clear-rewards", "bakery-level-unlocks", "shared-recipe-order-engine", "corner-cafe-recipes", "cafe-three-tray-service", "cafe-first-clear-rewards", "cafe-level-unlocks", "morning-mug-54-recipes", "morning-mug-150-levels", "morning-mug-first-clear-rewards", "morning-mug-save-resume", "morning-mug-landscape-controls", "riverside-kitchen-32-recipes", "riverside-kitchen-150-levels", "riverside-kitchen-preparation-heat-plating", "riverside-kitchen-first-clear-rewards", "riverside-kitchen-save-resume", "riverside-kitchen-landscape-controls", "river-750-level-catalogue", "river-falling-piece-engine", "river-first-clear-rewards", "river-portrait-controls", "house-rescue-750-level-catalogue", "house-rescue-sort-and-vacuum", "house-rescue-persistent-home-jobs", "house-rescue-landscape-controls", "waste-750-authored-boards", "waste-five-slot-triple-matching", "waste-certified-solutions", "waste-first-clear-rewards", "waste-landscape-controls", "lawn-750-authored-levels", "lawn-slide-mower-engine", "lawn-persistent-campaign", "lawn-town-job-effects", "lawn-first-clear-rewards", "lawn-landscape-controls", "beach-750-deterministic-levels", "beach-rake-and-rubbish-engine", "beach-native-town-rewards", "beach-first-clear-rewards", "south-shore-litter-restoration", "beach-landscape-controls", "powerwash-750-deterministic-levels", "powerwash-soap-resistant-stains", "powerwash-three-nozzles", "powerwash-97-percent-tolerance", "powerwash-native-town-rewards", "powerwash-first-clear-rewards", "commons-playground-restoration", "powerwash-landscape-controls"],

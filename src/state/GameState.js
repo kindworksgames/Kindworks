@@ -330,6 +330,17 @@ export function upgradeGameState(value, { now = Date.now() } = {}) {
       : normalizeTownPlacementState(state.townPlacement, { inventory: state.inventory, now });
     state.schemaVersion = 22;
   }
+  if (state.schemaVersion === 22) {
+    const currentFarming = normalizeFarmingState(state.farming, state.world);
+    if (state.source?.kind === "legacy-import") {
+      const importedFarming = projectLegacyFarming(state.legacySnapshot, state.world);
+      if (importedFarming.orchard.trees.length > currentFarming.orchard.trees.length || importedFarming.orchard.purchasedSaplings > 0) {
+        currentFarming.orchard = importedFarming.orchard;
+      }
+    }
+    state.farming = currentFarming;
+    state.schemaVersion = 23;
+  }
   return state;
 }
 

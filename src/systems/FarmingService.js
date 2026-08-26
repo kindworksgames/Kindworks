@@ -8,6 +8,7 @@ import {
   lawnNeedsCare,
 } from "../data/farming.js";
 import { WEATHER_KINDS, getWeatherForDay } from "../data/worldSimulation.js";
+import { validateTownPlacement } from "../data/townPlacement.js";
 import { COIN_LEDGER_LIMIT } from "../state/economyState.js";
 import { InventoryService } from "./InventoryService.js";
 
@@ -41,6 +42,7 @@ export class FarmingService {
     this.now = now;
     this.inventory = new InventoryService();
     this.listeners = new Set();
+    this.activeTreePlacement = null;
   }
 
   subscribe(listener) {
@@ -71,10 +73,20 @@ export class FarmingService {
       bed.growthMinutes = Math.min(crop.growMinutes, bed.growthMinutes + growthMinutes);
       if (bed.growthMinutes >= crop.growMinutes) bed.status = "ready";
     }
-    const tree = farming.orchard.trees[0];
-    if (tree.availableFruit < ORCHARD_CONFIG.maxFruit) {
-      tree.fruitProgressMinutes = Math.min(ORCHARD_CONFIG.productionMinutes, tree.fruitProgressMinutes + growthMinutes);
-      if (tree.fruitProgressMinutes >= ORCHARD_CONFIG.productionMinutes) tree.availableFruit = 1;
+    for (const tree of farming.orchard.trees) {
+      if (tree.status === "growing") {
+        tree.growthMinutes = Math.min(ORCHARD_CONFIG.maturityMinutes, tree.growthMinutes + growthMinutes);
+        if (tree.growthMinutes >= ORCHARD_CONFIG.maturityMinutes) {
+          tree.status = "mature";
+          tree.availableFruit = 1;
+          tree.fruitProgressMinutes = ORCHARD_CONFIG.productionMinutes;
+        }
+        continue;
+      }
+      if (tree.availableFruit < ORCHARD_CONFIG.maxFruit) {
+        tree.fruitProgressMinutes = Math.min(ORCHARD_CONFIG.productionMinutes, tree.fruitProgressMinutes + growthMinutes);
+        if (tree.fruitProgressMinutes >= ORCHARD_CONFIG.productionMinutes) tree.availableFruit = 1;
+      }
     }
     for (const plot of LAWN_PLOTS) {
       const lawn = farming.lawns[plot.id];
@@ -129,6 +141,30 @@ export class FarmingService {
     });
   }
 
+  purchaseSapling() {
+    return this.commit((state) => {
+      const orchard = state.farming.orchard;
+      if (orchard.trees.length + orchard.purchasedSaplings >= ORCHARD_CONFIG.maxTrees) {
+        return { ok: false, code: "orchard-capacity", message: `The orchard already has all ${ORCHARD_CONFIG.maxTrees} tree places reserved.` };
+      }
+      if (state.economy.coins < ORCHARD_CONFIG.saplingPrice) {
+        return { ok: false, code: "insufficient-funds", message: "Not enough KindlyCoins.", required: ORCHARD_CONFIG.saplingPrice, available: state.economy.coins };
+      }
+      state.economy.coins -= ORCHARD_CONFIG.saplingPrice;
+      state.economy.lifetimeCoinsSpent += ORCHARD_CONFIG.saplingPrice;
+      orchard.purchasedSaplings += 1;
+      const ledger = appendLedger(state, this.now(), {
+        amount: -ORCHARD_CONFIG.saplingPrice,
+        kind: "farming-sapling-purchase",
+        reason: "Bought Apple Sapling at Village Grocer",
+        itemId: "orchard-apple-sapling",
+        quantity: 1,
+        shopId: "town-grocer",
+      });
+      return { ok: true, code: "sapling-purchased", cost: ORCHARD_CONFIG.saplingPrice, after: state.economy.coins, owned: orchard.purchasedSaplings, ledger };
+    });
+  }
+
   plant(bedId, cropId) {
     const crop = FARMING_CROPS[cropId];
     if (!crop) return { ok: false, code: "unknown-crop", message: "Choose a valid crop." };
@@ -176,18 +212,131 @@ export class FarmingService {
     });
   }
 
-  harvestApple() {
+  treeObjectsForPlacement(state = this.gameState.getSnapshot()) {
+    return state.farming.orchard.trees.map((tree) => ({ id: `orchard-${tree.id}`, itemId: ORCHARD_CONFIG.placementItemId, x: tree.x, y: tree.y }));
+  }
+
+  validateAppleTreePlacement(x, y, state = this.gameState.getSnapshot()) {
+    return validateTownPlacement(ORCHARD_CONFIG.placementItemId, x, y, {
+      objects: [...(state.townPlacement?.objects || []), ...this.treeObjectsForPlacement(state)],
+    });
+  }
+
+  getPlacementSnapshot() {
+    const state = this.gameState.getSnapshot();
+    const active = this.activeTreePlacement ? structuredClone(this.activeTreePlacement) : null;
+    const validation = active && Number.isFinite(active.previewX) && Number.isFinite(active.previewY)
+      ? this.validateAppleTreePlacement(active.previewX, active.previewY, state)
+      : { ok: false, code: "preview-required", message: "Tap a clear open space in Willowmere." };
+    return {
+      active,
+      validation,
+      treeCount: state.farming.orchard.trees.length,
+      purchasedSaplings: state.farming.orchard.purchasedSaplings,
+      limit: ORCHARD_CONFIG.maxTrees,
+    };
+  }
+
+  beginAppleTreePlacement({ previewX = null, previewY = null } = {}) {
+    const state = this.gameState.getSnapshot();
+    if (state.farming.orchard.purchasedSaplings < 1) return { ok: false, code: "no-sapling", message: "Buy an apple sapling at Village Grocer first." };
+    if (state.farming.orchard.trees.length >= ORCHARD_CONFIG.maxTrees) return { ok: false, code: "orchard-capacity", message: `The orchard's ${ORCHARD_CONFIG.maxTrees}-tree limit has been reached.` };
+    this.activeTreePlacement = {
+      previewX: Number.isFinite(Number(previewX)) ? Number(previewX) : null,
+      previewY: Number.isFinite(Number(previewY)) ? Number(previewY) : null,
+      startedAt: this.now(),
+    };
+    const result = { ok: true, code: "sapling-placement-begun", placement: this.getPlacementSnapshot() };
+    this.emit(result);
+    return result;
+  }
+
+  previewAppleTreePlacement(x, y) {
+    if (!this.activeTreePlacement) return { ok: false, code: "no-active-placement", message: "No apple sapling placement is active." };
+    this.activeTreePlacement.previewX = Number(x);
+    this.activeTreePlacement.previewY = Number(y);
+    const validation = this.validateAppleTreePlacement(x, y);
+    const result = { ...validation, code: validation.ok ? "sapling-preview-valid" : validation.code, placement: this.getPlacementSnapshot() };
+    this.emit(result);
+    return result;
+  }
+
+  cancelAppleTreePlacement() {
+    if (!this.activeTreePlacement) return { ok: false, code: "no-active-placement", message: "No apple sapling placement is active." };
+    const cancelled = structuredClone(this.activeTreePlacement);
+    this.activeTreePlacement = null;
+    const result = { ok: true, code: "sapling-placement-cancelled", cancelled };
+    this.emit(result);
+    return result;
+  }
+
+  confirmAppleTreePlacement() {
+    if (!this.activeTreePlacement) return { ok: false, code: "no-active-placement", message: "No apple sapling placement is active." };
+    const draft = structuredClone(this.activeTreePlacement);
+    if (!Number.isFinite(draft.previewX) || !Number.isFinite(draft.previewY)) return { ok: false, code: "preview-required", message: "Tap a clear open space in Willowmere first." };
+    const result = this.commit((state) => {
+      const orchard = state.farming.orchard;
+      if (orchard.purchasedSaplings < 1) return { ok: false, code: "no-sapling", message: "That sapling is no longer available." };
+      if (orchard.trees.length >= ORCHARD_CONFIG.maxTrees) return { ok: false, code: "orchard-capacity", message: `The orchard's ${ORCHARD_CONFIG.maxTrees}-tree limit has been reached.` };
+      const validation = this.validateAppleTreePlacement(draft.previewX, draft.previewY, state);
+      if (!validation.ok) return validation;
+      let serial = orchard.nextTreeSerial;
+      const existing = new Set(orchard.trees.map((tree) => tree.id));
+      while (existing.has(`apple-tree-${serial}`)) serial += 1;
+      const tree = {
+        id: `apple-tree-${serial}`,
+        x: validation.x,
+        y: validation.y,
+        status: "growing",
+        growthMinutes: 0,
+        fruitProgressMinutes: 0,
+        availableFruit: 0,
+        harvests: 0,
+        totalHarvested: 0,
+        plantedAtGameMinute: absoluteWorldMinute(state.world),
+      };
+      orchard.nextTreeSerial = serial + 1;
+      orchard.purchasedSaplings -= 1;
+      orchard.trees.push(tree);
+      const ledger = appendLedger(state, this.now(), {
+        amount: 0,
+        kind: "farming-sapling-placement",
+        reason: "Planted Apple Sapling in Willowmere",
+        itemId: "orchard-apple-sapling",
+        quantity: 1,
+        targetId: tree.id,
+        x: tree.x,
+        y: tree.y,
+      });
+      return { ok: true, code: "sapling-planted", tree: structuredClone(tree), ledger };
+    });
+    if (result.ok) {
+      this.activeTreePlacement = null;
+      this.emit(result);
+    }
+    return result;
+  }
+
+  harvestApple(treeId = null) {
     return this.commit((state) => {
-      const tree = state.farming.orchard.trees[0];
-      if (tree.availableFruit < 1) return { ok: false, code: "fruit-not-ready", message: "This tree is still producing its next apple." };
+      const tree = treeId
+        ? state.farming.orchard.trees.find((entry) => entry.id === treeId)
+        : state.farming.orchard.trees.find((entry) => entry.availableFruit > 0) || state.farming.orchard.trees[0];
+      if (!tree) return { ok: false, code: "unknown-tree", message: "That apple tree does not exist." };
+      if (tree.status !== "mature" || tree.availableFruit < 1) return { ok: false, code: "fruit-not-ready", message: "This tree is still growing or producing its next apple." };
       const added = this.inventory.add(state.inventory, "orchard-apple", ORCHARD_CONFIG.harvestYield);
       if (!added.ok) return added;
       tree.availableFruit = 0;
       tree.fruitProgressMinutes = 0;
       tree.harvests += 1;
       tree.totalHarvested += ORCHARD_CONFIG.harvestYield;
-      return { ok: true, code: "apple-harvested", itemId: "orchard-apple", quantity: ORCHARD_CONFIG.harvestYield };
+      return { ok: true, code: "apple-harvested", treeId: tree.id, itemId: "orchard-apple", quantity: ORCHARD_CONFIG.harvestYield };
     });
+  }
+
+  treeCollisionAt(x, y, radius = 17) {
+    const tree = this.gameState.getSnapshot().farming.orchard.trees.find((entry) => Math.hypot(entry.x - x, entry.y - y) < 38 + radius);
+    return tree ? { blocked: true, treeId: tree.id } : { blocked: false };
   }
 
   completeLawnJob(lawnId) {
@@ -212,14 +361,22 @@ export class FarmingService {
 
   getDiagnostics() {
     const state = this.gameState.getSnapshot();
+    const trees = state.farming.orchard.trees;
     return {
       readyBeds: state.farming.allotment.beds.filter((bed) => bed.status === "ready").length,
       growingBeds: state.farming.allotment.beds.filter((bed) => bed.status === "growing").length,
       unlockedBeds: state.farming.allotment.unlockedBeds,
-      applesReady: state.farming.orchard.trees[0].availableFruit,
+      applesReady: trees.reduce((total, tree) => total + tree.availableFruit, 0),
+      orchardTrees: trees.length,
+      matureTrees: trees.filter((tree) => tree.status === "mature").length,
+      growingTrees: trees.filter((tree) => tree.status === "growing").length,
+      purchasedSaplings: state.farming.orchard.purchasedSaplings,
+      orchardCapacity: ORCHARD_CONFIG.maxTrees,
+      activeTreePlacement: Boolean(this.activeTreePlacement),
       activeLawnJobs: LAWN_PLOTS.filter((plot) => lawnNeedsCare(state.farming.lawns[plot.id])).length,
       lastResolvedAbsoluteMinute: state.farming.lastResolvedAbsoluteMinute,
       weatherIntegrated: true,
+      offlineProgression: true,
     };
   }
 }

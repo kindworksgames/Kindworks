@@ -14,6 +14,7 @@ import { LawnCareScene } from "./scenes/LawnCareScene.js";
 import { BeachCleanupScene } from "./scenes/BeachCleanupScene.js";
 import { PlaygroundPowerwashScene } from "./scenes/PlaygroundPowerwashScene.js";
 import { FishingScene } from "./scenes/FishingScene.js";
+import { VillageGrocerScene } from "./scenes/VillageGrocerScene.js";
 import { bootstrapState } from "./state/bootstrapState.js";
 import { GAME_STATE_SCHEMA_VERSION } from "./state/constants.js";
 import { EconomyService } from "./systems/EconomyService.js";
@@ -82,7 +83,7 @@ const config = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene, TownScene, BakeryScene, CafeScene, MorningMugScene, RiversideKitchenScene, SouthShoreScoopsScene, RiverClearoutScene, HouseRescueScene, WasteCollectionScene, LawnCareScene, BeachCleanupScene, PlaygroundPowerwashScene, FishingScene],
+  scene: [BootScene, TownScene, VillageGrocerScene, BakeryScene, CafeScene, MorningMugScene, RiversideKitchenScene, SouthShoreScoopsScene, RiverClearoutScene, HouseRescueScene, WasteCollectionScene, LawnCareScene, BeachCleanupScene, PlaygroundPowerwashScene, FishingScene],
 };
 
 const game = new Phaser.Game(config);
@@ -113,9 +114,13 @@ if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa")
     + snapshot.objects.filter((object) => object.itemId === "town-planter").length;
   if (planterOwnedOrPlaced < 1) economy.grantItem("town-planter", 1, { reason: "Milestone 25 visual QA fixture" });
 }
+if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "village-grocer") {
+  const balance = stateRuntime.gameState.getSnapshot().economy.coins;
+  if (balance < 3000) economy.credit(3000 - balance, { kind: "development-fixture", reason: "Milestone 26 Village Grocer visual QA" });
+}
 const cleanupService = new CleanupJobService(stateRuntime.gameState, stateRuntime.repository);
 game.registry.set("cleanupService", cleanupService);
-const shopService = new ShopService(economy);
+const shopService = new ShopService(economy, { farming });
 function activeTownScene() {
   return game.scene.getScene("TownScene")?.scene?.isActive?.() ? game.scene.getScene("TownScene") : null;
 }
@@ -169,7 +174,10 @@ const farmingController = new FarmingController(farming, {
     return activeTownScene()?.startLawnCare({ mode: "campaign" }) || { ok: false, message: "Return to town to start the Lawn Care campaign." };
   },
   onOpenSeedShop(itemId) {
-    return shopController.open("town-grocer", { group: "Farming", itemId });
+    return activeTownScene()?.enterVillageGrocer?.({ focusItemId: itemId }) || shopController.open("town-grocer", { group: "Farming", itemId });
+  },
+  onPlaceSapling() {
+    return activeTownScene()?.beginAppleTreePlacement?.() || { ok: false, message: "Return to Willowmere town to place this sapling." };
   },
 });
 game.registry.set("farmingController", farmingController);
@@ -270,6 +278,22 @@ window.__KINDWORKS_PHASER__ = {
   qaConfirmTownPlacement() {
     if (!import.meta.env.DEV) return { ok: false, message: "Visual QA helpers are available only in development." };
     return townPlacement.confirm();
+  },
+  qaGrantFarmingCoins(amount = 3000) {
+    if (!import.meta.env.DEV) return { ok: false, message: "Visual QA helpers are available only in development." };
+    return economy.credit(Math.max(1, Math.floor(Number(amount) || 3000)), { kind: "development-fixture", reason: "Milestone 26 farming visual QA" });
+  },
+  qaBeginAppleTreePlacement() {
+    if (!import.meta.env.DEV) return { ok: false, message: "Visual QA helpers are available only in development." };
+    return activeTownScene()?.beginAppleTreePlacement?.() || { ok: false, message: "Willowmere town is not active." };
+  },
+  qaPreviewAppleTreePlacement(x, y) {
+    if (!import.meta.env.DEV) return { ok: false, message: "Visual QA helpers are available only in development." };
+    return activeTownScene()?.previewAppleTreePlacement?.(x, y) || { ok: false, message: "Willowmere town is not active." };
+  },
+  qaConfirmAppleTreePlacement() {
+    if (!import.meta.env.DEV) return { ok: false, message: "Visual QA helpers are available only in development." };
+    return farming.confirmAppleTreePlacement();
   },
   getCleanupDiagnostics() {
     return cleanupService.getDiagnostics();

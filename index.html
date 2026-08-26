@@ -25,8 +25,13 @@
           <button id="custom-resident-button" class="economy-hud-button resident-hud-button" type="button" aria-label="Create your personal resident">💚 Create resident</button>
           <button id="animal-friends-button" class="economy-hud-button animal-hud-button" type="button" aria-label="Open Animal Friends">🐾 Animal Friends</button>
           <button id="save-status-button" class="save-status-button" type="button" data-status="new">Save not started</button>
-          <div class="milestone-badge">PHASER TOWN · MILESTONE 25</div>
+          <div class="milestone-badge">PHASER TOWN · MILESTONE 26</div>
         </div>
+      </section>
+      <section id="grocer-hud" class="grocer-hud hidden" aria-label="Village Grocer information">
+        <div><small>MILESTONE 26 · TOP-DOWN INTERIOR</small><strong>🥕 Village Grocer</strong><span>Walk to a shelf or tap a product row</span></div>
+        <span id="grocer-balance">🪙 100</span>
+        <button id="grocer-exit" type="button">Return to Willowmere</button>
       </section>
       <section id="interaction-prompt" class="interaction-prompt hidden" aria-label="Nearby interaction" aria-hidden="true">
         <span class="interaction-key" aria-hidden="true">E</span>
@@ -210,7 +215,7 @@
       <section id="farming-panel" class="farming-panel hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="farming-title" aria-describedby="farming-status">
         <div class="farming-panel-card">
           <header class="farming-header">
-            <div><p>MILESTONE 10 · FARMING & LAWNS</p><h2 id="farming-title">🌱 Willowmere Growing</h2></div>
+            <div><p>MILESTONE 26 · COMPLETE FARMING & ORCHARD</p><h2 id="farming-title">🌱 Willowmere Growing</h2></div>
             <span id="farming-balance" class="farming-balance">🪙 100</span>
             <button id="farming-close" type="button" aria-label="Close farming and lawn care">✕</button>
           </header>
@@ -226,9 +231,10 @@
               <div id="farming-beds" class="farming-grid" aria-live="polite"></div>
             </section>
             <section data-farming-pane="orchard" aria-label="Community Orchard" hidden>
-              <div class="farming-intro"><div><h3>Community Orchard</h3><p>The starter apple tree holds one ripe apple at a time. After harvest, weather and game time produce the next.</p></div><span id="farming-apple-count" class="farming-stock">0 in inventory</span></div>
+              <div class="farming-intro"><div><h3>Community Orchard</h3><p>Grow up to 24 separately placed apple trees. Saplings mature with weather and game time; every mature tree then produces one apple at a time.</p></div><span id="farming-apple-count" class="farming-stock">0 in inventory</span></div>
               <article id="farming-orchard-state" class="orchard-state"></article>
-              <button id="farming-harvest-apple" class="farming-primary" type="button">🍎 Harvest one apple</button>
+              <div id="farming-orchard-trees" class="orchard-tree-grid" aria-live="polite"></div>
+              <div class="farming-orchard-actions"><button id="farming-buy-sapling" type="button">🌱 Buy sapling · 🪙 2,800</button><button id="farming-place-sapling" class="farming-primary" type="button">Place owned sapling</button></div>
             </section>
             <section data-farming-pane="lawns" aria-label="Lawn care jobs" hidden>
               <div class="farming-intro"><div><h3>Neighbourhood Lawn Care</h3><p>Grass and weeds regrow with elapsed game time and daily weather. A job appears only when a lawn truly needs care.</p></div></div>

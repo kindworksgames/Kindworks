@@ -1,4 +1,5 @@
 import { ITEM_CATALOG, inventoryLimitFor } from "../data/items.js";
+import { ORCHARD_CONFIG } from "../data/farming.js";
 import { SHOP_DEFINITIONS } from "../data/shops.js";
 
 export function perfectCountFor(state, game) {
@@ -20,10 +21,11 @@ export function itemUnlockState(state, item) {
 }
 
 export class ShopService {
-  constructor(economy, { shops = SHOP_DEFINITIONS, catalog = ITEM_CATALOG } = {}) {
+  constructor(economy, { shops = SHOP_DEFINITIONS, catalog = ITEM_CATALOG, farming = null } = {}) {
     this.economy = economy;
     this.shops = shops;
     this.catalog = catalog;
+    this.farming = farming;
   }
 
   getShop(shopId) {
@@ -37,8 +39,12 @@ export class ShopService {
     const item = this.catalog[itemId];
     if (!item) return { ok: false, code: "unknown-item", message: `Unknown item: ${itemId}` };
     const state = this.economy.gameState.getSnapshot();
-    const owned = this.economy.inventory.quantity(state.inventory, itemId);
-    const limit = inventoryLimitFor(item);
+    const orchardSapling = item.farmingKind === "sapling";
+    const owned = orchardSapling ? state.farming.orchard.purchasedSaplings : this.economy.inventory.quantity(state.inventory, itemId);
+    const limit = orchardSapling ? ORCHARD_CONFIG.maxTrees : inventoryLimitFor(item);
+    const remainingCapacity = orchardSapling
+      ? Math.max(0, ORCHARD_CONFIG.maxTrees - state.farming.orchard.trees.length - owned)
+      : Math.max(0, limit - owned);
     const quote = this.economy.quotePurchase(itemId, 1, state);
     const unlock = itemUnlockState(state, item);
     const equipped = item.category === "equipment" && state.inventory.equipped?.[item.slot] === itemId;
@@ -49,7 +55,7 @@ export class ShopService {
       item,
       owned,
       limit,
-      remainingCapacity: Math.max(0, limit - owned),
+      remainingCapacity,
       balance: state.economy.coins,
       affordable: shortfall === 0,
       shortfall,
@@ -57,7 +63,7 @@ export class ShopService {
       unlock,
       unlocked: unlock.unlocked,
       equipped,
-      canBuy: unlock.unlocked && shortfall === 0 && owned < limit,
+      canBuy: unlock.unlocked && shortfall === 0 && remainingCapacity > 0,
       availability: unlock.unlocked ? "available" : `Complete ${unlock.required} perfect ${unlock.game} jobs (${unlock.progress}/${unlock.required}).`,
     };
   }
@@ -77,10 +83,12 @@ export class ShopService {
     if (!product.ok) return product;
     const shop = this.getShop(shopId);
     if (!product.unlocked) return { ok: false, code: "locked", message: product.availability, unlock: product.unlock, shopId, shopName: shop.name };
-    const result = this.economy.purchase(itemId, quantity, {
+    const result = product.item.farmingKind === "sapling" && this.farming
+      ? this.farming.purchaseSapling()
+      : this.economy.purchase(itemId, quantity, {
       shopId,
       reason: `Bought ${product.item.name} at ${shop.name}`,
-    });
+      });
     return { ...result, shopId, shopName: shop.name };
   }
 

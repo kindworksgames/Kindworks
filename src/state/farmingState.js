@@ -3,6 +3,7 @@ import {
   FARMING_CROPS,
   FARMING_SCHEMA_VERSION,
   LAWN_PLOTS,
+  LEGACY_ORCHARD_TREE_POSITIONS,
   ORCHARD_CONFIG,
   absoluteWorldMinute,
 } from "../data/farming.js";
@@ -14,6 +15,26 @@ function bounded(value, minimum, maximum, fallback = minimum) {
 
 function whole(value, minimum = 0, maximum = Number.MAX_SAFE_INTEGER) {
   return Math.floor(bounded(value, minimum, maximum, minimum));
+}
+
+function treeSerial(id) {
+  const match = String(id || "").match(/(\d+)$/);
+  return match ? whole(match[1]) : 0;
+}
+
+function starterTree() {
+  return {
+    id: "apple-tree-1",
+    x: ORCHARD_CONFIG.starterPosition.x,
+    y: ORCHARD_CONFIG.starterPosition.y,
+    status: "mature",
+    growthMinutes: ORCHARD_CONFIG.maturityMinutes,
+    fruitProgressMinutes: ORCHARD_CONFIG.productionMinutes,
+    availableFruit: 1,
+    harvests: 0,
+    totalHarvested: 0,
+    plantedAtGameMinute: null,
+  };
 }
 
 export function createFreshFarmingState(world) {
@@ -33,14 +54,9 @@ export function createFreshFarmingState(world) {
       })),
     },
     orchard: {
-      trees: [{
-        id: "apple-tree-1",
-        status: "mature",
-        fruitProgressMinutes: ORCHARD_CONFIG.productionMinutes,
-        availableFruit: 1,
-        harvests: 0,
-        totalHarvested: 0,
-      }],
+      nextTreeSerial: 2,
+      purchasedSaplings: 0,
+      trees: [starterTree()],
     },
     lawns: Object.fromEntries(LAWN_PLOTS.map((plot) => [plot.id, {
       id: plot.id,
@@ -68,6 +84,72 @@ function normalizeBed(value, index) {
   };
 }
 
+function normalizeTree(value, index, world, { legacyFoundation = false } = {}) {
+  const source = value && typeof value === "object" ? value : {};
+  const fallback = LEGACY_ORCHARD_TREE_POSITIONS[index] || {
+    x: ORCHARD_CONFIG.starterPosition.x + (index % 4) * 72,
+    y: ORCHARD_CONFIG.starterPosition.y + Math.floor(index / 4) * 72,
+  };
+  const rawStatus = source.status === "planted" ? "growing" : source.status;
+  const status = ["growing", "mature"].includes(rawStatus) ? rawStatus : index === 0 ? "mature" : "growing";
+  const now = absoluteWorldMinute(world);
+  let growthMinutes = Number(source.growthMinutes);
+  if (!Number.isFinite(growthMinutes) && status === "growing") {
+    const plantedAt = Number(source.plantedAtGameMinute);
+    const maturesAt = Number(source.maturesAtGameMinute);
+    if (Number.isFinite(plantedAt)) growthMinutes = now - plantedAt;
+    else if (Number.isFinite(maturesAt)) growthMinutes = ORCHARD_CONFIG.maturityMinutes - Math.max(0, maturesAt - now);
+  }
+  growthMinutes = status === "mature"
+    ? ORCHARD_CONFIG.maturityMinutes
+    : bounded(growthMinutes, 0, ORCHARD_CONFIG.maturityMinutes, 0);
+  const availableFruit = status === "mature"
+    ? whole(source.availableFruit ?? (source.fruitReady ? 1 : 0), 0, ORCHARD_CONFIG.maxFruit)
+    : 0;
+  let fruitProgressMinutes = Number(source.fruitProgressMinutes);
+  if (!Number.isFinite(fruitProgressMinutes) && status === "mature" && !availableFruit) {
+    const nextFruitAt = Number(source.nextFruitAtGameMinute);
+    if (Number.isFinite(nextFruitAt)) fruitProgressMinutes = ORCHARD_CONFIG.productionMinutes - Math.max(0, nextFruitAt - now);
+  }
+  fruitProgressMinutes = availableFruit
+    ? ORCHARD_CONFIG.productionMinutes
+    : bounded(fruitProgressMinutes, 0, ORCHARD_CONFIG.productionMinutes, 0);
+  const serial = legacyFoundation ? index + 1 : treeSerial(source.id) || index + 1;
+  return {
+    id: `apple-tree-${serial}`,
+    x: bounded(source.x, 0, 3600, fallback.x),
+    y: bounded(source.y, 0, 2800, fallback.y),
+    status,
+    growthMinutes,
+    fruitProgressMinutes,
+    availableFruit,
+    harvests: whole(source.harvests),
+    totalHarvested: whole(source.totalHarvested),
+    plantedAtGameMinute: Number.isFinite(Number(source.plantedAtGameMinute)) ? Math.max(0, Number(source.plantedAtGameMinute)) : null,
+  };
+}
+
+function normalizeTrees(rawTrees, world, options = {}) {
+  const incoming = Array.isArray(rawTrees) ? rawTrees : [];
+  const trees = incoming
+    .filter((tree) => tree && (tree.treeType === undefined || tree.treeType === "apple"))
+    .slice(0, ORCHARD_CONFIG.maxTrees)
+    .map((tree, index) => normalizeTree(tree, index, world, options));
+  if (!trees.length) trees.push(starterTree());
+  const seen = new Set();
+  let nextAvailable = 1;
+  for (const tree of trees) {
+    let serial = treeSerial(tree.id);
+    while (!serial || seen.has(serial)) {
+      while (seen.has(nextAvailable)) nextAvailable += 1;
+      serial = nextAvailable;
+    }
+    tree.id = `apple-tree-${serial}`;
+    seen.add(serial);
+  }
+  return trees;
+}
+
 export function normalizeFarmingState(value, world) {
   const fresh = createFreshFarmingState(world);
   if (!value || typeof value !== "object" || Array.isArray(value)) return fresh;
@@ -75,17 +157,10 @@ export function normalizeFarmingState(value, world) {
   next.lastResolvedAbsoluteMinute = whole(value.lastResolvedAbsoluteMinute, 0, absoluteWorldMinute(world));
   next.allotment.beds = Array.from({ length: ALLOTMENT_CONFIG.bedCount }, (_, index) => normalizeBed(value.allotment?.beds?.[index], index));
   next.allotment.unlockedBeds = next.allotment.beds.filter((bed) => bed.unlocked).length;
-  const tree = value.orchard?.trees?.[0];
-  if (tree && typeof tree === "object") {
-    next.orchard.trees[0] = {
-      id: "apple-tree-1",
-      status: "mature",
-      fruitProgressMinutes: bounded(tree.fruitProgressMinutes, 0, ORCHARD_CONFIG.productionMinutes, 0),
-      availableFruit: whole(tree.availableFruit, 0, ORCHARD_CONFIG.maxFruit),
-      harvests: whole(tree.harvests),
-      totalHarvested: whole(tree.totalHarvested),
-    };
-  }
+  next.orchard.trees = normalizeTrees(value.orchard?.trees, world);
+  const largestSerial = next.orchard.trees.reduce((largest, tree) => Math.max(largest, treeSerial(tree.id)), 0);
+  next.orchard.nextTreeSerial = Math.max(largestSerial + 1, whole(value.orchard?.nextTreeSerial, 1));
+  next.orchard.purchasedSaplings = whole(value.orchard?.purchasedSaplings, 0, ORCHARD_CONFIG.maxTrees - next.orchard.trees.length);
   for (const plot of LAWN_PLOTS) {
     const lawn = value.lawns?.[plot.id];
     if (!lawn || typeof lawn !== "object") continue;
@@ -101,35 +176,54 @@ export function normalizeFarmingState(value, world) {
 }
 
 export function projectLegacyFarming(legacy, world) {
-  const next = createFreshFarmingState(world);
   const source = legacy?.farmingFoundation;
-  if (!source || typeof source !== "object") return next;
-  const normalized = normalizeFarmingState(null, world);
-  const beds = Array.isArray(source.allotment?.beds) ? source.allotment.beds : [];
-  normalized.allotment.beds = Array.from({ length: ALLOTMENT_CONFIG.bedCount }, (_, index) => {
-    const bed = beds[index];
-    if (!bed) return normalizeBed(null, index);
-    const crop = FARMING_CROPS[bed.cropId];
-    const status = crop && ["growing", "ready"].includes(bed.status) ? bed.status : "empty";
+  const beds = Array.isArray(source?.allotment?.beds) ? source.allotment.beds : [];
+  const oldAllotment = legacy?.allotment;
+  const sourceBeds = beds.length ? beds : oldAllotment?.stage && oldAllotment.stage !== "empty"
+    ? [{ ...oldAllotment, unlocked: true, cropId: "carrot", status: oldAllotment.stage }]
+    : [];
+  const projectedBeds = Array.from({ length: ALLOTMENT_CONFIG.bedCount }, (_, index) => {
+    const bed = sourceBeds[index];
+    const crop = FARMING_CROPS[bed?.cropId];
+    if (!bed || !crop || !["growing", "ready"].includes(bed.status)) return { ...bed, unlocked: index === 0 || Boolean(bed?.unlocked) };
     const planted = Number(bed.plantedAtGameMinute);
     const ready = Number(bed.readyAtGameMinute);
-    const elapsed = Number.isFinite(planted) ? Math.max(0, absoluteWorldMinute(world) - planted) : 0;
-    return normalizeBed({
-      ...bed,
-      status,
-      growthMinutes: status === "ready" ? crop?.growMinutes : Math.min(crop?.growMinutes || 0, Number.isFinite(ready) ? Math.min(elapsed, ready - planted) : elapsed),
-    }, index);
+    const now = absoluteWorldMinute(world);
+    const growthMinutes = bed.status === "ready"
+      ? crop.growMinutes
+      : Number.isFinite(Number(bed.growthMinutes))
+        ? Number(bed.growthMinutes)
+        : Number.isFinite(planted)
+          ? Math.max(0, now - planted)
+          : Number.isFinite(ready)
+            ? crop.growMinutes - Math.max(0, ready - now)
+            : 0;
+    return { ...bed, growthMinutes };
   });
-  normalized.allotment.unlockedBeds = normalized.allotment.beds.filter((bed) => bed.unlocked).length;
-  const oldTree = source.orchard?.slots?.find((tree) => tree?.treeType === "apple") || source.orchard?.slots?.[0];
-  if (oldTree) normalized.orchard.trees[0] = {
-    id: "apple-tree-1",
-    status: "mature",
-    fruitProgressMinutes: oldTree.availableFruit > 0 ? ORCHARD_CONFIG.productionMinutes : 0,
-    availableFruit: oldTree.availableFruit > 0 ? 1 : 0,
-    harvests: whole(oldTree.harvests),
-    totalHarvested: whole(oldTree.totalHarvested),
-  };
+  const slots = Array.isArray(source?.orchard?.slots) ? source.orchard.slots : [];
+  const treeSources = slots.filter((slot) => slot?.treeType === "apple");
+  if (!treeSources.length) {
+    const oldOrchard = legacy?.orchard;
+    treeSources.push({
+      id: "apple-tree-1",
+      ...ORCHARD_CONFIG.starterPosition,
+      treeType: "apple",
+      status: "mature",
+      availableFruit: Number(oldOrchard?.lastHarvestDay || 0) < Number(world?.day || 1) ? 1 : 0,
+      harvests: oldOrchard?.harvests,
+      totalHarvested: oldOrchard?.totalHarvested,
+    });
+  }
+  const normalized = normalizeFarmingState({
+    lastResolvedAbsoluteMinute: absoluteWorldMinute(world),
+    allotment: { beds: projectedBeds },
+    orchard: {
+      trees: normalizeTrees(treeSources, world, { legacyFoundation: Number(source?.schemaVersion) < 3 }),
+      purchasedSaplings: source?.orchard?.purchasedSaplings,
+      nextTreeSerial: source?.orchard?.treeSerial,
+    },
+    lawns: legacy?.lawns,
+  }, world);
   const lawns = legacy?.lawns;
   if (lawns && typeof lawns === "object") {
     LAWN_PLOTS.forEach((plot, index) => {
@@ -153,8 +247,21 @@ export function validateFarmingState(farming, world) {
     if (!Number.isFinite(bed.growthMinutes) || bed.growthMinutes < 0 || (bed.cropId && bed.growthMinutes > FARMING_CROPS[bed.cropId].growMinutes)) errors.push(`Allotment bed ${index + 1} growth is invalid.`);
   });
   if (farming.allotment?.unlockedBeds !== farming.allotment?.beds?.filter((bed) => bed.unlocked).length) errors.push("Unlocked allotment bed count is invalid.");
-  const tree = farming.orchard?.trees?.[0];
-  if (!tree || tree.id !== "apple-tree-1" || tree.status !== "mature" || !Number.isFinite(tree.fruitProgressMinutes) || tree.fruitProgressMinutes < 0 || tree.fruitProgressMinutes > ORCHARD_CONFIG.productionMinutes || !Number.isInteger(tree.availableFruit) || tree.availableFruit < 0 || tree.availableFruit > 1) errors.push("Starter orchard tree is invalid.");
+  const trees = farming.orchard?.trees;
+  if (!Array.isArray(trees) || trees.length < 1 || trees.length > ORCHARD_CONFIG.maxTrees) errors.push("Orchard tree count is invalid.");
+  else {
+    const ids = new Set();
+    for (const tree of trees) {
+      if (!/^apple-tree-\d+$/.test(tree?.id || "") || ids.has(tree.id)) errors.push("Apple tree identities are missing or duplicated.");
+      ids.add(tree?.id);
+      if (!Number.isFinite(tree?.x) || !Number.isFinite(tree?.y) || !["growing", "mature"].includes(tree?.status)) errors.push(`${tree?.id || "Apple tree"} has invalid placement or status.`);
+      if (!Number.isFinite(tree?.growthMinutes) || tree.growthMinutes < 0 || tree.growthMinutes > ORCHARD_CONFIG.maturityMinutes) errors.push(`${tree?.id || "Apple tree"} has invalid growth.`);
+      if (!Number.isFinite(tree?.fruitProgressMinutes) || tree.fruitProgressMinutes < 0 || tree.fruitProgressMinutes > ORCHARD_CONFIG.productionMinutes) errors.push(`${tree?.id || "Apple tree"} has invalid fruit progress.`);
+      if (!Number.isInteger(tree?.availableFruit) || tree.availableFruit < 0 || tree.availableFruit > ORCHARD_CONFIG.maxFruit || (tree.status !== "mature" && tree.availableFruit)) errors.push(`${tree?.id || "Apple tree"} has invalid fruit.`);
+    }
+  }
+  if (!Number.isSafeInteger(farming.orchard?.nextTreeSerial) || farming.orchard.nextTreeSerial < 1) errors.push("Orchard tree serial is invalid.");
+  if (!Number.isInteger(farming.orchard?.purchasedSaplings) || farming.orchard.purchasedSaplings < 0 || farming.orchard.purchasedSaplings + (trees?.length || 0) > ORCHARD_CONFIG.maxTrees) errors.push("Owned orchard saplings exceed the safe tree limit.");
   for (const plot of LAWN_PLOTS) {
     const lawn = farming.lawns?.[plot.id];
     if (!lawn || lawn.id !== plot.id || !Number.isFinite(lawn.grassHeight) || lawn.grassHeight < 0 || lawn.grassHeight > 100 || !Number.isFinite(lawn.weedPressure) || lawn.weedPressure < 0 || lawn.weedPressure > 100 || !Number.isInteger(lawn.completedJobs) || lawn.completedJobs < 0) errors.push(`${plot.id} lawn state is invalid.`);

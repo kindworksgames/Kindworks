@@ -1,12 +1,12 @@
 # Kindworks Phaser save contract
 
-> Current migration status: Milestone 25 uses game-state and envelope schema
-> 22. Schemas 1 through 21 upgrade in order, with schema 22 adding the complete
-> town-object placement, exact transform, behaviour-hook, and legacy-placement
-> import contract described below. The historical schema-3 foundation notes are
-> retained for traceability.
+> Current migration status: Milestone 26 uses game-state and envelope schema
+> 23. Schemas 1 through 22 upgrade in order. Schema 22 added complete town-object
+> placement; schema 23 adds the complete positioned-orchard and agricultural
+> legacy-import contract described below. Historical foundation notes remain for
+> traceability.
 
-Milestone 3 introduced the protected save foundation alongside the preserved HTML game. Milestone 4 added the shared item catalogue, inventory, KindlyCoin ledger, and atomic economy transactions. Milestone 6 adds the first persistent cleanup session, exact-target result, and job reward. NPC, animal, farming, dynamic cleanup, and the remaining mini-games stay staged for later milestones.
+Milestone 3 introduced the protected save foundation alongside the preserved HTML game. Milestone 4 added the shared item catalogue, inventory, KindlyCoin ledger, and atomic economy transactions. Milestone 6 added the first persistent cleanup session, exact-target result, and job reward. Subsequent milestones migrated the remaining shared systems and mini-games; Milestone 26 completes the Grocer, farming, and positioned-orchard loop.
 
 ## Storage namespaces
 
@@ -23,14 +23,14 @@ The Phaser build owns only:
 - `kindworks_phaser_v1_backup`
 - `kindworks_phaser_v1_recovery`
 
-## Current Phaser envelope schema 22
+## Current Phaser envelope schema 23
 
 Every current and backup save is a JSON envelope:
 
 ```json
 {
   "format": "kindworks-phaser",
-  "schemaVersion": 22,
+  "schemaVersion": 23,
   "writtenAt": "2026-08-25T00:00:00.000Z",
   "appVersion": "0.1.0",
   "data": {},
@@ -38,7 +38,7 @@ Every current and backup save is a JSON envelope:
 }
 ```
 
-The checksum covers every envelope field except the checksum itself. A save is accepted only when its format, schema, timestamp, checksum, and inner game state all validate. Valid schemas 1 through 21 upgrade to schema 22, and the original verified envelope becomes the Phaser backup before replacement.
+The checksum covers every envelope field except the checksum itself. A save is accepted only when its format, schema, timestamp, checksum, and inner game state all validate. Valid schemas 1 through 22 upgrade to schema 23, and the original verified envelope becomes the Phaser backup before replacement.
 
 ## Historical game-state schema 3 foundation
 
@@ -69,7 +69,7 @@ The checksum covers every envelope field except the checksum itself. A save is a
 - The current balance is always `lifetimeCoinsEarned - lifetimeCoinsSpent`.
 - Every credit, debit, purchase, equipment change, and consumable use records an ID, signed amount, post-transaction balance, kind, reason, related item/quantity when present, shop metadata when applicable, and timestamp.
 - The ledger retains the latest 500 entries.
-- The extracted catalogue contains all 76 legacy IDs: 12 equipment, 35 placeables, 15 consumables, 10 furniture items, and 4 aquarium collectibles.
+- The extracted catalogue contains all 82 current IDs, including the complete original ordinary shop stock, farming produce, the orchard sapling, migration-only records, and aquarium collectibles.
 - Inventory uses `equipment`, `placeables`, `consumables`, and `furniture` buckets. Aquarium collectibles remain outside normal inventory, matching the legacy game.
 - Equipment and unique furniture are capped at one. Seeds, harvested produce, and edible fishing catches are capped at 99; other stackable consumables and placeables retain the original 9,999 limit.
 - `starter-mower` and `starter-vacuum` always remain owned and correctly equipped.
@@ -85,7 +85,8 @@ The checksum covers every envelope field except the checksum itself. A save is a
   migrated Farming seed group. QA, subscription-only, fishing-only, harvested,
   and zero-price stock cannot be purchased through the coin shop.
 - Willowmere Shop owns 51 released tools, placeables, and furniture items;
-  Village Grocer owns its exact three seed and five everyday-treat products;
+  Village Grocer owns its exact three allotment seeds, one orchard sapling, and
+  five everyday-treat products;
   Fresh Market owns its exact seven fish, meat, and pellet products. Released
   ordinary stock has exactly one retailer.
 - Locked placeables and mowers read perfect-result counts directly from Lawn
@@ -138,6 +139,31 @@ The checksum covers every envelope field except the checksum itself. A save is a
   obstacle radii, rubbish-spawn exclusion radii, player collision, interaction
   kind/capacity, and automatic night glow. Hooks are derived from catalogue
   metadata and validated on every save rather than trusted as arbitrary input.
+
+## Farming and orchard schema-23 contract
+
+- Farming schema 2 owns six allotment beds, three original crop definitions,
+  lawn state, one purchased-sapling counter, one stable tree serial, and up to
+  24 separately positioned apple-tree records.
+- Every apple tree persists a stable ID, exact finite world coordinates,
+  growing or mature status, maturity progress, fruit-production progress, one
+  available-fruit slot, harvest totals, and planting time. Trees block the
+  player and cannot overlap protected town geometry, placed objects, or one
+  another.
+- A sapling costs exactly 2,800 KindlyCoins at Village Grocer. Purchase and
+  placement are separate atomic actions: purchase creates an owned sapling;
+  placement consumes one only after the proposed tree and complete save pass
+  validation. A failed save restores the wallet, sapling, tree collection, and
+  active placement exactly.
+- Saplings mature after 4,320 game minutes. Each mature tree produces at most
+  one apple every 720 effective game minutes. Current weather modifies both
+  progress rates, and elapsed/offline time resolves through the same world-time
+  path before interaction.
+- Schema-22 upgrades normalize the existing Phaser starter orchard. For a
+  legacy import, schema 23 also projects every known original orchard slot,
+  exact saved position, crop bed, and purchased sapling without changing the
+  protected legacy snapshot. Modern crop and lawn progress remain authoritative
+  when an older Phaser save and legacy snapshot coexist.
 
 ## Cleanup transaction contract
 

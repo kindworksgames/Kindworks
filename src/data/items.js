@@ -2,6 +2,7 @@ const itemRows = [
   ["carrot-seeds", "Carrot Seeds", "🥕", "consumable", 30, "Farming", { retailer: "town-grocer", inventoryLimit: 99 }],
   ["fresh-greens-seeds", "Greens Seeds", "🥬", "consumable", 80, "Farming", { retailer: "town-grocer", inventoryLimit: 99 }],
   ["wild-berry-starters", "Berry Starters", "🫐", "consumable", 120, "Farming", { retailer: "town-grocer", inventoryLimit: 99 }],
+  ["orchard-apple-sapling", "Apple Sapling", "🌱", "consumable", 2800, "Farming", { retailer: "town-grocer", farmingKind: "sapling", inventoryLimit: 24, description: "A young apple tree you can place on valid open ground in Willowmere." }],
   ["allotment-carrot", "Allotment Carrot", "🥕", "consumable", 0, "Farm Harvests", { farmingOnly: true, inventoryLimit: 99 }],
   ["orchard-apple", "Orchard Apple", "🍎", "consumable", 0, "Farm Harvests", { farmingOnly: true, inventoryLimit: 99 }],
   ["mixed-seeds", "Mixed Bird Seed", "🌾", "consumable", 60, "Animal Treats", { retailer: "town-grocer" }],

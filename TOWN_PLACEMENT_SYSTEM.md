@@ -75,7 +75,8 @@ Each object has a stable `placed-N` ID, catalogue ID/type, exact finite `x` and
 fill/tipping data, and catalogue-derived hooks. `nextSerial` prevents reused
 identities after storing an object.
 
-Schema-21 saves upgrade to schema 22 with an empty placement domain. A legacy
+Schema-21 saves upgrade to schema 22 with an empty placement domain. Current
+schema-23 saves retain and revalidate that same placement domain. A legacy
 import reads only the preserved `economy.placedObjects` array: safe known
 objects retain exact coordinates and normalized rotation; duplicate, unsafe,
 or over-limit known items return to the new Phaser inventory; unknown IDs are

@@ -1,4 +1,4 @@
-export const FARMING_SCHEMA_VERSION = 1;
+export const FARMING_SCHEMA_VERSION = 2;
 
 export const ALLOTMENT_CONFIG = Object.freeze({
   bedCount: 6,
@@ -15,10 +15,20 @@ export const FARMING_CROPS = Object.freeze({
 
 export const ORCHARD_CONFIG = Object.freeze({
   interaction: Object.freeze({ x: 3070, y: 300, radius: 190 }),
+  starterPosition: Object.freeze({ x: 3020, y: 230 }),
+  maxTrees: 24,
+  starterTrees: 1,
+  saplingPrice: 2800,
+  maturityMinutes: 4320,
   productionMinutes: 720,
   harvestYield: 1,
   maxFruit: 1,
+  placementItemId: "apple-tree",
 });
+
+export const LEGACY_ORCHARD_TREE_POSITIONS = Object.freeze([
+  [2925, 180], [3020, 160], [3120, 190], [2965, 330], [3070, 315], [3170, 335],
+].map(([x, y]) => Object.freeze({ x, y })));
 
 export const LAWN_CONFIG = Object.freeze({
   jobGrassThreshold: 70,

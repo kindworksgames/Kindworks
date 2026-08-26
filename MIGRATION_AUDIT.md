@@ -232,3 +232,18 @@ the protected legacy snapshot unchanged. Validated hooks are ready for resident
 destinations, usable bins, wildlife avoidance, rubbish-spawn exclusion, player
 collision, and night lighting. All 251 automated tests and the production build
 pass. The protected HTML source remains unchanged.
+
+Milestone 26 completes the Village Grocer, allotment, and orchard migration.
+The Grocer is now a walkable top-down Phaser interior with the original nine
+physical product displays, cashier and customer, keyboard and touch movement,
+collision, shelf interaction, and safe checkout. Farming retains the six
+original beds, three crops, unlock costs, seed prices, growth times, yields,
+weather effects, and offline progression. The orchard supports one starter
+tree and up to 23 purchased saplings, for 24 separately positioned trees. Each
+tree persists its exact town coordinates, stable identity, 4,320-minute
+maturity, 720-minute one-apple production cycle, weather-adjusted progress,
+and individual harvest history. Sapling purchase and placement are separately
+atomic, respect the complete town validation map, and roll back cleanly on a
+failed save. Schema 23 imports original crop beds, every original orchard slot,
+saved positions, fruit and growth state, and owned saplings without mutating
+the protected source snapshot. The protected HTML source remains unchanged.

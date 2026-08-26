@@ -36,7 +36,8 @@ test("pins all three legacy shops, their categories and their exact ordinary sto
   assert.deepEqual(WILLOWMERE_SHOP.groups, ["Mowers", "Vacuums", "Trees", "Seating", "Bins", "Decorations", "Furniture"]);
   assert.deepEqual(VILLAGE_GROCER.groups, ["Farming", "Animal Treats"]);
   assert.equal(WILLOWMERE_SHOP.itemIds.length, 51);
-  assert.equal(VILLAGE_GROCER.itemIds.length, 8);
+  assert.equal(VILLAGE_GROCER.itemIds.length, 9);
+  assert.ok(VILLAGE_GROCER.itemIds.includes("orchard-apple-sapling"));
   assert.deepEqual(FRESH_MARKET.itemIds, [
     "river-minnows",
     "fresh-sardines",
@@ -240,7 +241,7 @@ test("schema 20 saves convert existing inventory safely while preserving equipme
   old.economy.ledger.at(-1).shopId = "town-grocer";
   old.economy.ledger.at(-1).upgradeCredit = 250;
   const upgraded = upgradeGameState(old, { now: 1000 });
-  assert.equal(upgraded.schemaVersion, 22);
+  assert.equal(upgraded.schemaVersion, 23);
   assert.equal(upgraded.inventory.consumables["river-minnows"], 99);
   assert.equal(upgraded.inventory.consumables["retired-snack"], undefined);
   assert.equal(upgraded.inventory.equipment["cherry-compact-mower"], 1);

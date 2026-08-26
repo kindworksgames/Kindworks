@@ -5,15 +5,17 @@ function percentage(value, total) {
 }
 
 export class FarmingController {
-  constructor(farming, { onModalChange = () => {}, onStartLawnJob = () => ({ ok: false }), onStartLawnCampaign = () => ({ ok: false }), onOpenSeedShop = () => ({ ok: false }) } = {}) {
+  constructor(farming, { onModalChange = () => {}, onStartLawnJob = () => ({ ok: false }), onStartLawnCampaign = () => ({ ok: false }), onOpenSeedShop = () => ({ ok: false }), onPlaceSapling = () => ({ ok: false }) } = {}) {
     this.farming = farming;
     this.onModalChange = onModalChange;
     this.onStartLawnJob = onStartLawnJob;
     this.onStartLawnCampaign = onStartLawnCampaign;
     this.onOpenSeedShop = onOpenSeedShop;
+    this.onPlaceSapling = onPlaceSapling;
     this.selectedCropId = "carrot";
     this.selectedTab = "allotment";
     this.selectedLawnId = LAWN_PLOTS[0].id;
+    this.selectedTreeId = "apple-tree-1";
     this.panel = document.querySelector("#farming-panel");
     this.status = document.querySelector("#farming-status");
     this.bind();
@@ -41,7 +43,19 @@ export class FarmingController {
       if (button.dataset.plantBed) return this.report(this.farming.plant(button.dataset.plantBed, this.selectedCropId));
       if (button.dataset.harvestBed) return this.report(this.farming.harvest(button.dataset.harvestBed));
       if (button.dataset.unlockBed) return this.report(this.farming.unlockBed(button.dataset.unlockBed));
-      if (button.id === "farming-harvest-apple") return this.report(this.farming.harvestApple());
+      if (button.dataset.harvestTree) return this.report(this.farming.harvestApple(button.dataset.harvestTree));
+      if (button.id === "farming-buy-sapling") {
+        this.close();
+        return this.onOpenSeedShop("orchard-apple-sapling");
+      }
+      if (button.id === "farming-place-sapling") {
+        const result = this.onPlaceSapling();
+        if (result?.ok || this.farming.getPlacementSnapshot?.().active) {
+          this.close();
+          return result;
+        }
+        return this.report(result || { ok: false, message: "Apple-tree placement is not ready." });
+      }
       if (button.dataset.lawnId) {
         this.selectedLawnId = button.dataset.lawnId;
         return this.render();
@@ -71,6 +85,7 @@ export class FarmingController {
   open(tab = "allotment", targetId = null) {
     this.selectedTab = ["allotment", "orchard", "lawns"].includes(tab) ? tab : "allotment";
     if (targetId && LAWN_PLOTS.some((plot) => plot.id === targetId)) this.selectedLawnId = targetId;
+    if (targetId && this.farming.getSnapshot().orchard.trees.some((tree) => tree.id === targetId)) this.selectedTreeId = targetId;
     this.farming.refresh({ persist: true });
     this.panel?.classList.remove("hidden");
     this.panel?.setAttribute("aria-hidden", "false");
@@ -95,6 +110,8 @@ export class FarmingController {
       "crop-harvested": `Harvest collected: ${result.quantity || 0} added to inventory.`,
       "bed-unlocked": "A new allotment bed is ready to use.",
       "apple-harvested": "One apple collected. The tree has started producing again.",
+      "sapling-purchased": "Apple sapling bought. Return to the orchard panel to place it in town.",
+      "sapling-planted": "Apple sapling planted. Weather and game time now control its growth.",
       "lawn-completed": `Lawn restored and 🪙 ${result.rewardCoins || 0} paid exactly once.`,
     };
     this.status.textContent = result.ok ? messages[result.code] || "Farming state updated." : result.message || result.reason || "That action is not available yet.";
@@ -142,12 +159,25 @@ export class FarmingController {
       return `<article class="farm-card ${bed.status}"><span class="farm-icon">${crop.icon}</span><div><strong>Bed ${index + 1} · ${crop.label}</strong><small>${bed.status === "ready" ? `Ready · collect ${crop.harvestYield}` : `Growing · ${progress}%`}</small><progress max="100" value="${progress}">${progress}%</progress></div><button type="button" data-harvest-bed="${bed.id}" ${bed.status !== "ready" ? "disabled" : ""}>Harvest</button></article>`;
     }).join("");
 
-    const tree = state.orchard.trees[0];
-    const appleProgress = percentage(tree.fruitProgressMinutes, ORCHARD_CONFIG.productionMinutes);
+    const readyTrees = state.orchard.trees.filter((tree) => tree.availableFruit > 0).length;
+    const growingTrees = state.orchard.trees.filter((tree) => tree.status === "growing").length;
     const orchardState = document.querySelector("#farming-orchard-state");
-    if (orchardState) orchardState.innerHTML = `<span class="orchard-tree">${tree.availableFruit ? "🍎" : "🌳"}</span><div><strong>${tree.availableFruit ? "One ripe apple is ready" : "The tree is producing"}</strong><small>${tree.availableFruit ? "Each harvest collects one apple." : `${appleProgress}% until its next apple · weather affects the pace.`}</small><progress max="100" value="${appleProgress}">${appleProgress}%</progress></div>`;
-    const appleButton = document.querySelector("#farming-harvest-apple");
-    if (appleButton) appleButton.disabled = tree.availableFruit < 1;
+    if (orchardState) orchardState.innerHTML = `<span class="orchard-tree">${readyTrees ? "🌳🍎" : growingTrees ? "🌱" : "🌳"}</span><div><strong>${state.orchard.trees.length} / ${ORCHARD_CONFIG.maxTrees} apple trees · ${readyTrees} ready</strong><small>${growingTrees} growing · ${state.orchard.purchasedSaplings} purchased sapling${state.orchard.purchasedSaplings === 1 ? "" : "s"} waiting to be placed</small><progress max="${ORCHARD_CONFIG.maxTrees}" value="${state.orchard.trees.length}">${state.orchard.trees.length}</progress></div>`;
+    const treeGrid = document.querySelector("#farming-orchard-trees");
+    if (treeGrid) treeGrid.innerHTML = state.orchard.trees.map((tree, index) => {
+      const progress = tree.status === "growing"
+        ? percentage(tree.growthMinutes, ORCHARD_CONFIG.maturityMinutes)
+        : percentage(tree.fruitProgressMinutes, ORCHARD_CONFIG.productionMinutes);
+      const detail = tree.status === "growing" ? `Sapling growing · ${progress}%` : tree.availableFruit ? "One ripe apple ready" : `Producing next apple · ${progress}%`;
+      return `<article class="farm-card orchard-tree-card ${tree.availableFruit ? "ready" : tree.status}"><span class="farm-icon">${tree.status === "growing" ? "🌱" : tree.availableFruit ? "🍎" : "🌳"}</span><div><strong>Tree ${index + 1}</strong><small>${detail} · ${Math.round(tree.x)}, ${Math.round(tree.y)}</small><progress max="100" value="${progress}">${progress}%</progress></div><button type="button" data-harvest-tree="${tree.id}" ${tree.availableFruit < 1 ? "disabled" : ""}>Harvest</button></article>`;
+    }).join("");
+    const buySapling = document.querySelector("#farming-buy-sapling");
+    if (buySapling) buySapling.disabled = state.orchard.trees.length + state.orchard.purchasedSaplings >= ORCHARD_CONFIG.maxTrees;
+    const placeSapling = document.querySelector("#farming-place-sapling");
+    if (placeSapling) {
+      placeSapling.disabled = state.orchard.purchasedSaplings < 1 || state.orchard.trees.length >= ORCHARD_CONFIG.maxTrees;
+      placeSapling.textContent = state.orchard.purchasedSaplings > 0 ? `Place owned sapling · ${state.orchard.purchasedSaplings}` : "Place owned sapling";
+    }
     const appleCount = document.querySelector("#farming-apple-count");
     if (appleCount) appleCount.textContent = `${this.farming.inventory.quantity(game.inventory, "orchard-apple")} in inventory`;
 
@@ -169,6 +199,6 @@ export class FarmingController {
   }
 
   getDiagnostics() {
-    return { open: this.isOpen(), selectedTab: this.selectedTab, selectedCropId: this.selectedCropId, selectedLawnId: this.selectedLawnId };
+    return { open: this.isOpen(), selectedTab: this.selectedTab, selectedCropId: this.selectedCropId, selectedLawnId: this.selectedLawnId, selectedTreeId: this.selectedTreeId };
   }
 }
