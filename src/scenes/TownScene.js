@@ -88,6 +88,8 @@ export class TownScene extends Phaser.Scene {
     this.environmentVisuals = [];
     this.environmentSignature = null;
     this.environmentBadge = null;
+    this.publicBinVisuals = [];
+    this.publicBinSignature = null;
   }
 
   create() {
@@ -124,6 +126,7 @@ export class TownScene extends Phaser.Scene {
     this.drawTown();
     this.renderLivingEnvironment();
     this.renderTownPlacements();
+    this.renderNpcPublicBins();
 
     const qaTarget = import.meta.env.DEV
       ? new URLSearchParams(window.location.search).get("qa")
@@ -136,6 +139,8 @@ export class TownScene extends Phaser.Scene {
       : null;
     const qaSpawn = qaTarget === "powerwash"
       ? PLAYGROUND_POWERWASH.approach
+      : qaTarget === "advanced-npc"
+        ? { x: 970, y: 1260 }
       : qaTarget === "placement"
         ? { x: 100, y: 200 }
       : qaTarget === "environment" && environmentQaJob
@@ -954,6 +959,17 @@ export class TownScene extends Phaser.Scene {
   }
 
   placementInteractables() {
+    const publicBins = (this.npcTownLife?.getPublicBins?.() || []).map((bin) => ({
+      id: `public-bin-${bin.id}`,
+      kind: "public-bin",
+      x: bin.x,
+      y: bin.y,
+      radius: 72,
+      icon: bin.tipped ? "⚠️" : bin.fill >= bin.capacity ? "🚮" : "🗑️",
+      label: bin.tipped ? `Tipped bin at ${bin.district}` : `${bin.district} public bin`,
+      detail: bin.tipped ? `${bin.spillIds.length} spilled item${bin.spillIds.length === 1 ? "" : "s"} · residents cannot use it` : `${bin.fill}/${bin.capacity} full · residents use this bin`,
+      onActivate: () => this.renderInteractionPrompt({ icon: "🗑️", label: bin.label, detail: bin.tipped ? "Residents may help right it after the spill is cleaned." : `${bin.fill} of ${bin.capacity} spaces are filled.` }),
+    }));
     const placed = (this.townPlacement?.getObjects?.() || []).map((object) => ({
       id: `manage-${object.id}`,
       kind: "placed-object",
@@ -976,7 +992,27 @@ export class TownScene extends Phaser.Scene {
       detail: tree.status === "growing" ? "This sapling is still growing" : tree.availableFruit ? "One apple is ready" : "Producing its next apple",
       onActivate: () => this.openFarming("orchard", tree.id),
     }));
-    return [...placed, ...trees];
+    return [...publicBins, ...placed, ...trees];
+  }
+
+  renderNpcPublicBins() {
+    const bins = this.npcTownLife?.getPublicBins?.() || [];
+    const signature = bins.map((bin) => `${bin.id}:${bin.fill}:${bin.tipped}:${bin.spillIds.length}`).join("|");
+    if (signature === this.publicBinSignature) return;
+    this.publicBinSignature = signature;
+    this.publicBinVisuals.forEach((visual) => visual.destroy());
+    this.publicBinVisuals = bins.map((bin) => {
+      const container = this.add.container(bin.x, bin.y).setDepth(176 + bin.y / 10);
+      const shadow = this.add.ellipse(0, 14, 34, 13, 0x20382c, 0.25);
+      const body = this.add.rectangle(bin.tipped ? 8 : 0, bin.tipped ? 9 : 0, 25, 33, bin.tipped ? 0x8b6f54 : 0x426b58).setStrokeStyle(3, 0x294637, 0.9);
+      if (bin.tipped) body.setRotation(Math.PI / 2.5);
+      const lid = this.add.rectangle(bin.tipped ? -3 : 0, bin.tipped ? 0 : -18, 31, 7, 0x294637);
+      if (bin.tipped) lid.setRotation(Math.PI / 2.5);
+      const fill = this.add.text(0, -36, `${bin.fill}/${bin.capacity}`, { color: "#294637", fontFamily: "system-ui", fontSize: "10px", fontStyle: "bold", backgroundColor: "rgba(255,253,241,.92)", padding: { x: 4, y: 2 } }).setOrigin(0.5);
+      const warning = this.add.text(18, -23, bin.tipped ? "⚠️" : bin.fill >= bin.capacity ? "🚫" : "", { fontSize: "14px" }).setOrigin(0.5);
+      container.add([shadow, body, lid, fill, warning]);
+      return container;
+    });
   }
 
   refreshPlacementInteractables() {
@@ -1333,7 +1369,7 @@ export class TownScene extends Phaser.Scene {
     document.body.dataset.gameScene = this.scene.key;
     const badge = document.querySelector(".milestone-badge");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = "LIVING WILLOWMERE · MILESTONE 27";
+    if (badge) badge.textContent = "SOCIAL WILLOWMERE · MILESTONE 28";
     if (hint) hint.textContent = "Walk with arrows or WASD · Care for persistent lawns, streets, shore and all five river reaches";
   }
 
@@ -1710,9 +1746,11 @@ export class TownScene extends Phaser.Scene {
 
   update(_time, delta) {
     this.worldSimulation?.tick(delta);
-    this.npcTownLife?.update(delta, this.gameState?.getSnapshot().world);
-    const residents = this.npcTownLife?.getResidents?.() || [];
     const activePosition = this.activePosition();
+    const currentWorld = this.gameState?.getSnapshot().world;
+    this.npcTownLife?.updatePlayerProximity?.(activePosition.x, activePosition.y, currentWorld);
+    this.npcTownLife?.update(delta, currentWorld);
+    const residents = this.npcTownLife?.getResidents?.() || [];
     for (const resident of residents) {
       const nearby = Math.hypot(resident.x - activePosition.x, resident.y - activePosition.y) <= 92;
       this.npcCharacters.get(resident.id)?.applyResident(resident, delta, nearby);
@@ -1738,6 +1776,8 @@ export class TownScene extends Phaser.Scene {
       this.farming?.refresh?.({ persist: true });
       this.livingEnvironment?.refresh?.({ persist: true });
       this.refreshLivingEnvironment();
+      this.renderNpcPublicBins();
+      this.refreshPlacementInteractables();
     }
     if (this.stateSyncElapsed >= 250) {
       this.stateSyncElapsed = 0;
@@ -1773,6 +1813,10 @@ export class TownScene extends Phaser.Scene {
       gameElement.dataset.npcVisible = String(diagnostics?.visibleCount || 0);
       gameElement.dataset.npcWalking = String(diagnostics?.walkingCount || 0);
       gameElement.dataset.npcPaused = String(Boolean(diagnostics?.paused));
+      gameElement.dataset.npcConversations = String(diagnostics?.conversations || 0);
+      gameElement.dataset.npcCarrying = String(diagnostics?.carryingCount || 0);
+      gameElement.dataset.npcPublicBins = String(diagnostics?.publicBins?.length || 0);
+      gameElement.dataset.npcCommunityCare = String(diagnostics?.communityCareEvents || 0);
       const sampleResident = residents[0];
       gameElement.dataset.npcSample = sampleResident
         ? `${sampleResident.id}:${Math.round(sampleResident.x)},${Math.round(sampleResident.y)}:${sampleResident.phase}`
@@ -1878,8 +1922,9 @@ export class TownScene extends Phaser.Scene {
       milestone27Systems: ["20-lawn-profile-slots", "19-authored-living-lawns", "soil-moisture-shade-and-resident-care", "persistent-land-litter", "five-section-persistent-river-rubbish", "wind-river-flow-snags-and-tide", "business-waste", "caretaker-sweeping", "exact-authored-cleanup-effects", "cleanliness-and-three-day-calm", "offline-environment-progression", "legacy-environment-import"],
       milestone26Systems: ["walkable-village-grocer", "nine-original-product-displays", "six-persistent-beds", "three-original-crops", "paid-saplings", "24-positioned-apple-trees", "weather-aware-growth-and-harvests", "offline-farm-progression", "legacy-crop-and-orchard-import"],
       milestone25Systems: ["35-placeable-catalogue", "purchase-and-inventory-placement", "tap-and-keyboard-preview", "quarter-turn-rotation", "atomic-place-move-store", "road-water-building-entrance-and-lawn-restrictions", "500-object-safety-limit", "player-collision", "npc-wildlife-and-rubbish-hooks", "exact-transform-persistence", "legacy-placement-import"],
+      milestone28Systems: ["35-resident-needs", "symmetric-relationships", "resident-conversations", "business-takeaway-carrying", "public-and-player-bin-decisions", "causal-persistent-littering", "bounded-bin-tipping", "community-cleanup", "resident-lawn-care", "contextual-greetings", "restoration-reactions", "five-original-public-bins", "legacy-advanced-npc-import"],
       milestone23Systems: ["south-shore-scoops-scene-transition", "750-deterministic-shifts", "sequential-picture-orders", "60-percent-pass-rule", "ingredient-and-product-unlocks", "first-clear-rewards", "south-shore-restoration", "exact-save-resume", "legacy-progress-import", "landscape-controls"],
-      migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "cafe-scene-transition", "morning-mug-scene-transition", "riverside-kitchen-scene-transition", "river-clearout-scene-transition", "house-rescue-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job", "world-time-weather-lighting", "basic-npc-town-life", "custom-resident-profile-home-control", "weather-aware-farming", "orchard-harvest", "persistent-lawn-jobs", "animal-habitat-routes", "animal-friendship-feeding", "animal-adoption", "active-companion-following", "south-meadow", "three-fishing-spots", "hidden-zone-fishing", "timed-reeling", "magnet-fishing", "fishing-inventory-rewards", "magnet-coin-rewards", "bakery-recipes", "bakery-customer-service", "bakery-first-clear-rewards", "bakery-level-unlocks", "shared-recipe-order-engine", "corner-cafe-recipes", "cafe-three-tray-service", "cafe-first-clear-rewards", "cafe-level-unlocks", "morning-mug-54-recipes", "morning-mug-150-levels", "morning-mug-first-clear-rewards", "morning-mug-save-resume", "morning-mug-landscape-controls", "riverside-kitchen-32-recipes", "riverside-kitchen-150-levels", "riverside-kitchen-preparation-heat-plating", "riverside-kitchen-first-clear-rewards", "riverside-kitchen-save-resume", "riverside-kitchen-landscape-controls", "river-750-level-catalogue", "river-falling-piece-engine", "river-first-clear-rewards", "river-portrait-controls", "house-rescue-750-level-catalogue", "house-rescue-sort-and-vacuum", "house-rescue-persistent-home-jobs", "house-rescue-landscape-controls", "waste-750-authored-boards", "waste-five-slot-triple-matching", "waste-certified-solutions", "waste-first-clear-rewards", "waste-landscape-controls", "lawn-750-authored-levels", "lawn-slide-mower-engine", "lawn-persistent-campaign", "lawn-town-job-effects", "lawn-first-clear-rewards", "lawn-landscape-controls", "beach-750-deterministic-levels", "beach-rake-and-rubbish-engine", "beach-native-town-rewards", "beach-first-clear-rewards", "south-shore-litter-restoration", "beach-landscape-controls", "powerwash-750-deterministic-levels", "powerwash-soap-resistant-stains", "powerwash-three-nozzles", "powerwash-97-percent-tolerance", "powerwash-native-town-rewards", "powerwash-first-clear-rewards", "commons-playground-restoration", "powerwash-landscape-controls"],
+      migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "cafe-scene-transition", "morning-mug-scene-transition", "riverside-kitchen-scene-transition", "river-clearout-scene-transition", "house-rescue-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job", "world-time-weather-lighting", "basic-npc-town-life", "advanced-npc-social-life", "resident-public-bin-behaviour", "custom-resident-profile-home-control", "weather-aware-farming", "orchard-harvest", "persistent-lawn-jobs", "animal-habitat-routes", "animal-friendship-feeding", "animal-adoption", "active-companion-following", "south-meadow", "three-fishing-spots", "hidden-zone-fishing", "timed-reeling", "magnet-fishing", "fishing-inventory-rewards", "magnet-coin-rewards", "bakery-recipes", "bakery-customer-service", "bakery-first-clear-rewards", "bakery-level-unlocks", "shared-recipe-order-engine", "corner-cafe-recipes", "cafe-three-tray-service", "cafe-first-clear-rewards", "cafe-level-unlocks", "morning-mug-54-recipes", "morning-mug-150-levels", "morning-mug-first-clear-rewards", "morning-mug-save-resume", "morning-mug-landscape-controls", "riverside-kitchen-32-recipes", "riverside-kitchen-150-levels", "riverside-kitchen-preparation-heat-plating", "riverside-kitchen-first-clear-rewards", "riverside-kitchen-save-resume", "riverside-kitchen-landscape-controls", "river-750-level-catalogue", "river-falling-piece-engine", "river-first-clear-rewards", "river-portrait-controls", "house-rescue-750-level-catalogue", "house-rescue-sort-and-vacuum", "house-rescue-persistent-home-jobs", "house-rescue-landscape-controls", "waste-750-authored-boards", "waste-five-slot-triple-matching", "waste-certified-solutions", "waste-first-clear-rewards", "waste-landscape-controls", "lawn-750-authored-levels", "lawn-slide-mower-engine", "lawn-persistent-campaign", "lawn-town-job-effects", "lawn-first-clear-rewards", "lawn-landscape-controls", "beach-750-deterministic-levels", "beach-rake-and-rubbish-engine", "beach-native-town-rewards", "beach-first-clear-rewards", "south-shore-litter-restoration", "beach-landscape-controls", "powerwash-750-deterministic-levels", "powerwash-soap-resistant-stains", "powerwash-three-nozzles", "powerwash-97-percent-tolerance", "powerwash-native-town-rewards", "powerwash-first-clear-rewards", "commons-playground-restoration", "powerwash-landscape-controls"],
       npcTownLife: this.npcTownLife?.getDiagnostics?.(),
       customResident: this.customResident?.getDiagnostics?.(),
       farming: this.farming?.getDiagnostics?.(),

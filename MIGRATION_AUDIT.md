@@ -279,3 +279,35 @@ changes are committed in one validated transaction. Schema 24 upgrades schema
 `riverRuntime`, `businesses` and `socialRestorationRuntime` records, and keeps
 the complete protected legacy snapshot untouched. All 270 automated tests and
 the production build pass. The protected HTML source remains unchanged.
+
+Milestone 28 completes advanced resident and public-bin behaviour. All 35
+original residents now preserve their individual tidiness, sociability and
+recreation traits, exact initial needs, symmetric friendship graph and changing
+relationship scores. Needs continue through waking and sleeping time;
+residents can hold mutual timed conversations, remember completed social
+events, carry visible business-specific takeaway items, choose an available
+bin, and react contextually to the player and the town's live restoration
+condition. Household evening weeding is now attributed to the resident who
+performed it, while mowing remains player work.
+
+The five original public bins are authored at Old Market Road, Commercial
+Loop, Willow Commons, South Meadow and South Shore with their original
+coordinates, capacity and starting fill. They are real navigation destinations
+with persistent fullness, tip, spill and collection-ready state. Residents also
+discover and use every valid player-placed small, park, recycling or commercial
+bin without modifying its exact transform. Empty carried items are disposed of
+responsibly unless a resident makes a bounded, cleanliness-sensitive littering
+decision; that decision activates an exact nearby persistent litter anchor and
+records its resident source. In a neglected town a low-tidiness resident can
+rarely tip one nearby bin, producing two to four exact persistent spill items.
+In a cared-for or restored town highly tidy residents can pick up nearby litter
+or right a cleaned tipped bin, with a temporary cleanup-protection area that
+prevents an immediate repeat mess.
+
+All resident, conversation, carried-item, relationship, greeting, care and bin
+state is committed atomically with the shared environment and placed-object
+state. A failed write restores the entire prior town. Schema 25 upgrades schema
+24 and converts the original advanced `npcs` and `socialRestorationRuntime`
+records, including public bins and behaviour counters, without changing the
+protected legacy snapshot. All 277 automated tests and the production build
+pass. The protected HTML source remains unchanged.

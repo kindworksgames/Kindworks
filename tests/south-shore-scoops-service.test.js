@@ -129,7 +129,7 @@ test("ingredient and product unlocks expose every original family and part", () 
 
 test("fresh Milestone 23 state is valid and separate from every earlier food venue", () => {
   const state = createFreshGameState({ now: 0 });
-  assert.equal(state.schemaVersion, 24);
+  assert.equal(state.schemaVersion, 25);
   assert.equal(state.southShoreScoops.unlockedLevel, 1);
   assert.equal(state.southShoreScoops.activeShift, null);
   assert.equal(state.bakery.unlockedLevel, 1);
@@ -337,7 +337,7 @@ test("schema 19 saves gain Scoops while preserving the complete Riverside Kitche
   old.riversideKitchen.best[1] = { score: 100, stars: 3, served: 3, accuracy: 100 };
   old.riversideKitchen.totalStars = 3;
   const upgraded = upgradeGameState(old, { now: 0 });
-  assert.equal(upgraded.schemaVersion, 24);
+  assert.equal(upgraded.schemaVersion, 25);
   assert.equal(upgraded.southShoreScoops.unlockedLevel, 1);
   assert.deepEqual(upgraded.riversideKitchen.best[1], { score: 100, stars: 3, served: 3, accuracy: 100 });
   assert.equal(validateGameState(upgraded).ok, true);

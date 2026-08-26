@@ -39,8 +39,8 @@ test("migrates the complete basic resident catalogue and connected authored grap
   assert.equal(NPC_RESIDENTS.length, 35);
   assert.equal(NPC_TOWN_LIFE_CONFIG.residentCount, 35);
   assert.equal(validation.ok, true);
-  assert.equal(validation.nodeCount, 128);
-  assert.equal(validation.linkCount, 133);
+  assert.equal(validation.nodeCount, 133);
+  assert.equal(validation.linkCount, 138);
   assert.equal(new Set(NPC_RESIDENTS.map((resident) => resident.name)).size, 35);
   for (const resident of NPC_RESIDENTS) {
     assert.ok(graph.findPath(resident.homeNodeId, resident.workNodeId).length > 0, `${resident.name} must reach work`);
@@ -84,7 +84,7 @@ test("schema 4 saves gain NPC town life without losing existing state", () => {
   oldState.schemaVersion = 4;
   oldState.world = advanceWorldState(oldState.world, 11 * 1440, { now: 500 }).world;
   const upgraded = upgradeGameState(oldState, { now: 1000 });
-  assert.equal(upgraded.schemaVersion, 24);
+  assert.equal(upgraded.schemaVersion, 25);
   assert.equal(upgraded.world.day, 12);
   assert.equal(upgraded.npcs.residents.length, 35);
   assert.equal(validateGameState(upgraded).ok, true);

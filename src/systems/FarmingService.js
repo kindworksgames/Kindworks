@@ -36,10 +36,10 @@ function hashUnit(text) {
   return (hash >>> 0) / 4294967295;
 }
 
-function residentIsHome(state, plot) {
+function residentAtHome(state, plot) {
   const residentIds = NPC_RESIDENTS.filter((entry) => entry.homeNodeId === plot.homeNodeId).map((entry) => entry.id);
-  if (plot.legacyId === "lawn-20" && state.customResident?.created) return state.customResident.location?.phase === "home" || state.customResident.location?.nodeId === plot.homeNodeId;
-  return state.npcs?.residents?.some((entry) => residentIds.includes(entry.id) && ["home", "sleeping"].includes(entry.phase));
+  if (plot.legacyId === "lawn-20" && state.customResident?.created && (state.customResident.location?.phase === "home" || state.customResident.location?.nodeId === plot.homeNodeId)) return { custom: true };
+  return state.npcs?.residents?.find((entry) => residentIds.includes(entry.id) && ["home", "sleeping"].includes(entry.phase)) || null;
 }
 
 export function resolveLawnEcology(state, from, to) {
@@ -75,12 +75,22 @@ export function resolveLawnEcology(state, from, to) {
       if (lawn.grassHeight > beforeGrass) growthEvents += 1;
       if (lawn.weedPressure > beforeWeeds) weedEvents += 1;
       const careMinute = (day - 1) * 1440 + LAWN_CONFIG.residentCareHour * 60;
-      if (cursor < careMinute && boundary >= careMinute && lawn.lastResidentCareDay < day && lawn.weedPressure >= 8 && residentIsHome(state, plot)) {
+      const caregiver = residentAtHome(state, plot);
+      if (cursor < careMinute && boundary >= careMinute && lawn.lastResidentCareDay < day && lawn.weedPressure >= 8 && caregiver) {
         lawn.lastResidentCareDay = day;
         const chance = 0.08 + lawn.householdCare * 0.32;
         if (hashUnit(`resident-care:${plot.id}:${day}`) < chance) {
           const reduction = LAWN_CONFIG.residentCareWeedReductionMin + hashUnit(`resident-care-reduction:${plot.id}:${day}`) * (LAWN_CONFIG.residentCareWeedReductionMax - LAWN_CONFIG.residentCareWeedReductionMin);
           lawn.weedPressure = Math.max(0, lawn.weedPressure - reduction);
+          if (!caregiver.custom) {
+            caregiver.residentLawnCareEvents = (caregiver.residentLawnCareEvents || 0) + 1;
+            caregiver.communityCareEvents = (caregiver.communityCareEvents || 0) + 1;
+            caregiver.activity = "Pulled weeds from the lawn at home";
+            caregiver.actionState = "HELPING";
+            caregiver.reactionIcon = "🌿";
+            caregiver.reactionText = "Giving the lawn a little care";
+            caregiver.reactionUntil = careMinute + 8;
+          }
           residentCareEvents += 1;
         }
       }

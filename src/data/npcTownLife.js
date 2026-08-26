@@ -1,11 +1,61 @@
 export const NPC_TOWN_LIFE_CONFIG = Object.freeze({
-  schemaVersion: 1,
+  schemaVersion: 2,
   residentCount: 35,
   minSpeed: 46,
   maxSpeed: 64,
   arrivalRadius: 3,
   persistEveryGameMinutes: 5,
+  conversationHistoryLimit: 80,
+  maxOfflineGameMinutes: 3 * 1440,
 });
+
+export const NPC_NEEDS_CONFIG = Object.freeze({
+  awake: Object.freeze({ hunger: 0.18, social: 0.055, recreation: 0.045, errands: 0.022, rest: 0.035 }),
+  asleep: Object.freeze({ hunger: 0.055, social: 0.012, recreation: 0.008, errands: 0.004, rest: -0.22 }),
+});
+
+export const NPC_SOCIAL_CONFIG = Object.freeze({
+  neglectedThreshold: 60,
+  improvingThreshold: 36,
+  caredThreshold: 19,
+  majorMischiefCooldownGameMinutes: 360,
+  communityCareCooldownGameMinutes: 28,
+  perNpcMischiefCooldownGameMinutes: 1080,
+  perNpcCareCooldownGameMinutes: 180,
+  binTipBaseChance: 0.055,
+  maxTippedBins: 1,
+  protectedCleanupGameMinutes: 240,
+  protectedCleanupRadius: 230,
+  cleanLitterMultiplier: 0.12,
+  caredLitterMultiplier: 0.38,
+  improvingLitterMultiplier: 1.25,
+  neglectedLitterMultiplier: 3,
+  greetingDistance: 58,
+  greetingProbeMinGameMinutes: 4,
+  greetingProbeMaxGameMinutes: 10,
+  greetingCooldownMinGameMinutes: 55,
+  greetingCooldownMaxGameMinutes: 120,
+  carryFullMinGameMinutes: 15,
+  carryFullMaxGameMinutes: 60,
+  carryEmptyMinGameMinutes: 8,
+  carryEmptyMaxGameMinutes: 36,
+  normalDropRadius: 165,
+  maxDropsPerNpcPerDay: 2,
+});
+
+export const NPC_ACTIONS = Object.freeze([
+  "HOME", "IDLE", "WALKING", "WORKING", "SHOPPING", "DISPOSING", "EATING", "SOCIALISING",
+  "RELAXING", "FISHING", "GARDENING", "PLAYING", "SITTING", "RETURNING_HOME", "SLEEPING",
+  "MISCHIEF", "HELPING",
+]);
+
+export const NPC_PUBLIC_BINS = Object.freeze([
+  Object.freeze({ id: "bin-02", nodeId: "public-bin-02", x: 970, y: 1180, label: "Old Market Road bin", district: "Old Market Road", capacity: 12, initialFill: 3, connection: "marketlink1" }),
+  Object.freeze({ id: "bin-09", nodeId: "public-bin-09", x: 3260, y: 1120, label: "Commercial Loop bin", district: "Commercial Loop", capacity: 12, initialFill: 6, connection: "biz_market" }),
+  Object.freeze({ id: "bin-05", nodeId: "public-bin-05", x: 2200, y: 1340, label: "Willow Commons bin", district: "Willow Commons", capacity: 12, initialFill: 9, connection: "pr5" }),
+  Object.freeze({ id: "bin-13", nodeId: "public-bin-13", x: 880, y: 2115, label: "South Meadow bin", district: "South Meadow", capacity: 12, initialFill: 4, connection: "southmeadow0" }),
+  Object.freeze({ id: "bin-17", nodeId: "public-bin-17", x: 3980, y: 2440, label: "South Shore bin", district: "South Shore", capacity: 12, initialFill: 7, connection: "harbourmid1" }),
+]);
 
 export const NPC_PALETTES = Object.freeze([
   Object.freeze({ shirt: 0xd65f56, pants: 0x4d6c86, hair: 0x4a3024, skin: 0xe6b88b }),
@@ -100,6 +150,11 @@ for (const [id, x, y, connection, label] of NPC_HOME_DEFINITIONS) {
   link(id, connection);
 }
 
+for (const bin of NPC_PUBLIC_BINS) {
+  add(bin.nodeId, bin.x, bin.y, "public-bin", bin.label, true);
+  link(bin.nodeId, bin.connection);
+}
+
 export const NPC_NAVIGATION_NODES = Object.freeze(nodes.map((node) => Object.freeze(node)));
 export const NPC_NAVIGATION_LINKS = Object.freeze(links.map((edge) => Object.freeze(edge)));
 
@@ -141,6 +196,35 @@ const profiles = [
   ["Nora", "Freelance artist", "biz_coffee2", 8.5, 10, 16, 23.2, ["harbour2", "rpar2", "cnw"]],
 ];
 
+const traits = [
+  [.99, .92, .70], [.94, .55, .88], [.98, .78, .72], [.96, .48, .82], [.995, .72, .92], [.97, .74, .64], [.99, .88, .62],
+  [.95, .52, .76], [.985, .67, .90], [.91, .61, .75], [.97, .95, .58], [.90, .80, .70], [.995, .83, .91], [.93, .58, .80],
+  [.99, .96, .95], [.97, .65, .55], [.94, .95, .70], [.985, .86, .68], [.93, .78, .62], [.96, .70, .64], [.98, .94, .72],
+  [.96, .82, .62], [.98, .90, .82], [.97, .76, .86], [.99, .70, .66], [.95, .78, .58], [.94, .67, .84], [.98, .96, .60],
+  [.99, .91, .83], [.89, .72, .78], [.985, .94, .88], [.96, .58, .60], [.995, .88, .72], [.97, .62, .74], [.91, .82, .96],
+];
+
+export const NPC_FRIEND_PAIRS = Object.freeze([
+  ["Alfie", "Evie"], ["Alfie", "Louis"], ["Alfie", "Oscar"], ["Alfie", "Poppy"], ["Alfie", "Theo"],
+  ["Amelia", "Chloe"], ["Amelia", "George"], ["Amelia", "Hugo"], ["Amelia", "Poppy"],
+  ["Arthur", "Freya"], ["Arthur", "Henry"], ["Arthur", "Louis"], ["Arthur", "Nora"],
+  ["Ava", "Grace"], ["Ava", "Lily"], ["Ava", "Maya"], ["Ben", "Finn"], ["Ben", "Leo"], ["Ben", "Max"], ["Ben", "Noah"],
+  ["Charlie", "Hugo"], ["Charlie", "Isla"], ["Charlie", "Oliver"], ["Chloe", "Evie"], ["Chloe", "Jack"], ["Chloe", "Oliver"],
+  ["Ella", "Lily"], ["Ella", "Maya"], ["Ella", "Sam"], ["Ella", "Theo"], ["Evie", "Millie"], ["Evie", "Nora"],
+  ["Finn", "Leo"], ["Finn", "Max"], ["Freya", "Henry"], ["Freya", "Ivy"], ["Freya", "Louis"],
+  ["George", "Hugo"], ["George", "Millie"], ["George", "Poppy"], ["Grace", "Ivy"], ["Grace", "Maya"], ["Grace", "Ruby"],
+  ["Henry", "Jack"], ["Henry", "Oscar"], ["Hugo", "Isla"], ["Isla", "Millie"], ["Ivy", "Rosie"], ["Jack", "Millie"],
+  ["Jack", "Nora"], ["Leo", "Mia"], ["Lily", "Ruby"], ["Louis", "Nora"], ["Max", "Noah"], ["Max", "Theo"],
+  ["Mia", "Rosie"], ["Mia", "Ruby"], ["Mia", "Sofia"], ["Millie", "Nora"], ["Noah", "Sofia"], ["Oliver", "Hugo"],
+  ["Oscar", "Rosie"], ["Poppy", "Millie"], ["Rosie", "Sofia"], ["Sam", "Maya"], ["Sam", "Theo"], ["Sofia", "Ruby"],
+].map((pair) => Object.freeze(pair)));
+
+const friendNames = new Map(profiles.map(([name]) => [name, new Set()]));
+for (const [a, b] of NPC_FRIEND_PAIRS) {
+  friendNames.get(a)?.add(b);
+  friendNames.get(b)?.add(a);
+}
+
 const baseHomeIds = NPC_HOME_DEFINITIONS.map(([id]) => id).filter((id) => id !== "home20");
 export const NPC_RESIDENTS = Object.freeze(profiles.map(([name, role, workNodeId, wake, workStart, workEnd, sleep, preferred], index) => Object.freeze({
   id: `npc-${String(index + 1).padStart(2, "0")}`,
@@ -153,6 +237,10 @@ export const NPC_RESIDENTS = Object.freeze(profiles.map(([name, role, workNodeId
   workEnd,
   sleep,
   preferred: Object.freeze(preferred),
+  tidiness: traits[index][0],
+  sociability: traits[index][1],
+  recreation: traits[index][2],
+  friendNames: Object.freeze([...friendNames.get(name)]),
   speed: NPC_TOWN_LIFE_CONFIG.minSpeed + ((index * 7) % 18),
   palette: NPC_PALETTES[index % NPC_PALETTES.length],
 })));

@@ -226,6 +226,48 @@ function spawnLandLitter(state, zone, now, { source = null } = {}) {
   return target;
 }
 
+export function placeNpcLandLitterInto(state, { x, y, type = "wrapper", npcId = null, npcName = null, radius = 165 } = {}) {
+  const environment = state.environment;
+  if (environment.calm.untilGameMinute > absoluteWorldMinute(state.world) || activeLandCount(environment) >= LAND_LITTER_CONFIG.maxTotal) return null;
+  const target = environment.land.items
+    .filter((item) => !item.active && !item.dynamicSpill && activeLandCount(environment, item.zone) < LAND_LITTER_CONFIG.zoneCaps[item.zone])
+    .map((item) => ({ item, distance: Math.hypot(item.x - x, item.y - y) }))
+    .filter((entry) => entry.distance <= radius)
+    .sort((a, b) => a.distance - b.distance || a.item.id.localeCompare(b.item.id))[0]?.item;
+  if (!target) return null;
+  activateLandItem(state, target, { source: `npc-litter:${npcId || "resident"}`, type });
+  target.sourceNpcId = npcId;
+  target.sourceNpcName = npcName;
+  updateEnvironmentMetricsInto(state);
+  return target;
+}
+
+export function createBinSpillInto(state, { binId, x, y, npcId = null, npcName = null, count = 3 } = {}) {
+  const environment = state.environment;
+  const available = Math.max(0, LAND_LITTER_CONFIG.maxTotal - activeLandCount(environment));
+  const wanted = Math.min(4, Math.max(2, Math.floor(Number(count) || 3)), available);
+  const created = [];
+  for (let index = 0; index < wanted; index += 1) {
+    if (activeLandCount(environment, "street") >= LAND_LITTER_CONFIG.zoneCaps.street) break;
+    const serial = environment.eventSerial++;
+    const angle = hashUnit(`bin-spill-angle:${binId}:${serial}`) * Math.PI * 2;
+    const distance = seededBetween(`bin-spill-distance:${binId}:${serial}`, 24, 72);
+    const item = {
+      id: `spill-${String(binId || "bin").replace(/[^A-Za-z0-9_-]/g, "-")}-${serial}`,
+      zone: "street", x: Math.max(0, Math.min(4200, x + Math.cos(angle) * distance)), y: Math.max(0, Math.min(2800, y + Math.sin(angle) * distance)),
+      homeX: x, homeY: y, type: choice(["wrapper", "cup", "paper", "bottle"], `bin-spill-type:${serial}`),
+      dynamicSpill: true, active: true, spawnedGameMinute: absoluteWorldMinute(state.world), ageGameMinutes: 0,
+      nextMoveAt: absoluteWorldMinute(state.world) + seededBetween(`bin-spill-move:${serial}`, LAND_LITTER_CONFIG.windMoveMinGameMinutes, LAND_LITTER_CONFIG.windMoveMaxGameMinutes),
+      movedCount: 0, source: `bin-tip:${npcId || "resident"}`, sourceNpcId: npcId, sourceNpcName: npcName,
+      cleanupGraceUntil: absoluteWorldMinute(state.world) + 10,
+    };
+    environment.land.items.push(item);
+    created.push(item);
+  }
+  updateEnvironmentMetricsInto(state);
+  return created;
+}
+
 function caretakerWorking(state, id) {
   return state.npcs?.residents?.find((resident) => resident.id === id && resident.phase === "working") || null;
 }

@@ -11,7 +11,7 @@ import {
 } from "./economyState.js";
 import { createFreshCleanupState, normalizeCleanupState, projectLegacyCleanup, validateCleanupState } from "./cleanupState.js";
 import { createFreshWorldState, normalizeWorldState, validateWorldState } from "./worldState.js";
-import { createFreshNpcState, normalizeNpcState, validateNpcState } from "./npcState.js";
+import { createFreshNpcState, normalizeNpcState, projectLegacyNpcState, validateNpcState } from "./npcState.js";
 import {
   createFreshCustomResidentState,
   normalizeCustomResidentState,
@@ -156,7 +156,7 @@ export function createFreshGameState({ now = Date.now() } = {}) {
     economy: createFreshEconomyState({ now }),
     inventory: createFreshInventoryState(),
     townPlacement: createFreshTownPlacementState(),
-    npcs: createFreshNpcState(),
+    npcs: createFreshNpcState(world),
     customResident: createFreshCustomResidentState(),
     farming: createFreshFarmingState(world),
     environment: createFreshLivingEnvironmentState(world),
@@ -199,6 +199,7 @@ export function createGameStateFromLegacy(legacy, report, { now = Date.now() } =
     equipped: legacy.economy?.equipped,
   });
   state.townPlacement = projectLegacyTownPlacement(legacy, state.inventory, { now });
+  state.npcs = projectLegacyNpcState(legacy, state.world);
   state.customResident = projectLegacyCustomResident(legacy);
   state.farming = projectLegacyFarming(legacy, state.world);
   state.environment = projectLegacyLivingEnvironment(legacy, state.world);
@@ -356,6 +357,12 @@ export function upgradeGameState(value, { now = Date.now() } = {}) {
       : normalizeLivingEnvironmentState(state.environment, state.world);
     state.schemaVersion = 24;
   }
+  if (state.schemaVersion === 24) {
+    state.npcs = state.source?.kind === "legacy-import"
+      ? projectLegacyNpcState(state.legacySnapshot, state.world)
+      : normalizeNpcState(state.npcs, state.world);
+    state.schemaVersion = 25;
+  }
   return state;
 }
 
@@ -384,7 +391,7 @@ export function validateGameState(value) {
   errors.push(...validateEconomyState(value.economy).errors);
   errors.push(...validateInventoryState(value.inventory).errors);
   errors.push(...validateTownPlacementState(value.townPlacement).errors);
-  errors.push(...validateNpcState(value.npcs).errors);
+  errors.push(...validateNpcState(value.npcs, value.world).errors);
   errors.push(...validateCustomResidentState(value.customResident).errors);
   errors.push(...validateFarmingState(value.farming, value.world).errors);
   errors.push(...validateLivingEnvironmentState(value.environment, value.world).errors);

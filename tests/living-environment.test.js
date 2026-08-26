@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { LAWN_PLOTS, absoluteWorldMinute } from "../src/data/farming.js";
 import { BUSINESS_CATALOG, LAND_LITTER_ANCHORS, RIVER_SECTIONS, hashUnit } from "../src/data/livingEnvironment.js";
+import { NPC_RESIDENTS } from "../src/data/npcTownLife.js";
 import { createFreshGameState, GameStateService, upgradeGameState, validateGameState } from "../src/state/GameState.js";
 import { projectLegacyLivingEnvironment, validateLivingEnvironmentState } from "../src/state/livingEnvironmentState.js";
 import { SaveRepository } from "../src/state/SaveRepository.js";
@@ -31,7 +32,7 @@ function advance(runtimeValue, minutes) {
 
 test("Milestone 27 creates the complete bounded living-town foundation", () => {
   const state = createFreshGameState({ now: 0 });
-  assert.equal(state.schemaVersion, 24);
+  assert.equal(state.schemaVersion, 25);
   assert.equal(LAWN_PLOTS.length, 20);
   assert.equal(LAWN_PLOTS.filter((plot) => plot.active).length, 19);
   assert.equal(LAWN_PLOTS.find((plot) => plot.legacyId === "lawn-19").active, false);
@@ -72,6 +73,8 @@ test("a resident at home can perform the original bounded evening weeding withou
   assert.equal(after.lastResidentCareDay, 1);
   assert.ok(after.weedPressure < 50);
   assert.ok(after.grassHeight > 35);
+  const residentIds = NPC_RESIDENTS.filter((resident) => resident.homeNodeId === plot.homeNodeId).map((resident) => resident.id);
+  assert.equal(current.gameState.getSnapshot().npcs.residents.filter((resident) => residentIds.includes(resident.id)).reduce((sum, resident) => sum + resident.residentLawnCareEvents, 0), 1);
 });
 
 test("world time advances farming and the living environment in one accepted state transaction", () => {
@@ -268,7 +271,7 @@ test("schema 23 saves gain the environment and failed writes roll environmental 
   delete old.environment;
   old.schemaVersion = 23;
   const upgraded = upgradeGameState(old, { now: 0 });
-  assert.equal(upgraded.schemaVersion, 24);
+  assert.equal(upgraded.schemaVersion, 25);
   assert.equal(validateGameState(upgraded).ok, true);
   const repository = { save: () => ({ ok: false, status: "write-failed" }) };
   const current = runtime({ state: upgraded, repository });

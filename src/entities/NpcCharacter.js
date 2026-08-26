@@ -16,6 +16,8 @@ export class NpcCharacter extends Phaser.GameObjects.Container {
     this.hair = scene.add.graphics();
     this.accessory = scene.add.text(0, -29, "", { fontFamily: "system-ui", fontSize: "14px" }).setOrigin(0.5);
     this.face = scene.add.text(0, -21, "•‿•", { color: "#3d3028", fontFamily: "system-ui", fontSize: "7px", fontStyle: "bold" }).setOrigin(0.5);
+    this.carry = scene.add.text(17, 4, "", { fontFamily: "system-ui", fontSize: "15px" }).setOrigin(0.5);
+    this.reaction = scene.add.text(0, -58, "", { fontFamily: "system-ui", fontSize: "18px", backgroundColor: "rgba(255,253,241,.9)", padding: { x: 3, y: 2 } }).setOrigin(0.5, 1);
     this.label = scene.add.text(0, -49, `${resident.name}\n${resident.role}`, {
       align: "center",
       color: "#294637",
@@ -26,7 +28,7 @@ export class NpcCharacter extends Phaser.GameObjects.Container {
       padding: { x: 6, y: 3 },
     }).setOrigin(0.5, 1).setVisible(false);
 
-    this.add([this.shadow, this.leftLeg, this.rightLeg, this.body, this.head, this.hair, this.face, this.accessory, this.label]);
+    this.add([this.shadow, this.leftLeg, this.rightLeg, this.body, this.head, this.hair, this.face, this.accessory, this.carry, this.reaction, this.label]);
     this.setSize(42, 66).setInteractive({ useHandCursor: true });
     this.on("pointerover", () => { this.hovered = true; this.label.setVisible(true); });
     this.on("pointerout", () => { this.hovered = false; this.label.setVisible(false); });
@@ -49,7 +51,12 @@ export class NpcCharacter extends Phaser.GameObjects.Container {
     this.scaleX = resident.facingX < -0.15 ? -1 : 1;
     this.label.scaleX = this.scaleX;
     this.accessory.scaleX = this.scaleX;
-    this.label.setText(`${resident.name}\n${resident.phase === "commuting" ? resident.activity : resident.role}`);
+    this.carry.scaleX = this.scaleX;
+    const carryIcons = { cup: "🥤", wrapper: "🍬", bottle: "🧴", bag: "🛍️", paper: "📰" };
+    this.carry.setText(resident.carryItem ? carryIcons[resident.carryItem] || "📦" : "");
+    this.reaction.setText(resident.greetingIcon || (resident.actionState === "HELPING" ? resident.reactionIcon : ""));
+    this.reaction.setVisible(resident.visible && Boolean(this.reaction.text));
+    this.label.setText(`${resident.name}\n${resident.activity || resident.role}`);
   }
 
   drawAppearance(resident) {
