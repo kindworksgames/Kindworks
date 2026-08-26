@@ -12,9 +12,11 @@ function formatCoins(value) {
 }
 
 export class EconomyHudController {
-  constructor(runtime, { onModalChange = () => {} } = {}) {
+  constructor(runtime, { onModalChange = () => {}, economy = null, onUseConsumable = () => ({ ok: false }) } = {}) {
     this.runtime = runtime;
     this.onModalChange = onModalChange;
+    this.economy = economy;
+    this.onUseConsumable = onUseConsumable;
     this.coinButton = document.querySelector("#coin-status-button");
     this.inventoryButton = document.querySelector("#inventory-button");
     this.panel = document.querySelector("#economy-panel");
@@ -36,12 +38,14 @@ export class EconomyHudController {
     this.onClose = () => this.close();
     this.onWalletTab = () => this.showView("wallet");
     this.onInventoryTab = () => this.showView("inventory");
+    this.onInventoryClick = (event) => this.handleInventoryClick(event);
     this.onKeyDown = (event) => this.handleKeyDown(event);
     this.coinButton?.addEventListener("click", this.onCoinOpen);
     this.inventoryButton?.addEventListener("click", this.onInventoryOpen);
     this.closeButton?.addEventListener("click", this.onClose);
     this.walletTab?.addEventListener("click", this.onWalletTab);
     this.inventoryTab?.addEventListener("click", this.onInventoryTab);
+    this.inventoryGroups?.addEventListener("click", this.onInventoryClick);
     document.addEventListener("keydown", this.onKeyDown);
     this.unsubscribe = runtime.gameState.subscribe(() => this.render());
     this.render();
@@ -80,9 +84,28 @@ export class EconomyHudController {
           icon.textContent = item.icon;
           const name = document.createElement("span");
           name.textContent = item.name;
+          const action = document.createElement("span");
+          action.className = "inventory-item-action";
+          if (item.category === "equipment") {
+            const equipped = inventory.equipped?.[item.slot] === item.id;
+            if (equipped) action.textContent = "Equipped";
+            else {
+              const button = document.createElement("button");
+              button.type = "button";
+              button.dataset.equipItem = item.id;
+              button.textContent = "Equip";
+              action.append(button);
+            }
+          } else if (item.category === "consumable") {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.dataset.useItem = item.id;
+            button.textContent = item.shopGroup === "Farming" ? "Use at allotments" : "Use with animals";
+            action.append(button);
+          } else action.textContent = `×${quantity}`;
           const count = document.createElement("strong");
-          count.textContent = `×${quantity}`;
-          entry.append(icon, name, count);
+          count.textContent = item.category === "equipment" ? "" : `×${quantity}`;
+          entry.append(icon, name, count, action);
           list.append(entry);
         }
         section.append(list);
@@ -91,14 +114,32 @@ export class EconomyHudController {
     }
   }
 
+  handleInventoryClick(event) {
+    const equip = event.target.closest?.("[data-equip-item]");
+    if (equip) {
+      const result = this.economy?.equip?.(equip.dataset.equipItem, { reason: `Equipped ${ITEM_CATALOG[equip.dataset.equipItem]?.name || "tool"} from inventory` });
+      if (!result?.ok && this.catalogueStatus) this.catalogueStatus.textContent = result?.message || "The tool change was not saved.";
+      this.render();
+      return result;
+    }
+    const use = event.target.closest?.("[data-use-item]");
+    if (use) {
+      const item = ITEM_CATALOG[use.dataset.useItem];
+      this.close();
+      return this.onUseConsumable(item);
+    }
+    return null;
+  }
+
   renderLedger(economy) {
     if (!this.ledger) return;
     this.ledger.replaceChildren();
-    const entries = economy.ledger.slice(-8).reverse();
+    const entries = economy.ledger.slice(-16).reverse();
     for (const entry of entries) {
       const row = document.createElement("li");
       const reason = document.createElement("span");
-      reason.textContent = entry.reason;
+      const item = ITEM_CATALOG[entry.itemId];
+      reason.textContent = `${entry.reason}${item ? ` · ${item.icon}` : ""}`;
       const amount = document.createElement("strong");
       amount.className = entry.amount >= 0 ? "coin-positive" : "coin-negative";
       amount.textContent = `${entry.amount >= 0 ? "+" : "−"}${formatCoins(Math.abs(entry.amount))}`;
@@ -171,7 +212,8 @@ export class EconomyHudController {
       return;
     }
     if (event.key !== "Tab") return;
-    const focusable = [this.closeButton, this.walletTab, this.inventoryTab].filter(Boolean);
+    const inventoryActions = this.activeView === "inventory" ? [...(this.inventoryGroups?.querySelectorAll("button") || [])] : [];
+    const focusable = [this.closeButton, this.walletTab, this.inventoryTab, ...inventoryActions].filter((element) => element && !element.disabled);
     const current = focusable.indexOf(document.activeElement);
     const next = event.shiftKey
       ? (current <= 0 ? focusable.length - 1 : current - 1)
@@ -186,6 +228,7 @@ export class EconomyHudController {
     this.closeButton?.removeEventListener("click", this.onClose);
     this.walletTab?.removeEventListener("click", this.onWalletTab);
     this.inventoryTab?.removeEventListener("click", this.onInventoryTab);
+    this.inventoryGroups?.removeEventListener("click", this.onInventoryClick);
     document.removeEventListener("keydown", this.onKeyDown);
     this.unsubscribe?.();
   }

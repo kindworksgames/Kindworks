@@ -1,4 +1,4 @@
-import { ITEM_CATALOG } from "../data/items.js";
+import { EQUIPMENT_UPGRADE_ORDERS, ITEM_CATALOG } from "../data/items.js";
 import { COIN_LEDGER_LIMIT } from "../state/economyState.js";
 import { InventoryService } from "./InventoryService.js";
 
@@ -16,7 +16,7 @@ export class EconomyService {
     this.inventory = new InventoryService(catalog);
   }
 
-  appendLedger(state, { amount, kind, reason, itemId = null, quantity = null, shopId = null }) {
+  appendLedger(state, { amount, kind, reason, itemId = null, quantity = null, shopId = null, ...metadata }) {
     const serial = state.economy.nextTransactionId;
     const entry = {
       id: `coin-${String(serial).padStart(6, "0")}`,
@@ -26,12 +26,36 @@ export class EconomyService {
       itemId,
       quantity,
       shopId,
+      balance: state.economy.coins,
       occurredAt: new Date(this.now()).toISOString(),
+      ...metadata,
     };
     state.economy.nextTransactionId += 1;
     state.economy.ledger.push(entry);
     state.economy.ledger = state.economy.ledger.slice(-COIN_LEDGER_LIMIT);
     return entry;
+  }
+
+  equipmentUpgradeCredit(state, item) {
+    const order = EQUIPMENT_UPGRADE_ORDERS[item?.slot];
+    const targetIndex = order?.indexOf(item.id) ?? -1;
+    if (targetIndex <= 1) return 0;
+    let credit = 0;
+    for (let index = 1; index < targetIndex; index += 1) {
+      const prior = this.catalog[order[index]];
+      if (prior && this.inventory.quantity(state.inventory, prior.id) > 0) credit = Math.max(credit, Math.floor(prior.price * 0.5));
+    }
+    return Math.min(item.price, credit);
+  }
+
+  quotePurchase(itemId, requestedQuantity = 1, stateOverride = null) {
+    const item = this.catalog[itemId];
+    const quantity = item?.category === "equipment" ? 1 : Number(requestedQuantity);
+    if (!item || !Number.isSafeInteger(quantity) || quantity < 1) return { listPrice: 0, upgradeCredit: 0, cost: 0, quantity: 0 };
+    const listPrice = item.price * quantity;
+    const state = stateOverride || this.gameState.getSnapshot();
+    const upgradeCredit = item.category === "equipment" ? this.equipmentUpgradeCredit(state, item) : 0;
+    return { listPrice, upgradeCredit, cost: Math.max(0, listPrice - upgradeCredit), quantity };
   }
 
   commit(mutator) {
@@ -88,9 +112,11 @@ export class EconomyService {
     if (!item) return { ok: false, code: "unknown-item", message: `Unknown item: ${itemId}` };
     if (!Number.isSafeInteger(quantity) || quantity < 1) return { ok: false, code: "invalid-quantity", message: "Quantity must be a positive whole number." };
     if (item.qaOnly || item.fishingOnly || item.subscriptionOnly || item.price < 1) return { ok: false, code: "not-purchasable", message: `${item.name} cannot be bought through the coin economy.` };
-    const cost = item.price * quantity;
-    if (!Number.isSafeInteger(cost)) return { ok: false, code: "cost-overflow", message: "Purchase total is too large." };
+    const requestedQuote = this.quotePurchase(itemId, quantity);
+    if (!Number.isSafeInteger(requestedQuote.listPrice)) return { ok: false, code: "cost-overflow", message: "Purchase total is too large." };
     return this.commit((state) => {
+      const quote = this.quotePurchase(itemId, quantity, state);
+      const { cost } = quote;
       if (state.economy.coins < cost) return { ok: false, code: "insufficient-funds", message: "Not enough KindlyCoins.", required: cost, available: state.economy.coins };
       const inventoryResult = this.inventory.add(state.inventory, itemId, quantity);
       if (!inventoryResult.ok) return inventoryResult;
@@ -104,8 +130,24 @@ export class EconomyService {
         itemId,
         quantity,
         shopId,
+        unitPrice: item.price,
+        listPrice: quote.listPrice,
+        upgradeCredit: quote.upgradeCredit,
       });
-      return { ok: true, code: "purchased", itemId, quantity, cost, before, after: state.economy.coins, inventory: inventoryResult, ledger };
+      return { ok: true, code: "purchased", itemId, quantity, cost, listPrice: quote.listPrice, upgradeCredit: quote.upgradeCredit, before, after: state.economy.coins, inventory: inventoryResult, ledger };
+    });
+  }
+
+  equip(itemId, { shopId = null, reason = null } = {}) {
+    const item = this.catalog[itemId];
+    if (!item || item.category !== "equipment" || !item.slot) return { ok: false, code: "not-equipment", message: "That item cannot be equipped." };
+    return this.commit((state) => {
+      if (this.inventory.quantity(state.inventory, itemId) < 1) return { ok: false, code: "not-owned", message: `${item.name} is not owned.` };
+      const before = state.inventory.equipped[item.slot];
+      if (before === itemId) return { ok: false, code: "already-equipped", message: `${item.name} is already equipped.` };
+      state.inventory.equipped[item.slot] = itemId;
+      const ledger = this.appendLedger(state, { amount: 0, kind: "equip", reason: reason || `Equipped ${item.name}`, itemId, quantity: 1, shopId, slot: item.slot, previousItemId: before });
+      return { ok: true, code: "equipped", itemId, slot: item.slot, previousItemId: before, ledger };
     });
   }
 
@@ -119,7 +161,9 @@ export class EconomyService {
   consumeItem(itemId, quantity = 1, { reason = "Item used" } = {}) {
     return this.commit((state) => {
       const result = this.inventory.remove(state.inventory, itemId, quantity);
-      return result.ok ? { ...result, code: "item-consumed", reason } : result;
+      if (!result.ok) return result;
+      const ledger = this.appendLedger(state, { amount: 0, kind: "consume", reason, itemId, quantity });
+      return { ...result, code: "item-consumed", reason, ledger };
     });
   }
 }

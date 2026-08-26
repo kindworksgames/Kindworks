@@ -12,6 +12,7 @@ import {
   validateHouseRescueCatalogue,
 } from "../data/houseRescue.js";
 import { COIN_LEDGER_LIMIT } from "../state/economyState.js";
+import { ITEM_CATALOG } from "../data/items.js";
 
 function appendLedger(state, now, details) {
   const id = `coin-${String(state.economy.nextTransactionId).padStart(6, "0")}`;
@@ -61,6 +62,21 @@ export class HouseRescueService {
   getSnapshot() { return structuredClone(this.gameState.getSnapshot().houseRescue); }
   getActiveSession() { return this.getSnapshot().active; }
   getLastResult() { return this.lastResult ? structuredClone(this.lastResult) : null; }
+
+  getVacuumLoadout(stateOverride = null) {
+    const state = stateOverride || this.gameState.getSnapshot();
+    const itemId = state.inventory?.equipped?.vacuum || "starter-vacuum";
+    const item = ITEM_CATALOG[itemId]?.slot === "vacuum" ? ITEM_CATALOG[itemId] : ITEM_CATALOG["starter-vacuum"];
+    return {
+      itemId: item.id,
+      name: item.name,
+      icon: item.icon,
+      power: Number(item.effect?.vacuumPower) || HOUSE_RESCUE_RULES.vacuumPower,
+      radius: (Number(item.effect?.vacuumRadius) || 36) / 5,
+      speedMultiplier: Number(item.effect?.vacuumSpeedMultiplier) || 1,
+      color: item.effect?.vacuumColor || "#d56155",
+    };
+  }
 
   commit(mutator) {
     const checkpoint = this.gameState.getSnapshot();
@@ -168,6 +184,7 @@ export class HouseRescueService {
     return this.commit((state) => {
       const session = state.houseRescue.active;
       if (!session || session.phase !== "vacuum") return { ok: false, code: "vacuum-unavailable", message: "Sort every rubbish item before vacuuming." };
+      const loadout = this.getVacuumLoadout(state);
       const from = { ...session.vacuum };
       const distance = Math.hypot(targetX - from.x, targetY - from.y);
       const steps = Math.max(1, Math.ceil(distance / 1.5));
@@ -176,7 +193,7 @@ export class HouseRescueService {
         const fraction = step / steps;
         const px = from.x + (targetX - from.x) * fraction;
         const py = from.y + (targetY - from.y) * fraction;
-        for (const stain of session.dirt) if (stain.remaining > 0 && Math.hypot(stain.x - px, stain.y - py) <= HOUSE_RESCUE_RULES.vacuumRadius) contacted.add(stain.id);
+        for (const stain of session.dirt) if (stain.remaining > 0 && Math.hypot(stain.x - px, stain.y - py) <= loadout.radius) contacted.add(stain.id);
       }
       const previous = new Set(session.vacuumContacts || []);
       let cleanedLayers = 0;
@@ -185,15 +202,15 @@ export class HouseRescueService {
         const stain = session.dirt.find((entry) => entry.id === id);
         if (!stain || stain.remaining <= 0) continue;
         const before = stain.remaining;
-        stain.remaining = Math.max(0, stain.remaining - HOUSE_RESCUE_RULES.vacuumPower);
+        stain.remaining = Math.max(0, stain.remaining - loadout.power);
         cleanedLayers += before - stain.remaining;
       }
       session.vacuum = { x: targetX, y: targetY };
-      session.vacuumContacts = session.dirt.filter((stain) => stain.remaining > 0 && Math.hypot(stain.x - targetX, stain.y - targetY) <= HOUSE_RESCUE_RULES.vacuumRadius).map((stain) => stain.id);
+      session.vacuumContacts = session.dirt.filter((stain) => stain.remaining > 0 && Math.hypot(stain.x - targetX, stain.y - targetY) <= loadout.radius).map((stain) => stain.id);
       state.houseRescue.lifetimeStainLayers += cleanedLayers;
       const coverage = houseRescueCoverage(session.dirt);
       if (coverage >= HOUSE_RESCUE_RULES.completionCoverage) return this.completeMutation(state, session, coverage, cleanedLayers);
-      return { ok: true, code: "house-rescue-vacuum-moved", cleanedLayers, coverage, session: structuredClone(session) };
+      return { ok: true, code: "house-rescue-vacuum-moved", cleanedLayers, coverage, loadout, session: structuredClone(session) };
     });
   }
 

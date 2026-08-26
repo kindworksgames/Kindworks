@@ -3,6 +3,7 @@ import { GAME_STATE_SCHEMA_VERSION } from "./constants.js";
 import {
   createFreshEconomyState,
   createFreshInventoryState,
+  normalizeInventoryState,
   projectLegacyEconomy,
   projectLegacyInventory,
   validateEconomyState,
@@ -310,6 +311,10 @@ export function upgradeGameState(value, { now = Date.now() } = {}) {
       ? projectLegacySouthShoreScoops(state.legacySnapshot?.southShoreScoops ?? state.legacySnapshot?.scoops ?? state.southShoreScoops)
       : normalizeSouthShoreScoopsState(state.southShoreScoops);
     state.schemaVersion = 20;
+  }
+  if (state.schemaVersion === 20) {
+    state.inventory = normalizeInventoryState(state.inventory);
+    state.schemaVersion = 21;
   }
   return state;
 }

@@ -9,7 +9,27 @@ import {
 } from "../data/animals.js";
 import { absoluteWorldMinute } from "../data/farming.js";
 import { ITEM_CATALOG } from "../data/items.js";
+import { COIN_LEDGER_LIMIT } from "../state/economyState.js";
 import { InventoryService } from "./InventoryService.js";
+
+function appendConsumableUse(state, now, { animalName, itemId }) {
+  const id = `coin-${String(state.economy.nextTransactionId).padStart(6, "0")}`;
+  state.economy.nextTransactionId += 1;
+  const entry = {
+    id,
+    amount: 0,
+    kind: "consume",
+    reason: `Fed ${animalName} ${ITEM_CATALOG[itemId]?.name || "a treat"}`,
+    itemId,
+    quantity: 1,
+    shopId: null,
+    balance: state.economy.coins,
+    occurredAt: new Date(now).toISOString(),
+  };
+  state.economy.ledger.push(entry);
+  state.economy.ledger = state.economy.ledger.slice(-COIN_LEDGER_LIMIT);
+  return entry;
+}
 
 function trustGain(resident, amount) {
   const before = resident.trust;
@@ -151,7 +171,8 @@ export class AnimalService {
       const favorite = species.favorites.includes(itemId);
       const requested = (resident.adopted ? COMPANION_CARE_CONFIG.treatGain : 14) + (favorite ? 5 : 0);
       const gainedTrust = trustGain(resident, requested);
-      return { ok: true, code: "animal-fed", animalId, itemId, favorite, gainedTrust, trust: resident.trust };
+      const ledger = appendConsumableUse(state, this.now(), { animalName: resident.name, itemId });
+      return { ok: true, code: "animal-fed", animalId, itemId, favorite, gainedTrust, trust: resident.trust, ledger };
     });
   }
 

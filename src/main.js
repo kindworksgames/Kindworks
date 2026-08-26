@@ -124,8 +124,13 @@ const saveStatus = new SaveStatusController(stateRuntime, {
   },
 });
 const economyHud = new EconomyHudController(stateRuntime, {
+  economy,
   onModalChange(open) {
     setModalOpen("economy", open);
+  },
+  onUseConsumable(item) {
+    if (item?.shopGroup === "Farming") return game.registry.get("farmingController")?.open?.("allotment") || { ok: false };
+    return game.registry.get("animalFriendsController")?.open?.() || { ok: false };
   },
 });
 const worldHud = new WorldHudController(stateRuntime.gameState);
@@ -144,6 +149,9 @@ const farmingController = new FarmingController(farming, {
   },
   onStartLawnCampaign() {
     return activeTownScene()?.startLawnCare({ mode: "campaign" }) || { ok: false, message: "Return to town to start the Lawn Care campaign." };
+  },
+  onOpenSeedShop(itemId) {
+    return shopController.open("town-grocer", { group: "Farming", itemId });
   },
 });
 game.registry.set("farmingController", farmingController);

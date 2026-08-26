@@ -9,16 +9,16 @@ const itemRows = [
   ["fresh-greens", "Fresh Greens", "🥬", "consumable", 70, "Animal Treats", { retailer: "town-grocer" }],
   ["wild-berries", "Wild Berries", "🫐", "consumable", 100, "Animal Treats", { retailer: "town-grocer" }],
   ["mealworms", "Mealworms", "🪱", "consumable", 120, "Animal Treats", { retailer: "town-grocer" }],
-  ["river-minnows", "River Minnows", "🐟", "consumable", 140, "Animal Treats", { retailer: "fresh-market", description: "Small whole fish from Fresh Market or caught at Willowmere's fishing spots." }],
-  ["fresh-sardines", "Fresh Sardines", "🐟", "consumable", 220, "Animal Treats", { retailer: "fresh-market", description: "Fresh oily fish for cats and water-loving predators." }],
-  ["river-trout", "River Trout", "🐟", "consumable", 360, "Animal Treats", { retailer: "fresh-market", description: "A premium whole fish and favourite of larger fish-eaters." }],
+  ["river-minnows", "River Minnows", "🐟", "consumable", 140, "Animal Treats", { retailer: "fresh-market", inventoryLimit: 99, description: "Small whole fish from Fresh Market or caught at Willowmere's fishing spots." }],
+  ["fresh-sardines", "Fresh Sardines", "🐟", "consumable", 220, "Animal Treats", { retailer: "fresh-market", inventoryLimit: 99, description: "Fresh oily fish for cats and water-loving predators." }],
+  ["river-trout", "River Trout", "🐟", "consumable", 360, "Animal Treats", { retailer: "fresh-market", inventoryLimit: 99, description: "A premium whole fish and favourite of larger fish-eaters." }],
   ["pond-pellets", "Pond Pellets", "🫧", "consumable", 80, "Animal Treats", { retailer: "fresh-market", description: "Balanced floating food for fish, ducks and turtles." }],
   ["chicken-pieces", "Chicken Pieces", "🍗", "consumable", 180, "Animal Treats", { retailer: "fresh-market", description: "Plain fresh chicken portions for dogs, foxes and other suitable carnivores." }],
   ["beef-strips", "Beef Strips", "🥩", "consumable", 260, "Animal Treats", { retailer: "fresh-market", description: "Fresh beef strips for larger meat-eating companions." }],
   ["prepared-meat", "Prepared Meat Bites", "🍖", "consumable", 210, "Animal Treats", { retailer: "fresh-market", description: "Small plain meat bites prepared safely for cats and dogs." }],
-  ["reedbank-roach", "Reedbank Roach", "🐟", "consumable", 0, "Fishing Finds", { fishingOnly: true }],
-  ["lily-perch", "Lily Perch", "🐠", "consumable", 0, "Fishing Finds", { fishingOnly: true }],
-  ["golden-tench", "Golden Tench", "🐟", "consumable", 0, "Fishing Finds", { fishingOnly: true }],
+  ["reedbank-roach", "Reedbank Roach", "🐟", "consumable", 0, "Fishing Finds", { fishingOnly: true, inventoryLimit: 99 }],
+  ["lily-perch", "Lily Perch", "🐠", "consumable", 0, "Fishing Finds", { fishingOnly: true, inventoryLimit: 99 }],
+  ["golden-tench", "Golden Tench", "🐟", "consumable", 0, "Fishing Finds", { fishingOnly: true, inventoryLimit: 99 }],
   ["pond-goldfish", "Goldfish", "🐠", "collectible", 0, "Fishing Finds", { fishingOnly: true, aquariumFish: true }],
   ["reedbank-koi", "Koi", "🎏", "collectible", 0, "Fishing Finds", { fishingOnly: true, aquariumFish: true }],
   ["pond-angelfish", "Angelfish", "🐠", "collectible", 0, "Fishing Finds", { fishingOnly: true, aquariumFish: true }],
@@ -82,9 +82,52 @@ const itemRows = [
   ["town-centre-monument", "Town Centre Monument", "🏆", "placeable", 75000, "Decorations"],
 ];
 
+export const SHOP_GROUPS = Object.freeze(["Mowers", "Vacuums", "Trees", "Seating", "Bins", "Decorations", "Furniture", "Animal Treats", "Farming"]);
+export const EQUIPMENT_UPGRADE_ORDERS = Object.freeze({
+  mower: Object.freeze(["starter-mower", "cherry-compact-mower", "classic-yellow-mower", "swiftcut-mower", "meadow-pro-mower", "vintage-special-mower"]),
+  vacuum: Object.freeze(["starter-vacuum", "swift-sweep-vacuum", "cyclone-pro-vacuum", "deep-clean-vacuum", "kindworks-turbo-vacuum"]),
+});
+
+const LEGACY_ITEM_METADATA = Object.freeze({
+  "starter-mower": { description: "The dependable starter mower. Standard mowing speed.", effect: { mowerSpeedMultiplier: 1, bonusGas: 0, mowerColor: "#246b3a", mowerIcon: "🚜" } },
+  "cherry-compact-mower": { description: "A nimble red mower with a small speed boost.", unlock: { game: "lawn", perfects: 3 }, effect: { mowerSpeedMultiplier: 1.05, bonusGas: 0, mowerColor: "#b94e45", mowerIcon: "🚜" } },
+  "classic-yellow-mower": { description: "A cheerful classic with a useful speed boost.", unlock: { game: "lawn", perfects: 8 }, effect: { mowerSpeedMultiplier: 1.1, bonusGas: 0, mowerColor: "#d4a832", mowerIcon: "🚜" } },
+  "swiftcut-mower": { description: "Fast movement for tougher lawns.", unlock: { game: "lawn", perfects: 15 }, effect: { mowerSpeedMultiplier: 1.25, bonusGas: 0, mowerColor: "#3f7f98", mowerIcon: "🏎️" } },
+  "meadow-pro-mower": { description: "A premium mower with much faster movement.", unlock: { game: "lawn", perfects: 30 }, effect: { mowerSpeedMultiplier: 1.45, bonusGas: 0, mowerColor: "#684f93", mowerIcon: "⚡" } },
+  "vintage-special-mower": { description: "A prestige vintage mower with top-tier mowing speed.", unlock: { game: "lawn", perfects: 50 }, effect: { mowerSpeedMultiplier: 1.65, bonusGas: 0, mowerColor: "#a8673e", mowerIcon: "🚜" } },
+  "starter-vacuum": { description: "A reliable first vacuum with standard cleaning power and reach.", effect: { vacuumPower: 1, vacuumRadius: 36, vacuumSpeedMultiplier: 1, vacuumColor: "#d56155" } },
+  "swift-sweep-vacuum": { description: "A stronger vacuum that removes two layers of grime per pass.", effect: { vacuumPower: 2, vacuumRadius: 40, vacuumSpeedMultiplier: 1.08, vacuumColor: "#4e91b8" } },
+  "cyclone-pro-vacuum": { description: "Wide cleaning reach and three layers of stain removal per pass.", effect: { vacuumPower: 3, vacuumRadius: 44, vacuumSpeedMultiplier: 1.16, vacuumColor: "#6f68a8" } },
+  "deep-clean-vacuum": { description: "A premium cleaner that cuts through four layers of stubborn grime.", effect: { vacuumPower: 4, vacuumRadius: 48, vacuumSpeedMultiplier: 1.25, vacuumColor: "#2e8a73" } },
+  "kindworks-turbo-vacuum": { description: "The ultimate wide-head vacuum. Even five-layer stains clear in one pass.", effect: { vacuumPower: 5, vacuumRadius: 52, vacuumSpeedMultiplier: 1.35, vacuumColor: "#b47a2e" } },
+  "willow-tree": { unlock: { game: "river", perfects: 1 } },
+  "flowering-cherry": { unlock: { game: "lawn", perfects: 5 } },
+  "apple-tree": { unlock: { game: "waste", perfects: 2 } },
+  "flowering-tree": { unlock: { game: "lawn", perfects: 10 } },
+  "grand-oak": { unlock: { game: "lawn", perfects: 20 } },
+  "iron-bench": { unlock: { game: "waste", perfects: 3 } },
+  "riverside-bench": { unlock: { game: "river", perfects: 2 } },
+  "picnic-table": { unlock: { game: "waste", perfects: 4 } },
+  "recycling-bin": { unlock: { game: "waste", perfects: 5 } },
+  "commercial-bin": { unlock: { game: "waste", perfects: 10 } },
+  "small-fountain": { unlock: { game: "river", perfects: 5 } },
+  "town-clock": { unlock: { game: "waste", perfects: 15 } },
+  "premium-picnic-area": { unlock: { game: "waste", perfects: 10 } },
+  "grand-fountain": { unlock: { game: "river", perfects: 12 } },
+  "willowmere-gazebo": { unlock: { game: "lawn", perfects: 40 } },
+  "town-centre-monument": { unlock: { game: "waste", perfects: 30 } },
+});
+
+function freezeMetadata(value) {
+  if (!value || typeof value !== "object") return value;
+  for (const child of Object.values(value)) if (child && typeof child === "object" && !Object.isFrozen(child)) freezeMetadata(child);
+  return Object.freeze(value);
+}
+
 export const ITEM_CATALOG = Object.freeze(Object.fromEntries(itemRows.map((row) => {
   const [id, name, icon, category, price, shopGroup, flags = {}] = row;
-  return [id, Object.freeze({ id, name, icon, category, price, shopGroup, ...flags })];
+  const metadata = structuredClone(LEGACY_ITEM_METADATA[id] || {});
+  return [id, freezeMetadata({ id, name, icon, category, price, shopGroup, ...metadata, ...flags })];
 })));
 
 export const ITEM_IDS = Object.freeze(Object.keys(ITEM_CATALOG));
@@ -114,6 +157,14 @@ export function validateItemCatalog(catalog = ITEM_CATALOG) {
     if (!item.name || !item.icon || !item.shopGroup) errors.push(`${key} is missing display metadata.`);
     if (!Number.isInteger(item.price) || item.price < 0) errors.push(`${key} has an invalid price.`);
     if (!["equipment", "placeable", "consumable", "furniture", "collectible"].includes(item.category)) errors.push(`${key} has an invalid category.`);
+    if (item.unlock && (!['lawn', 'river', 'waste'].includes(item.unlock.game) || !Number.isInteger(item.unlock.perfects) || item.unlock.perfects < 1)) errors.push(`${key} has an invalid unlock condition.`);
+  }
+  for (const [slot, order] of Object.entries(EQUIPMENT_UPGRADE_ORDERS)) {
+    order.forEach((id, index) => {
+      const item = catalog[id];
+      if (!item || item.slot !== slot) errors.push(`${id} is missing from the ${slot} upgrade line.`);
+      if (slot === "vacuum" && item?.effect?.vacuumPower !== index + 1) errors.push(`${id} has the wrong vacuum power.`);
+    });
   }
   for (const id of ["starter-mower", "starter-vacuum"]) if (!catalog[id]?.ownedByDefault) errors.push(`${id} must remain a default item.`);
   return { ok: errors.length === 0, errors };

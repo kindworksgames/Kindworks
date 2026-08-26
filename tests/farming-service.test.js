@@ -25,7 +25,7 @@ function stateAtDay(day) {
 test("fresh Milestone 10 state has six beds, one starter seed, one ripe apple and one lawn job", () => {
   const state = createFreshGameState({ now: 0 });
   assert.equal(validateGameState(state).ok, true);
-  assert.equal(state.schemaVersion, 20);
+  assert.equal(state.schemaVersion, 21);
   assert.equal(state.farming.allotment.beds.length, 6);
   assert.equal(state.farming.allotment.unlockedBeds, 1);
   assert.equal(state.inventory.consumables["carrot-seeds"], 1);
@@ -39,11 +39,16 @@ test("seed purchase and planting are atomic across coins, inventory and a bed", 
   assert.equal(farming.purchaseSeed("carrot").ok, true);
   assert.equal(gameState.getSnapshot().economy.coins, 70);
   assert.equal(gameState.getSnapshot().inventory.consumables["carrot-seeds"], 2);
-  assert.equal(farming.plant("allotment-bed-1", "carrot").ok, true);
+  const planted = farming.plant("allotment-bed-1", "carrot");
+  assert.equal(planted.ok, true);
+  assert.equal(planted.ledger.kind, "consume");
+  assert.equal(planted.ledger.itemId, "carrot-seeds");
+  assert.equal(planted.ledger.balance, 70);
   const state = gameState.getSnapshot();
   assert.equal(state.inventory.consumables["carrot-seeds"], 1);
   assert.equal(state.farming.allotment.beds[0].status, "growing");
   assert.equal(repository.load().state.farming.allotment.beds[0].cropId, "carrot");
+  assert.equal(repository.load().state.economy.ledger.at(-1).reason, "Planted Carrot Seeds");
 });
 
 test("rain advances a planted crop faster than clear weather for the same game time", () => {
@@ -118,7 +123,7 @@ test("schema 6 saves gain farming without losing the preceding milestone systems
   old.schemaVersion = 6;
   old.identity.townName = "Keeperton";
   const upgraded = upgradeGameState(old, { now: 1000 });
-  assert.equal(upgraded.schemaVersion, 20);
+  assert.equal(upgraded.schemaVersion, 21);
   assert.equal(upgraded.identity.townName, "Keeperton");
   assert.equal(upgraded.farming.allotment.beds.length, 6);
   assert.equal(validateGameState(upgraded).ok, true);

@@ -85,7 +85,7 @@ test("the exact original tier boundaries increase rubbish, stain strength and di
 
 test("fresh Milestone 16 state tracks all homes, four original dirty cottages and a protected personal home", () => {
   const state = createFreshGameState({ now: 0 });
-  assert.equal(state.schemaVersion, 20);
+  assert.equal(state.schemaVersion, 21);
   assert.equal(validateGameState(state).ok, true);
   assert.equal(Object.keys(state.houseRescue.homes).length, 19);
   assert.deepEqual(Object.values(state.houseRescue.homes).filter((home) => home.dirty).map((home) => home.houseId), ["house-1", "house-6", "house-11", "house-16"]);
@@ -178,6 +178,29 @@ test("vacuum movement cleans swept reachable layers and requires 95 percent cove
   assert.equal(after, before - result.cleanedLayers);
 });
 
+test("the equipped vacuum supplies its exact cleaning power, reach and movement profile", () => {
+  const state = createFreshGameState({ now: 0 });
+  state.inventory.equipment["kindworks-turbo-vacuum"] = 1;
+  state.inventory.equipped.vacuum = "kindworks-turbo-vacuum";
+  const { houseRescue } = runtime({ state });
+  assert.deepEqual(houseRescue.getVacuumLoadout(), {
+    itemId: "kindworks-turbo-vacuum",
+    name: "KindWorks Turbo",
+    icon: "⚡",
+    power: 5,
+    radius: 10.4,
+    speedMultiplier: 1.35,
+    color: "#b47a2e",
+  });
+  houseRescue.startLevel(1, { houseId: "house-1" });
+  sortAll(houseRescue);
+  const moved = houseRescue.moveVacuum(74, 8);
+  assert.equal(moved.ok, true);
+  assert.equal(moved.loadout.itemId, "kindworks-turbo-vacuum");
+  assert.equal(moved.loadout.power, 5);
+  assert.ok(moved.cleanedLayers > 0);
+});
+
 test("a persistence failure restores the exact pre-completion home, coins and active session", () => {
   let shouldFail = false;
   const repository = { save: () => shouldFail ? { ok: false, status: "write-failed" } : { ok: true, status: "saved" } };
@@ -233,7 +256,7 @@ test("schema 12 saves gain House Rescue while preserving the River campaign", ()
   old.river.totalStars = 3;
   old.river.restorationPoints = 400;
   const upgraded = upgradeGameState(old, { now: 0 });
-  assert.equal(upgraded.schemaVersion, 20);
+  assert.equal(upgraded.schemaVersion, 21);
   assert.equal(upgraded.river.completed, 1);
   assert.equal(upgraded.houseRescue.unlockedLevel, 1);
   assert.equal(validateGameState(upgraded).ok, true);

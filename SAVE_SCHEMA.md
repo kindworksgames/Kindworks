@@ -1,9 +1,10 @@
 # Kindworks Phaser save contract
 
-> Current migration status: Milestone 20 uses game-state and envelope schema
-> 17. Schemas 1 through 16 upgrade in order, with schema 17 adding the complete
-> persistent Playground Power Wash campaign described below. The historical schema-3
-> foundation notes are retained for traceability.
+> Current migration status: Milestone 24 uses game-state and envelope schema
+> 21. Schemas 1 through 20 upgrade in order, with schema 21 normalizing the
+> complete ordinary-coin shop, equipment, inventory, and transaction-history
+> contract described below. The historical schema-3 foundation notes are retained
+> for traceability.
 
 Milestone 3 introduced the protected save foundation alongside the preserved HTML game. Milestone 4 added the shared item catalogue, inventory, KindlyCoin ledger, and atomic economy transactions. Milestone 6 adds the first persistent cleanup session, exact-target result, and job reward. NPC, animal, farming, dynamic cleanup, and the remaining mini-games stay staged for later milestones.
 
@@ -22,14 +23,14 @@ The Phaser build owns only:
 - `kindworks_phaser_v1_backup`
 - `kindworks_phaser_v1_recovery`
 
-## Current Phaser envelope schema 17
+## Current Phaser envelope schema 21
 
 Every current and backup save is a JSON envelope:
 
 ```json
 {
   "format": "kindworks-phaser",
-  "schemaVersion": 17,
+  "schemaVersion": 21,
   "writtenAt": "2026-08-25T00:00:00.000Z",
   "appVersion": "0.1.0",
   "data": {},
@@ -37,7 +38,7 @@ Every current and backup save is a JSON envelope:
 }
 ```
 
-The checksum covers every envelope field except the checksum itself. A save is accepted only when its format, schema, timestamp, checksum, and inner game state all validate. Valid schemas 1 through 16 upgrade to schema 17, and the original verified envelope becomes the Phaser backup before replacement.
+The checksum covers every envelope field except the checksum itself. A save is accepted only when its format, schema, timestamp, checksum, and inner game state all validate. Valid schemas 1 through 20 upgrade to schema 21, and the original verified envelope becomes the Phaser backup before replacement.
 
 ## Historical game-state schema 3 foundation
 
@@ -66,16 +67,46 @@ The checksum covers every envelope field except the checksum itself. A save is a
 ## Economy and inventory contract
 
 - The current balance is always `lifetimeCoinsEarned - lifetimeCoinsSpent`.
-- Every credit, debit, and purchase records an ID, signed amount, kind, reason, related item/quantity when present, and timestamp.
+- Every credit, debit, purchase, equipment change, and consumable use records an ID, signed amount, post-transaction balance, kind, reason, related item/quantity when present, shop metadata when applicable, and timestamp.
 - The ledger retains the latest 500 entries.
 - The extracted catalogue contains all 76 legacy IDs: 12 equipment, 35 placeables, 15 consumables, 10 furniture items, and 4 aquarium collectibles.
 - Inventory uses `equipment`, `placeables`, `consumables`, and `furniture` buckets. Aquarium collectibles remain outside normal inventory, matching the legacy game.
-- Equipment and unique furniture are capped at one. Other inventory stacks are capped at 9,999.
+- Equipment and unique furniture are capped at one. Seeds, harvested produce, and edible fishing catches are capped at 99; other stackable consumables and placeables retain the original 9,999 limit.
 - `starter-mower` and `starter-vacuum` always remain owned and correctly equipped.
 - Unknown or wrongly bucketed legacy records are retained in `unresolvedLegacy` instead of being silently discarded.
 - A successful mutation validates the complete candidate state and persists it immediately.
 - If validation or persistence fails, the in-memory balance and inventory return to the exact pre-transaction checkpoint.
 - Legacy HTML storage keys remain read-only throughout economy import and Phaser transactions.
+
+## Complete economy and shops schema-21 contract
+
+- The ordinary-coin catalogue exposes all original groups: Mowers, Vacuums,
+  Trees, Seating, Bins, Decorations, Furniture, and Animal Treats, plus the
+  migrated Farming seed group. QA, subscription-only, fishing-only, harvested,
+  and zero-price stock cannot be purchased through the coin shop.
+- Willowmere Shop owns 51 released tools, placeables, and furniture items;
+  Village Grocer owns its exact three seed and five everyday-treat products;
+  Fresh Market owns its exact seven fish, meat, and pellet products. Released
+  ordinary stock has exactly one retailer.
+- Locked placeables and mowers read perfect-result counts directly from Lawn
+  Care, River Clear-Out, or Waste Collection. A locked purchase cannot reach
+  the economy mutation path.
+- Owned mower and vacuum upgrades receive one credit only: 50 percent of the
+  highest-priced previously owned lower paid tier. The starter tier has no
+  resale value, later or unrelated equipment grants no credit, and the quoted
+  list price, credit, and final cost are saved in the purchase ledger entry.
+- Buying and equipping are separate atomic operations. An equipment item must
+  be owned before it can be equipped; the prior item remains owned, and the
+  equipped mower or vacuum is persisted immediately.
+- Lawn Care reads the selected mower profile. House Rescue reads the selected
+  vacuum's exact power, reach, movement multiplier, colour, and icon.
+- Consumable removal is atomic and records a zero-coin use transaction. The
+  existing Farming and Animal Friends services remain the authority for when a
+  seed, crop, fish, or treat may actually be used.
+- Schema-20 inventory is re-projected into current limits without dropping
+  known ownership or valid equipped tools. Unknown records remain visible in
+  `unresolvedLegacy`; existing transaction history and its retailer/credit
+  metadata remain unchanged.
 
 ## Cleanup transaction contract
 

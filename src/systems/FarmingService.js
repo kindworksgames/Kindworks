@@ -28,7 +28,7 @@ function weatherMinutes(from, to, property) {
 function appendLedger(state, now, details) {
   const id = `coin-${String(state.economy.nextTransactionId).padStart(6, "0")}`;
   state.economy.nextTransactionId += 1;
-  const entry = { id, itemId: null, quantity: null, occurredAt: new Date(now).toISOString(), ...details };
+  const entry = { id, itemId: null, quantity: null, shopId: null, balance: state.economy.coins, occurredAt: new Date(now).toISOString(), ...details };
   state.economy.ledger.push(entry);
   state.economy.ledger = state.economy.ledger.slice(-COIN_LEDGER_LIMIT);
   return entry;
@@ -140,7 +140,8 @@ export class FarmingService {
       const removed = this.inventory.remove(state.inventory, crop.seedId, 1);
       if (!removed.ok) return { ...removed, message: `Buy ${crop.label.toLowerCase()} seeds before planting.` };
       Object.assign(bed, { cropId, status: "growing", growthMinutes: 0 });
-      return { ok: true, code: "crop-planted", bedId, cropId };
+      const ledger = appendLedger(state, this.now(), { amount: 0, kind: "consume", reason: `Planted ${crop.seedLabel}`, itemId: crop.seedId, quantity: 1, bedId });
+      return { ok: true, code: "crop-planted", bedId, cropId, ledger };
     });
   }
 

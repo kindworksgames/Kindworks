@@ -62,9 +62,14 @@ test("a favourite treat is consumed exactly once and grants the original wild-an
   assert.equal(result.ok, true);
   assert.equal(result.favorite, true);
   assert.equal(result.gainedTrust, 19);
+  assert.equal(result.ledger.kind, "consume");
+  assert.equal(result.ledger.amount, 0);
+  assert.equal(result.ledger.itemId, "allotment-carrot");
+  assert.equal(result.ledger.balance, 100);
   assert.equal(gameState.getSnapshot().inventory.consumables["allotment-carrot"], 1);
   assert.equal(animals.feed(RABBIT, "allotment-carrot").code, "already-fed");
   assert.equal(repository.load().state.animals.residents[RABBIT].trust, 41);
+  assert.equal(repository.load().state.economy.ledger.at(-1).reason, "Fed Clover Allotment Carrot");
 });
 
 test("gentle greetings obey the 120-game-minute cooldown", () => {
@@ -180,7 +185,7 @@ test("schema 7 saves gain animal friends without losing prior milestones", () =>
   old.schemaVersion = 7;
   old.identity.townName = "Friendship Bay";
   const upgraded = upgradeGameState(old, { now: 1000 });
-  assert.equal(upgraded.schemaVersion, 20);
+  assert.equal(upgraded.schemaVersion, 21);
   assert.equal(upgraded.identity.townName, "Friendship Bay");
   assert.equal(Object.keys(upgraded.animals.residents).length, 8);
   assert.equal(validateGameState(upgraded).ok, true);

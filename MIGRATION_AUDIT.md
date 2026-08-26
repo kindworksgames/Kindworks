@@ -192,3 +192,23 @@ requires landscape orientation on mobile, with its complete 844×390 counter
 fitting without scrolling. All 234 automated tests and the production build
 pass, and live browser QA reports no warnings or errors. The protected HTML
 source remains unchanged.
+
+Milestone 24 completes the ordinary-coin economy, shops, equipment, inventory,
+and transaction-history gap. The full released catalogue is now divided across
+Willowmere Shop (51 tools, placeables, and furniture products), Village Grocer
+(three seed products and five everyday animal treats), and Fresh Market (seven
+fish, meat, and pellet products), with every ordinary product owned by exactly
+one retailer. All original category groups, exact prices, and the 21 Lawn Care,
+River Clear-Out, and Waste Collection perfect-result unlock conditions are
+pinned. Mowers and vacuums can be bought and equipped separately; upgrades
+receive only the original 50-percent credit from the best previously owned
+lower paid tier. The equipped mower continues to drive Lawn Care and the
+equipped vacuum now drives House Rescue power, reach, speed profile, colour,
+and icon. Seeds, produce, and edible catches use their 99-item limit;
+equipment and unique furniture remain single-owner; other legacy stacks retain
+9,999. Purchases, equips, and consumable uses write detailed bounded history,
+and a failed save restores the exact wallet, inventory, ledger, and loadout.
+Schema 21 safely normalizes schema-20 inventory while retaining known ownership,
+valid equipment selection, unresolved legacy records, and existing transaction
+metadata. All 242 automated tests pass. The protected HTML source remains
+unchanged.

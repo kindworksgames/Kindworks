@@ -5,11 +5,12 @@ function percentage(value, total) {
 }
 
 export class FarmingController {
-  constructor(farming, { onModalChange = () => {}, onStartLawnJob = () => ({ ok: false }), onStartLawnCampaign = () => ({ ok: false }) } = {}) {
+  constructor(farming, { onModalChange = () => {}, onStartLawnJob = () => ({ ok: false }), onStartLawnCampaign = () => ({ ok: false }), onOpenSeedShop = () => ({ ok: false }) } = {}) {
     this.farming = farming;
     this.onModalChange = onModalChange;
     this.onStartLawnJob = onStartLawnJob;
     this.onStartLawnCampaign = onStartLawnCampaign;
+    this.onOpenSeedShop = onOpenSeedShop;
     this.selectedCropId = "carrot";
     this.selectedTab = "allotment";
     this.selectedLawnId = LAWN_PLOTS[0].id;
@@ -32,7 +33,11 @@ export class FarmingController {
         this.selectedCropId = button.dataset.cropId;
         return this.render();
       }
-      if (button.dataset.buySeed) return this.report(this.farming.purchaseSeed(button.dataset.buySeed));
+      if (button.dataset.buySeed) {
+        const crop = FARMING_CROPS[button.dataset.buySeed];
+        this.close();
+        return this.onOpenSeedShop(crop?.seedId);
+      }
       if (button.dataset.plantBed) return this.report(this.farming.plant(button.dataset.plantBed, this.selectedCropId));
       if (button.dataset.harvestBed) return this.report(this.farming.harvest(button.dataset.harvestBed));
       if (button.dataset.unlockBed) return this.report(this.farming.unlockBed(button.dataset.unlockBed));
@@ -122,8 +127,8 @@ export class FarmingController {
     const buy = document.querySelector("#farming-buy-seed");
     if (buy) {
       buy.dataset.buySeed = selectedCrop.id;
-      buy.textContent = `Buy ${selectedCrop.seedLabel} · 🪙 ${selectedCrop.seedPrice}`;
-      buy.disabled = game.economy.coins < selectedCrop.seedPrice;
+      buy.textContent = `Shop for ${selectedCrop.seedLabel} · Village Grocer`;
+      buy.disabled = false;
     }
     const beds = document.querySelector("#farming-beds");
     if (beds) beds.innerHTML = state.allotment.beds.map((bed, index) => {

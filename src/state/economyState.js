@@ -72,6 +72,14 @@ export function projectLegacyInventory(raw) {
     const id = String(equipped[slot] || fallback);
     inventory.equipped[slot] = inventory.equipment[id] && ITEM_CATALOG[id]?.slot === slot ? id : fallback;
   }
+  const unresolved = Array.isArray(raw.unresolvedLegacy) ? raw.unresolvedLegacy : [];
+  for (const entry of unresolved) {
+    const id = String(entry?.id || "");
+    const bucket = String(entry?.bucket || "");
+    const quantity = safeInteger(entry?.quantity);
+    if (!id || !bucket || quantity < 1 || inventory.unresolvedLegacy.some((item) => item.id === id && item.bucket === bucket)) continue;
+    inventory.unresolvedLegacy.push({ id, bucket, quantity });
+  }
   return inventory;
 }
 
@@ -79,22 +87,66 @@ export function projectLegacyEconomy(raw, { now = Date.now() } = {}) {
   if (!raw || typeof raw !== "object") return createFreshEconomyState({ now });
   const coins = safeInteger(raw.coins);
   const spent = safeInteger(raw.lifetimeCoinsSpent);
+  const importedLedger = (Array.isArray(raw.ledger) ? raw.ledger : []).map((entry, index) => {
+    if (!entry || typeof entry !== "object") return null;
+    const legacyTime = Number(entry.at);
+    const occurredAt = Number.isNaN(new Date(entry.occurredAt).getTime())
+      ? new Date(Number.isFinite(legacyTime) ? legacyTime : now).toISOString()
+      : new Date(entry.occurredAt).toISOString();
+    const reserved = new Set(["id", "amount", "kind", "reason", "itemId", "quantity", "shopId", "balance", "occurredAt", "at"]);
+    const metadata = Object.fromEntries(Object.entries(entry).filter(([key]) => !reserved.has(key)));
+    return {
+      ...metadata,
+      id: `coin-${String(index + 1).padStart(6, "0")}`,
+      amount: Math.trunc(Number(entry.amount) || 0),
+      kind: String(entry.kind || "legacy-transaction"),
+      reason: String(entry.reason || entry.kind || "Imported transaction"),
+      itemId: typeof entry.itemId === "string" ? entry.itemId : null,
+      quantity: Number.isSafeInteger(entry.quantity) ? entry.quantity : null,
+      shopId: typeof entry.shopId === "string" ? entry.shopId : null,
+      balance: Number.isSafeInteger(entry.balance) && entry.balance >= 0 ? entry.balance : null,
+      occurredAt,
+    };
+  }).filter(Boolean).slice(-COIN_LEDGER_LIMIT).map((entry, index) => ({
+    ...entry,
+    id: `coin-${String(index + 1).padStart(6, "0")}`,
+  }));
+  const ledger = importedLedger.length ? importedLedger : [{
+    id: "coin-000001",
+    amount: 0,
+    kind: "legacy-balance",
+    reason: `Balance imported from HTML save v${safeInteger(raw.schemaVersion) || "legacy"}`,
+    itemId: null,
+    quantity: null,
+    shopId: null,
+    balance: coins,
+    occurredAt: new Date(now).toISOString(),
+  }];
   return {
     schemaVersion: ECONOMY_SCHEMA_VERSION,
     coins,
     lifetimeCoinsEarned: coins + spent,
     lifetimeCoinsSpent: spent,
-    nextTransactionId: 2,
-    ledger: [{
-      id: "coin-000001",
-      amount: 0,
-      kind: "legacy-balance",
-      reason: `Balance imported from HTML save v${safeInteger(raw.schemaVersion) || "legacy"}`,
-      itemId: null,
-      quantity: null,
-      occurredAt: new Date(now).toISOString(),
-    }],
+    nextTransactionId: ledger.length + 1,
+    ledger,
   };
+}
+
+export function normalizeEconomyState(raw, { now = Date.now() } = {}) {
+  if (!raw || typeof raw !== "object") return createFreshEconomyState({ now });
+  const coins = safeInteger(raw.coins);
+  const spent = safeInteger(raw.lifetimeCoinsSpent);
+  const earned = safeInteger(raw.lifetimeCoinsEarned);
+  const projected = projectLegacyEconomy(raw, { now });
+  projected.coins = coins;
+  projected.lifetimeCoinsSpent = spent;
+  projected.lifetimeCoinsEarned = earned - spent === coins ? earned : coins + spent;
+  projected.nextTransactionId = Math.max(safeInteger(raw.nextTransactionId, 1), projected.ledger.length + 1);
+  return projected;
+}
+
+export function normalizeInventoryState(raw) {
+  return projectLegacyInventory(raw);
 }
 
 export function validateEconomyState(economy) {
@@ -109,6 +161,7 @@ export function validateEconomyState(economy) {
   if (!Array.isArray(economy.ledger) || economy.ledger.length > COIN_LEDGER_LIMIT) errors.push("The coin ledger is invalid or exceeds its limit.");
   for (const entry of Array.isArray(economy.ledger) ? economy.ledger : []) {
     if (!entry || typeof entry.id !== "string" || !Number.isSafeInteger(entry.amount) || typeof entry.reason !== "string" || Number.isNaN(new Date(entry.occurredAt).getTime())) errors.push("The coin ledger contains an invalid entry.");
+    if (entry.balance !== undefined && entry.balance !== null && (!Number.isSafeInteger(entry.balance) || entry.balance < 0)) errors.push("The coin ledger contains an invalid balance snapshot.");
   }
   return { ok: errors.length === 0, errors };
 }

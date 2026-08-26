@@ -195,7 +195,8 @@ export class HouseRescueScene extends Phaser.Scene {
     }
     if (session.phase === "vacuum" && ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) {
       event.preventDefault();
-      const step = event.shiftKey ? 12 : 6;
+      const loadout = this.houseRescue.getVacuumLoadout();
+      const step = (event.shiftKey ? 12 : 6) * loadout.speedMultiplier;
       const x = session.vacuum.x + (event.key === "ArrowLeft" ? -step : event.key === "ArrowRight" ? step : 0);
       const y = session.vacuum.y + (event.key === "ArrowUp" ? -step : event.key === "ArrowDown" ? step : 0);
       const result = this.houseRescue.moveVacuum(x, y);
@@ -219,7 +220,8 @@ export class HouseRescueScene extends Phaser.Scene {
   renderVacuum(session) {
     if (!this.vacuumFloor) return;
     const remaining = session.dirt.filter((stain) => stain.remaining > 0);
-    this.vacuumFloor.innerHTML = `${remaining.map((stain) => `<i class="house-rescue-stain strength-${stain.strength}" style="left:${stain.x}%;top:${stain.y}%;--stain-size:${5 + stain.remaining * 2}px" aria-hidden="true"></i>`).join("")}<span class="house-rescue-vacuum" style="left:${session.vacuum.x}%;top:${session.vacuum.y}%" aria-hidden="true">🧹</span>`;
+    const vacuum = this.houseRescue.getVacuumLoadout();
+    this.vacuumFloor.innerHTML = `${remaining.map((stain) => `<i class="house-rescue-stain strength-${stain.strength}" style="left:${stain.x}%;top:${stain.y}%;--stain-size:${5 + stain.remaining * 2}px" aria-hidden="true"></i>`).join("")}<span class="house-rescue-vacuum" style="left:${session.vacuum.x}%;top:${session.vacuum.y}%;--vacuum-color:${vacuum.color}" aria-hidden="true">${vacuum.icon}</span>`;
     setText("#house-rescue-layers", remaining.reduce((sum, stain) => sum + stain.remaining, 0));
   }
 
@@ -245,6 +247,8 @@ export class HouseRescueScene extends Phaser.Scene {
       setText("#house-rescue-score", session.score);
       setText("#house-rescue-mistakes", session.mistakes);
       setText("#house-rescue-coverage", `${Math.round(coverage * 100)}%`);
+      const vacuum = this.houseRescue.getVacuumLoadout();
+      setText("#house-rescue-vacuum-tool", `${vacuum.icon} ${vacuum.name} · power ${vacuum.power}`);
       document.querySelector("#house-rescue-sort-stage")?.classList.toggle("active", session.phase === "sorting");
       document.querySelector("#house-rescue-sort-stage")?.classList.toggle("done", session.phase === "vacuum");
       document.querySelector("#house-rescue-vacuum-stage")?.classList.toggle("active", session.phase === "vacuum");

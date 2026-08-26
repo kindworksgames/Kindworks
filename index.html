@@ -20,11 +20,12 @@
           <div id="world-clock-status" class="world-status-pill" aria-label="Day 1, 07:00">Day 1 · 07:00</div>
           <div id="weather-status" class="world-status-pill weather-status" data-weather="clear" aria-label="Clear weather"><span aria-hidden="true">☀️</span> Clear <small>20°C</small></div>
           <button id="coin-status-button" class="economy-hud-button" type="button" aria-label="Open wallet">🪙 100</button>
+          <button id="shop-button" class="economy-hud-button shop-hud-button" type="button" aria-label="Open Willowmere Shop">🛍️ Shop</button>
           <button id="inventory-button" class="economy-hud-button" type="button" aria-label="Open inventory">🎒 2</button>
           <button id="custom-resident-button" class="economy-hud-button resident-hud-button" type="button" aria-label="Create your personal resident">💚 Create resident</button>
           <button id="animal-friends-button" class="economy-hud-button animal-hud-button" type="button" aria-label="Open Animal Friends">🐾 Animal Friends</button>
           <button id="save-status-button" class="save-status-button" type="button" data-status="new">Save not started</button>
-          <div class="milestone-badge">PHASER TOWN · MILESTONE 23</div>
+          <div class="milestone-badge">PHASER TOWN · MILESTONE 24</div>
         </div>
       </section>
       <section id="interaction-prompt" class="interaction-prompt hidden" aria-label="Nearby interaction" aria-hidden="true">
@@ -67,7 +68,7 @@
           <header class="economy-panel-header">
             <div class="economy-panel-icon" aria-hidden="true">🎒</div>
             <div>
-              <p class="economy-panel-eyebrow">MILESTONE 4 · SHARED ECONOMY</p>
+              <p class="economy-panel-eyebrow">MILESTONE 24 · COMPLETE ECONOMY</p>
               <h2 id="economy-panel-title">Wallet & inventory</h2>
             </div>
             <button id="economy-panel-close" class="economy-panel-close" type="button" aria-label="Close wallet and inventory">✕</button>
@@ -89,22 +90,23 @@
             <p id="catalogue-status" class="catalogue-status">76 legacy item definitions ready</p>
             <div id="inventory-groups" class="inventory-groups"></div>
           </section>
-          <p class="economy-panel-note">Balances and owned items now follow you between Phaser scenes. Shops arrive in Milestone 5.</p>
+          <p class="economy-panel-note">Every purchase, tool change and consumable use is saved atomically. Animal foods are used through Animal Friends; seeds are used at Willow Allotments.</p>
         </div>
       </section>
       <section id="shop-panel" class="shop-panel hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="shop-panel-title" aria-describedby="shop-panel-description">
         <div class="shop-panel-card">
           <header class="shop-panel-header">
             <div>
-              <p class="shop-panel-eyebrow">MILESTONE 5 · FIRST COMPLETE SHOP</p>
+              <p class="shop-panel-eyebrow">MILESTONE 24 · COMPLETE COIN SHOP</p>
               <h2 id="shop-panel-title">🐟 Fresh Market</h2>
               <p id="shop-panel-description">Fresh fish, meat and pond food.</p>
             </div>
             <div class="shop-balance" aria-label="Current KindlyCoin balance"><span>Balance</span><strong>🪙 <span id="shop-balance">100</span></strong></div>
-            <button id="shop-panel-close" class="shop-panel-close" type="button" aria-label="Leave Fresh Market">✕</button>
+            <button id="shop-panel-close" class="shop-panel-close" type="button" aria-label="Close shop">✕</button>
           </header>
           <div class="shop-panel-body">
             <section class="shop-catalogue" aria-labelledby="shop-catalogue-title">
+              <div id="shop-group-tabs" class="shop-group-tabs" role="tablist" aria-label="Shop categories"></div>
               <h3 id="shop-catalogue-title">Market shelves</h3>
               <div id="shop-product-list" class="shop-product-list"></div>
             </section>
@@ -121,7 +123,7 @@
               <p id="shop-message" class="shop-message" data-status="neutral" aria-live="polite">Select a product to see its price and owned quantity.</p>
             </section>
           </div>
-          <p class="shop-panel-note">Every purchase uses the shared KindlyCoin transaction and saves immediately. Press Escape to return to town.</p>
+          <p class="shop-panel-note">Ordinary in-game coins only. Every purchase and tool change saves immediately and safely rolls back if saving fails. Press Escape to return.</p>
         </div>
       </section>
       <section id="custom-resident-panel" class="custom-resident-panel hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="custom-resident-title" aria-describedby="custom-resident-description">
@@ -208,7 +210,7 @@
           </div>
           <div class="farming-content">
             <section data-farming-pane="allotment" aria-label="Willow Allotments">
-              <div class="farming-intro"><div><h3>Willow Allotments</h3><p>Choose a crop, buy a packet, then plant any unlocked empty bed. Rain helps growth; snow slows it.</p></div><button id="farming-buy-seed" type="button" data-buy-seed="carrot">Buy Carrot Seeds · 🪙 30</button></div>
+              <div class="farming-intro"><div><h3>Willow Allotments</h3><p>Choose a crop, collect its packet from Village Grocer, then plant any unlocked empty bed. Rain helps growth; snow slows it.</p></div><button id="farming-buy-seed" type="button" data-buy-seed="carrot">Shop for Carrot Seeds · Village Grocer</button></div>
               <div id="farming-crop-choices" class="farming-crop-choices" role="group" aria-label="Choose a crop"></div>
               <div id="farming-beds" class="farming-grid" aria-live="polite"></div>
             </section>
@@ -366,7 +368,7 @@
             <div class="house-rescue-sort-layout"><div id="house-rescue-sort-floor" class="house-rescue-sort-floor" aria-label="Rubbish waiting to be sorted"></div><div id="house-rescue-bins" class="house-rescue-bins" aria-label="Sorting bins"><button type="button" data-house-rescue-bin="organic"><span>🌿</span><strong>Organic</strong><small>Press 1</small></button><button type="button" data-house-rescue-bin="recycle"><span>♻️</span><strong>Recycling</strong><small>Press 2</small></button><button type="button" data-house-rescue-bin="garbage"><span>🗑️</span><strong>Garbage</strong><small>Press 3</small></button></div></div>
           </section>
           <section id="house-rescue-vacuum-panel" class="house-rescue-vacuum-panel hidden">
-            <div class="house-rescue-stage-meta"><span>Stain layers <strong id="house-rescue-layers">180</strong></span><small>Swipe the vacuum repeatedly over stubborn stains · arrow keys also work</small></div>
+            <div class="house-rescue-stage-meta"><span>Stain layers <strong id="house-rescue-layers">180</strong></span><span>Tool <strong id="house-rescue-vacuum-tool">Starter Vacuum</strong></span><small>Swipe the vacuum repeatedly over stubborn stains · arrow keys also work</small></div>
             <div id="house-rescue-vacuum-floor" class="house-rescue-vacuum-floor" aria-label="Floor to vacuum"></div>
           </section>
           <button id="house-rescue-qa-complete" class="hidden" type="button">✓ Certified QA completion</button>

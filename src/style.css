@@ -604,6 +604,34 @@ body[data-game-scene="BakeryScene"] .zoom-controls {
   background: #f6f0db;
 }
 
+.shop-group-tabs {
+  display: flex;
+  gap: 7px;
+  margin: 0 0 12px;
+  padding: 2px 0 5px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.shop-group-tabs button {
+  flex: 0 0 auto;
+  min-height: 38px;
+  padding: 7px 11px;
+  border: 1px solid #c9d5c6;
+  border-radius: 999px;
+  background: #fffdf3;
+  color: #526957;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.shop-group-tabs button[aria-selected="true"] {
+  border-color: #3f754f;
+  background: #3f754f;
+  color: #fff;
+}
+
 .shop-catalogue > h3 {
   margin: 0 0 10px;
   color: #49624f;
@@ -642,6 +670,11 @@ body[data-game-scene="BakeryScene"] .zoom-controls {
 
 .shop-product[data-affordable="false"] {
   background: rgb(245 239 225 / 88%);
+}
+
+.shop-product[data-locked="true"] {
+  background: #eee9dc;
+  color: #6e756d;
 }
 
 .shop-product-icon {
@@ -805,7 +838,25 @@ body[data-game-scene="BakeryScene"] .zoom-controls {
 }
 
 .inventory-group li {
-  grid-template-columns: 30px 1fr auto;
+  grid-template-columns: 30px minmax(0, 1fr) auto auto;
+}
+
+.inventory-item-action {
+  color: #4f6957;
+  font-size: 10px;
+  font-weight: 850;
+}
+
+.inventory-item-action button {
+  min-height: 34px;
+  padding: 5px 8px;
+  border: 1px solid #b7cbb8;
+  border-radius: 9px;
+  background: #fffdf5;
+  color: #315a3f;
+  font-size: 10px;
+  font-weight: 900;
+  cursor: pointer;
 }
 
 .inventory-item-icon {
@@ -1467,7 +1518,7 @@ body[data-game-scene="BakeryScene"] .zoom-controls {
 .house-rescue-vacuum-floor { min-height: 365px; background: repeating-linear-gradient(90deg, #d7b982 0 42px, #c7a875 42px 45px); cursor: crosshair; }
 .house-rescue-stain { position: absolute; z-index: 1; width: var(--stain-size); height: calc(var(--stain-size) * .75); border-radius: 50%; background: #49372d; opacity: .42; transform: translate(-50%, -50%) rotate(18deg); pointer-events: none; }
 .house-rescue-stain.strength-3, .house-rescue-stain.strength-4, .house-rescue-stain.strength-5 { opacity: .56; box-shadow: 3px 1px 0 rgb(52 39 31 / 24%); }
-.house-rescue-vacuum { position: absolute; z-index: 3; display: grid; place-items: center; width: 48px; height: 48px; border: 3px solid #3b3028; border-radius: 50%; background: #ffe47c; font-size: 27px; box-shadow: 3px 3px 0 rgb(59 48 40 / 32%); transform: translate(-50%, -50%); pointer-events: none; }
+.house-rescue-vacuum { position: absolute; z-index: 3; display: grid; place-items: center; width: 48px; height: 48px; border: 3px solid #3b3028; border-radius: 50%; background: var(--vacuum-color, #ffe47c); font-size: 27px; box-shadow: 3px 3px 0 rgb(59 48 40 / 32%); transform: translate(-50%, -50%); pointer-events: none; }
 #house-rescue-qa-complete { color: #fff; background: #765a91; }
 .house-rescue-status { min-height: 34px; margin: 0; padding: 8px 10px; border-top: 2px solid #b9a57d; color: #5a5042; background: #fff8e6; font: 800 9px/1.35 system-ui, sans-serif; }
 .house-rescue-status[data-status="success"] { color: #21633d; background: #dff0c5; }

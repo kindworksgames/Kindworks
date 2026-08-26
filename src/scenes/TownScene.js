@@ -23,7 +23,7 @@ import {
 } from "../data/town.js";
 import { PlayerCharacter } from "../entities/PlayerCharacter.js";
 import { COMMONS_RUBBISH_JOB } from "../data/cleanupJobs.js";
-import { FRESH_MARKET } from "../data/shops.js";
+import { FRESH_MARKET, VILLAGE_GROCER } from "../data/shops.js";
 import { InteractionSystem } from "../systems/InteractionSystem.js";
 import { MovementController } from "../systems/MovementController.js";
 import { NpcCharacter } from "../entities/NpcCharacter.js";
@@ -136,6 +136,8 @@ export class TownScene extends Phaser.Scene {
         ? LITTLE_BAKERY.approach
         : qaTarget === "fresh-market"
         ? FRESH_MARKET.approach
+        : qaTarget === "village-grocer"
+          ? VILLAGE_GROCER.approach
           : qaTarget === "waste"
             ? COMMONS_RUBBISH_JOB.world.approach
             : qaTarget === "farming"
@@ -238,6 +240,17 @@ export class TownScene extends Phaser.Scene {
           onActivate: () => this.enterSouthShoreScoops(),
         },
         {
+          id: "village-grocer-door",
+          kind: "shop",
+          x: VILLAGE_GROCER.door.x,
+          y: VILLAGE_GROCER.door.y,
+          radius: VILLAGE_GROCER.interactionRadius,
+          icon: VILLAGE_GROCER.icon,
+          label: `Enter ${VILLAGE_GROCER.name}`,
+          detail: "Seeds, produce and everyday animal foods",
+          onActivate: () => this.openShop(VILLAGE_GROCER.id),
+        },
+        {
           id: "fresh-market-door",
           kind: "shop",
           x: FRESH_MARKET.door.x,
@@ -246,7 +259,7 @@ export class TownScene extends Phaser.Scene {
           icon: FRESH_MARKET.icon,
           label: `Enter ${FRESH_MARKET.name}`,
           detail: "Fresh fish, meat and pond food",
-          onActivate: () => this.openFreshMarket(),
+          onActivate: () => this.openShop(FRESH_MARKET.id),
         },
         {
           id: "willow-allotments",
@@ -905,7 +918,7 @@ export class TownScene extends Phaser.Scene {
     document.body.dataset.gameScene = this.scene.key;
     const badge = document.querySelector(".milestone-badge");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 23";
+    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 24";
     if (hint) hint.textContent = "Arrow keys or WASD to walk · E or Space to interact · Shift to run";
   }
 
@@ -1068,11 +1081,15 @@ export class TownScene extends Phaser.Scene {
     return { ok: true, targetScene: "HouseRescueScene", houseId };
   }
 
-  openFreshMarket() {
+  openShop(shopId) {
     if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
     if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before shopping." };
     if (!this.shopController) return { ok: false, reason: "The shop interface is not ready." };
-    return this.shopController.open(FRESH_MARKET.id);
+    return this.shopController.open(shopId);
+  }
+
+  openFreshMarket() {
+    return this.openShop(FRESH_MARKET.id);
   }
 
   openFarming(tab, targetId = null) {

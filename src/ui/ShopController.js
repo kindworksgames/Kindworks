@@ -2,15 +2,25 @@ function formatCoins(value) {
   return new Intl.NumberFormat("en-GB").format(value);
 }
 
+function unlockLabel(unlock) {
+  if (!unlock || unlock.unlocked) return "Available";
+  const game = { lawn: "Lawn Care", river: "River Clear-Out", waste: "Waste Collection" }[unlock.game] || unlock.game;
+  return `🔒 ${unlock.progress}/${unlock.required} perfect ${game} jobs`;
+}
+
 export class ShopController {
-  constructor(shopService, runtime, { onModalChange = () => {} } = {}) {
+  constructor(shopService, runtime, { onModalChange = () => {}, defaultShopId = "willowmere-shop" } = {}) {
     this.shopService = shopService;
     this.runtime = runtime;
     this.onModalChange = onModalChange;
+    this.defaultShopId = defaultShopId;
+    this.openButton = document.querySelector("#shop-button");
     this.panel = document.querySelector("#shop-panel");
     this.closeButton = document.querySelector("#shop-panel-close");
     this.title = document.querySelector("#shop-panel-title");
     this.description = document.querySelector("#shop-panel-description");
+    this.catalogueTitle = document.querySelector("#shop-catalogue-title");
+    this.groupTabs = document.querySelector("#shop-group-tabs");
     this.balance = document.querySelector("#shop-balance");
     this.productList = document.querySelector("#shop-product-list");
     this.detailIcon = document.querySelector("#shop-detail-icon");
@@ -21,22 +31,30 @@ export class ShopController {
     this.buyButton = document.querySelector("#shop-buy-button");
     this.message = document.querySelector("#shop-message");
     this.activeShopId = null;
+    this.activeGroup = null;
     this.selectedItemId = null;
     this.previousFocus = null;
 
+    this.onOpen = () => this.open(this.defaultShopId);
     this.onClose = () => this.close();
-    this.onBuy = () => this.buySelected();
+    this.onBuy = () => this.activateSelected();
     this.onProductClick = (event) => {
       const button = event.target.closest?.("[data-shop-item]");
       if (button) this.selectItem(button.dataset.shopItem);
     };
+    this.onGroupClick = (event) => {
+      const button = event.target.closest?.("[data-shop-group]");
+      if (button) this.selectGroup(button.dataset.shopGroup, { focus: true });
+    };
     this.onKeyDown = (event) => this.handleKeyDown(event);
+    this.openButton?.addEventListener("click", this.onOpen);
     this.closeButton?.addEventListener("click", this.onClose);
     this.buyButton?.addEventListener("click", this.onBuy);
     this.productList?.addEventListener("click", this.onProductClick);
+    this.groupTabs?.addEventListener("click", this.onGroupClick);
     document.addEventListener("keydown", this.onKeyDown);
     this.unsubscribe = runtime.gameState.subscribe(() => {
-      if (!this.panel?.classList.contains("hidden")) this.render();
+      if (this.isOpen()) this.render();
     });
   }
 
@@ -44,19 +62,25 @@ export class ShopController {
     return Boolean(this.panel && !this.panel.classList.contains("hidden"));
   }
 
-  open(shopId) {
-    const catalogue = this.shopService.getCatalogue(shopId);
-    if (!catalogue.ok || !this.panel) return catalogue;
+  open(shopId, { group = null, itemId = null } = {}) {
+    const shop = this.shopService.getShop(shopId);
+    if (!shop || !this.panel) return { ok: false, code: "unknown-shop", message: `Unknown shop: ${shopId}` };
     this.previousFocus = document.activeElement;
     this.activeShopId = shopId;
-    if (!catalogue.shop.itemIds.includes(this.selectedItemId)) this.selectedItemId = catalogue.shop.itemIds[0];
+    this.activeGroup = shop.groups.includes(group) ? group : shop.groups.includes(this.activeGroup) ? this.activeGroup : shop.groups[0];
+    const catalogue = this.shopService.getCatalogue(shopId, { group: this.activeGroup });
+    this.selectedItemId = catalogue.products.some((product) => product.item.id === itemId)
+      ? itemId
+      : catalogue.products.some((product) => product.item.id === this.selectedItemId)
+      ? this.selectedItemId
+      : catalogue.products[0]?.item.id || null;
     this.clearMessage();
     this.render();
     this.panel.classList.remove("hidden");
     this.panel.setAttribute("aria-hidden", "false");
     this.onModalChange(true);
     this.closeButton?.focus({ preventScroll: true });
-    return { ok: true, shopId };
+    return { ok: true, shopId, activeGroup: this.activeGroup };
   }
 
   close() {
@@ -65,10 +89,7 @@ export class ShopController {
     this.panel.setAttribute("aria-hidden", "true");
     this.onModalChange(false);
     const interactionButton = document.querySelector("#interaction-action");
-    const previousIsUsable = this.previousFocus
-      && this.previousFocus !== document.body
-      && this.previousFocus.isConnected
-      && !this.panel.contains(this.previousFocus);
+    const previousIsUsable = this.previousFocus && this.previousFocus !== document.body && this.previousFocus.isConnected && !this.panel.contains(this.previousFocus);
     const returnTarget = previousIsUsable ? this.previousFocus : interactionButton;
     returnTarget?.focus?.({ preventScroll: true });
     requestAnimationFrame(() => returnTarget?.focus?.({ preventScroll: true }));
@@ -77,7 +98,7 @@ export class ShopController {
 
   clearMessage() {
     if (!this.message) return;
-    this.message.textContent = "Select a product to see its price and owned quantity.";
+    this.message.textContent = "Select an item to see its exact price, unlock and inventory limit.";
     this.message.dataset.status = "neutral";
   }
 
@@ -87,14 +108,41 @@ export class ShopController {
     this.message.dataset.status = status;
   }
 
+  selectGroup(group, { focus = false } = {}) {
+    const shop = this.shopService.getShop(this.activeShopId);
+    if (!shop?.groups.includes(group)) return { ok: false, code: "unknown-group" };
+    this.activeGroup = group;
+    const catalogue = this.shopService.getCatalogue(this.activeShopId, { group });
+    this.selectedItemId = catalogue.products[0]?.item.id || null;
+    this.render();
+    this.clearMessage();
+    if (focus) this.groupTabs?.querySelector(`[data-shop-group="${group}"]`)?.focus();
+    return { ok: true, group };
+  }
+
   selectItem(itemId, { focus = false } = {}) {
     const product = this.shopService.getProduct(this.activeShopId, itemId);
     if (!product.ok) return product;
+    this.activeGroup = product.item.shopGroup;
     this.selectedItemId = itemId;
     this.render();
     this.clearMessage();
     if (focus) this.productList?.querySelector(`[data-shop-item="${itemId}"]`)?.focus();
     return product;
+  }
+
+  renderGroups(catalogue) {
+    if (!this.groupTabs) return;
+    this.groupTabs.replaceChildren();
+    for (const group of catalogue.groups) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.dataset.shopGroup = group;
+      button.setAttribute("role", "tab");
+      button.setAttribute("aria-selected", String(group === catalogue.activeGroup));
+      button.textContent = group;
+      this.groupTabs.append(button);
+    }
   }
 
   renderProducts(catalogue) {
@@ -106,6 +154,7 @@ export class ShopController {
       button.className = "shop-product";
       button.dataset.shopItem = product.item.id;
       button.dataset.affordable = String(product.affordable);
+      button.dataset.locked = String(!product.unlocked);
       button.setAttribute("aria-pressed", String(product.item.id === this.selectedItemId));
       const icon = document.createElement("span");
       icon.className = "shop-product-icon";
@@ -116,7 +165,8 @@ export class ShopController {
       const name = document.createElement("strong");
       name.textContent = product.item.name;
       const meta = document.createElement("small");
-      meta.textContent = `🪙 ${formatCoins(product.item.price)} · ${product.owned} owned`;
+      const price = product.quote.upgradeCredit ? `${formatCoins(product.quote.cost)} upgrade` : formatCoins(product.item.price);
+      meta.textContent = product.unlocked ? `🪙 ${price} · ${product.owned} owned` : unlockLabel(product.unlock);
       copy.append(name, meta);
       button.append(icon, copy);
       this.productList.append(button);
@@ -127,57 +177,77 @@ export class ShopController {
     if (!product?.ok) return;
     if (this.detailIcon) this.detailIcon.textContent = product.item.icon;
     if (this.detailName) this.detailName.textContent = product.item.name;
-    if (this.detailDescription) this.detailDescription.textContent = product.item.description || "Fresh Market stock.";
-    if (this.detailPrice) this.detailPrice.textContent = `🪙 ${formatCoins(product.item.price)}`;
-    if (this.detailOwned) this.detailOwned.textContent = `${formatCoins(product.owned)} owned`;
-    if (this.buyButton) {
-      this.buyButton.disabled = product.remainingCapacity < 1;
-      this.buyButton.textContent = product.remainingCapacity < 1
-        ? "Inventory limit reached"
-        : `Buy 1 for 🪙 ${formatCoins(product.item.price)}`;
-      this.buyButton.dataset.affordable = String(product.affordable);
-      this.buyButton.setAttribute("aria-describedby", "shop-message");
+    if (this.detailDescription) this.detailDescription.textContent = product.item.description || `${product.item.shopGroup} stock from the original Kindworks catalogue.`;
+    if (this.detailPrice) this.detailPrice.textContent = product.quote.upgradeCredit
+      ? `🪙 ${formatCoins(product.quote.cost)} (${formatCoins(product.quote.upgradeCredit)} upgrade credit)`
+      : `🪙 ${formatCoins(product.item.price)}`;
+    if (this.detailOwned) this.detailOwned.textContent = `${formatCoins(product.owned)} / ${formatCoins(product.limit)} owned`;
+    if (!this.buyButton) return;
+    const equipment = product.item.category === "equipment";
+    if (!product.unlocked) {
+      this.buyButton.disabled = true;
+      this.buyButton.textContent = unlockLabel(product.unlock);
+    } else if (equipment && product.equipped) {
+      this.buyButton.disabled = true;
+      this.buyButton.textContent = "Equipped";
+    } else if (equipment && product.owned > 0) {
+      this.buyButton.disabled = false;
+      this.buyButton.textContent = `Equip ${product.item.name}`;
+    } else if (product.remainingCapacity < 1) {
+      this.buyButton.disabled = true;
+      this.buyButton.textContent = "Inventory limit reached";
+    } else {
+      this.buyButton.disabled = false;
+      this.buyButton.textContent = `Buy 1 for 🪙 ${formatCoins(product.quote.cost)}`;
     }
+    this.buyButton.dataset.affordable = String(product.affordable);
+    this.buyButton.setAttribute("aria-describedby", "shop-message");
   }
 
   render() {
-    const catalogue = this.shopService.getCatalogue(this.activeShopId);
+    const catalogue = this.shopService.getCatalogue(this.activeShopId, { group: this.activeGroup });
     if (!catalogue.ok) return catalogue;
+    this.activeGroup = catalogue.activeGroup;
+    if (!catalogue.products.some((product) => product.item.id === this.selectedItemId)) this.selectedItemId = catalogue.products[0]?.item.id || null;
     if (this.title) this.title.textContent = `${catalogue.shop.icon} ${catalogue.shop.name}`;
     if (this.description) this.description.textContent = catalogue.shop.description;
+    if (this.catalogueTitle) this.catalogueTitle.textContent = catalogue.activeGroup;
     if (this.balance) this.balance.textContent = formatCoins(catalogue.balance);
+    this.renderGroups(catalogue);
     this.renderProducts(catalogue);
     const product = this.shopService.getProduct(this.activeShopId, this.selectedItemId);
     this.renderDetail(product);
     return catalogue;
   }
 
-  buySelected() {
+  activateSelected() {
     const product = this.shopService.getProduct(this.activeShopId, this.selectedItemId);
     if (!product.ok) {
       this.showMessage(product.message, "error");
       return product;
     }
-    const result = this.shopService.purchase(this.activeShopId, this.selectedItemId, 1);
+    const equipping = product.item.category === "equipment" && product.owned > 0;
+    const result = equipping
+      ? this.shopService.equip(this.activeShopId, this.selectedItemId)
+      : this.shopService.purchase(this.activeShopId, this.selectedItemId, 1);
     this.render();
-    if (result.ok) {
-      const owned = this.shopService.getProduct(this.activeShopId, this.selectedItemId).owned;
-      this.showMessage(`${product.item.icon} ${product.item.name} added · ${owned} owned · 🪙 ${formatCoins(result.after)} left`, "success");
+    if (result.ok && equipping) {
+      this.showMessage(`${product.item.icon} ${product.item.name} is now equipped. The matching game uses its exact tool effect.`, "success");
+    } else if (result.ok) {
+      const credit = result.upgradeCredit ? ` after ${formatCoins(result.upgradeCredit)} upgrade credit` : "";
+      this.showMessage(`${product.item.icon} ${product.item.name} added for 🪙 ${formatCoins(result.cost)}${credit} · 🪙 ${formatCoins(result.after)} left`, "success");
     } else if (result.code === "insufficient-funds") {
       this.showMessage(`You need 🪙 ${formatCoins(result.required - result.available)} more for ${product.item.name}.`, "error");
     } else {
-      this.showMessage(result.message || "The purchase was not completed. No coins were spent.", "error");
+      this.showMessage(result.message || "The action was not completed. No coins or inventory were changed.", "error");
     }
     this.buyButton?.focus({ preventScroll: true });
     return result;
   }
 
   focusableElements() {
-    return [
-      this.closeButton,
-      ...(this.productList?.querySelectorAll("button") || []),
-      this.buyButton,
-    ].filter((element) => element && !element.disabled);
+    return [this.closeButton, ...(this.groupTabs?.querySelectorAll("button") || []), ...(this.productList?.querySelectorAll("button") || []), this.buyButton]
+      .filter((element) => element && !element.disabled);
   }
 
   handleKeyDown(event) {
@@ -185,6 +255,14 @@ export class ShopController {
     if (event.key === "Escape") {
       event.preventDefault();
       this.close();
+      return;
+    }
+    const groupButtons = [...(this.groupTabs?.querySelectorAll("button") || [])];
+    const groupIndex = groupButtons.indexOf(document.activeElement);
+    if (groupIndex >= 0 && ["ArrowLeft", "ArrowRight"].includes(event.key)) {
+      event.preventDefault();
+      const next = (groupIndex + (event.key === "ArrowLeft" ? -1 : 1) + groupButtons.length) % groupButtons.length;
+      this.selectGroup(groupButtons[next].dataset.shopGroup, { focus: true });
       return;
     }
     const productButtons = [...(this.productList?.querySelectorAll("button") || [])];
@@ -199,27 +277,29 @@ export class ShopController {
     if (event.key !== "Tab") return;
     const focusable = this.focusableElements();
     const current = focusable.indexOf(document.activeElement);
-    const next = event.shiftKey
-      ? (current <= 0 ? focusable.length - 1 : current - 1)
-      : (current + 1) % focusable.length;
+    const next = event.shiftKey ? (current <= 0 ? focusable.length - 1 : current - 1) : (current + 1) % focusable.length;
     event.preventDefault();
     focusable[next]?.focus();
   }
 
   getDiagnostics() {
-    const catalogue = this.activeShopId ? this.shopService.getCatalogue(this.activeShopId) : null;
+    const catalogue = this.activeShopId ? this.shopService.getCatalogue(this.activeShopId, { group: this.activeGroup }) : null;
     return {
       open: this.isOpen(),
       shopId: this.activeShopId,
+      activeGroup: this.activeGroup,
       selectedItemId: this.selectedItemId,
       productCount: catalogue?.products?.length || 0,
+      shopCount: Object.keys(this.shopService.shops).length,
     };
   }
 
   destroy() {
+    this.openButton?.removeEventListener("click", this.onOpen);
     this.closeButton?.removeEventListener("click", this.onClose);
     this.buyButton?.removeEventListener("click", this.onBuy);
     this.productList?.removeEventListener("click", this.onProductClick);
+    this.groupTabs?.removeEventListener("click", this.onGroupClick);
     document.removeEventListener("keydown", this.onKeyDown);
     this.unsubscribe?.();
   }
