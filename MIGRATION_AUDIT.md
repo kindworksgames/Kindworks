@@ -686,3 +686,32 @@ switching, a clean console, no page overflow, independent panel scrolling and
 44-pixel controls at 1280×720, 844×390 landscape and 390×844 portrait. The
 protected HTML SHA-256 remains
 `0b85bd71385b83e7a13676f7593ce376245959fa4ebf1a6b9a0e6765297aa5a5`.
+
+Milestone 40 completes the first-run and returning-player flow. A new Phaser
+save now opens a dedicated welcome panel, applies the original strict
+24-character Unicode-safe town-name rule, and then hands off to the existing
+one-resident creator and included Level 1 Meadowlight House selection. The
+named town is reflected in the persistent identity and interface. A compact
+first-session checklist tracks Lawn Care, Waste Collection and River Clear-Out
+in the original order, with a map-focus action for the next untried job.
+
+The existing single 100-coin starter grant is now explicitly represented in
+onboarding without being replayed. Each new calendar day grants 10 coins once;
+a return after at least three days grants the daily 10 plus the original
+50-coin comeback bonus. Same-day launches, duplicate trusted receipts and
+backwards clocks pay nothing. Production requires an externally verified,
+monotonically increasing trusted-time receipt; until that native/server bridge
+is connected it safely withholds return rewards rather than trusting a changed
+device clock. Every balance, ledger, counter, date and receipt mutation saves
+atomically and rolls back completely on failure.
+
+The first-restoration Town Planter remains owned by the Milestone 30 unlock
+transaction, with its result mirrored into onboarding in the same save rather
+than duplicated. Schema 35 safely upgrades schemas 1 through 34 and projects
+the original version-82 setup, tutorial, login-reward and gift data without
+changing the protected source snapshot. The dedicated contract is recorded in
+`ONBOARDING_REWARDS_SYSTEM.md`.
+
+All 408 automated tests and the production build pass. The protected HTML and
+Desktop source both retain SHA-256
+`0b85bd71385b83e7a13676f7593ce376245959fa4ebf1a6b9a0e6765297aa5a5`.

@@ -15,12 +15,14 @@ export class CustomResidentController {
     onLocate = () => ({ ok: false }),
     onStartControl = () => ({ ok: false }),
     onEndControl = () => ({ ok: false }),
+    onSaved = () => {},
   } = {}) {
     this.service = service;
     this.onModalChange = onModalChange;
     this.onLocate = onLocate;
     this.onStartControl = onStartControl;
     this.onEndControl = onEndControl;
+    this.onSaved = onSaved;
     this.openButton = document.querySelector("#custom-resident-button");
     this.panel = document.querySelector("#custom-resident-panel");
     this.closeButton = document.querySelector("#custom-resident-close");
@@ -253,6 +255,7 @@ export class CustomResidentController {
     }
     this.populateForm();
     this.showStatus(result.code === "resident-created" ? `Welcome to town, ${result.state.profile.name}! Meadowlight House is ready.` : `${result.state.profile.name}'s resident profile was saved. Home changes use the redesign or upgrade buttons.`, "success");
+    this.onSaved(result);
     this.submitButton?.focus({ preventScroll: true });
     return result;
   }

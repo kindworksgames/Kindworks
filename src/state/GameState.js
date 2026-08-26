@@ -141,6 +141,12 @@ import {
   projectLegacyHarbourGeneral,
   validateHarbourGeneralState,
 } from "./harbourGeneralState.js";
+import {
+  createFreshOnboardingState,
+  normalizeOnboardingState,
+  projectLegacyOnboarding,
+  validateOnboardingState,
+} from "./onboardingState.js";
 
 const DIRECTIONS = new Set(["up", "down", "left", "right"]);
 
@@ -192,6 +198,7 @@ export function createFreshGameState({ now = Date.now() } = {}) {
     npcs: createFreshNpcState(world),
     municipalCollection: createFreshMunicipalCollectionState(world),
     restorationMilestones: createFreshRestorationMilestoneState(),
+    onboarding: createFreshOnboardingState({ now }),
     customResident: createFreshCustomResidentState(),
     homeInteriors: createFreshHomeInteriorState(),
     farming: createFreshFarmingState(world),
@@ -258,6 +265,7 @@ export function createGameStateFromLegacy(legacy, report, { now = Date.now() } =
   state.homeownerGifts = projectLegacyHomeownerGiftState(legacy, state.inventory);
   state.harbourGeneral = projectLegacyHarbourGeneral(legacy);
   state.restorationMilestones = projectLegacyRestorationMilestoneState(legacy, state);
+  state.onboarding = projectLegacyOnboarding(legacy, state, { now });
   const legacySeeds = legacy.farmingFoundation?.seedInventory || {};
   for (const id of ["carrot-seeds", "fresh-greens-seeds", "wild-berry-starters"]) {
     const quantity = safeInteger(legacySeeds[id], 0, 99);
@@ -476,6 +484,12 @@ export function upgradeGameState(value, { now = Date.now() } = {}) {
       : normalizeNpcState(state.npcs, state.world);
     state.schemaVersion = 34;
   }
+  if (state.schemaVersion === 34) {
+    state.onboarding = state.source?.kind === "legacy-import"
+      ? projectLegacyOnboarding(state.legacySnapshot, state, { now })
+      : normalizeOnboardingState(state.onboarding, { state, now });
+    state.schemaVersion = 35;
+  }
   return state;
 }
 
@@ -507,6 +521,7 @@ export function validateGameState(value) {
   errors.push(...validateNpcState(value.npcs, value.world).errors);
   errors.push(...validateMunicipalCollectionState(value.municipalCollection).errors);
   errors.push(...validateRestorationMilestoneState(value.restorationMilestones).errors);
+  errors.push(...validateOnboardingState(value.onboarding, value).errors);
   errors.push(...validateCustomResidentState(value.customResident).errors);
   errors.push(...validateHomeInteriorState(value.homeInteriors).errors);
   errors.push(...validateFarmingState(value.farming, value.world).errors);

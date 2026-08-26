@@ -50,6 +50,7 @@ import { PawsWondersService } from "./systems/PawsWondersService.js";
 import { HarbourGeneralService } from "./systems/HarbourGeneralService.js";
 import { ImpactProjectService } from "./systems/ImpactProjectService.js";
 import { NpcNarrativeService } from "./systems/NpcNarrativeService.js";
+import { OnboardingService } from "./systems/OnboardingService.js";
 import { EconomyHudController } from "./ui/EconomyHudController.js";
 import { SaveStatusController } from "./ui/SaveStatusController.js";
 import { ShopController } from "./ui/ShopController.js";
@@ -61,6 +62,7 @@ import { RestorationMilestoneController } from "./ui/RestorationMilestoneControl
 import { HomeownerGiftController } from "./ui/HomeownerGiftController.js";
 import { ImpactController } from "./ui/ImpactController.js";
 import { NpcNarrativeController } from "./ui/NpcNarrativeController.js";
+import { OnboardingController } from "./ui/OnboardingController.js";
 import { ITEM_IDS } from "./data/items.js";
 import { findSafeFurniturePlacement } from "./data/homeInteriors.js";
 
@@ -149,6 +151,14 @@ game.registry.set("homeownerGifts", homeownerGifts);
 game.registry.set("impactProjects", impactProjects);
 const economy = new EconomyService(stateRuntime.gameState, stateRuntime.repository);
 game.registry.set("economy", economy);
+const onboarding = new OnboardingService(stateRuntime.gameState, stateRuntime.repository, {
+  economy,
+  requireTrustedTime: import.meta.env.PROD,
+  trustedTimeProvider: typeof window.KindWorksBilling?.getTrustedTimeReceipt === "function"
+    ? () => window.KindWorksBilling.getTrustedTimeReceipt()
+    : null,
+});
+game.registry.set("onboarding", onboarding);
 if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "paws") {
   restorationMilestones.unlockForQa("highstreet", { revealed: true });
   const balance = stateRuntime.gameState.getSnapshot().economy.coins;
@@ -350,8 +360,28 @@ const customResidentController = new CustomResidentController(customResident, {
   onEndControl() {
     return activeTownScene()?.endCustomResidentControl?.() || { ok: false, message: "The control handoff is not active in town." };
   },
+  onSaved() {
+    onboardingController.notifyResidentSaved();
+  },
 });
 game.registry.set("customResidentController", customResidentController);
+const onboardingController = new OnboardingController(onboarding, {
+  onModalChange(open) {
+    setModalOpen("onboarding", open);
+  },
+  canOpen() {
+    return Boolean(activeTownScene()) && document.body.dataset.modalOpen !== "true";
+  },
+  onCreateResident() {
+    return customResidentController.open();
+  },
+  onFindJob(gameKey) {
+    return activeTownScene()?.focusOnboardingJob?.(gameKey) || { ok: false, message: "Return to town to find this job." };
+  },
+});
+game.registry.set("onboardingController", onboardingController);
+setTimeout(() => onboardingController.startFirstRun(), 260);
+onboardingController.processLogin();
 
 function handleVisibilityChange() {
   npcTownLife.setPaused("background", document.hidden);
@@ -409,6 +439,12 @@ window.__KINDWORKS_PHASER__ = {
       catalogueEntries: ITEM_IDS.length,
       schemaVersion: state.schemaVersion,
     };
+  },
+  getOnboardingDiagnostics() {
+    return onboardingController.getDiagnostics();
+  },
+  getOnboardingState() {
+    return onboarding.getSnapshot();
   },
   getShopDiagnostics() {
     return shopController.getDiagnostics();

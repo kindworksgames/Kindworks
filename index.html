@@ -15,7 +15,7 @@
       <div id="world-lighting-overlay" class="world-lighting-overlay" data-phase="day" aria-hidden="true"></div>
       <div id="weather-effects" class="weather-effects" data-weather="clear" aria-hidden="true"></div>
       <section class="town-hud" aria-label="Town information">
-        <div class="town-title"><strong>KINDWORKS</strong><span id="location-status">Willowmere</span></div>
+        <div class="town-title"><strong>KINDWORKS · <span id="town-name-label">Willowmere</span></strong><span id="location-status">Willowmere</span></div>
         <div class="hud-actions">
           <div id="world-clock-status" class="world-status-pill" aria-label="Day 1, 07:00">Day 1 · 07:00</div>
           <div id="weather-status" class="world-status-pill weather-status" data-weather="clear" aria-label="Clear weather"><span aria-hidden="true">☀️</span> Clear <small>20°C</small></div>
@@ -23,12 +23,51 @@
           <button id="shop-button" class="economy-hud-button shop-hud-button" type="button" aria-label="Open Willowmere Shop">🛍️ Shop</button>
           <button id="inventory-button" class="economy-hud-button" type="button" aria-label="Open inventory">🎒 2</button>
           <button id="custom-resident-button" class="economy-hud-button resident-hud-button" type="button" aria-label="Create your personal resident">💚 Create resident</button>
+          <button id="onboarding-button" class="economy-hud-button onboarding-hud-button" type="button" aria-label="Open welcome, setup and login rewards">🏡 Welcome</button>
           <button id="animal-friends-button" class="economy-hud-button animal-hud-button" type="button" aria-label="Open Animal Friends">🐾 Animal Friends</button>
           <button id="impact-button" class="economy-hud-button impact-hud-button" type="button" aria-label="Open KindWorks Impact">❤️ Impact</button>
           <button id="npc-stories-button" class="economy-hud-button npc-stories-hud-button" type="button" aria-label="Open Willowmere resident stories">📖 Stories</button>
           <button id="save-status-button" class="save-status-button" type="button" data-status="new">Save not started</button>
-          <div class="milestone-badge">PHASER TOWN · MILESTONE 39</div>
+          <div class="milestone-badge">PHASER TOWN · MILESTONE 40</div>
         </div>
+      </section>
+      <section id="onboarding-panel" class="onboarding-panel hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="onboarding-title" aria-describedby="onboarding-description">
+        <div class="onboarding-card">
+          <header class="onboarding-header">
+            <div class="onboarding-icon" aria-hidden="true">🏡</div>
+            <div><p>MILESTONE 40 · YOUR LIVING TOWN</p><h2 id="onboarding-title">Name your town</h2><span id="onboarding-description">Choose the name that will appear throughout your living town.</span></div>
+            <button id="onboarding-close" class="hidden" type="button" aria-label="Close welcome">✕</button>
+          </header>
+          <div class="onboarding-layout">
+            <section class="onboarding-setup">
+              <h3>Welcome setup</h3>
+              <ol id="onboarding-setup-steps"><li><span>○</span>Town named</li><li><span>○</span>Resident created</li><li><span>○</span>Starter home selected</li></ol>
+              <form id="onboarding-town-form" novalidate>
+                <label for="onboarding-town-name">Town name</label>
+                <input id="onboarding-town-name" name="townName" maxlength="24" autocomplete="off" aria-describedby="onboarding-town-hint onboarding-town-error" required />
+                <small id="onboarding-town-hint">Up to 24 characters. Letters, numbers, spaces, apostrophes or hyphens.</small>
+                <span id="onboarding-town-error" class="onboarding-error" role="alert" hidden></span>
+                <button class="onboarding-primary" type="submit">Save town name</button>
+              </form>
+              <button id="onboarding-create-resident" class="onboarding-primary hidden" type="button">Create resident &amp; choose home</button>
+            </section>
+            <aside class="onboarding-rewards">
+              <span class="onboarding-reward-icon" aria-hidden="true">🎁</span>
+              <h3>Welcome &amp; return gifts</h3>
+              <p id="onboarding-reward-summary">Starter gift: +100 coins · Daily: +10 · Return after 3 days: +50</p>
+              <small id="onboarding-reward-history">1 login day · 0 daily rewards · 0 return bonuses</small>
+              <p class="onboarding-safety">Rewards are saved in one protected transaction. Reopening on the same day, changing the clock backwards, or reusing a trusted receipt cannot pay twice.</p>
+            </aside>
+          </div>
+        </div>
+      </section>
+      <section id="first-session-checklist" class="first-session-checklist hidden" aria-label="Your first three jobs" aria-hidden="true">
+        <div><strong>🌱 Restore your town</strong><small>Try each original KindWorks job</small></div>
+        <ol id="first-session-items"><li><span>○</span>Lawn Care</li><li><span>○</span>Waste Collection</li><li><span>○</span>River Clear-Out</li></ol>
+        <button id="first-session-find" type="button">Find Lawn Care</button>
+      </section>
+      <section id="login-reward-toast" class="login-reward-toast hidden" role="status" aria-live="polite" aria-hidden="true">
+        <span aria-hidden="true">🎁</span><strong id="login-reward-toast-text">Daily login reward received.</strong><button id="login-reward-toast-close" type="button" aria-label="Dismiss login reward">✕</button>
       </section>
       <div id="impact-panel" class="impact-panel hidden" role="dialog" aria-modal="true" aria-labelledby="impact-title" aria-hidden="true">
         <section class="impact-card">

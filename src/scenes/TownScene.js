@@ -116,6 +116,7 @@ export class TownScene extends Phaser.Scene {
     this.npcNarrativeController = this.registry.get("npcNarrativeController");
     this.municipalCollection = this.registry.get("municipalCollection");
     this.restorationMilestones = this.registry.get("restorationMilestones");
+    this.onboarding = this.registry.get("onboarding");
     this.impactController = this.registry.get("impactController");
     this.pawsWonders = this.registry.get("pawsWonders");
     this.harbourGeneral = this.registry.get("harbourGeneral");
@@ -1603,7 +1604,7 @@ export class TownScene extends Phaser.Scene {
     document.body.dataset.gameScene = this.scene.key;
     const badge = document.querySelector(".milestone-badge");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = "RESIDENT STORIES · MILESTONE 39";
+    if (badge) badge.textContent = "WELCOME & REWARDS · MILESTONE 40";
     if (hint) hint.textContent = "Walk with arrows or WASD · Restore the Station to reopen KindWorks Cinema";
   }
 
@@ -1723,6 +1724,7 @@ export class TownScene extends Phaser.Scene {
   enterRiverClearout(environmentTargetId = null) {
     if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
     if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before starting River Clear-Out." };
+    this.onboarding?.recordTutorial?.("river");
     this.transitioning = true;
     this.movement.setEnabled(false);
     this.interactions.setEnabled(false);
@@ -1907,6 +1909,7 @@ export class TownScene extends Phaser.Scene {
     const firstJobAvailable = this.cleanupService.isAvailable(targetId);
     const result = firstJobAvailable ? this.cleanupService.begin(targetId, { returnPosition, returnFacing }) : { ok: true, session: null };
     if (!result.ok) return result;
+    this.onboarding?.recordTutorial?.("waste");
     if (!firstJobAvailable) this.gameState?.updatePlayer({ scene: "WasteCollectionScene", x: returnPosition.x, y: returnPosition.y, facing: returnFacing });
     this.transitioning = true;
     this.movement.setEnabled(false);
@@ -1928,6 +1931,7 @@ export class TownScene extends Phaser.Scene {
       ? this.lawnCare.beginTownJob(targetId, { returnPosition, returnFacing })
       : this.lawnCare.beginCampaign(this.lawnCare.getCampaignSnapshot().nextLevel, { returnPosition, returnFacing });
     if (!result.ok) return result;
+    this.onboarding?.recordTutorial?.("lawn");
     this.transitioning = true;
     this.movement.setEnabled(false);
     this.interactions.setEnabled(false);
@@ -1936,6 +1940,19 @@ export class TownScene extends Phaser.Scene {
     this.cameras.main.fadeOut(220, 38, 75, 42);
     this.time.delayedCall(240, () => this.scene.start("LawnCareScene", { returnPosition, returnFacing }));
     return { ok: true, targetScene: "LawnCareScene", session: result.session };
+  }
+
+  focusOnboardingJob(gameKey) {
+    let focus = null;
+    if (gameKey === "waste") focus = { x: COMMONS_RUBBISH_JOB.world.x, y: COMMONS_RUBBISH_JOB.world.y };
+    if (gameKey === "river") focus = { x: RIVER_CLEAROUT.marker.x, y: RIVER_CLEAROUT.marker.y };
+    if (gameKey === "lawn") {
+      const plot = LAWN_PLOTS[0];
+      if (plot) focus = { x: plot.x, y: plot.y };
+    }
+    if (!focus) return { ok: false, reason: "That first job could not be located." };
+    this.cameras.main.pan(focus.x, focus.y, 520, "Sine.easeInOut", true);
+    return { ok: true, gameKey, focus };
   }
 
   startBeachCleanup() {

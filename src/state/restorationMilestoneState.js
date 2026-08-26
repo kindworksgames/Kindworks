@@ -164,6 +164,7 @@ function grantFirstRestorationGiftInto(state, occurredAt) {
     grantedAtDay: whole(state.world?.day, 1),
     ledgerId,
   };
+  if (state.onboarding) state.onboarding.firstRestorationGiftGranted = true;
   return { granted: true, itemId: FIRST_RESTORATION_GIFT_ITEM_ID, quantity: 1, ledgerId };
 }
 

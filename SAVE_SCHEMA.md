@@ -1,11 +1,11 @@
 # Kindworks Phaser save contract
 
-> Current migration status: Milestone 39 uses game-state and envelope schema
-> 34. Schemas 1 through 33 upgrade in order. Schema 34 adds persistent authored
-> NPC chapters, contextual-thought history, evidence gates, and home stories.
+> Current migration status: Milestone 40 uses game-state and envelope schema
+> 35. Schemas 1 through 34 upgrade in order. Schema 35 adds first-run setup,
+> tutorial progress, and duplicate-safe login rewards.
 > Historical foundation notes remain for traceability.
 
-Milestone 3 introduced the protected save foundation alongside the preserved HTML game. Milestone 4 added the shared item catalogue, inventory, KindlyCoin ledger, and atomic economy transactions. Milestone 6 added the first persistent cleanup session, exact-target result, and job reward. Subsequent milestones migrated the remaining shared systems and mini-games; Milestone 37 completes Harbour General ownership, stock management, in-person sales and NPC wardrobe demand. Milestone 38 adds validated, read-only Impact content without changing schema 33. Milestone 39 adds the authored resident and household story layer through schema 34.
+Milestone 3 introduced the protected save foundation alongside the preserved HTML game. Milestone 4 added the shared item catalogue, inventory, KindlyCoin ledger, and atomic economy transactions. Milestone 6 added the first persistent cleanup session, exact-target result, and job reward. Subsequent milestones migrated the remaining shared systems and mini-games; Milestone 37 completes Harbour General ownership, stock management, in-person sales and NPC wardrobe demand. Milestone 38 adds validated, read-only Impact content without changing schema 33. Milestone 39 adds the authored resident and household story layer through schema 34. Milestone 40 adds the first-run and returning-player flow through schema 35.
 
 ## Storage namespaces
 
@@ -22,14 +22,14 @@ The Phaser build owns only:
 - `kindworks_phaser_v1_backup`
 - `kindworks_phaser_v1_recovery`
 
-## Current Phaser envelope schema 34
+## Current Phaser envelope schema 35
 
 Every current and backup save is a JSON envelope:
 
 ```json
 {
   "format": "kindworks-phaser",
-  "schemaVersion": 34,
+  "schemaVersion": 35,
   "writtenAt": "2026-08-25T00:00:00.000Z",
   "appVersion": "0.1.0",
   "data": {},
@@ -37,7 +37,18 @@ Every current and backup save is a JSON envelope:
 }
 ```
 
-The checksum covers every envelope field except the checksum itself. A save is accepted only when its format, schema, timestamp, checksum, and inner game state all validate. Valid schemas 1 through 33 upgrade to schema 34, and the original verified envelope becomes the Phaser backup before replacement.
+The checksum covers every envelope field except the checksum itself. A save is accepted only when its format, schema, timestamp, checksum, and inner game state all validate. Valid schemas 1 through 34 upgrade to schema 35, and the original verified envelope becomes the Phaser backup before replacement.
+
+## Onboarding and login-reward schema-35 contract
+
+- `onboarding` records the named-town gate, completed resident/home setup, five tutorial seen/tried flags, the three-job checklist, starter-grant ownership, login reward history, and the existing first-restoration-gift status.
+- Town names use the original strict rule: non-empty, at least one Unicode letter or number, only letters, numbers, spaces, straight/curly apostrophes or hyphens, collapsed whitespace, and at most 24 characters.
+- A fresh state owns exactly one 100-coin `starter-grant`. It is never replayed by schema upgrades or returning-player processing.
+- A new calendar day pays exactly 10 coins. A return after at least three calendar days pays the 10-coin daily reward plus one 50-coin return bonus.
+- Same-day launches, duplicate trusted receipts, and clocks moving backwards pay zero and cannot move the durable login day backwards.
+- Production builds require an externally verified trusted-time receipt. The receipt id and monotonically increasing trusted timestamp are stored with the same atomic transaction as the reward.
+- Balance, lifetime earnings, ledger records, claim counters, dates, and trusted receipt state are validated and persisted together. A failed write restores the exact previous checkpoint.
+- Schemas 1 through 34 gain a safe initialized onboarding domain without replaying starter coins or immediately paying a daily reward. Legacy version-82 setup, tutorial, reward, and gift records project without changing the retained source snapshot.
 
 ## NPC narrative schema-34 contract
 
