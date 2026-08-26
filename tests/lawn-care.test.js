@@ -149,7 +149,7 @@ test("schema 14 saves and protected mini-game progress gain normalized Lawn Care
   delete old.lawnCare;
   old.schemaVersion = 14;
   const upgraded = upgradeGameState(old, { now: 0 });
-  assert.equal(upgraded.schemaVersion, 35);
+  assert.equal(upgraded.schemaVersion, 36);
   assert.equal(upgraded.lawnCare.progress.nextLevel, 1);
   assert.equal(validateGameState(upgraded).ok, true);
   const projected = projectLegacyLawnCare({ miniGames: { progress: { lawn: { nextLevel: 43, best: { 1: { stars: 3, percent: 100 }, 42: { stars: 2, percent: 86 } } } } } });

@@ -715,3 +715,40 @@ changing the protected source snapshot. The dedicated contract is recorded in
 All 408 automated tests and the production build pass. The protected HTML and
 Desktop source both retain SHA-256
 `0b85bd71385b83e7a13676f7593ce376245959fa4ebf1a6b9a0e6765297aa5a5`.
+
+Milestone 41 adds the complete optional-commerce surface preserved from the
+HTML game: six KindlyCoin packs, three KindlyClub tiers, exact monthly coin
+benefits, the Creator Record Player gift and the Champion Kindly Heart Planter
+gift. The responsive Support view presents localized platform prices when
+available, requires an adult confirmation for each checkout, exposes purchase
+restoration, and hands subscription management back to Apple or Google.
+
+Production remains fail-closed until the packaged app supplies the
+`window.KindWorksBilling` bridge and the KindWorks server wallet. A purchase can
+change the save only after a pinned P-256 signature verifies, the product and
+benefit match, and a strictly newer absolute server wallet reconciles. Coin
+transaction IDs and membership periods are bounded and duplicate-safe; the
+server wallet version supplies the durable replay barrier. Monthly coins, the
+optional gift, membership status, wallet totals and the economy ledger persist
+as one atomic change and roll back together on failure. No date of birth,
+payment detail or advertising identifier is stored, and the game enables no
+personalized advertising.
+
+Schema 36 safely adds this commerce domain to schemas 1 through 35 and projects
+original transaction histories and verified membership details without
+replaying benefits or changing the legacy snapshot. A separate Vite-only
+`?qa=commerce` sandbox permits no-charge visual testing; it is excluded from
+production receipt verification. The native Apple/Google products and remote
+receipt/wallet service remain publishing credentials and infrastructure, so
+their final connection belongs to the packaged-app publishing milestone rather
+than being simulated in web code. The full contract is recorded in
+`COMMERCE_SYSTEM.md`.
+
+All 417 automated tests and the production build pass. The protected HTML and
+Desktop source both retain SHA-256
+`0b85bd71385b83e7a13676f7593ce376245959fa4ebf1a6b9a0e6765297aa5a5`.
+Browser QA verified adult confirmation, the exact 1,000-coin grant, the Creator
+monthly coin and gift grant, duplicate-safe restoration, persistence after
+reload, the disconnected production-safe state, and a clean console. Desktop,
+390×844 portrait and 844×390 landscape layouts have bounded scrolling, no page
+overflow, one-row navigation and 44-pixel controls.

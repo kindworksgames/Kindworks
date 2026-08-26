@@ -28,7 +28,7 @@
           <button id="impact-button" class="economy-hud-button impact-hud-button" type="button" aria-label="Open KindWorks Impact">❤️ Impact</button>
           <button id="npc-stories-button" class="economy-hud-button npc-stories-hud-button" type="button" aria-label="Open Willowmere resident stories">📖 Stories</button>
           <button id="save-status-button" class="save-status-button" type="button" data-status="new">Save not started</button>
-          <div class="milestone-badge">PHASER TOWN · MILESTONE 40</div>
+          <div class="milestone-badge">PHASER TOWN · MILESTONE 41</div>
         </div>
       </section>
       <section id="onboarding-panel" class="onboarding-panel hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="onboarding-title" aria-describedby="onboarding-description">
@@ -232,9 +232,10 @@
             </div>
             <button id="economy-panel-close" class="economy-panel-close" type="button" aria-label="Close wallet and inventory">✕</button>
           </header>
-          <div class="economy-tabs" role="tablist" aria-label="Wallet and inventory views">
+          <div class="economy-tabs" role="tablist" aria-label="Wallet, inventory and optional purchase views">
             <button id="economy-wallet-tab" type="button" role="tab" aria-selected="false" aria-controls="economy-wallet-view" tabindex="-1">🪙 Wallet</button>
             <button id="economy-inventory-tab" type="button" role="tab" aria-selected="true" aria-controls="economy-inventory-view">🎒 Inventory</button>
+            <button id="economy-commerce-tab" type="button" role="tab" aria-selected="false" aria-controls="commerce-view" tabindex="-1">❤️ Support</button>
           </div>
           <section id="economy-wallet-view" class="economy-view hidden" role="tabpanel" aria-labelledby="economy-wallet-tab">
             <div class="wallet-balance-card">
@@ -249,7 +250,19 @@
             <p id="catalogue-status" class="catalogue-status">76 legacy item definitions ready</p>
             <div id="inventory-groups" class="inventory-groups"></div>
           </section>
-          <p class="economy-panel-note">Every purchase, tool change and consumable use is saved atomically. Animal foods are used through Animal Friends; seeds are used at Willow Allotments.</p>
+          <section id="commerce-view" class="economy-view commerce-view hidden" role="tabpanel" aria-labelledby="economy-commerce-tab">
+            <div class="commerce-hero">
+              <div><small>MILESTONE 41 · OPTIONAL COMMERCE</small><h3>Support KindWorks</h3><p>Paid coins and memberships are optional. Gameplay, your custom resident, and town restoration remain available without a purchase.</p></div>
+              <span id="commerce-authority" data-ready="false">Real purchases unavailable in this web build</span>
+            </div>
+            <label class="commerce-confirmation"><input id="commerce-adult-confirmation" type="checkbox" /><span><strong>Adult confirmation</strong><small>I am an adult or have permission from a parent or guardian to open the store checkout.</small></span></label>
+            <section class="commerce-section" aria-labelledby="coin-pack-title"><div class="commerce-section-heading"><div><h3 id="coin-pack-title">KindlyCoin packs</h3><small>One-time consumable purchases</small></div></div><div id="coin-pack-grid" class="coin-pack-grid"></div></section>
+            <section class="commerce-section" aria-labelledby="kindly-club-title"><div class="commerce-section-heading"><div><h3 id="kindly-club-title">KindlyClub</h3><small id="kindly-club-status">No active KindlyClub membership</small></div></div><div id="kindly-club-grid" class="kindly-club-grid"></div></section>
+            <div class="commerce-actions"><button id="commerce-restore" type="button">Restore purchases</button><button id="commerce-manage" type="button">Manage membership</button></div>
+            <p id="commerce-status" class="commerce-status" data-status="neutral" role="status" aria-live="polite">No payment is taken inside this web preview. Packaged builds require Apple/Google billing and signed KindWorks server receipts.</p>
+            <p class="commerce-privacy"><strong>Purchase safety:</strong> no date of birth is collected here, personalised advertising is not used by this system, and every paid grant is checked by the server and saved once.</p>
+          </section>
+          <p class="economy-panel-note">Ordinary coin actions and verified paid grants save atomically. A failed save rolls the complete transaction back.</p>
         </div>
       </section>
       <section id="shop-panel" class="shop-panel hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="shop-panel-title" aria-describedby="shop-panel-description">

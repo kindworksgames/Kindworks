@@ -1,11 +1,11 @@
 # Kindworks Phaser save contract
 
-> Current migration status: Milestone 40 uses game-state and envelope schema
-> 35. Schemas 1 through 34 upgrade in order. Schema 35 adds first-run setup,
-> tutorial progress, and duplicate-safe login rewards.
+> Current migration status: Milestone 41 uses game-state and envelope schema
+> 36. Schemas 1 through 35 upgrade in order. Schema 36 adds the optional secure
+> commerce and KindlyClub entitlement boundary.
 > Historical foundation notes remain for traceability.
 
-Milestone 3 introduced the protected save foundation alongside the preserved HTML game. Milestone 4 added the shared item catalogue, inventory, KindlyCoin ledger, and atomic economy transactions. Milestone 6 added the first persistent cleanup session, exact-target result, and job reward. Subsequent milestones migrated the remaining shared systems and mini-games; Milestone 37 completes Harbour General ownership, stock management, in-person sales and NPC wardrobe demand. Milestone 38 adds validated, read-only Impact content without changing schema 33. Milestone 39 adds the authored resident and household story layer through schema 34. Milestone 40 adds the first-run and returning-player flow through schema 35.
+Milestone 3 introduced the protected save foundation alongside the preserved HTML game. Milestone 4 added the shared item catalogue, inventory, KindlyCoin ledger, and atomic economy transactions. Milestone 6 added the first persistent cleanup session, exact-target result, and job reward. Subsequent milestones migrated the remaining shared systems and mini-games; Milestone 37 completes Harbour General ownership, stock management, in-person sales and NPC wardrobe demand. Milestone 38 adds validated, read-only Impact content without changing schema 33. Milestone 39 adds the authored resident and household story layer through schema 34. Milestone 40 adds the first-run and returning-player flow through schema 35. Milestone 41 adds the optional secure commerce domain through schema 36.
 
 ## Storage namespaces
 
@@ -22,14 +22,14 @@ The Phaser build owns only:
 - `kindworks_phaser_v1_backup`
 - `kindworks_phaser_v1_recovery`
 
-## Current Phaser envelope schema 35
+## Current Phaser envelope schema 36
 
 Every current and backup save is a JSON envelope:
 
 ```json
 {
   "format": "kindworks-phaser",
-  "schemaVersion": 35,
+  "schemaVersion": 36,
   "writtenAt": "2026-08-25T00:00:00.000Z",
   "appVersion": "0.1.0",
   "data": {},
@@ -37,7 +37,31 @@ Every current and backup save is a JSON envelope:
 }
 ```
 
-The checksum covers every envelope field except the checksum itself. A save is accepted only when its format, schema, timestamp, checksum, and inner game state all validate. Valid schemas 1 through 34 upgrade to schema 35, and the original verified envelope becomes the Phaser backup before replacement.
+The checksum covers every envelope field except the checksum itself. A save is accepted only when its format, schema, timestamp, checksum, and inner game state all validate. Valid schemas 1 through 35 upgrade to schema 36, and the original verified envelope becomes the Phaser backup before replacement.
+
+## Optional commerce schema-36 contract
+
+- `commerce.walletVersion` is the latest strictly increasing server wallet
+  version accepted by this save. A real-money response containing an equal or
+  older version is rejected.
+- `processedTransactions` retains at most 5,000 server transaction IDs and
+  `processedPeriods` retains at most 240 subscription-period keys. Together
+  with the wallet version, they prevent repeat grants and monthly gifts.
+- `kindlyClub` stores only a server-verified tier, status, subscription ID,
+  period bounds, verification time, and verifier label. An expired period is
+  treated as inactive even if the last saved status was active.
+- `lastRestoreAt` records a successfully persisted restore attempt. Restoring
+  the same verified receipts never grants coins or gifts twice.
+- Production receipts must be signed by the KindWorks server and verified with
+  the pinned P-256 public key. The client requires an absolute, reconciled
+  server wallet and does not credit a locally calculated real-money balance.
+- Coin packs, membership coins, membership gifts, entitlement data, wallet
+  version, economy totals, and the ledger persist atomically. Any rejection or
+  write failure restores the full checkpoint.
+- Schemas 1 through 35 gain an empty commerce domain without changing coins or
+  inventory. Original transaction and subscription records project without
+  replaying benefits or changing the retained legacy snapshot.
+- The full bridge and security contract is recorded in `COMMERCE_SYSTEM.md`.
 
 ## Onboarding and login-reward schema-35 contract
 

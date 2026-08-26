@@ -147,6 +147,12 @@ import {
   projectLegacyOnboarding,
   validateOnboardingState,
 } from "./onboardingState.js";
+import {
+  createFreshCommerceState,
+  normalizeCommerceState,
+  projectLegacyCommerce,
+  validateCommerceState,
+} from "./commerceState.js";
 
 const DIRECTIONS = new Set(["up", "down", "left", "right"]);
 
@@ -199,6 +205,7 @@ export function createFreshGameState({ now = Date.now() } = {}) {
     municipalCollection: createFreshMunicipalCollectionState(world),
     restorationMilestones: createFreshRestorationMilestoneState(),
     onboarding: createFreshOnboardingState({ now }),
+    commerce: createFreshCommerceState(),
     customResident: createFreshCustomResidentState(),
     homeInteriors: createFreshHomeInteriorState(),
     farming: createFreshFarmingState(world),
@@ -266,6 +273,7 @@ export function createGameStateFromLegacy(legacy, report, { now = Date.now() } =
   state.harbourGeneral = projectLegacyHarbourGeneral(legacy);
   state.restorationMilestones = projectLegacyRestorationMilestoneState(legacy, state);
   state.onboarding = projectLegacyOnboarding(legacy, state, { now });
+  state.commerce = projectLegacyCommerce(legacy);
   const legacySeeds = legacy.farmingFoundation?.seedInventory || {};
   for (const id of ["carrot-seeds", "fresh-greens-seeds", "wild-berry-starters"]) {
     const quantity = safeInteger(legacySeeds[id], 0, 99);
@@ -490,6 +498,12 @@ export function upgradeGameState(value, { now = Date.now() } = {}) {
       : normalizeOnboardingState(state.onboarding, { state, now });
     state.schemaVersion = 35;
   }
+  if (state.schemaVersion === 35) {
+    state.commerce = state.source?.kind === "legacy-import"
+      ? projectLegacyCommerce(state.legacySnapshot)
+      : normalizeCommerceState(state.commerce);
+    state.schemaVersion = 36;
+  }
   return state;
 }
 
@@ -522,6 +536,7 @@ export function validateGameState(value) {
   errors.push(...validateMunicipalCollectionState(value.municipalCollection).errors);
   errors.push(...validateRestorationMilestoneState(value.restorationMilestones).errors);
   errors.push(...validateOnboardingState(value.onboarding, value).errors);
+  errors.push(...validateCommerceState(value.commerce).errors);
   errors.push(...validateCustomResidentState(value.customResident).errors);
   errors.push(...validateHomeInteriorState(value.homeInteriors).errors);
   errors.push(...validateFarmingState(value.farming, value.world).errors);

@@ -57,7 +57,7 @@ test("pins the complete original Harbour General catalogue and operating rules",
 
 test("fresh schema 33 saves contain a valid unowned Harbour General domain", () => {
   const state = createFreshGameState({ now: 0 });
-  assert.equal(state.schemaVersion, 35);
+  assert.equal(state.schemaVersion, 36);
   assert.equal(state.harbourGeneral.owned, false);
   assert.deepEqual(state.harbourGeneral.slots, Array(6).fill(null));
   assert.equal(Object.keys(state.harbourGeneral.stock).length, 17);
@@ -243,7 +243,7 @@ test("schema 32 and legacy saves upgrade safely without mutating the retained le
     delete resident.lastHarbourPurchaseDay;
   }
   const upgraded = upgradeGameState(prior, { now: 1000 });
-  assert.equal(upgraded.schemaVersion, 35);
+  assert.equal(upgraded.schemaVersion, 36);
   assert.equal(upgraded.harbourGeneral.owned, false);
   assert.equal(typeof upgraded.npcs.residents[0].weatherWardrobe.umbrella, "boolean");
   assert.equal(validateGameState(upgraded).ok, true);

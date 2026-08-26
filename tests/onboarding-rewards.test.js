@@ -146,7 +146,7 @@ test("schema-34 saves gain onboarding without replaying starter or login rewards
   oldState.schemaVersion = 34;
   delete oldState.onboarding;
   const upgraded = upgradeGameState(oldState, { now: START + DAY });
-  assert.equal(upgraded.schemaVersion, 35);
+  assert.equal(upgraded.schemaVersion, 36);
   assert.equal(upgraded.economy.coins, 100);
   assert.equal(upgraded.onboarding.loginRewards.dailyClaims, 0);
   assert.equal(validateGameState(upgraded).ok, true);

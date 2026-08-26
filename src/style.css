@@ -531,8 +531,8 @@ body[data-game-scene="BakeryScene"] .zoom-controls {
 }
 
 .economy-panel-close {
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   border: 0;
   border-radius: 13px;
   background: #e0ebdd;
@@ -543,7 +543,7 @@ body[data-game-scene="BakeryScene"] .zoom-controls {
 
 .economy-tabs {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
   margin: 0 22px 12px;
   padding: 5px;
@@ -552,7 +552,7 @@ body[data-game-scene="BakeryScene"] .zoom-controls {
 }
 
 .economy-tabs button {
-  min-height: 43px;
+  min-height: 44px;
   border: 0;
   border-radius: 11px;
   background: transparent;
@@ -1620,6 +1620,78 @@ body[data-game-scene="BakeryScene"] .zoom-controls {
 .first-session-checklist button:focus-visible,
 .login-reward-toast button:focus-visible { outline: 3px solid #efaf29; outline-offset: 3px; }
 
+/* Milestone 41 — server-verified optional commerce and KindlyClub. */
+.commerce-view {
+  gap: 14px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.commerce-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px;
+  padding: 15px;
+  border: 1px solid #c7d7ba;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #eef7e8, #fff5d8);
+}
+.commerce-hero h3, .commerce-hero p, .commerce-section h3, .commerce-section p, .commerce-privacy { margin: 0; }
+.commerce-hero > div > small { color: #4e7659; font: 900 10px/1.2 ui-monospace, monospace; letter-spacing: .07em; }
+.commerce-hero h3 { margin-top: 3px; font: 900 22px/1.1 system-ui, sans-serif; }
+.commerce-hero p { margin-top: 6px; color: #55705d; font: 650 12px/1.4 system-ui, sans-serif; }
+#commerce-authority { max-width: 180px; padding: 7px 9px; border-radius: 10px; background: #efe8d1; color: #755d32; font: 850 10px/1.3 system-ui, sans-serif; text-align: center; }
+#commerce-authority[data-ready="true"] { background: #d4ead1; color: #285e39; }
+
+.commerce-confirmation {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 11px;
+  padding: 12px 14px;
+  border: 2px solid #d6bd74;
+  border-radius: 14px;
+  background: #fff8dc;
+  cursor: pointer;
+}
+.commerce-confirmation input { width: 24px; height: 24px; accent-color: #39734b; }
+.commerce-confirmation span { display: grid; gap: 2px; }
+.commerce-confirmation strong { font: 900 13px/1.2 system-ui, sans-serif; }
+.commerce-confirmation small { color: #675d3c; font: 650 11px/1.35 system-ui, sans-serif; }
+
+.commerce-section { display: grid; gap: 10px; }
+.commerce-section-heading { display: flex; align-items: end; justify-content: space-between; gap: 10px; }
+.commerce-section-heading h3 { font: 900 17px/1.15 system-ui, sans-serif; }
+.commerce-section-heading small { display: block; margin-top: 2px; color: #647568; font: 700 10px/1.3 system-ui, sans-serif; }
+.coin-pack-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.coin-pack-card { display: grid; place-items: center; gap: 2px; padding: 11px 8px 9px; border: 1px solid #d3dcbf; border-radius: 14px; background: #fffefa; text-align: center; }
+.coin-pack-card > span { font-size: 23px; }
+.coin-pack-card strong { font: 900 18px/1.1 system-ui, sans-serif; }
+.coin-pack-card small { color: #68766a; font: 700 10px/1.2 system-ui, sans-serif; }
+.coin-pack-card button, .kindly-club-card button, .commerce-actions button { min-height: 44px; border: 0; border-radius: 10px; padding: 8px 11px; background: #39734b; color: #fff; font: 900 11px/1 system-ui, sans-serif; cursor: pointer; }
+.coin-pack-card button { width: 100%; margin-top: 6px; }
+.coin-pack-card button:disabled, .kindly-club-card button:disabled, .commerce-actions button:disabled { background: #aab5a8; color: #edf0ea; cursor: not-allowed; }
+
+.kindly-club-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.kindly-club-card { display: grid; align-content: start; gap: 8px; min-width: 0; padding: 12px; border: 1px solid #d8c98e; border-radius: 15px; background: linear-gradient(150deg, #fffdf2, #f8edc7); }
+.kindly-club-card.active { border: 2px solid #4d8a57; background: linear-gradient(150deg, #eef8df, #fff2bd); }
+.kindly-club-card header { display: flex; align-items: center; gap: 8px; }
+.kindly-club-card header > span { font-size: 25px; }
+.kindly-club-card header div { display: grid; gap: 1px; min-width: 0; }
+.kindly-club-card header strong { overflow: hidden; font: 900 13px/1.15 system-ui, sans-serif; text-overflow: ellipsis; white-space: nowrap; }
+.kindly-club-card header small { color: #6d674a; font: 750 9px/1.2 system-ui, sans-serif; }
+.kindly-club-card p { color: #665f46; font: 650 10px/1.35 system-ui, sans-serif; }
+.kindly-club-card ul { display: grid; gap: 4px; margin: 0; padding-left: 17px; color: #535e48; font: 650 9px/1.3 system-ui, sans-serif; }
+.kindly-club-card button { align-self: end; width: 100%; margin-top: auto; }
+.commerce-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.commerce-actions button { background: #596b5a; }
+.commerce-status, .commerce-privacy { padding: 10px 12px; border-radius: 12px; background: #edf1e8; color: #536055; font: 700 11px/1.4 system-ui, sans-serif; }
+.commerce-status[data-status="success"] { background: #d9efd5; color: #23613a; }
+.commerce-status[data-status="error"] { background: #f5dfd6; color: #8a3c32; }
+.commerce-privacy { border: 1px dashed #c7cfbb; background: #f8faf4; font-size: 10px; }
+.commerce-view button:focus-visible, .commerce-view input:focus-visible { outline: 3px solid #efaf29; outline-offset: 2px; }
+
 @media (max-width: 720px) {
   .town-title strong { font-size: 13px; }
   .onboarding-panel { padding: 5px; place-items: start center; }
@@ -1633,6 +1705,12 @@ body[data-game-scene="BakeryScene"] .zoom-controls {
   .first-session-checklist { top: auto; bottom: max(84px, calc(env(safe-area-inset-bottom) + 72px)); left: 50%; grid-template-columns: 1fr auto; width: min(410px, calc(100vw - 18px)); transform: translateX(-50%); }
   .first-session-checklist ol { grid-column: 1 / -1; grid-template-columns: repeat(3, 1fr); }
   .first-session-checklist li { font-size: 10px; }
+  .commerce-view { gap: 9px; }
+  .commerce-hero { grid-template-columns: 1fr; padding: 11px; }
+  #commerce-authority { max-width: none; }
+  .coin-pack-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kindly-club-grid { grid-template-columns: 1fr; }
+  .kindly-club-card { min-height: auto; }
 }
 
 @media (max-width: 520px) {

@@ -25,8 +25,10 @@ export class EconomyHudController {
     this.closeButton = document.querySelector("#economy-panel-close");
     this.walletTab = document.querySelector("#economy-wallet-tab");
     this.inventoryTab = document.querySelector("#economy-inventory-tab");
+    this.commerceTab = document.querySelector("#economy-commerce-tab");
     this.walletView = document.querySelector("#economy-wallet-view");
     this.inventoryView = document.querySelector("#economy-inventory-view");
+    this.commerceView = document.querySelector("#commerce-view");
     this.balance = document.querySelector("#economy-balance");
     this.lifetime = document.querySelector("#economy-lifetime");
     this.ledger = document.querySelector("#economy-ledger");
@@ -40,6 +42,7 @@ export class EconomyHudController {
     this.onClose = () => this.close();
     this.onWalletTab = () => this.showView("wallet");
     this.onInventoryTab = () => this.showView("inventory");
+    this.onCommerceTab = () => this.showView("commerce");
     this.onInventoryClick = (event) => this.handleInventoryClick(event);
     this.onKeyDown = (event) => this.handleKeyDown(event);
     this.coinButton?.addEventListener("click", this.onCoinOpen);
@@ -47,6 +50,7 @@ export class EconomyHudController {
     this.closeButton?.addEventListener("click", this.onClose);
     this.walletTab?.addEventListener("click", this.onWalletTab);
     this.inventoryTab?.addEventListener("click", this.onInventoryTab);
+    this.commerceTab?.addEventListener("click", this.onCommerceTab);
     this.inventoryGroups?.addEventListener("click", this.onInventoryClick);
     document.addEventListener("keydown", this.onKeyDown);
     this.unsubscribe = runtime.gameState.subscribe(() => this.render());
@@ -226,14 +230,19 @@ export class EconomyHudController {
   }
 
   showView(view) {
-    this.activeView = view === "wallet" ? "wallet" : "inventory";
+    this.activeView = ["wallet", "inventory", "commerce"].includes(view) ? view : "inventory";
     const walletActive = this.activeView === "wallet";
+    const inventoryActive = this.activeView === "inventory";
+    const commerceActive = this.activeView === "commerce";
     this.walletTab?.setAttribute("aria-selected", String(walletActive));
-    this.inventoryTab?.setAttribute("aria-selected", String(!walletActive));
+    this.inventoryTab?.setAttribute("aria-selected", String(inventoryActive));
+    this.commerceTab?.setAttribute("aria-selected", String(commerceActive));
     this.walletTab?.setAttribute("tabindex", walletActive ? "0" : "-1");
-    this.inventoryTab?.setAttribute("tabindex", walletActive ? "-1" : "0");
+    this.inventoryTab?.setAttribute("tabindex", inventoryActive ? "0" : "-1");
+    this.commerceTab?.setAttribute("tabindex", commerceActive ? "0" : "-1");
     this.walletView?.classList.toggle("hidden", !walletActive);
-    this.inventoryView?.classList.toggle("hidden", walletActive);
+    this.inventoryView?.classList.toggle("hidden", !inventoryActive);
+    this.commerceView?.classList.toggle("hidden", !commerceActive);
   }
 
   open(view = "inventory") {
@@ -262,16 +271,20 @@ export class EconomyHudController {
       this.close();
       return;
     }
-    if ((event.key === "ArrowLeft" || event.key === "ArrowRight") && [this.walletTab, this.inventoryTab].includes(document.activeElement)) {
+    const tabs = [this.walletTab, this.inventoryTab, this.commerceTab].filter(Boolean);
+    if ((event.key === "ArrowLeft" || event.key === "ArrowRight") && tabs.includes(document.activeElement)) {
       event.preventDefault();
-      const view = this.activeView === "wallet" ? "inventory" : "wallet";
+      const views = ["wallet", "inventory", "commerce"];
+      const offset = event.key === "ArrowRight" ? 1 : -1;
+      const view = views[(views.indexOf(this.activeView) + offset + views.length) % views.length];
       this.showView(view);
-      (view === "wallet" ? this.walletTab : this.inventoryTab)?.focus();
+      ({ wallet: this.walletTab, inventory: this.inventoryTab, commerce: this.commerceTab }[view])?.focus();
       return;
     }
     if (event.key !== "Tab") return;
     const inventoryActions = this.activeView === "inventory" ? [...(this.inventoryGroups?.querySelectorAll("button") || [])] : [];
-    const focusable = [this.closeButton, this.walletTab, this.inventoryTab, ...inventoryActions].filter((element) => element && !element.disabled);
+    const commerceActions = this.activeView === "commerce" ? [...(this.commerceView?.querySelectorAll("button, input") || [])] : [];
+    const focusable = [this.closeButton, ...tabs, ...inventoryActions, ...commerceActions].filter((element) => element && !element.disabled);
     const current = focusable.indexOf(document.activeElement);
     const next = event.shiftKey
       ? (current <= 0 ? focusable.length - 1 : current - 1)
@@ -286,6 +299,7 @@ export class EconomyHudController {
     this.closeButton?.removeEventListener("click", this.onClose);
     this.walletTab?.removeEventListener("click", this.onWalletTab);
     this.inventoryTab?.removeEventListener("click", this.onInventoryTab);
+    this.commerceTab?.removeEventListener("click", this.onCommerceTab);
     this.inventoryGroups?.removeEventListener("click", this.onInventoryClick);
     document.removeEventListener("keydown", this.onKeyDown);
     this.unsubscribe?.();

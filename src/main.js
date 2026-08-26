@@ -51,6 +51,8 @@ import { HarbourGeneralService } from "./systems/HarbourGeneralService.js";
 import { ImpactProjectService } from "./systems/ImpactProjectService.js";
 import { NpcNarrativeService } from "./systems/NpcNarrativeService.js";
 import { OnboardingService } from "./systems/OnboardingService.js";
+import { CommerceService } from "./systems/CommerceService.js";
+import { createDevelopmentBillingBridge, verifyDevelopmentReceipt } from "./systems/DevelopmentBillingBridge.js";
 import { EconomyHudController } from "./ui/EconomyHudController.js";
 import { SaveStatusController } from "./ui/SaveStatusController.js";
 import { ShopController } from "./ui/ShopController.js";
@@ -63,6 +65,7 @@ import { HomeownerGiftController } from "./ui/HomeownerGiftController.js";
 import { ImpactController } from "./ui/ImpactController.js";
 import { NpcNarrativeController } from "./ui/NpcNarrativeController.js";
 import { OnboardingController } from "./ui/OnboardingController.js";
+import { CommerceController } from "./ui/CommerceController.js";
 import { ITEM_IDS } from "./data/items.js";
 import { findSafeFurniturePlacement } from "./data/homeInteriors.js";
 
@@ -151,11 +154,24 @@ game.registry.set("homeownerGifts", homeownerGifts);
 game.registry.set("impactProjects", impactProjects);
 const economy = new EconomyService(stateRuntime.gameState, stateRuntime.repository);
 game.registry.set("economy", economy);
+const qaMode = new URLSearchParams(window.location.search).get("qa");
+const commerceQa = import.meta.env.DEV && ["commerce", "commerce-disabled"].includes(qaMode);
+const developmentCommerce = import.meta.env.DEV && qaMode === "commerce";
+const billingBridge = developmentCommerce
+  ? createDevelopmentBillingBridge(stateRuntime.gameState)
+  : window.KindWorksBilling || null;
+const commerce = new CommerceService(stateRuntime.gameState, stateRuntime.repository, {
+  economy,
+  billing: billingBridge,
+  verifyReceipt: developmentCommerce ? verifyDevelopmentReceipt : undefined,
+  environment: developmentCommerce ? "development-sandbox" : import.meta.env.PROD ? "production" : "development",
+});
+game.registry.set("commerce", commerce);
 const onboarding = new OnboardingService(stateRuntime.gameState, stateRuntime.repository, {
   economy,
   requireTrustedTime: import.meta.env.PROD,
-  trustedTimeProvider: typeof window.KindWorksBilling?.getTrustedTimeReceipt === "function"
-    ? () => window.KindWorksBilling.getTrustedTimeReceipt()
+  trustedTimeProvider: typeof billingBridge?.getTrustedTimeReceipt === "function"
+    ? () => billingBridge.getTrustedTimeReceipt()
     : null,
 });
 game.registry.set("onboarding", onboarding);
@@ -313,6 +329,9 @@ const economyHud = new EconomyHudController(stateRuntime, {
     return activeTownScene()?.beginTownPlacement?.(item?.id) || { ok: false, message: "Return to Willowmere town to place this item." };
   },
 });
+const commerceController = new CommerceController(commerce);
+game.registry.set("commerceController", commerceController);
+if (commerceQa) setTimeout(() => economyHud.open("commerce"), 420);
 const worldHud = new WorldHudController(stateRuntime.gameState);
 const shopController = new ShopController(shopService, stateRuntime, {
   onModalChange(open) {
@@ -380,7 +399,7 @@ const onboardingController = new OnboardingController(onboarding, {
   },
 });
 game.registry.set("onboardingController", onboardingController);
-setTimeout(() => onboardingController.startFirstRun(), 260);
+if (!commerceQa) setTimeout(() => onboardingController.startFirstRun(), 260);
 onboardingController.processLogin();
 
 function handleVisibilityChange() {
@@ -439,6 +458,12 @@ window.__KINDWORKS_PHASER__ = {
       catalogueEntries: ITEM_IDS.length,
       schemaVersion: state.schemaVersion,
     };
+  },
+  getCommerceDiagnostics() {
+    return commerce.getDiagnostics();
+  },
+  getCommerceState() {
+    return commerce.getSnapshot();
   },
   getOnboardingDiagnostics() {
     return onboardingController.getDiagnostics();
