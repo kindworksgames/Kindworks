@@ -13,8 +13,10 @@ import { WEATHER_CONFIG } from "../data/worldSimulation.js";
 import { normalizeNpcState, validateNpcState } from "../state/npcState.js";
 import { createBinSpillInto, placeNpcLandLitterInto, removeLandItemsInto, updateEnvironmentMetricsInto } from "./LivingEnvironmentService.js";
 import { NavigationGraph } from "./NavigationGraph.js";
+import { restorationFestivalActive } from "../state/restorationMilestoneState.js";
 
 const PHASES = new Set(["sleeping", "home", "commuting", "working", "leisure"]);
+const RIVER_RESTORATION_NODES = new Set(["dock", "mill", "rpar1", "rpar2", "rpar3"]);
 const TAKEAWAY_BY_KIND = Object.freeze({
   cafe: ["cup", "takeaway cup"], bakery: ["wrapper", "bakery wrapper"], pub: ["bottle", "empty bottle"],
   restaurant: ["wrapper", "takeaway wrapper"], shop: ["bag", "shopping bag"], market: ["paper", "market paper bag"],
@@ -38,6 +40,15 @@ function reactionFor(state) {
   return { phase: "neglected", icon: "🧹", text: "There is still work to do" };
 }
 
+function restorationLitterMultiplier(state, resident) {
+  const unlocked = state.restorationMilestones?.unlocked || {};
+  let multiplier = 1;
+  if (unlocked.river && RIVER_RESTORATION_NODES.has(resident.currentNodeId)) multiplier *= NPC_SOCIAL_CONFIG.riverRestoredMultiplier;
+  if (unlocked.green) multiplier *= NPC_SOCIAL_CONFIG.greenTownMultiplier;
+  if (restorationFestivalActive(state)) multiplier *= NPC_SOCIAL_CONFIG.festivalMultiplier;
+  return multiplier;
+}
+
 function isHourBetween(hour, start, end) {
   return start <= end ? hour >= start && hour < end : hour >= start || hour < end;
 }
@@ -46,17 +57,33 @@ function hoursUntil(hour, target) {
   return ((target - hour) % 24 + 24) % 24;
 }
 
-export function getNpcSchedule(definition, day, clockMinutes) {
+function restoredLeisureNode(definition, day, state) {
+  const unlocked = state?.restorationMilestones?.unlocked || {};
+  const roll = (label) => hashUnit(`restored-leisure:${label}:${definition.id}:${day}`);
+  if (restorationFestivalActive(state) && roll("festival") < 0.48) return ["square", "high1", "high2", "high3"][Math.floor(roll("festival-node") * 4)];
+  if (unlocked.shore && roll("shore") < 0.16) return ["harbour1", "harbour2", "biz_beachcafe"][Math.floor(roll("shore-node") * 3)];
+  if (unlocked.station && roll("station") < 0.07) return roll("station-node") < 0.6 ? "station1" : "high4";
+  if (unlocked.river && roll("river") < 0.1) return ["dock", "mill", "rpar1", "rpar2", "rpar3"][Math.floor(roll("river-node") * 5)];
+  if (unlocked.commons && roll("commons") < 0.16) return ["cnw", "cne", "cs", "play"][Math.floor(roll("commons-node") * 4)];
+  if (unlocked.highstreet && roll("highstreet") < 0.14) return ["high1", "high2", "high3", "rpar2"][Math.floor(roll("highstreet-node") * 4)];
+  if (unlocked.wake && roll("wake") < 0.08) return "square";
+  return null;
+}
+
+export function getNpcSchedule(definition, day, clockMinutes, state = null) {
   const hour = clockMinutes / 60;
   if (isHourBetween(hour, definition.sleep, definition.wake)) {
     return { phase: "sleeping", targetNodeId: definition.homeNodeId, activity: "Sleeping at home" };
   }
   if (isHourBetween(hour, definition.workStart, definition.workEnd)) {
+    const cinemaLocked = ["biz_news", "station1"].includes(definition.workNodeId) && !state?.restorationMilestones?.unlocked?.station;
+    if (cinemaLocked) return { phase: "working", targetNodeId: "high4", activity: "Preparing the cinema reopening" };
     return { phase: "working", targetNodeId: definition.workNodeId, activity: `Working as ${definition.role.toLowerCase()}` };
   }
   const afterWork = isHourBetween(hour, definition.workEnd, definition.sleep);
   if (afterWork && hoursUntil(hour, definition.sleep) > 1.25) {
-    const targetNodeId = definition.preferred[(Math.max(1, day) + Number(definition.id.slice(-2))) % definition.preferred.length];
+    const targetNodeId = restoredLeisureNode(definition, day, state)
+      || definition.preferred[(Math.max(1, day) + Number(definition.id.slice(-2))) % definition.preferred.length];
     return { phase: "leisure", targetNodeId, activity: "Enjoying some free time" };
   }
   return { phase: "home", targetNodeId: definition.homeNodeId, activity: "Spending time at home" };
@@ -196,7 +223,7 @@ export class NpcTownLifeService {
     const multiplier = reaction.phase === "restored" ? NPC_SOCIAL_CONFIG.cleanLitterMultiplier
       : reaction.phase === "cared" ? NPC_SOCIAL_CONFIG.caredLitterMultiplier
         : reaction.phase === "improving" ? NPC_SOCIAL_CONFIG.improvingLitterMultiplier : NPC_SOCIAL_CONFIG.neglectedLitterMultiplier;
-    const chance = Math.max(0.002, (1 - definition.tidiness) * 0.72) * multiplier;
+    const chance = Math.max(0.002, (1 - definition.tidiness) * 0.72) * multiplier * restorationLitterMultiplier(state, resident);
     const protectedArea = state.npcs.socialRuntime.cleanupProtectionZones.some((zone) => zone.untilGameMinute > now && Math.hypot(zone.x - resident.x, zone.y - resident.y) <= NPC_SOCIAL_CONFIG.protectedCleanupRadius);
     const deliberate = !protectedArea && state.environment?.calm?.untilGameMinute <= now
       && resident.litterDropsToday < NPC_SOCIAL_CONFIG.maxDropsPerNpcPerDay
@@ -390,9 +417,10 @@ export class NpcTownLifeService {
     const clockMinutes = world.clockMinutes;
     const elapsedSeconds = Math.max(0, Math.min(1, Number(deltaMilliseconds) / 1000 || 0));
     const weatherSpeed = WEATHER_CONFIG.npcSpeed?.[world.weather?.current?.kind] || 1;
+    const currentState = this.gameState.getSnapshot();
     for (const definition of NPC_RESIDENTS) {
       const resident = this.residents.get(definition.id);
-      const schedule = this.effectiveSchedule(resident, getNpcSchedule(definition, day, clockMinutes));
+      const schedule = this.effectiveSchedule(resident, getNpcSchedule(definition, day, clockMinutes, currentState));
       this.planResident(resident, definition, schedule);
       if (elapsedSeconds > 0 && resident.phase === "commuting") this.moveResident(resident, definition, schedule, definition.speed * weatherSpeed * elapsedSeconds);
     }
@@ -476,6 +504,29 @@ export class NpcTownLifeService {
     return greetings;
   }
 
+  showRestorationReaction(id, focus) {
+    const now = absoluteMinute(this.gameState.getSnapshot().world);
+    const icon = id === "festival" ? "🎉" : "✨";
+    const title = id === "festival" ? "The Willowmere Festival!" : "Willowmere is changing!";
+    let reacted = 0;
+    for (const resident of this.residents.values()) {
+      if (!resident.visible || !focus || Math.hypot(resident.x - focus.x, resident.y - focus.y) > 780) continue;
+      resident.greetingIcon = icon;
+      resident.greetingText = title;
+      resident.greetingUntil = now + 13;
+      reacted += 1;
+    }
+    if (reacted) setTimeout(() => {
+      for (const resident of this.residents.values()) {
+        if (resident.greetingIcon === icon && resident.greetingText === title) {
+          resident.greetingIcon = null;
+          resident.greetingText = null;
+        }
+      }
+    }, 4200);
+    return reacted;
+  }
+
   setPaused(reason, paused) {
     if (!reason) return { ok: false, status: "missing-reason" };
     if (paused) this.pauseReasons.add(reason);
@@ -490,7 +541,7 @@ export class NpcTownLifeService {
       return out;
     }, {});
     return {
-      version: "2.0.0-milestone-28",
+      version: "2.1.0-milestone-30-restoration-responses",
       enabled: true,
       residentCount: residents.length,
       visibleCount: residents.filter((resident) => resident.visible).length,
@@ -509,6 +560,20 @@ export class NpcTownLifeService {
       deliberateLitterEvents: this.npcState.socialRuntime.deliberateLitterEvents,
       communityCareEvents: this.npcState.socialRuntime.communityCareEvents,
       residentLawnCareEvents: residents.reduce((sum, resident) => sum + resident.residentLawnCareEvents, 0),
+      restorationResponses: {
+        commons: Boolean(this.gameState.getSnapshot().restorationMilestones?.unlocked?.commons),
+        highstreet: Boolean(this.gameState.getSnapshot().restorationMilestones?.unlocked?.highstreet),
+        river: Boolean(this.gameState.getSnapshot().restorationMilestones?.unlocked?.river),
+        station: Boolean(this.gameState.getSnapshot().restorationMilestones?.unlocked?.station),
+        shore: Boolean(this.gameState.getSnapshot().restorationMilestones?.unlocked?.shore),
+        green: Boolean(this.gameState.getSnapshot().restorationMilestones?.unlocked?.green),
+        festival: restorationFestivalActive(this.gameState.getSnapshot()),
+        litterMultipliers: {
+          river: NPC_SOCIAL_CONFIG.riverRestoredMultiplier,
+          green: NPC_SOCIAL_CONFIG.greenTownMultiplier,
+          festival: NPC_SOCIAL_CONFIG.festivalMultiplier,
+        },
+      },
       lastResult: { ...this.lastResult },
     };
   }

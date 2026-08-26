@@ -44,6 +44,7 @@ import { FISHING_SPOTS, MAGNET_FISHING_SPOT } from "../data/fishing.js";
 import { ITEM_CATALOG, placeableFootprintFor } from "../data/items.js";
 import { createTownPlacedObject } from "../entities/TownPlacedObject.js";
 import { createMunicipalCollectionVehicle } from "../entities/MunicipalCollectionVehicle.js";
+import { RESTORATION_MILESTONE_ORDER } from "../data/restorationMilestones.js";
 import { RUBBISH_PRESENTATION, riverItemPosition } from "../data/livingEnvironment.js";
 
 const PLAYER_RADIUS = 17;
@@ -92,6 +93,9 @@ export class TownScene extends Phaser.Scene {
     this.publicBinVisuals = [];
     this.publicBinSignature = null;
     this.municipalCollectionVisual = null;
+    this.restorationVisuals = [];
+    this.restorationSignature = null;
+    this.restorationCameraFocus = false;
   }
 
   create() {
@@ -106,6 +110,8 @@ export class TownScene extends Phaser.Scene {
     this.worldSimulation = this.registry.get("worldSimulation");
     this.npcTownLife = this.registry.get("npcTownLife");
     this.municipalCollection = this.registry.get("municipalCollection");
+    this.restorationMilestones = this.registry.get("restorationMilestones");
+    this.restorationMilestoneController = this.registry.get("restorationMilestoneController");
     this.customResident = this.registry.get("customResident");
     this.customResidentController = this.registry.get("customResidentController");
     this.farming = this.registry.get("farming");
@@ -445,6 +451,7 @@ export class TownScene extends Phaser.Scene {
     this.cameras.main.fadeIn(220, 23, 43, 31);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.unbindInterface());
     this.updateStatus();
+    this.time.delayedCall(420, () => this.restorationMilestoneController?.maybeOpen?.());
   }
 
   drawTown() {
@@ -515,6 +522,7 @@ export class TownScene extends Phaser.Scene {
     this.drawBeachCleanupTarget();
     this.drawPlaygroundPowerwashTarget();
     this.drawLabels();
+    this.drawRestorationChanges();
 
     this.add.rectangle(WORLD.width / 2, WORLD.height / 2, WORLD.width - 24, WORLD.height - 24)
       .setStrokeStyle(24, 0x315e3f, 1)
@@ -668,6 +676,106 @@ export class TownScene extends Phaser.Scene {
       fontStyle: "bold",
       padding: { x: 7, y: 4 },
     }).setOrigin(0.5).setDepth(101);
+  }
+
+  drawRestorationChanges() {
+    for (const visual of this.restorationVisuals || []) visual.destroy?.();
+    this.restorationVisuals = [];
+    const snapshot = this.restorationMilestones?.getSnapshot?.();
+    if (!snapshot) return;
+    const unlocked = snapshot.unlocked;
+    const add = (...objects) => this.restorationVisuals.push(...objects.filter(Boolean));
+    if (unlocked.wake) {
+      const fountain = this.add.container(555, 1365).setDepth(122);
+      const basin = this.add.ellipse(0, 10, 92, 34, 0x8b8064, 1).setStrokeStyle(5, 0xe7d7a3, 1);
+      const water = this.add.ellipse(0, 7, 70, 21, 0x78c9dd, 0.92);
+      const stone = this.add.rectangle(0, -8, 18, 37, 0xb8aa86).setStrokeStyle(3, 0x756d58, 0.8);
+      const spray = this.add.text(0, -37, "💦", { fontSize: "31px" }).setOrigin(0.5);
+      fountain.add([basin, water, stone, spray]);
+      this.tweens.add({ targets: spray, y: -43, scale: 1.08, duration: 850, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
+      add(fountain);
+    }
+    if (unlocked.commons) {
+      const graphics = this.add.graphics().setDepth(121);
+      graphics.fillStyle(0x527154, 1);
+      for (const [x, y] of [[1280, 1215], [1540, 1300], [1870, 1235]]) {
+        graphics.fillRoundedRect(x - 35, y - 8, 70, 16, 5);
+        graphics.fillRect(x - 27, y + 7, 7, 18);
+        graphics.fillRect(x + 20, y + 7, 7, 18);
+      }
+      const open = this.add.text(1940, 1015, "✨ PLAYGROUND OPEN", { color: "#fff9df", backgroundColor: "#4f7d54", fontFamily: "system-ui", fontSize: "12px", fontStyle: "bold", padding: { x: 8, y: 4 } }).setOrigin(0.5).setDepth(124);
+      add(graphics, open);
+    }
+    if (unlocked.highstreet) {
+      const graphics = this.add.graphics().setDepth(121);
+      for (const [x, y, color] of [[2985, 835, 0xc96558], [3230, 850, 0xe0b84d], [3490, 835, 0x6b9dc4]]) {
+        graphics.fillStyle(0x795a40, 1);
+        graphics.fillEllipse(x, y, 48, 19);
+        graphics.fillRect(x - 3, y, 6, 25);
+        graphics.fillStyle(color, 1);
+        graphics.fillCircle(x - 29, y - 3, 9);
+        graphics.fillCircle(x + 29, y - 3, 9);
+      }
+      for (const [x, y] of [[3090, 575], [3380, 575], [3650, 685]]) {
+        graphics.fillStyle(0xffdc67, 0.94);
+        graphics.fillRoundedRect(x - 27, y - 8, 54, 16, 5);
+      }
+      add(graphics);
+    }
+    if (unlocked.river) {
+      const fish = [[2528, 730], [2555, 1165], [2537, 1700], [2570, 2160]].map(([x, y], index) => {
+        const visual = this.add.text(x, y, index % 2 ? "🐠" : "🐟", { fontSize: "18px" }).setOrigin(0.5).setAlpha(0.82).setDepth(44 + y / 100);
+        this.tweens.add({ targets: visual, x: x + (index % 2 ? -24 : 24), duration: 1800 + index * 170, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
+        return visual;
+      });
+      const duck = this.add.text(2585, 1890, "🦆", { fontSize: "26px" }).setOrigin(0.5).setDepth(47);
+      this.tweens.add({ targets: duck, y: 1935, duration: 2500, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
+      add(...fish, duck);
+    }
+    if (unlocked.station) {
+      const marquee = this.add.text(3965, 222, "🎬 NOW SHOWING · KINDWORKS CINEMA OPEN", { color: "#fff1aa", backgroundColor: "rgba(65,43,75,.96)", fontFamily: "system-ui", fontSize: "12px", fontStyle: "bold", padding: { x: 8, y: 5 } }).setOrigin(0.5).setDepth(124);
+      const crowd = ["🧍", "🧑", "👩"].map((icon, index) => this.add.text(3880 + index * 65, 475, icon, { fontSize: "24px" }).setOrigin(0.5).setDepth(126));
+      add(marquee, ...crowd);
+    }
+    if (unlocked.shore) {
+      const umbrellas = [[3485, 2395, "🔴"], [3710, 2450, "🟡"], [3940, 2390, "🔵"]].map(([x, y, icon]) => this.add.text(x, y, `${icon}\n│`, { align: "center", color: "#795d45", fontFamily: "system-ui", fontSize: "25px", fontStyle: "bold" }).setOrigin(0.5).setDepth(122));
+      const table = this.add.text(3610, 2380, "🧺", { fontSize: "28px" }).setOrigin(0.5).setDepth(123);
+      const boat = this.add.text(4005, 2630, "⛵", { fontSize: "35px" }).setOrigin(0.5).setDepth(48);
+      this.tweens.add({ targets: boat, y: 2640, angle: 3, duration: 1800, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
+      add(...umbrellas, table, boat);
+    }
+    if (unlocked.green) {
+      add(...[[1230, 1070, "🐿️"], [1900, 1385, "🐇"], [1160, 1015, "🐦"], [2010, 1220, "🐦"]].map(([x, y, icon]) => this.add.text(x, y, icon, { fontSize: "18px" }).setOrigin(0.5).setDepth(128 + y / 100)));
+    }
+    if (unlocked.festival) {
+      const plaque = this.add.text(555, 1415, "🏆 WILLOWMERE RESTORATION FESTIVAL", { color: "#fff3b4", backgroundColor: "rgba(99,72,45,.96)", fontFamily: "system-ui", fontSize: "11px", fontStyle: "bold", padding: { x: 8, y: 5 } }).setOrigin(0.5).setDepth(125);
+      add(plaque);
+      if (snapshot.festivalActive) {
+        const bunting = this.add.graphics().setDepth(130);
+        for (const [a, b] of [[[175, 815], [890, 815]], [[2850, 515], [3700, 535]], [[1160, 1015], [1970, 1040]]]) {
+          bunting.lineStyle(3, 0xd9b05a, 1);
+          bunting.lineBetween(a[0], a[1], b[0], b[1]);
+          for (let index = 1; index < 9; index += 1) {
+            const ratio = index / 9;
+            const x = a[0] + (b[0] - a[0]) * ratio;
+            const y = a[1] + (b[1] - a[1]) * ratio;
+            bunting.fillStyle([0xd9685e, 0xf0c85b, 0x6a9dc1][index % 3], 1);
+            bunting.fillTriangle(x - 7, y, x + 7, y, x, y + 15);
+          }
+        }
+        const festivalCrowd = [[480, 1460], [620, 1450], [1260, 1060], [1440, 1080], [1650, 1070], [3100, 575], [3440, 580]].map(([x, y], index) => this.add.text(x, y, index % 3 === 0 ? "🎉" : index % 3 === 1 ? "🧑" : "👩", { fontSize: "22px" }).setOrigin(0.5).setDepth(132));
+        add(bunting, ...festivalCrowd);
+      }
+    }
+  }
+
+  refreshRestorationPresentation(force = false) {
+    const snapshot = this.restorationMilestones?.getSnapshot?.();
+    if (!snapshot) return;
+    const signature = `${RESTORATION_MILESTONE_ORDER.map((id) => Number(Boolean(snapshot.unlocked[id]))).join("")}:${Number(snapshot.festivalActive)}`;
+    if (!force && signature === this.restorationSignature) return;
+    this.restorationSignature = signature;
+    this.drawRestorationChanges();
   }
 
   drawLandmarks() {
@@ -1166,6 +1274,7 @@ export class TownScene extends Phaser.Scene {
     this.refreshPlacementInteractables();
     this.setPlacementModeActive(Boolean(snapshot.active || this.farming?.getPlacementSnapshot?.().active));
     this.updatePlacementInterface(snapshot, result);
+    this.refreshRestorationPresentation();
     if (result?.ok && ["object-placed", "object-moved", "object-stored"].includes(result.code)) this.closePlacedObjectManager();
   }
 
@@ -1391,7 +1500,7 @@ export class TownScene extends Phaser.Scene {
     document.body.dataset.gameScene = this.scene.key;
     const badge = document.querySelector(".milestone-badge");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = "WEEKLY COLLECTION · MILESTONE 29";
+    if (badge) badge.textContent = "TOWN RESTORATION · MILESTONE 30";
     if (hint) hint.textContent = "Walk with arrows or WASD · Care for persistent lawns, streets, shore and all five river reaches";
   }
 
@@ -1706,7 +1815,20 @@ export class TownScene extends Phaser.Scene {
     if (open) {
       this.player?.setMovement(0, 0, false);
       this.customResidentCharacter?.setControlMovement(0, 0, false);
+    } else if (this.restorationCameraFocus) {
+      this.restorationCameraFocus = false;
+      this.cameras.main.startFollow(this.activeCharacter(), true, 0.12, 0.12);
     }
+  }
+
+  focusRestorationMilestone(focus, id) {
+    if (!focus || !Number.isFinite(focus.x) || !Number.isFinite(focus.y)) return false;
+    this.restorationCameraFocus = true;
+    this.cameras.main.stopFollow();
+    this.setZoom(focus.zoom || 0.75);
+    this.cameras.main.pan(focus.x, focus.y, 520, "Sine.easeInOut", true);
+    document.querySelector("#game")?.setAttribute("data-restoration-focus", id || "unknown");
+    return true;
   }
 
   setZoom(value) {
@@ -1805,6 +1927,7 @@ export class TownScene extends Phaser.Scene {
       this.refreshLivingEnvironment();
       this.renderNpcPublicBins();
       this.refreshPlacementInteractables();
+      this.refreshRestorationPresentation();
     }
     if (this.stateSyncElapsed >= 250) {
       this.stateSyncElapsed = 0;
@@ -1850,6 +1973,11 @@ export class TownScene extends Phaser.Scene {
         ? `${collectionPresentation.stopIndex + 1}/${collectionPresentation.totalBins}`
         : "idle";
       gameElement.dataset.municipalCollectionBinsEmptied = String(collectionPresentation?.binsEmptied || 0);
+      const restoration = this.restorationMilestones?.getDiagnostics?.();
+      gameElement.dataset.restorationUnlocked = String(restoration?.unlocked?.length || 0);
+      gameElement.dataset.restorationPending = restoration?.pending?.[0] || "none";
+      gameElement.dataset.restorationFestival = String(Boolean(restoration?.festivalActive));
+      gameElement.dataset.restorationGift = String(Boolean(restoration?.firstRestorationGift?.granted));
       const sampleResident = residents[0];
       gameElement.dataset.npcSample = sampleResident
         ? `${sampleResident.id}:${Math.round(sampleResident.x)},${Math.round(sampleResident.y)}:${sampleResident.phase}`
@@ -1953,6 +2081,7 @@ export class TownScene extends Phaser.Scene {
       controls: { keyboard: true, touch: true, wheelZoom: true },
       interaction: this.interactions.getState(),
       milestone29Systems: ["seven-day-07:00-service", "gavin-municipal-collector", "street-and-bridge-only-lorry-network", "all-public-and-player-bin-route", "collector-off-road-walking", "individual-dismount-lift-empty-return-animation", "tipped-bin-righting", "exact-bin-transform-return", "mid-route-save-resume", "collection-locked-player-bins", "automatic-next-service-day"],
+      milestone30Systems: ["eight-sequential-permanent-restorations", "exact-cleanup-and-placement-gates", "permanent-town-transformations", "resident-and-business-responses", "animated-accessible-reveals", "restoration-chime-and-haptics", "first-town-planter-gift", "atomic-unlock-persistence", "duplicate-event-protection", "legacy-milestone-import", "one-day-festival-celebration", "permanent-festival-memory"],
       milestone27Systems: ["20-lawn-profile-slots", "19-authored-living-lawns", "soil-moisture-shade-and-resident-care", "persistent-land-litter", "five-section-persistent-river-rubbish", "wind-river-flow-snags-and-tide", "business-waste", "caretaker-sweeping", "exact-authored-cleanup-effects", "cleanliness-and-three-day-calm", "offline-environment-progression", "legacy-environment-import"],
       milestone26Systems: ["walkable-village-grocer", "nine-original-product-displays", "six-persistent-beds", "three-original-crops", "paid-saplings", "24-positioned-apple-trees", "weather-aware-growth-and-harvests", "offline-farm-progression", "legacy-crop-and-orchard-import"],
       milestone25Systems: ["35-placeable-catalogue", "purchase-and-inventory-placement", "tap-and-keyboard-preview", "quarter-turn-rotation", "atomic-place-move-store", "road-water-building-entrance-and-lawn-restrictions", "500-object-safety-limit", "player-collision", "npc-wildlife-and-rubbish-hooks", "exact-transform-persistence", "legacy-placement-import"],
@@ -1961,6 +2090,7 @@ export class TownScene extends Phaser.Scene {
       migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "cafe-scene-transition", "morning-mug-scene-transition", "riverside-kitchen-scene-transition", "river-clearout-scene-transition", "house-rescue-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job", "weekly-municipal-bin-collection", "world-time-weather-lighting", "basic-npc-town-life", "advanced-npc-social-life", "resident-public-bin-behaviour", "custom-resident-profile-home-control", "weather-aware-farming", "orchard-harvest", "persistent-lawn-jobs", "animal-habitat-routes", "animal-friendship-feeding", "animal-adoption", "active-companion-following", "south-meadow", "three-fishing-spots", "hidden-zone-fishing", "timed-reeling", "magnet-fishing", "fishing-inventory-rewards", "magnet-coin-rewards", "bakery-recipes", "bakery-customer-service", "bakery-first-clear-rewards", "bakery-level-unlocks", "shared-recipe-order-engine", "corner-cafe-recipes", "cafe-three-tray-service", "cafe-first-clear-rewards", "cafe-level-unlocks", "morning-mug-54-recipes", "morning-mug-150-levels", "morning-mug-first-clear-rewards", "morning-mug-save-resume", "morning-mug-landscape-controls", "riverside-kitchen-32-recipes", "riverside-kitchen-150-levels", "riverside-kitchen-preparation-heat-plating", "riverside-kitchen-first-clear-rewards", "riverside-kitchen-save-resume", "riverside-kitchen-landscape-controls", "river-750-level-catalogue", "river-falling-piece-engine", "river-first-clear-rewards", "river-portrait-controls", "house-rescue-750-level-catalogue", "house-rescue-sort-and-vacuum", "house-rescue-persistent-home-jobs", "house-rescue-landscape-controls", "waste-750-authored-boards", "waste-five-slot-triple-matching", "waste-certified-solutions", "waste-first-clear-rewards", "waste-landscape-controls", "lawn-750-authored-levels", "lawn-slide-mower-engine", "lawn-persistent-campaign", "lawn-town-job-effects", "lawn-first-clear-rewards", "lawn-landscape-controls", "beach-750-deterministic-levels", "beach-rake-and-rubbish-engine", "beach-native-town-rewards", "beach-first-clear-rewards", "south-shore-litter-restoration", "beach-landscape-controls", "powerwash-750-deterministic-levels", "powerwash-soap-resistant-stains", "powerwash-three-nozzles", "powerwash-97-percent-tolerance", "powerwash-native-town-rewards", "powerwash-first-clear-rewards", "commons-playground-restoration", "powerwash-landscape-controls"],
       npcTownLife: this.npcTownLife?.getDiagnostics?.(),
       municipalCollection: this.municipalCollection?.getDiagnostics?.(),
+      restorationMilestones: this.restorationMilestones?.getDiagnostics?.(),
       customResident: this.customResident?.getDiagnostics?.(),
       farming: this.farming?.getDiagnostics?.(),
       livingEnvironment: this.livingEnvironment?.getDiagnostics?.(),

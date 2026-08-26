@@ -295,8 +295,13 @@ function businessStep(state, minutes, now) {
   const environment = state.environment;
   for (const business of BUSINESS_CATALOG) {
     const businessState = environment.businesses[business.id];
-    if (isBusinessOpen(business, now)) {
-      if (hashUnit(`business-visit:${business.id}:${Math.floor(now / 30)}`) < Math.min(0.92, 0.24 + business.capacity / 50)) {
+    const restored = state.restorationMilestones?.unlocked || {};
+    const cinemaOpen = business.kind !== "cinema" || restored.station;
+    const highStreetBoost = restored.highstreet && ["riverside-kitchen", "willow-arms", "morning-mug", "riverstone", "fresh-market", "lantern-arcade"].includes(business.id) ? 0.08 : 0;
+    const shoreBoost = restored.shore && business.kind === "beach_cafe" ? 0.12 : 0;
+    const festivalBoost = restored.festival && absoluteWorldMinute(state.world) < Number(state.restorationMilestones.festivalUntilGameMinute || 0) ? 0.12 : 0;
+    if (cinemaOpen && isBusinessOpen(business, now)) {
+      if (hashUnit(`business-visit:${business.id}:${Math.floor(now / 30)}`) < Math.min(0.96, 0.24 + business.capacity / 50 + highStreetBoost + shoreBoost + festivalBoost)) {
         businessState.customers += 1;
         businessState.lastCustomerGameMinute = now;
         businessState.waste = Math.min(140, businessState.waste + business.wasteRate * seededBetween(`business-waste:${business.id}:${businessState.customers}`, 1, 1.8));

@@ -39,6 +39,7 @@ import { LawnCareService } from "./systems/LawnCareService.js";
 import { BeachCleanupService } from "./systems/BeachCleanupService.js";
 import { PlaygroundPowerwashService } from "./systems/PlaygroundPowerwashService.js";
 import { TownPlacementService } from "./systems/TownPlacementService.js";
+import { RestorationMilestoneService } from "./systems/RestorationMilestoneService.js";
 import { EconomyHudController } from "./ui/EconomyHudController.js";
 import { SaveStatusController } from "./ui/SaveStatusController.js";
 import { ShopController } from "./ui/ShopController.js";
@@ -46,6 +47,7 @@ import { WorldHudController } from "./ui/WorldHudController.js";
 import { CustomResidentController } from "./ui/CustomResidentController.js";
 import { FarmingController } from "./ui/FarmingController.js";
 import { AnimalFriendsController } from "./ui/AnimalFriendsController.js";
+import { RestorationMilestoneController } from "./ui/RestorationMilestoneController.js";
 import { ITEM_IDS } from "./data/items.js";
 
 const stateRuntime = bootstrapState(window.localStorage);
@@ -77,6 +79,7 @@ beachCleanup.refresh();
 const playgroundPowerwash = new PlaygroundPowerwashService(stateRuntime.gameState, stateRuntime.repository);
 playgroundPowerwash.refresh();
 const townPlacement = new TownPlacementService(stateRuntime.gameState, stateRuntime.repository);
+const restorationMilestones = new RestorationMilestoneService(stateRuntime.gameState, stateRuntime.repository);
 
 const config = {
   type: Phaser.AUTO,
@@ -115,6 +118,7 @@ game.registry.set("lawnCare", lawnCare);
 game.registry.set("beachCleanup", beachCleanup);
 game.registry.set("playgroundPowerwash", playgroundPowerwash);
 game.registry.set("townPlacement", townPlacement);
+game.registry.set("restorationMilestones", restorationMilestones);
 const economy = new EconomyService(stateRuntime.gameState, stateRuntime.repository);
 game.registry.set("economy", economy);
 if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "placement") {
@@ -128,6 +132,7 @@ if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa")
   if (balance < 3000) economy.credit(3000 - balance, { kind: "development-fixture", reason: "Milestone 26 Village Grocer visual QA" });
 }
 if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "collection") municipalCollection.start({ force: true, persist: true });
+if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "restoration") restorationMilestones.unlockForQa("festival", { revealed: false });
 const cleanupService = new CleanupJobService(stateRuntime.gameState, stateRuntime.repository, { environment: livingEnvironment });
 game.registry.set("cleanupService", cleanupService);
 const shopService = new ShopService(economy, { farming });
@@ -146,6 +151,22 @@ function setModalOpen(name, open) {
   const activeScene = game.scene.getScenes(true)[0];
   activeScene?.setOverlayOpen?.(anyOpen);
 }
+const restorationMilestoneController = new RestorationMilestoneController(restorationMilestones, {
+  onModalChange(open) {
+    setModalOpen("restoration-milestone", open);
+  },
+  canOpen() {
+    return Boolean(activeTownScene()) && document.body.dataset.modalOpen !== "true";
+  },
+  onFocus(focus, id) {
+    activeTownScene()?.focusRestorationMilestone?.(focus, id);
+  },
+  onReaction(id, focus) {
+    npcTownLife.showRestorationReaction?.(id, focus);
+  },
+});
+game.registry.set("restorationMilestoneController", restorationMilestoneController);
+setTimeout(() => restorationMilestoneController.maybeOpen(), 450);
 const saveStatus = new SaveStatusController(stateRuntime, {
   onModalChange(open) {
     setModalOpen("save", open);
@@ -324,6 +345,15 @@ window.__KINDWORKS_PHASER__ = {
   },
   getMunicipalCollectionDiagnostics() {
     return municipalCollection.getDiagnostics();
+  },
+  getRestorationMilestoneDiagnostics() {
+    return { ...restorationMilestones.getDiagnostics(), interface: restorationMilestoneController.getDiagnostics() };
+  },
+  qaUnlockRestorationMilestone(id = "festival", { reveal = true } = {}) {
+    if (!import.meta.env.DEV) return { ok: false, message: "Visual QA helpers are available only in development." };
+    const result = restorationMilestones.unlockForQa(id, { revealed: !reveal });
+    if (result.ok && reveal) setTimeout(() => restorationMilestoneController.maybeOpen(), 80);
+    return result;
   },
   qaStartMunicipalCollection() {
     if (!import.meta.env.DEV) return { ok: false, message: "Visual QA helpers are available only in development." };

@@ -11,6 +11,7 @@ import {
 } from "../data/townPlacement.js";
 import { COIN_LEDGER_LIMIT } from "../state/economyState.js";
 import { validateTownPlacementState } from "../state/townPlacementState.js";
+import { registerRestorationPlacementInto } from "../state/restorationMilestoneState.js";
 import { InventoryService } from "./InventoryService.js";
 
 function appendPlacementLedger(state, now, { kind, reason, itemId, objectId, x = null, y = null, rotation = null }) {
@@ -182,7 +183,8 @@ export class TownPlacementService {
         object.rotation = normalizeTownRotation(draft.rotation);
         object.hooks = placementBehaviorHooks(item, object);
         const ledger = appendPlacementLedger(state, this.now(), { kind: "placement-move", reason: `Moved ${item.name}`, itemId: item.id, objectId: object.id, x: object.x, y: object.y, rotation: object.rotation });
-        return { ok: true, code: "object-moved", object: structuredClone(object), previous, ledger };
+        const restoration = registerRestorationPlacementInto(state, { eventId: `placement-move:${object.id}:${ledger.id}`, occurredAt: ledger.occurredAt });
+        return { ok: true, code: "object-moved", object: structuredClone(object), previous, ledger, restoration };
       }
       if (state.townPlacement.objects.length >= TOWN_PLACEMENT_LIMIT) return { ok: false, code: "placement-limit", message: `Willowmere's safe limit of ${TOWN_PLACEMENT_LIMIT} placed objects has been reached.` };
       const removed = this.inventory.remove(state.inventory, draft.itemId, 1);
@@ -211,7 +213,8 @@ export class TownPlacementService {
       state.townPlacement.nextSerial += 1;
       state.townPlacement.objects.push(object);
       const ledger = appendPlacementLedger(state, this.now(), { kind: "placement", reason: `Placed ${item.name}`, itemId: item.id, objectId: object.id, x: object.x, y: object.y, rotation: object.rotation });
-      return { ok: true, code: "object-placed", object: structuredClone(object), inventory: removed, ledger };
+      const restoration = registerRestorationPlacementInto(state, { eventId: `placement:${object.id}`, occurredAt: ledger.occurredAt });
+      return { ok: true, code: "object-placed", object: structuredClone(object), inventory: removed, ledger, restoration };
     });
     if (result.ok) this.active = null;
     this.lastResult = result;

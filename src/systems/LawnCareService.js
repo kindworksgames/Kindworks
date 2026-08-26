@@ -13,6 +13,7 @@ import {
   PROCESSED_LAWN_SESSION_LIMIT,
 } from "../state/lawnCareState.js";
 import { COIN_LEDGER_LIMIT } from "../state/economyState.js";
+import { registerRestorationCleanupInto } from "../state/restorationMilestoneState.js";
 
 export const MIN_LAWN_REWARD_PERCENT = 50;
 export const MAX_LAWN_REWARD_COINS = 170;
@@ -321,6 +322,14 @@ export class LawnCareService {
     });
     lawnCare.history = lawnCare.history.slice(-LAWN_CARE_HISTORY_LIMIT);
     lawnCare.activeSession = null;
+    const plot = LAWN_PLOTS.find((entry) => entry.id === session.targetId);
+    const restoration = session.mode === "town-job" ? registerRestorationCleanupInto(state, {
+      eventId: session.id,
+      jobType: "lawn",
+      percent: result.percent,
+      worldPosition: plot ? { x: plot.x, y: plot.y } : session.returnPosition,
+      occurredAt: completedAt,
+    }) : null;
     return {
       ok: true,
       code: session.mode === "campaign" ? "lawn-campaign-completed" : "lawn-job-completed",
@@ -331,6 +340,7 @@ export class LawnCareService {
       nextLevel: lawnCare.progress.nextLevel,
       townEffect,
       ledger: ledger ? structuredClone(ledger) : null,
+      restoration,
     };
   }
 

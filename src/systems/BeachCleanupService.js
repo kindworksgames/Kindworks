@@ -1,6 +1,7 @@
 import { BEACH_REWARD_CAP, BEACH_TOTAL_LEVELS, BeachCleanupEngine, beachCertifiedRoute, validateBeachCatalogue } from "../data/beachCleanup.js";
 import { BEACH_HISTORY_LIMIT, PROCESSED_BEACH_SESSION_LIMIT } from "../state/beachCleanupState.js";
 import { COIN_LEDGER_LIMIT } from "../state/economyState.js";
+import { registerRestorationCleanupInto } from "../state/restorationMilestoneState.js";
 
 export function calculateBeachCampaignReward(levelValue) {
   const level = Math.max(1, Math.min(BEACH_TOTAL_LEVELS, Math.floor(Number(levelValue) || 1)));
@@ -184,7 +185,14 @@ export class BeachCleanupService {
     state.beachCleanup.history.push({ sessionId: session.id, mode: session.mode, targetId: session.targetId, status: "completed", ...result, endedAt: completedAt });
     state.beachCleanup.history = state.beachCleanup.history.slice(-BEACH_HISTORY_LIMIT);
     state.beachCleanup.activeSession = null;
-    return { ok: true, code: session.mode === "town-job" ? "beach-job-completed" : "beach-campaign-completed", result, rewardCoins, firstClear, townEffect, balance: state.economy.coins, nextLevel: progress.nextLevel };
+    const restoration = session.mode === "town-job" ? registerRestorationCleanupInto(state, {
+      eventId: session.id,
+      jobType: "beach",
+      percent: result.percent,
+      worldPosition: { x: 3720, y: 2440 },
+      occurredAt: completedAt,
+    }) : null;
+    return { ok: true, code: session.mode === "town-job" ? "beach-job-completed" : "beach-campaign-completed", result, rewardCoins, firstClear, townEffect, restoration, balance: state.economy.coins, nextLevel: progress.nextLevel };
   }
 
   cancel(sessionId) {

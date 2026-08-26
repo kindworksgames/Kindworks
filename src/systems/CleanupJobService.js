@@ -13,6 +13,7 @@ import {
 } from "../state/cleanupState.js";
 import { COIN_LEDGER_LIMIT } from "../state/economyState.js";
 import { removeLandItemsInto } from "./LivingEnvironmentService.js";
+import { registerRestorationCleanupInto } from "../state/restorationMilestoneState.js";
 
 export const MIN_CLEANUP_REWARD_PERCENT = 50;
 export const MAX_CLEANUP_REWARD_COINS = 170;
@@ -375,6 +376,13 @@ export class CleanupJobService {
         y: session.returnPosition.y,
         facing: session.returnFacing,
       };
+      const restoration = registerRestorationCleanupInto(state, {
+        eventId: session.id,
+        jobType: session.jobType,
+        percent: 100,
+        worldPosition: job.world,
+        occurredAt: completedAt,
+      });
       return {
         ok: true,
         code: "cleanup-completed",
@@ -388,6 +396,7 @@ export class CleanupJobService {
         nextLevel: progress.nextLevel,
         ledger: structuredClone(state.economy.ledger.at(-1)),
         environmentEffect,
+        restoration,
       };
     });
   }

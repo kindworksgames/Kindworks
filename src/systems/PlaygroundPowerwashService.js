@@ -13,6 +13,7 @@ import {
   powerwashDirtyInterval,
 } from "../state/playgroundPowerwashState.js";
 import { COIN_LEDGER_LIMIT } from "../state/economyState.js";
+import { registerRestorationCleanupInto } from "../state/restorationMilestoneState.js";
 
 export function calculatePowerwashCampaignReward(levelValue) {
   const level = Math.max(1, Math.min(POWERWASH_TOTAL_LEVELS, Math.floor(Number(levelValue) || 1)));
@@ -227,7 +228,14 @@ export class PlaygroundPowerwashService {
     state.playgroundPowerwash.history.push({ sessionId: session.id, mode: session.mode, targetId: session.targetId, status: "completed", ...result, endedAt: completedAt });
     state.playgroundPowerwash.history = state.playgroundPowerwash.history.slice(-POWERWASH_HISTORY_LIMIT);
     state.playgroundPowerwash.activeSession = null;
-    return { ok: true, code: session.mode === "town-job" ? "powerwash-job-completed" : "powerwash-campaign-completed", result, rewardCoins, firstClear, townEffect, balance: state.economy.coins, nextLevel: progress.nextLevel };
+    const restoration = session.mode === "town-job" ? registerRestorationCleanupInto(state, {
+      eventId: session.id,
+      jobType: "playground",
+      percent: result.percent,
+      worldPosition: { x: 1940, y: 1090 },
+      occurredAt: completedAt,
+    }) : null;
+    return { ok: true, code: session.mode === "town-job" ? "powerwash-job-completed" : "powerwash-campaign-completed", result, rewardCoins, firstClear, townEffect, restoration, balance: state.economy.coins, nextLevel: progress.nextLevel };
   }
 
   cancel(sessionId) {

@@ -341,3 +341,34 @@ placed-bin collection history, and converts the original
 `garbageCollection` record without changing the protected legacy snapshot.
 All 285 automated tests and the production build pass. The protected HTML
 source remains unchanged.
+
+Milestone 30 completes the original eight-stage Willowmere restoration arc in
+its exact order: Wake, Commons, High Street, River, Station and Cinema, Shore,
+Green, then Festival. The Phaser state preserves the original cleanup totals,
+lawn/river/waste mix, perfect-cleanup counts, four map-zone counts, physical
+placement counts and all original alternate litter gates. Cleanup and placement
+events are recorded only by accepted town work, carry stable duplicate-event
+identities, and unlock at most one restoration per completion.
+
+Every unlock is permanent and changes the visible town: the Old Market fountain
+flows, Commons reopens with repaired seating, High Street gains tables and
+displays, fish and ducks return to the river, KindWorks Cinema opens with its
+marquee, South Shore regains umbrellas and harbour activity, wildlife returns
+to greener spaces, and the Festival leaves a permanent restoration plaque.
+Restored destinations also enter resident leisure schedules and business
+activity. The Festival's bunting, crowd and heightened activity last for the
+original one in-game day while the achievement itself remains permanently
+unlocked.
+
+Each restoration uses the original icon, title, wording, camera focus and zoom
+in an accessible animated dialog. Town movement, resident simulation and world
+time pause during the reveal; nearby residents react; an optional synthesized
+chime and supported-device haptic pattern play; reduced-motion preferences are
+honoured; and dismissal restores camera follow and focus. Wake atomically grants
+the original Town Planter once. Unlock, gift, ledger, reveal and festival state
+save together, roll back completely after a failed write, and reload without
+replaying completed work. Schema 27 upgrades schema 26, imports the original
+`milestones` and onboarding gift records, and safely bootstraps pre-v36 cleanup
+history without changing the protected legacy snapshot. All 295 automated tests,
+the production build, desktop browser QA and 390×844 mobile browser QA pass. The
+protected HTML source remains byte-for-byte unchanged.

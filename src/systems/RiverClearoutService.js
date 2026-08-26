@@ -9,6 +9,7 @@ import {
 import { COIN_LEDGER_LIMIT } from "../state/economyState.js";
 import { calculateCleanupReward } from "./CleanupJobService.js";
 import { removeRiverItemsInto } from "./LivingEnvironmentService.js";
+import { registerRestorationCleanupInto } from "../state/restorationMilestoneState.js";
 
 function appendLedger(state, now, details) {
   const id = `coin-${String(state.economy.nextTransactionId).padStart(6, "0")}`;
@@ -310,7 +311,15 @@ export class RiverClearoutService {
       }
       const environmentEffect = session.mode === "town-job" ? removeRiverItemsInto(state, session.environmentItemIds) : null;
       if (environmentEffect?.removed) state.progress.completedJobCount += 1;
-      return { ok: true, code: "river-result-won", result: { ...result, won: true, coins, firstClear }, coins, firstClear, ledger, environmentEffect };
+      const environmentJob = session.environmentTargetId ? this.environment?.getRiverJob?.(session.environmentTargetId) : null;
+      const restoration = environmentEffect?.removed ? registerRestorationCleanupInto(state, {
+        eventId: session.id,
+        jobType: "river",
+        percent: result.percent,
+        worldPosition: environmentJob?.position || session.returnPosition,
+        occurredAt: new Date(this.now()).toISOString(),
+      }) : null;
+      return { ok: true, code: "river-result-won", result: { ...result, won: true, coins, firstClear }, coins, firstClear, ledger, environmentEffect, restoration };
     });
     if (!transaction.ok) return transaction;
     session.finished = true;
