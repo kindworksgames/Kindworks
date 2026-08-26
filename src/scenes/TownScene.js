@@ -41,6 +41,8 @@ import {
 } from "../data/farming.js";
 import { ANIMAL_DEFINITIONS, SOUTH_MEADOW } from "../data/animals.js";
 import { FISHING_SPOTS, MAGNET_FISHING_SPOT } from "../data/fishing.js";
+import { ITEM_CATALOG, placeableFootprintFor } from "../data/items.js";
+import { createTownPlacedObject } from "../entities/TownPlacedObject.js";
 
 const PLAYER_RADIUS = 17;
 const WALK_SPEED = 270;
@@ -77,6 +79,11 @@ export class TownScene extends Phaser.Scene {
     this.personalHomeLabel = null;
     this.personalHomeCollisionAdded = false;
     this.personalHomeSignature = null;
+    this.placedObjectVisuals = new Map();
+    this.placementPreviewVisual = null;
+    this.selectedPlacedObjectId = null;
+    this.placementModeActive = false;
+    this.baseInteractables = [];
   }
 
   create() {
@@ -104,11 +111,13 @@ export class TownScene extends Phaser.Scene {
     this.southShoreScoops = this.registry.get("southShoreScoops");
     this.river = this.registry.get("river");
     this.houseRescue = this.registry.get("houseRescue");
+    this.townPlacement = this.registry.get("townPlacement");
     this.houseRescue?.refreshJobs?.();
     this.worldSimulation?.setPaused("activity", false);
     const savedState = this.gameState?.getSnapshot();
     this.cameras.main.setBounds(0, 0, WORLD.width, WORLD.height);
     this.drawTown();
+    this.renderTownPlacements();
 
     const qaTarget = import.meta.env.DEV
       ? new URLSearchParams(window.location.search).get("qa")
@@ -118,6 +127,8 @@ export class TownScene extends Phaser.Scene {
       : null;
     const qaSpawn = qaTarget === "powerwash"
       ? PLAYGROUND_POWERWASH.approach
+      : qaTarget === "placement"
+        ? { x: 100, y: 200 }
       : qaTarget === "beach"
       ? BEACH_CLEANUP.approach
       : qaTarget === "house-rescue"
@@ -385,14 +396,16 @@ export class TownScene extends Phaser.Scene {
       detail: playgroundDirty ? "Remove at least 97% of the grime" : "Play all 750 original power-washing challenges",
       onActivate: () => this.startPlaygroundPowerwash(),
     });
+    this.baseInteractables = interactables;
     this.interactions = new InteractionSystem({
-      interactables,
+      interactables: [...this.baseInteractables, ...this.placementInteractables()],
       onChange: (interaction) => this.renderInteractionPrompt(interaction),
     });
     this.stateSyncElapsed = 0;
     this.farmingSyncElapsed = 0;
     this.unsubscribeFarming = this.farming?.subscribe?.(() => this.drawFarmingAreas());
     this.unsubscribeAnimals = this.animals?.subscribe?.(() => this.refreshAnimalPresentations(0));
+    this.unsubscribeTownPlacement = this.townPlacement?.subscribe?.((snapshot, result) => this.handleTownPlacementChange(snapshot, result));
     this.refreshAnimalPresentations(0);
 
     const preferredZoom = window.matchMedia("(max-width: 720px)").matches ? 0.72 : 0.88;
@@ -890,16 +903,247 @@ export class TownScene extends Phaser.Scene {
     return { x: actor.x, y: actor.y };
   }
 
+  renderTownPlacements() {
+    for (const visual of this.placedObjectVisuals?.values?.() || []) visual.destroy();
+    this.placedObjectVisuals = new Map();
+    for (const object of this.townPlacement?.getObjects?.() || []) {
+      const visual = createTownPlacedObject(this, object, {
+        onSelect: (objectId) => this.openPlacedObjectManager(objectId),
+      });
+      if (visual) this.placedObjectVisuals.set(object.id, visual);
+    }
+    this.renderPlacementPreview();
+  }
+
+  renderPlacementPreview() {
+    this.placementPreviewVisual?.destroy();
+    this.placementPreviewVisual = null;
+    const active = this.townPlacement?.getSnapshot?.().active;
+    if (!active || !Number.isFinite(active.previewX) || !Number.isFinite(active.previewY)) return;
+    const validation = this.townPlacement.validate(active.itemId, active.previewX, active.previewY, {
+      ignoreObjectId: active.existingObjectId,
+    });
+    this.placementPreviewVisual = createTownPlacedObject(this, {
+      id: "placement-preview",
+      itemId: active.itemId,
+      x: active.previewX,
+      y: active.previewY,
+      rotation: active.rotation,
+    }, { preview: true, valid: validation.ok });
+  }
+
+  placementInteractables() {
+    return (this.townPlacement?.getObjects?.() || []).map((object) => ({
+      id: `manage-${object.id}`,
+      kind: "placed-object",
+      x: object.x,
+      y: object.y,
+      radius: Math.max(76, placeableFootprintFor(object.item) + 30),
+      icon: object.item.icon || "✨",
+      label: `Manage ${object.item.name}`,
+      detail: "Move, rotate or return this item to inventory",
+      onActivate: () => this.openPlacedObjectManager(object.id),
+    }));
+  }
+
+  refreshPlacementInteractables() {
+    this.interactions?.setInteractables([...this.baseInteractables, ...this.placementInteractables()]);
+  }
+
+  setPlacementModeActive(active) {
+    this.placementModeActive = Boolean(active);
+    document.body.dataset.townPlacement = String(this.placementModeActive);
+    this.worldSimulation?.setPaused?.("placement", this.placementModeActive);
+    this.npcTownLife?.setPaused?.("placement", this.placementModeActive);
+    const anotherOverlayOpen = document.body.dataset.modalOpen === "true" || Boolean(this.selectedPlacedObjectId);
+    const controlsEnabled = !this.placementModeActive && !anotherOverlayOpen && !this.transitioning;
+    this.movement?.setEnabled(controlsEnabled);
+    this.interactions?.setEnabled(controlsEnabled);
+    if (this.placementModeActive) {
+      this.player?.setMovement(0, 0, false);
+      this.customResidentCharacter?.setControlMovement(0, 0, false);
+      this.renderInteractionPrompt(null);
+    }
+  }
+
+  updatePlacementInterface(snapshot = this.townPlacement?.getSnapshot?.(), result = null) {
+    const banner = document.querySelector("#town-placement-banner");
+    if (!banner || !snapshot) return;
+    const active = snapshot.active;
+    banner.classList.toggle("hidden", !active);
+    banner.setAttribute("aria-hidden", active ? "false" : "true");
+    const count = document.querySelector("#town-placement-count");
+    if (count) count.textContent = `${snapshot.objects.length} / ${snapshot.limit} placed`;
+    if (!active) return;
+    const item = ITEM_CATALOG[active.itemId];
+    const icon = document.querySelector("#town-placement-icon");
+    const title = document.querySelector("#town-placement-title");
+    const status = document.querySelector("#town-placement-status");
+    const confirm = document.querySelector("#town-placement-confirm");
+    const validation = Number.isFinite(active.previewX) && Number.isFinite(active.previewY)
+      ? this.townPlacement.validate(active.itemId, active.previewX, active.previewY, { ignoreObjectId: active.existingObjectId })
+      : { ok: false, message: "Tap a clear position in town to preview it." };
+    if (icon) icon.textContent = item?.icon || "✨";
+    if (title) title.textContent = `${active.existingObjectId ? "Move" : "Place"} ${item?.name || "town item"}`;
+    if (status) {
+      status.textContent = result?.message || (validation.ok
+        ? `Clear position · ${Math.round((active.rotation * 180) / Math.PI)}° rotation`
+        : validation.message);
+      status.dataset.status = validation.ok ? "valid" : "invalid";
+    }
+    if (confirm) {
+      confirm.disabled = !validation.ok;
+      confirm.textContent = active.existingObjectId ? "Save move" : "Place";
+    }
+  }
+
+  handleTownPlacementChange(snapshot, result) {
+    this.renderTownPlacements();
+    this.refreshPlacementInteractables();
+    this.setPlacementModeActive(Boolean(snapshot.active));
+    this.updatePlacementInterface(snapshot, result);
+    if (result?.ok && ["object-placed", "object-moved", "object-stored"].includes(result.code)) this.closePlacedObjectManager();
+  }
+
+  beginTownPlacement(itemId, { existingObjectId = null } = {}) {
+    if (this.transitioning) return { ok: false, message: "Wait for the town transition to finish." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, message: "Return to your character before placing town items." };
+    this.closePlacedObjectManager();
+    const { x, y } = this.activePosition();
+    const facing = this.activeCharacter()?.direction || "down";
+    const offsets = { up: [0, -115], down: [0, 115], left: [-115, 0], right: [115, 0] };
+    const [offsetX, offsetY] = offsets[facing] || offsets.down;
+    const started = this.townPlacement?.begin?.(itemId, {
+      existingObjectId,
+      previewX: existingObjectId ? null : x + offsetX,
+      previewY: existingObjectId ? null : y + offsetY,
+    }) || { ok: false, message: "Town placement is not ready." };
+    if (!started.ok) return started;
+    const active = this.townPlacement.getSnapshot().active;
+    return this.townPlacement.preview(active.previewX, active.previewY);
+  }
+
+  previewTownPlacement(x, y) {
+    if (!this.townPlacement?.getSnapshot?.().active) return { ok: false, message: "No placement is active." };
+    return this.townPlacement.preview(
+      Phaser.Math.Clamp(x, 0, WORLD.width),
+      Phaser.Math.Clamp(y, 0, WORLD.height),
+    );
+  }
+
+  nudgeTownPlacement(dx, dy) {
+    const active = this.townPlacement?.getSnapshot?.().active;
+    if (!active) return { ok: false, message: "No placement is active." };
+    return this.previewTownPlacement((active.previewX || this.player.x) + dx, (active.previewY || this.player.y) + dy);
+  }
+
+  openPlacedObjectManager(objectId) {
+    if (this.placementModeActive || this.transitioning) return { ok: false, message: "Finish the current placement first." };
+    const object = this.townPlacement?.getObject?.(objectId);
+    if (!object) return { ok: false, message: "That town item could not be found." };
+    this.selectedPlacedObjectId = objectId;
+    const panel = document.querySelector("#placed-object-panel");
+    panel?.classList.remove("hidden");
+    panel?.setAttribute("aria-hidden", "false");
+    const icon = document.querySelector("#placed-object-icon");
+    const name = document.querySelector("#placed-object-name");
+    const detail = document.querySelector("#placed-object-detail");
+    if (icon) icon.textContent = object.item.icon || "✨";
+    if (name) name.textContent = object.item.name;
+    if (detail) detail.textContent = `${Math.round(object.x)}, ${Math.round(object.y)} · ${Math.round((object.rotation * 180) / Math.PI)}° · saved in Willowmere`;
+    this.movement?.setEnabled(false);
+    this.interactions?.setEnabled(false);
+    this.player?.setMovement(0, 0, false);
+    document.querySelector("#placed-object-move")?.focus();
+    return { ok: true, object };
+  }
+
+  closePlacedObjectManager() {
+    this.selectedPlacedObjectId = null;
+    const panel = document.querySelector("#placed-object-panel");
+    panel?.classList.add("hidden");
+    panel?.setAttribute("aria-hidden", "true");
+    this.setPlacementModeActive(Boolean(this.townPlacement?.getSnapshot?.().active));
+  }
+
+  moveSelectedPlacedObject() {
+    const objectId = this.selectedPlacedObjectId;
+    if (!objectId) return { ok: false, message: "Choose a placed item first." };
+    const object = this.townPlacement.getObject(objectId);
+    this.closePlacedObjectManager();
+    return object ? this.beginTownPlacement(object.itemId, { existingObjectId: object.id }) : { ok: false, message: "That item no longer exists." };
+  }
+
+  storeSelectedPlacedObject() {
+    const objectId = this.selectedPlacedObjectId;
+    if (!objectId) return { ok: false, message: "Choose a placed item first." };
+    const result = this.townPlacement.store(objectId);
+    if (result.ok) this.closePlacedObjectManager();
+    else {
+      const detail = document.querySelector("#placed-object-detail");
+      if (detail) detail.textContent = result.message || "The item could not be stored.";
+    }
+    return result;
+  }
+
   bindInterface() {
     this.zoomIn = document.querySelector("#zoom-in");
     this.zoomOut = document.querySelector("#zoom-out");
     this.interactionButton = document.querySelector("#interaction-action");
+    this.placementRotateButton = document.querySelector("#town-placement-rotate");
+    this.placementConfirmButton = document.querySelector("#town-placement-confirm");
+    this.placementCancelButton = document.querySelector("#town-placement-cancel");
+    this.placedObjectMoveButton = document.querySelector("#placed-object-move");
+    this.placedObjectStoreButton = document.querySelector("#placed-object-store");
+    this.placedObjectCloseButton = document.querySelector("#placed-object-close");
     this.onZoomIn = () => this.setZoom(this.cameras.main.zoom * 1.12);
     this.onZoomOut = () => this.setZoom(this.cameras.main.zoom / 1.12);
     this.onInteraction = () => this.interactions.activateCurrent();
+    this.onPlacementRotate = () => this.townPlacement?.rotate?.();
+    this.onPlacementConfirm = () => this.townPlacement?.confirm?.();
+    this.onPlacementCancel = () => this.townPlacement?.cancel?.();
+    this.onPlacedObjectMove = () => this.moveSelectedPlacedObject();
+    this.onPlacedObjectStore = () => this.storeSelectedPlacedObject();
+    this.onPlacedObjectClose = () => this.closePlacedObjectManager();
+    this.onPlacementPointerDown = (pointer) => {
+      if (this.placementModeActive) this.previewTownPlacement(pointer.worldX, pointer.worldY);
+    };
+    this.onPlacementPointerMove = (pointer) => {
+      if (this.placementModeActive && pointer.isDown) this.previewTownPlacement(pointer.worldX, pointer.worldY);
+    };
+    this.onPlacementKeyDown = (event) => {
+      if (!this.placementModeActive) {
+        if (event.key === "Escape" && this.selectedPlacedObjectId) this.closePlacedObjectManager();
+        return;
+      }
+      const key = event.key.toLowerCase();
+      let handled = true;
+      if (key === "r") this.townPlacement.rotate();
+      else if (event.key === "Enter") this.townPlacement.confirm();
+      else if (event.key === "Escape") this.townPlacement.cancel();
+      else if (event.key === "ArrowUp") this.nudgeTownPlacement(0, -18);
+      else if (event.key === "ArrowDown") this.nudgeTownPlacement(0, 18);
+      else if (event.key === "ArrowLeft") this.nudgeTownPlacement(-18, 0);
+      else if (event.key === "ArrowRight") this.nudgeTownPlacement(18, 0);
+      else handled = false;
+      if (handled) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    };
     this.zoomIn?.addEventListener("click", this.onZoomIn);
     this.zoomOut?.addEventListener("click", this.onZoomOut);
     this.interactionButton?.addEventListener("click", this.onInteraction);
+    this.placementRotateButton?.addEventListener("click", this.onPlacementRotate);
+    this.placementConfirmButton?.addEventListener("click", this.onPlacementConfirm);
+    this.placementCancelButton?.addEventListener("click", this.onPlacementCancel);
+    this.placedObjectMoveButton?.addEventListener("click", this.onPlacedObjectMove);
+    this.placedObjectStoreButton?.addEventListener("click", this.onPlacedObjectStore);
+    this.placedObjectCloseButton?.addEventListener("click", this.onPlacedObjectClose);
+    this.input.on("pointerdown", this.onPlacementPointerDown);
+    this.input.on("pointermove", this.onPlacementPointerMove);
+    document.addEventListener("keydown", this.onPlacementKeyDown, true);
+    this.updatePlacementInterface();
   }
 
   unbindInterface() {
@@ -907,9 +1151,27 @@ export class TownScene extends Phaser.Scene {
     this.unsubscribeCustomResident?.();
     this.unsubscribeFarming?.();
     this.unsubscribeAnimals?.();
+    this.unsubscribeTownPlacement?.();
+    if (this.townPlacement?.getSnapshot?.().active) this.townPlacement.cancel();
     this.zoomIn?.removeEventListener("click", this.onZoomIn);
     this.zoomOut?.removeEventListener("click", this.onZoomOut);
     this.interactionButton?.removeEventListener("click", this.onInteraction);
+    this.placementRotateButton?.removeEventListener("click", this.onPlacementRotate);
+    this.placementConfirmButton?.removeEventListener("click", this.onPlacementConfirm);
+    this.placementCancelButton?.removeEventListener("click", this.onPlacementCancel);
+    this.placedObjectMoveButton?.removeEventListener("click", this.onPlacedObjectMove);
+    this.placedObjectStoreButton?.removeEventListener("click", this.onPlacedObjectStore);
+    this.placedObjectCloseButton?.removeEventListener("click", this.onPlacedObjectClose);
+    this.input.off("pointerdown", this.onPlacementPointerDown);
+    this.input.off("pointermove", this.onPlacementPointerMove);
+    document.removeEventListener("keydown", this.onPlacementKeyDown, true);
+    this.placementPreviewVisual?.destroy();
+    for (const visual of this.placedObjectVisuals?.values?.() || []) visual.destroy();
+    document.body.dataset.townPlacement = "false";
+    document.querySelector("#town-placement-banner")?.classList.add("hidden");
+    document.querySelector("#placed-object-panel")?.classList.add("hidden");
+    this.worldSimulation?.setPaused?.("placement", false);
+    this.npcTownLife?.setPaused?.("placement", false);
     this.renderInteractionPrompt(null);
     if (this.customResident?.getSnapshot?.().controlling) this.endCustomResidentControl();
   }
@@ -918,8 +1180,8 @@ export class TownScene extends Phaser.Scene {
     document.body.dataset.gameScene = this.scene.key;
     const badge = document.querySelector(".milestone-badge");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 24";
-    if (hint) hint.textContent = "Arrow keys or WASD to walk · E or Space to interact · Shift to run";
+    if (badge) badge.textContent = "PHASER TOWN · MILESTONE 25";
+    if (hint) hint.textContent = "Walk with arrows or WASD · Place owned town items from Shop or Inventory";
   }
 
   renderInteractionPrompt(interaction) {
@@ -1205,8 +1467,9 @@ export class TownScene extends Phaser.Scene {
 
   setOverlayOpen(open) {
     if (this.transitioning) return;
-    this.movement?.setEnabled(!open);
-    this.interactions?.setEnabled(!open);
+    const townControlsBlocked = this.placementModeActive || Boolean(this.selectedPlacedObjectId);
+    this.movement?.setEnabled(!open && !townControlsBlocked);
+    this.interactions?.setEnabled(!open && !townControlsBlocked);
     if (open) {
       this.player?.setMovement(0, 0, false);
       this.customResidentCharacter?.setControlMovement(0, 0, false);
@@ -1221,7 +1484,8 @@ export class TownScene extends Phaser.Scene {
   isBlocked(x, y) {
     const edge = 34;
     if (x < edge || y < edge || x > WORLD.width - edge || y > WORLD.height - edge) return true;
-    return [...COLLISION_RECTS, ...this.buildingCollisions].some((rect) => containsWithRadius(rect, x, y));
+    if ([...COLLISION_RECTS, ...this.buildingCollisions].some((rect) => containsWithRadius(rect, x, y))) return true;
+    return Boolean(this.townPlacement?.collisionAt?.(x, y, PLAYER_RADIUS)?.blocked);
   }
 
   moveActiveCharacter(dx, dy, distance) {
@@ -1407,6 +1671,12 @@ export class TownScene extends Phaser.Scene {
       gameElement.dataset.powerwashCompleted = String(powerwash?.completed || 0);
       gameElement.dataset.powerwashCatalogueValid = String(Boolean(powerwash?.catalogueValid));
       gameElement.dataset.commonsPlaygroundDirty = String(Boolean(powerwash?.playgroundDirty));
+      const placement = this.townPlacement?.getDiagnostics?.();
+      gameElement.dataset.townPlacementDefinitions = String(placement?.totalDefinitions || 0);
+      gameElement.dataset.townPlacementReleased = String(placement?.releasedDefinitions || 0);
+      gameElement.dataset.townPlacementCount = String(placement?.placed || 0);
+      gameElement.dataset.townPlacementActive = String(Boolean(placement?.active));
+      gameElement.dataset.townPlacementValid = String(Boolean(placement?.valid));
     }
   }
 
@@ -1418,6 +1688,7 @@ export class TownScene extends Phaser.Scene {
       camera: { zoom: Number(this.cameras.main.zoom.toFixed(2)), followingPlayer: !this.customResident?.getSnapshot?.().controlling },
       controls: { keyboard: true, touch: true, wheelZoom: true },
       interaction: this.interactions.getState(),
+      milestone25Systems: ["35-placeable-catalogue", "purchase-and-inventory-placement", "tap-and-keyboard-preview", "quarter-turn-rotation", "atomic-place-move-store", "road-water-building-entrance-and-lawn-restrictions", "500-object-safety-limit", "player-collision", "npc-wildlife-and-rubbish-hooks", "exact-transform-persistence", "legacy-placement-import"],
       milestone23Systems: ["south-shore-scoops-scene-transition", "750-deterministic-shifts", "sequential-picture-orders", "60-percent-pass-rule", "ingredient-and-product-unlocks", "first-clear-rewards", "south-shore-restoration", "exact-save-resume", "legacy-progress-import", "landscape-controls"],
       migratedSystems: ["character-animation", "proximity-interactions", "bakery-scene-transition", "cafe-scene-transition", "morning-mug-scene-transition", "riverside-kitchen-scene-transition", "river-clearout-scene-transition", "house-rescue-scene-transition", "shared-game-state", "safe-save-foundation", "shared-economy", "fresh-market-shop", "waste-collection-job", "world-time-weather-lighting", "basic-npc-town-life", "custom-resident-profile-home-control", "weather-aware-farming", "orchard-harvest", "persistent-lawn-jobs", "animal-habitat-routes", "animal-friendship-feeding", "animal-adoption", "active-companion-following", "south-meadow", "three-fishing-spots", "hidden-zone-fishing", "timed-reeling", "magnet-fishing", "fishing-inventory-rewards", "magnet-coin-rewards", "bakery-recipes", "bakery-customer-service", "bakery-first-clear-rewards", "bakery-level-unlocks", "shared-recipe-order-engine", "corner-cafe-recipes", "cafe-three-tray-service", "cafe-first-clear-rewards", "cafe-level-unlocks", "morning-mug-54-recipes", "morning-mug-150-levels", "morning-mug-first-clear-rewards", "morning-mug-save-resume", "morning-mug-landscape-controls", "riverside-kitchen-32-recipes", "riverside-kitchen-150-levels", "riverside-kitchen-preparation-heat-plating", "riverside-kitchen-first-clear-rewards", "riverside-kitchen-save-resume", "riverside-kitchen-landscape-controls", "river-750-level-catalogue", "river-falling-piece-engine", "river-first-clear-rewards", "river-portrait-controls", "house-rescue-750-level-catalogue", "house-rescue-sort-and-vacuum", "house-rescue-persistent-home-jobs", "house-rescue-landscape-controls", "waste-750-authored-boards", "waste-five-slot-triple-matching", "waste-certified-solutions", "waste-first-clear-rewards", "waste-landscape-controls", "lawn-750-authored-levels", "lawn-slide-mower-engine", "lawn-persistent-campaign", "lawn-town-job-effects", "lawn-first-clear-rewards", "lawn-landscape-controls", "beach-750-deterministic-levels", "beach-rake-and-rubbish-engine", "beach-native-town-rewards", "beach-first-clear-rewards", "south-shore-litter-restoration", "beach-landscape-controls", "powerwash-750-deterministic-levels", "powerwash-soap-resistant-stains", "powerwash-three-nozzles", "powerwash-97-percent-tolerance", "powerwash-native-town-rewards", "powerwash-first-clear-rewards", "commons-playground-restoration", "powerwash-landscape-controls"],
       npcTownLife: this.npcTownLife?.getDiagnostics?.(),
@@ -1436,6 +1707,7 @@ export class TownScene extends Phaser.Scene {
       lawnCare: this.lawnCare?.getDiagnostics?.(),
       beachCleanup: this.beachCleanup?.getDiagnostics?.(),
       playgroundPowerwash: this.playgroundPowerwash?.getDiagnostics?.(),
+      townPlacement: this.townPlacement?.getDiagnostics?.(),
       sharedState: {
         schemaVersion: this.gameState?.getSnapshot().schemaVersion || null,
         source: this.gameState?.getSnapshot().source.kind || null,

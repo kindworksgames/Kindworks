@@ -1,10 +1,10 @@
 # Kindworks Phaser save contract
 
-> Current migration status: Milestone 24 uses game-state and envelope schema
-> 21. Schemas 1 through 20 upgrade in order, with schema 21 normalizing the
-> complete ordinary-coin shop, equipment, inventory, and transaction-history
-> contract described below. The historical schema-3 foundation notes are retained
-> for traceability.
+> Current migration status: Milestone 25 uses game-state and envelope schema
+> 22. Schemas 1 through 21 upgrade in order, with schema 22 adding the complete
+> town-object placement, exact transform, behaviour-hook, and legacy-placement
+> import contract described below. The historical schema-3 foundation notes are
+> retained for traceability.
 
 Milestone 3 introduced the protected save foundation alongside the preserved HTML game. Milestone 4 added the shared item catalogue, inventory, KindlyCoin ledger, and atomic economy transactions. Milestone 6 adds the first persistent cleanup session, exact-target result, and job reward. NPC, animal, farming, dynamic cleanup, and the remaining mini-games stay staged for later milestones.
 
@@ -23,14 +23,14 @@ The Phaser build owns only:
 - `kindworks_phaser_v1_backup`
 - `kindworks_phaser_v1_recovery`
 
-## Current Phaser envelope schema 21
+## Current Phaser envelope schema 22
 
 Every current and backup save is a JSON envelope:
 
 ```json
 {
   "format": "kindworks-phaser",
-  "schemaVersion": 21,
+  "schemaVersion": 22,
   "writtenAt": "2026-08-25T00:00:00.000Z",
   "appVersion": "0.1.0",
   "data": {},
@@ -38,7 +38,7 @@ Every current and backup save is a JSON envelope:
 }
 ```
 
-The checksum covers every envelope field except the checksum itself. A save is accepted only when its format, schema, timestamp, checksum, and inner game state all validate. Valid schemas 1 through 20 upgrade to schema 21, and the original verified envelope becomes the Phaser backup before replacement.
+The checksum covers every envelope field except the checksum itself. A save is accepted only when its format, schema, timestamp, checksum, and inner game state all validate. Valid schemas 1 through 21 upgrade to schema 22, and the original verified envelope becomes the Phaser backup before replacement.
 
 ## Historical game-state schema 3 foundation
 
@@ -107,6 +107,37 @@ The checksum covers every envelope field except the checksum itself. A save is a
   known ownership or valid equipped tools. Unknown records remain visible in
   `unresolvedLegacy`; existing transaction history and its retailer/credit
   metadata remain unchanged.
+
+## Town placement schema-22 contract
+
+- `townPlacement` owns one domain schema, the next stable object serial, up to
+  500 placed objects, and a legacy-import report. Each object persists its
+  stable ID, catalogue item/type, exact finite `x`, `y`, normalized rotation,
+  placement timestamps, public-bin state when applicable, and derived
+  behaviour hooks.
+- All 35 original placeable definitions are recognized. The 32 released items
+  are available through ordinary progression; the subscription-only keepsake
+  and two hidden QA fixtures are not added to the normal shop.
+- Validation keeps every footprint inside the authored world and clear of the
+  river, ponds, harbour water, roads, cottages, businesses, entrances, active
+  lawns, permanent fixtures, collision zones, and other placed objects. Public
+  bins and resident destinations must remain reachable from the authored
+  public navigation graph.
+- A new placement removes exactly one owned item only after the candidate town
+  and complete game state validate. Moving changes no inventory. Storing
+  removes the object and returns exactly one item, subject to its inventory
+  limit. Every action writes a zero-coin placement ledger record.
+- Place, move, and store replace one full in-memory candidate, save it through
+  the safe repository, and restore the exact previous town, inventory, and
+  ledger if persistence fails.
+- Legacy `economy.placedObjects` are copied into this domain without changing
+  the protected source snapshot. Valid known objects retain exact coordinates
+  and normalized rotation. Duplicate, unsafe, over-limit, or otherwise invalid
+  known objects return to Phaser inventory; unknown IDs are counted explicitly.
+- Behaviour hooks expose resident destinations, usable public bins, wildlife
+  obstacle radii, rubbish-spawn exclusion radii, player collision, interaction
+  kind/capacity, and automatic night glow. Hooks are derived from catalogue
+  metadata and validated on every save rather than trusted as arbitrary input.
 
 ## Cleanup transaction contract
 

@@ -96,6 +96,12 @@ import {
   projectLegacySouthShoreScoops,
   validateSouthShoreScoopsState,
 } from "./southShoreScoopsState.js";
+import {
+  createFreshTownPlacementState,
+  normalizeTownPlacementState,
+  projectLegacyTownPlacement,
+  validateTownPlacementState,
+} from "./townPlacementState.js";
 
 const DIRECTIONS = new Set(["up", "down", "left", "right"]);
 
@@ -143,6 +149,7 @@ export function createFreshGameState({ now = Date.now() } = {}) {
     progress: { completedJobCount: 0, cleanup: createFreshCleanupState() },
     economy: createFreshEconomyState({ now }),
     inventory: createFreshInventoryState(),
+    townPlacement: createFreshTownPlacementState(),
     npcs: createFreshNpcState(),
     customResident: createFreshCustomResidentState(),
     farming: createFreshFarmingState(world),
@@ -184,6 +191,7 @@ export function createGameStateFromLegacy(legacy, report, { now = Date.now() } =
     ...(legacy.economy?.inventory || {}),
     equipped: legacy.economy?.equipped,
   });
+  state.townPlacement = projectLegacyTownPlacement(legacy, state.inventory, { now });
   state.customResident = projectLegacyCustomResident(legacy);
   state.farming = projectLegacyFarming(legacy, state.world);
   state.animals = projectLegacyAnimals(legacy.animals, state.world);
@@ -316,6 +324,12 @@ export function upgradeGameState(value, { now = Date.now() } = {}) {
     state.inventory = normalizeInventoryState(state.inventory);
     state.schemaVersion = 21;
   }
+  if (state.schemaVersion === 21) {
+    state.townPlacement = state.source?.kind === "legacy-import"
+      ? projectLegacyTownPlacement(state.legacySnapshot, state.inventory, { now })
+      : normalizeTownPlacementState(state.townPlacement, { inventory: state.inventory, now });
+    state.schemaVersion = 22;
+  }
   return state;
 }
 
@@ -338,6 +352,7 @@ export function validateGameState(value) {
   errors.push(...validateCleanupState(value.progress?.cleanup).errors);
   errors.push(...validateEconomyState(value.economy).errors);
   errors.push(...validateInventoryState(value.inventory).errors);
+  errors.push(...validateTownPlacementState(value.townPlacement).errors);
   errors.push(...validateNpcState(value.npcs).errors);
   errors.push(...validateCustomResidentState(value.customResident).errors);
   errors.push(...validateFarmingState(value.farming, value.world).errors);

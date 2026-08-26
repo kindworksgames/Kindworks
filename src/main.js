@@ -35,6 +35,7 @@ import { HouseRescueService } from "./systems/HouseRescueService.js";
 import { LawnCareService } from "./systems/LawnCareService.js";
 import { BeachCleanupService } from "./systems/BeachCleanupService.js";
 import { PlaygroundPowerwashService } from "./systems/PlaygroundPowerwashService.js";
+import { TownPlacementService } from "./systems/TownPlacementService.js";
 import { EconomyHudController } from "./ui/EconomyHudController.js";
 import { SaveStatusController } from "./ui/SaveStatusController.js";
 import { ShopController } from "./ui/ShopController.js";
@@ -67,6 +68,7 @@ const beachCleanup = new BeachCleanupService(stateRuntime.gameState, stateRuntim
 beachCleanup.refresh();
 const playgroundPowerwash = new PlaygroundPowerwashService(stateRuntime.gameState, stateRuntime.repository);
 playgroundPowerwash.refresh();
+const townPlacement = new TownPlacementService(stateRuntime.gameState, stateRuntime.repository);
 
 const config = {
   type: Phaser.AUTO,
@@ -102,11 +104,21 @@ game.registry.set("houseRescue", houseRescue);
 game.registry.set("lawnCare", lawnCare);
 game.registry.set("beachCleanup", beachCleanup);
 game.registry.set("playgroundPowerwash", playgroundPowerwash);
+game.registry.set("townPlacement", townPlacement);
 const economy = new EconomyService(stateRuntime.gameState, stateRuntime.repository);
 game.registry.set("economy", economy);
+if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "placement") {
+  const snapshot = townPlacement.getSnapshot();
+  const planterOwnedOrPlaced = Number(snapshot.inventory["town-planter"] || 0)
+    + snapshot.objects.filter((object) => object.itemId === "town-planter").length;
+  if (planterOwnedOrPlaced < 1) economy.grantItem("town-planter", 1, { reason: "Milestone 25 visual QA fixture" });
+}
 const cleanupService = new CleanupJobService(stateRuntime.gameState, stateRuntime.repository);
 game.registry.set("cleanupService", cleanupService);
 const shopService = new ShopService(economy);
+function activeTownScene() {
+  return game.scene.getScene("TownScene")?.scene?.isActive?.() ? game.scene.getScene("TownScene") : null;
+}
 const openModals = new Set();
 function setModalOpen(name, open) {
   if (open) openModals.add(name);
@@ -132,11 +144,17 @@ const economyHud = new EconomyHudController(stateRuntime, {
     if (item?.shopGroup === "Farming") return game.registry.get("farmingController")?.open?.("allotment") || { ok: false };
     return game.registry.get("animalFriendsController")?.open?.() || { ok: false };
   },
+  onPlaceable(item) {
+    return activeTownScene()?.beginTownPlacement?.(item?.id) || { ok: false, message: "Return to Willowmere town to place this item." };
+  },
 });
 const worldHud = new WorldHudController(stateRuntime.gameState);
 const shopController = new ShopController(shopService, stateRuntime, {
   onModalChange(open) {
     setModalOpen("shop", open);
+  },
+  onPlaceItem(item) {
+    return activeTownScene()?.beginTownPlacement?.(item?.id) || { ok: false, message: "Return to Willowmere town to place this item." };
   },
 });
 game.registry.set("shopController", shopController);
@@ -161,9 +179,6 @@ const animalFriendsController = new AnimalFriendsController(animals, {
   },
 });
 game.registry.set("animalFriendsController", animalFriendsController);
-const activeTownScene = () => game.scene.getScene("TownScene")?.scene?.isActive?.()
-  ? game.scene.getScene("TownScene")
-  : null;
 const customResidentController = new CustomResidentController(customResident, {
   onModalChange(open) {
     setModalOpen("custom-resident", open);
@@ -236,6 +251,25 @@ window.__KINDWORKS_PHASER__ = {
   },
   getShopDiagnostics() {
     return shopController.getDiagnostics();
+  },
+  getTownPlacementDiagnostics() {
+    return townPlacement.getDiagnostics();
+  },
+  qaGrantTownPlacementItem(itemId = "town-planter") {
+    if (!import.meta.env.DEV) return { ok: false, message: "Visual QA helpers are available only in development." };
+    return economy.grantItem(itemId, 1, { reason: "Milestone 25 visual QA fixture" });
+  },
+  qaBeginTownPlacement(itemId = "town-planter") {
+    if (!import.meta.env.DEV) return { ok: false, message: "Visual QA helpers are available only in development." };
+    return activeTownScene()?.beginTownPlacement?.(itemId) || { ok: false, message: "Willowmere town is not active." };
+  },
+  qaPreviewTownPlacement(x, y) {
+    if (!import.meta.env.DEV) return { ok: false, message: "Visual QA helpers are available only in development." };
+    return activeTownScene()?.previewTownPlacement?.(x, y) || { ok: false, message: "Willowmere town is not active." };
+  },
+  qaConfirmTownPlacement() {
+    if (!import.meta.env.DEV) return { ok: false, message: "Visual QA helpers are available only in development." };
+    return townPlacement.confirm();
   },
   getCleanupDiagnostics() {
     return cleanupService.getDiagnostics();

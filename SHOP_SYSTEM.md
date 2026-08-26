@@ -1,9 +1,9 @@
 # Kindworks Phaser shop contract
 
 Milestone 24 completes the original ordinary in-game coin shop, equipment,
-inventory, and transaction path. It does not introduce real-money purchases,
-subscriptions, or object placement; purchased placeables remain inventory until
-the dedicated placement milestone.
+inventory, and transaction path. Milestone 25 connects its 35 placeable
+definitions to the town. It does not introduce real-money purchases or
+subscriptions.
 
 ## Retailers and ownership
 
@@ -56,6 +56,9 @@ Closing the shop or changing scenes does not mutate coins or inventory. A comple
 - The catalogue shows exact price, affordability, capacity, owned quantity,
   unlock progress, upgrade credit, and equipped state.
 - Selecting a product shows its description and a single-unit purchase action.
+- Selecting a placeable also shows its town footprint and behaviour preview.
+  Once owned, **Place owned item** closes the shop and opens the town placement
+  controls; the Inventory panel exposes the same action.
 - Owned equipment has a separate Equip action; equipping never sells or deletes
   the previous tool.
 - Insufficient funds reports the exact missing amount without spending coins.

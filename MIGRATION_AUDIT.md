@@ -212,3 +212,23 @@ Schema 21 safely normalizes schema-20 inventory while retaining known ownership,
 valid equipment selection, unresolved legacy records, and existing transaction
 metadata. All 242 automated tests pass. The protected HTML source remains
 unchanged.
+
+Milestone 25 completes original town-object placement for all 35 catalogue
+definitions (32 normally released, one subscription-only, and two hidden QA
+fixtures). Purchases now show an exact footprint and behaviour preview, while
+owned items can enter placement from either Shop or Inventory. Canvas tap/drag,
+arrow-key nudging, 90-degree rotation, confirmation, and cancellation share one
+mobile-friendly placement interface. Saved objects render in Phaser, block the
+player, can be managed in place, moved without inventory mutation, or stored
+back as exactly one owned item. Validation preserves the original per-item
+river and road clearances and additionally protects ponds, harbour water,
+cottages, shops, entrances, lawns, permanent fixtures, collision regions, and
+other objects; resident destinations and public bins must remain reachable.
+The safe cap is 500 objects. Every mutation is atomic, and forced persistence
+failure restores the exact previous town, inventory, ledger, and active item.
+Schema 22 imports valid legacy `economy.placedObjects` with exact coordinates
+and normalized rotation, returns rejected known items to inventory, and leaves
+the protected legacy snapshot unchanged. Validated hooks are ready for resident
+destinations, usable bins, wildlife avoidance, rubbish-spawn exclusion, player
+collision, and night lighting. All 251 automated tests and the production build
+pass. The protected HTML source remains unchanged.

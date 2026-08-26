@@ -1,3 +1,5 @@
+import { placeableFootprintFor } from "../data/items.js";
+
 function formatCoins(value) {
   return new Intl.NumberFormat("en-GB").format(value);
 }
@@ -9,11 +11,12 @@ function unlockLabel(unlock) {
 }
 
 export class ShopController {
-  constructor(shopService, runtime, { onModalChange = () => {}, defaultShopId = "willowmere-shop" } = {}) {
+  constructor(shopService, runtime, { onModalChange = () => {}, onPlaceItem = () => ({ ok: false }), defaultShopId = "willowmere-shop" } = {}) {
     this.shopService = shopService;
     this.runtime = runtime;
     this.onModalChange = onModalChange;
     this.defaultShopId = defaultShopId;
+    this.onPlaceItem = onPlaceItem;
     this.openButton = document.querySelector("#shop-button");
     this.panel = document.querySelector("#shop-panel");
     this.closeButton = document.querySelector("#shop-panel-close");
@@ -29,6 +32,8 @@ export class ShopController {
     this.detailPrice = document.querySelector("#shop-detail-price");
     this.detailOwned = document.querySelector("#shop-detail-owned");
     this.buyButton = document.querySelector("#shop-buy-button");
+    this.placeButton = document.querySelector("#shop-place-button");
+    this.placementPreview = document.querySelector("#shop-placement-preview");
     this.message = document.querySelector("#shop-message");
     this.activeShopId = null;
     this.activeGroup = null;
@@ -38,6 +43,7 @@ export class ShopController {
     this.onOpen = () => this.open(this.defaultShopId);
     this.onClose = () => this.close();
     this.onBuy = () => this.activateSelected();
+    this.onPlace = () => this.activatePlacement();
     this.onProductClick = (event) => {
       const button = event.target.closest?.("[data-shop-item]");
       if (button) this.selectItem(button.dataset.shopItem);
@@ -50,6 +56,7 @@ export class ShopController {
     this.openButton?.addEventListener("click", this.onOpen);
     this.closeButton?.addEventListener("click", this.onClose);
     this.buyButton?.addEventListener("click", this.onBuy);
+    this.placeButton?.addEventListener("click", this.onPlace);
     this.productList?.addEventListener("click", this.onProductClick);
     this.groupTabs?.addEventListener("click", this.onGroupClick);
     document.addEventListener("keydown", this.onKeyDown);
@@ -182,6 +189,20 @@ export class ShopController {
       ? `🪙 ${formatCoins(product.quote.cost)} (${formatCoins(product.quote.upgradeCredit)} upgrade credit)`
       : `🪙 ${formatCoins(product.item.price)}`;
     if (this.detailOwned) this.detailOwned.textContent = `${formatCoins(product.owned)} / ${formatCoins(product.limit)} owned`;
+    const placeable = product.item.category === "placeable";
+    if (this.placementPreview) {
+      this.placementPreview.classList.toggle("hidden", !placeable);
+      if (placeable) {
+        const diameter = placeableFootprintFor(product.item) * 2;
+        const interaction = product.item.effect?.npcBin ? "Residents can use it as a public bin." : product.item.effect?.npcDestination ? "Residents can visit this object." : "Blocks wildlife and rubbish spawning safely.";
+        this.placementPreview.textContent = `Town preview · ${diameter}×${diameter} footprint · rotates 90° · ${interaction}`;
+      }
+    }
+    if (this.placeButton) {
+      this.placeButton.classList.toggle("hidden", !placeable || product.owned < 1);
+      this.placeButton.disabled = !placeable || product.owned < 1;
+      this.placeButton.textContent = placeable ? `Place owned ${product.item.name}` : "Place in town";
+    }
     if (!this.buyButton) return;
     const equipment = product.item.category === "equipment";
     if (!product.unlocked) {
@@ -245,8 +266,19 @@ export class ShopController {
     return result;
   }
 
+  activatePlacement() {
+    const product = this.shopService.getProduct(this.activeShopId, this.selectedItemId);
+    if (!product.ok || product.item.category !== "placeable" || product.owned < 1) {
+      const result = { ok: false, code: "not-owned", message: "Buy or own this town item before placing it." };
+      this.showMessage(result.message, "error");
+      return result;
+    }
+    this.close();
+    return this.onPlaceItem(product.item);
+  }
+
   focusableElements() {
-    return [this.closeButton, ...(this.groupTabs?.querySelectorAll("button") || []), ...(this.productList?.querySelectorAll("button") || []), this.buyButton]
+    return [this.closeButton, ...(this.groupTabs?.querySelectorAll("button") || []), ...(this.productList?.querySelectorAll("button") || []), this.buyButton, this.placeButton]
       .filter((element) => element && !element.disabled);
   }
 
@@ -298,6 +330,7 @@ export class ShopController {
     this.openButton?.removeEventListener("click", this.onOpen);
     this.closeButton?.removeEventListener("click", this.onClose);
     this.buyButton?.removeEventListener("click", this.onBuy);
+    this.placeButton?.removeEventListener("click", this.onPlace);
     this.productList?.removeEventListener("click", this.onProductClick);
     this.groupTabs?.removeEventListener("click", this.onGroupClick);
     document.removeEventListener("keydown", this.onKeyDown);

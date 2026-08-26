@@ -118,6 +118,51 @@ const LEGACY_ITEM_METADATA = Object.freeze({
   "town-centre-monument": { unlock: { game: "waste", perfects: 30 } },
 });
 
+const placeableMetadata = (placeableType, minRiverDistance, minRoadClearance, description, effect = {}) => ({
+  description,
+  placeableType,
+  placementRules: { minRiverDistance, minRoadClearance },
+  effect,
+});
+
+const LEGACY_PLACEABLE_METADATA = Object.freeze({
+  "young-maple": placeableMetadata("tree", 125, 20, "A young maple that grows into a leafy shade tree.", { npcReaction: "💚", npcDestination: true, interactionKind: "tree", treeStyle: "maple" }),
+  "oak-tree": placeableMetadata("tree", 125, 20, "A broad, sturdy oak for parks and neighbourhood greens.", { npcReaction: "🌿", npcDestination: true, interactionKind: "tree", treeStyle: "oak" }),
+  "silver-birch": placeableMetadata("tree", 125, 20, "A light, slender birch that grows quickly.", { npcReaction: "🌿", npcDestination: true, interactionKind: "tree", treeStyle: "birch" }),
+  "willow-tree": placeableMetadata("tree", 110, 18, "A graceful willow suited to riverside greens.", { npcReaction: "💚", npcDestination: true, interactionKind: "tree", treeStyle: "willow" }),
+  "flowering-cherry": placeableMetadata("tree", 125, 20, "Pink blossoms make this a cheerful neighbourhood tree.", { npcReaction: "🌿", npcDestination: true, interactionKind: "tree", treeStyle: "cherry" }),
+  "pine-tree": placeableMetadata("tree", 125, 20, "An evergreen pine for woodland-style corners.", { npcReaction: "🌿", npcDestination: true, interactionKind: "tree", treeStyle: "pine" }),
+  "apple-tree": placeableMetadata("tree", 125, 20, "A fruit tree residents occasionally stop to admire.", { npcReaction: "🌿", npcDestination: true, interactionKind: "tree", treeStyle: "apple" }),
+  "flowering-tree": placeableMetadata("tree", 125, 20, "A premium flowering tree for a special corner of town.", { npcReaction: "🌿", npcDestination: true, interactionKind: "tree", treeStyle: "magnolia" }),
+  "grand-oak": placeableMetadata("tree", 135, 25, "A large aspirational tree that becomes a local gathering point.", { npcReaction: "💚", npcDestination: true, interactionKind: "tree", treeStyle: "grand-oak" }),
+  "wooden-bench": placeableMetadata("bench", 112, 8, "A simple two-person bench residents can actually use.", { npcReaction: "💬", npcDestination: true, interactionKind: "bench", capacity: 2 }),
+  "green-bench": placeableMetadata("bench", 112, 8, "A classic painted bench for parks and residential streets.", { npcReaction: "💬", npcDestination: true, interactionKind: "bench", capacity: 2, benchStyle: "green" }),
+  "iron-bench": placeableMetadata("bench", 112, 8, "A sturdier town-centre bench with a darker finish.", { npcReaction: "💬", npcDestination: true, interactionKind: "bench", capacity: 2, benchStyle: "iron" }),
+  "riverside-bench": placeableMetadata("bench", 104, 8, "Designed for river paths and quiet views.", { npcReaction: "💬", npcDestination: true, interactionKind: "bench", capacity: 2, benchStyle: "riverside" }),
+  "picnic-table": placeableMetadata("bench", 112, 12, "A larger social spot where residents can gather.", { npcReaction: "🧺", npcDestination: true, interactionKind: "picnic", capacity: 4, benchStyle: "picnic" }),
+  "small-town-bin": placeableMetadata("bin", 110, 7, "A compact functional bin residents can walk to and use.", { npcReaction: "🗑️", npcBin: true, binCapacity: 8 }),
+  "park-bin": placeableMetadata("bin", 110, 7, "A larger public bin that residents physically walk to and use.", { npcReaction: "🗑️", npcBin: true, binCapacity: 12 }),
+  "recycling-bin": placeableMetadata("bin", 110, 7, "A high-capacity recycling point unlocked through Waste Collection.", { npcReaction: "♻️", npcBin: true, binCapacity: 16 }),
+  "commercial-bin": placeableMetadata("bin", 110, 7, "A large bin for busy commercial streets and café areas.", { npcReaction: "🗑️", npcBin: true, binCapacity: 25 }),
+  "town-planter": placeableMetadata("planter", 115, 8, "A simple leafy planter for paths and squares.", { npcReaction: "🌿" }),
+  "flower-barrel": placeableMetadata("planter", 115, 8, "A cheerful barrel of flowers.", { npcReaction: "🌼", planterStyle: "flower" }),
+  "lamp-post": placeableMetadata("lamp", 115, 8, "A street lamp that automatically glows after dark.", { npcReaction: "💡", nightGlow: true }),
+  "bird-bath": placeableMetadata("birdbath", 115, 8, "A small garden feature residents may stop to visit.", { npcReaction: "🐦", npcDestination: true, interactionKind: "birdbath" }),
+  "wooden-sign": placeableMetadata("sign", 115, 8, "A rustic sign for paths and neighbourhood corners.", { npcReaction: "🪧" }),
+  "hedge-clump": placeableMetadata("hedge", 115, 8, "A rounded hedge for shaping little garden spaces.", { npcReaction: "🌿" }),
+  "decorative-rock": placeableMetadata("rock", 115, 8, "A simple natural accent for gardens and riverbanks.", { npcReaction: "✨" }),
+  "small-fountain": placeableMetadata("fountain", 125, 18, "An aspirational fountain that becomes a resident destination.", { npcReaction: "⛲", npcDestination: true, interactionKind: "fountain" }),
+  "town-clock": placeableMetadata("clock", 125, 14, "A landmark clock for a fully restored town centre.", { npcReaction: "🕰️", npcDestination: true, interactionKind: "landmark" }),
+  "picnic-blanket": placeableMetadata("picnic", 115, 14, "A cosy recreation spot residents can visit.", { npcReaction: "🧺", npcDestination: true, interactionKind: "picnic" }),
+  "kindly-heart-planter": placeableMetadata("planter", 115, 8, "A KindlyClub Champion keepsake for the town.", { npcReaction: "💚", planterStyle: "kindly-heart" }),
+  "__qa-young-tree": placeableMetadata("tree", 145, 22, "Hidden placement test tree.", { npcDestination: true, interactionKind: "tree" }),
+  "__qa-town-bin": placeableMetadata("bin", 125, 8, "Hidden placement test bin.", { npcBin: true, binCapacity: 8 }),
+  "premium-picnic-area": placeableMetadata("picnic", 120, 18, "A large social picnic setup for a busy park or riverside green.", { npcReaction: "🧺", npcDestination: true, interactionKind: "picnic", capacity: 6 }),
+  "grand-fountain": placeableMetadata("fountain", 145, 28, "A large landmark fountain for a major public square.", { npcReaction: "⛲", npcDestination: true, interactionKind: "fountain", capacity: 6 }),
+  "willowmere-gazebo": placeableMetadata("gazebo", 150, 30, "A prestige gathering place for parks and large open greens.", { npcReaction: "🎉", npcDestination: true, interactionKind: "gazebo", capacity: 6 }),
+  "town-centre-monument": placeableMetadata("monument", 145, 24, "A long-term prestige landmark celebrating Willowmere's restoration.", { npcReaction: "✨", npcDestination: true, interactionKind: "landmark", capacity: 5 }),
+});
+
 function freezeMetadata(value) {
   if (!value || typeof value !== "object") return value;
   for (const child of Object.values(value)) if (child && typeof child === "object" && !Object.isFrozen(child)) freezeMetadata(child);
@@ -126,7 +171,7 @@ function freezeMetadata(value) {
 
 export const ITEM_CATALOG = Object.freeze(Object.fromEntries(itemRows.map((row) => {
   const [id, name, icon, category, price, shopGroup, flags = {}] = row;
-  const metadata = structuredClone(LEGACY_ITEM_METADATA[id] || {});
+  const metadata = structuredClone({ ...(LEGACY_ITEM_METADATA[id] || {}), ...(LEGACY_PLACEABLE_METADATA[id] || {}) });
   return [id, freezeMetadata({ id, name, icon, category, price, shopGroup, ...metadata, ...flags })];
 })));
 
@@ -146,6 +191,24 @@ export function inventoryBucketFor(item) {
 
 export function inventoryLimitFor(item) {
   return item?.category === "equipment" || item?.unique ? 1 : item?.inventoryLimit || INVENTORY_STACK_LIMIT;
+}
+
+export function placeableFootprintFor(item) {
+  if (!item) return 30;
+  if (["grand-oak", "grand-fountain"].includes(item.id)) return 72;
+  if (item.id === "willowmere-gazebo") return 78;
+  if (item.id === "town-centre-monument") return 58;
+  if (item.id === "premium-picnic-area") return 60;
+  if (item.placeableType === "tree") return 50;
+  if (item.id === "picnic-table") return 52;
+  if (item.placeableType === "bench") return 42;
+  if (item.placeableType === "fountain") return 50;
+  if (item.placeableType === "clock") return 42;
+  if (item.placeableType === "hedge") return 38;
+  if (item.placeableType === "picnic") return 42;
+  if (item.placeableType === "bin") return 28;
+  if (["planter", "birdbath", "lamp", "sign", "rock"].includes(item.placeableType)) return 30;
+  return 32;
 }
 
 export function validateItemCatalog(catalog = ITEM_CATALOG) {

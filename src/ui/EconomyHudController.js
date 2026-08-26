@@ -12,11 +12,12 @@ function formatCoins(value) {
 }
 
 export class EconomyHudController {
-  constructor(runtime, { onModalChange = () => {}, economy = null, onUseConsumable = () => ({ ok: false }) } = {}) {
+  constructor(runtime, { onModalChange = () => {}, economy = null, onUseConsumable = () => ({ ok: false }), onPlaceable = () => ({ ok: false }) } = {}) {
     this.runtime = runtime;
     this.onModalChange = onModalChange;
     this.economy = economy;
     this.onUseConsumable = onUseConsumable;
+    this.onPlaceable = onPlaceable;
     this.coinButton = document.querySelector("#coin-status-button");
     this.inventoryButton = document.querySelector("#inventory-button");
     this.panel = document.querySelector("#economy-panel");
@@ -102,6 +103,12 @@ export class EconomyHudController {
             button.dataset.useItem = item.id;
             button.textContent = item.shopGroup === "Farming" ? "Use at allotments" : "Use with animals";
             action.append(button);
+          } else if (item.category === "placeable") {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.dataset.placeItem = item.id;
+            button.textContent = "Place in town";
+            action.append(button);
           } else action.textContent = `×${quantity}`;
           const count = document.createElement("strong");
           count.textContent = item.category === "equipment" ? "" : `×${quantity}`;
@@ -127,6 +134,12 @@ export class EconomyHudController {
       const item = ITEM_CATALOG[use.dataset.useItem];
       this.close();
       return this.onUseConsumable(item);
+    }
+    const place = event.target.closest?.("[data-place-item]");
+    if (place) {
+      const item = ITEM_CATALOG[place.dataset.placeItem];
+      this.close();
+      return this.onPlaceable(item);
     }
     return null;
   }

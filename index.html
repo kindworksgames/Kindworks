@@ -25,13 +25,22 @@
           <button id="custom-resident-button" class="economy-hud-button resident-hud-button" type="button" aria-label="Create your personal resident">💚 Create resident</button>
           <button id="animal-friends-button" class="economy-hud-button animal-hud-button" type="button" aria-label="Open Animal Friends">🐾 Animal Friends</button>
           <button id="save-status-button" class="save-status-button" type="button" data-status="new">Save not started</button>
-          <div class="milestone-badge">PHASER TOWN · MILESTONE 24</div>
+          <div class="milestone-badge">PHASER TOWN · MILESTONE 25</div>
         </div>
       </section>
       <section id="interaction-prompt" class="interaction-prompt hidden" aria-label="Nearby interaction" aria-hidden="true">
         <span class="interaction-key" aria-hidden="true">E</span>
         <button id="interaction-action" type="button">✨ Interact</button>
         <small id="interaction-detail">Press E or Space</small>
+      </section>
+      <section id="town-placement-banner" class="town-placement-banner hidden" aria-live="polite" aria-hidden="true">
+        <div class="town-placement-copy"><span id="town-placement-icon" aria-hidden="true">🌳</span><div><strong id="town-placement-title">Place town item</strong><small id="town-placement-status">Tap a clear position to preview.</small></div></div>
+        <div class="town-placement-actions"><button id="town-placement-rotate" type="button">↻ Rotate</button><button id="town-placement-confirm" class="primary" type="button" disabled>Place</button><button id="town-placement-cancel" type="button">Cancel</button></div>
+        <span id="town-placement-count" class="town-placement-count">0 / 500 placed</span>
+      </section>
+      <section id="placed-object-panel" class="placed-object-panel hidden" aria-live="polite" aria-hidden="true">
+        <div><span id="placed-object-icon" aria-hidden="true">✨</span><strong id="placed-object-name">Town item</strong><small id="placed-object-detail">Saved in Willowmere</small></div>
+        <div><button id="placed-object-move" type="button">Move</button><button id="placed-object-store" type="button">Store</button><button id="placed-object-close" type="button" aria-label="Close town item controls">✕</button></div>
       </section>
       <section class="touch-controls" aria-label="Movement controls">
         <button type="button" class="move-up" data-move="up" aria-label="Walk up">▲</button>
@@ -119,7 +128,9 @@
                 <div><dt>Price</dt><dd id="shop-detail-price">🪙 140</dd></div>
                 <div><dt>Inventory</dt><dd id="shop-detail-owned">0 owned</dd></div>
               </dl>
+              <p id="shop-placement-preview" class="shop-placement-preview hidden">Town placement preview</p>
               <button id="shop-buy-button" class="shop-buy-button" type="button">Buy 1 for 🪙 140</button>
+              <button id="shop-place-button" class="shop-place-button hidden" type="button">Place owned item</button>
               <p id="shop-message" class="shop-message" data-status="neutral" aria-live="polite">Select a product to see its price and owned quantity.</p>
             </section>
           </div>

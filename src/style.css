@@ -55,6 +55,8 @@ body {
 .save-panel,
 .economy-panel,
 .shop-panel,
+.town-placement-banner,
+.placed-object-panel,
 .cleanup-hud,
 .cleanup-result,
 .world-lighting-overlay,
@@ -305,6 +307,145 @@ body[data-game-scene="WasteCollectionScene"] .weather-effects {
   outline: 3px solid #d09b47;
   outline-offset: 3px;
 }
+
+.town-placement-banner,
+.placed-object-panel {
+  left: 50%;
+  z-index: 42;
+  width: min(720px, calc(100vw - 28px));
+  border: 1px solid rgb(255 255 255 / 48%);
+  border-radius: 18px;
+  background: rgb(255 253 242 / 97%);
+  color: #294c38;
+  box-shadow: 0 16px 48px rgb(12 33 21 / 36%);
+  transform: translateX(-50%);
+  backdrop-filter: blur(11px);
+  pointer-events: auto;
+}
+
+.town-placement-banner {
+  bottom: max(18px, calc(env(safe-area-inset-bottom) + 12px));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px 14px;
+  padding: 12px 14px;
+}
+
+.town-placement-banner.hidden,
+.placed-object-panel.hidden,
+.shop-placement-preview.hidden,
+.shop-place-button.hidden {
+  display: none;
+}
+
+.town-placement-copy,
+.placed-object-panel > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.town-placement-copy > span,
+#placed-object-icon {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
+  background: #e5efd8;
+  font-size: 26px;
+}
+
+.town-placement-copy div,
+.placed-object-panel > div:first-child {
+  min-width: 0;
+}
+
+.town-placement-copy strong,
+.placed-object-panel strong {
+  display: block;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.town-placement-copy small,
+.placed-object-panel small {
+  display: block;
+  margin-top: 3px;
+  color: #647568;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+#town-placement-status[data-status="valid"] { color: #2d7444; }
+#town-placement-status[data-status="invalid"] { color: #a0563e; }
+
+.town-placement-actions,
+.placed-object-panel > div:last-child {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.town-placement-actions button,
+.placed-object-panel button {
+  min-height: 42px;
+  padding: 8px 13px;
+  border: 1px solid #bfcebb;
+  border-radius: 11px;
+  background: #edf2e5;
+  color: #355943;
+  font: 850 11px/1 system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.town-placement-actions button.primary {
+  border-color: #347148;
+  background: #3b7a4d;
+  color: #fff;
+}
+
+.town-placement-actions button:disabled {
+  border-color: #cdd3c9;
+  background: #aeb8ad;
+  cursor: not-allowed;
+}
+
+.town-placement-actions button:focus-visible,
+.placed-object-panel button:focus-visible {
+  outline: 3px solid #e6b54f;
+  outline-offset: 2px;
+}
+
+.town-placement-count {
+  grid-column: 1 / -1;
+  color: #738075;
+  font-size: 9px;
+  font-weight: 850;
+  text-align: right;
+}
+
+.placed-object-panel {
+  bottom: max(80px, calc(env(safe-area-inset-bottom) + 72px));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 13px;
+}
+
+body[data-town-placement="true"] #game canvas { cursor: crosshair; }
+body[data-town-placement="true"] .touch-controls,
+body[data-town-placement="true"] .zoom-controls,
+body[data-town-placement="true"] .interaction-prompt,
+body[data-town-placement="true"] .control-hint,
+body[data-town-placement="true"] .town-hud { pointer-events: none; opacity: 0.42; }
 
 body[data-game-scene="BakeryScene"] .zoom-controls {
   display: none;
@@ -790,6 +931,37 @@ body[data-game-scene="BakeryScene"] .zoom-controls {
 
 .shop-buy-button:disabled {
   background: #8d998e;
+  cursor: not-allowed;
+}
+
+.shop-placement-preview {
+  margin: 0 0 9px;
+  padding: 8px 10px;
+  border: 1px solid #cbd9c5;
+  border-radius: 10px;
+  background: #eef5e7;
+  color: #466550;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.shop-place-button {
+  min-height: 44px;
+  margin-top: 7px;
+  border: 1px solid #39774c;
+  border-radius: 13px;
+  background: #e1f0dc;
+  color: #2f6842;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.shop-place-button:disabled {
+  border-color: #c9d1c5;
+  background: #e1e5df;
+  color: #828d84;
   cursor: not-allowed;
 }
 
@@ -1281,6 +1453,36 @@ body[data-game-scene="BakeryScene"] .zoom-controls {
   .shop-panel-note {
     display: none;
   }
+
+  .town-placement-banner {
+    bottom: max(7px, env(safe-area-inset-bottom));
+    width: calc(100vw - 14px);
+    gap: 6px 9px;
+    padding: 8px 9px;
+    border-radius: 14px;
+  }
+
+  .town-placement-copy > span,
+  #placed-object-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 23px;
+  }
+
+  .town-placement-actions button,
+  .placed-object-panel button {
+    min-height: 44px;
+    padding: 7px 11px;
+  }
+
+  .town-placement-count {
+    display: none;
+  }
+
+  .placed-object-panel {
+    bottom: max(66px, calc(env(safe-area-inset-bottom) + 58px));
+    width: calc(100vw - 14px);
+  }
 }
 
 @media (max-width: 520px) {
@@ -1335,6 +1537,16 @@ body[data-game-scene="BakeryScene"] .zoom-controls {
   .shop-buy-button {
     grid-column: 3;
     grid-row: 1 / 3;
+  }
+
+  .shop-placement-preview {
+    display: none;
+  }
+
+  .shop-place-button {
+    grid-column: 3;
+    min-height: 40px;
+    margin: 0;
   }
 
   .shop-message {
@@ -1441,6 +1653,43 @@ body[data-game-scene="BakeryScene"] .zoom-controls {
     margin-top: 5px;
     padding: 5px 7px;
     font-size: 9px;
+  }
+
+  .shop-placement-preview {
+    display: none;
+  }
+
+  .shop-place-button {
+    min-height: 36px;
+    margin-top: 4px;
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 620px) {
+  .town-placement-banner {
+    grid-template-columns: 1fr;
+  }
+
+  .town-placement-copy {
+    display: none;
+  }
+
+  .town-placement-actions {
+    justify-content: center;
+  }
+
+  .town-placement-actions button {
+    flex: 1 1 0;
+  }
+
+  .placed-object-panel {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .placed-object-panel > div:last-child button {
+    flex: 1 1 0;
   }
 }
 
