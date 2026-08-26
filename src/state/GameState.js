@@ -108,6 +108,12 @@ import {
   projectLegacyLivingEnvironment,
   validateLivingEnvironmentState,
 } from "./livingEnvironmentState.js";
+import {
+  createFreshMunicipalCollectionState,
+  normalizeMunicipalCollectionState,
+  projectLegacyMunicipalCollection,
+  validateMunicipalCollectionState,
+} from "./municipalCollectionState.js";
 
 const DIRECTIONS = new Set(["up", "down", "left", "right"]);
 
@@ -157,6 +163,7 @@ export function createFreshGameState({ now = Date.now() } = {}) {
     inventory: createFreshInventoryState(),
     townPlacement: createFreshTownPlacementState(),
     npcs: createFreshNpcState(world),
+    municipalCollection: createFreshMunicipalCollectionState(world),
     customResident: createFreshCustomResidentState(),
     farming: createFreshFarmingState(world),
     environment: createFreshLivingEnvironmentState(world),
@@ -200,6 +207,7 @@ export function createGameStateFromLegacy(legacy, report, { now = Date.now() } =
   });
   state.townPlacement = projectLegacyTownPlacement(legacy, state.inventory, { now });
   state.npcs = projectLegacyNpcState(legacy, state.world);
+  state.municipalCollection = projectLegacyMunicipalCollection(legacy, state.world);
   state.customResident = projectLegacyCustomResident(legacy);
   state.farming = projectLegacyFarming(legacy, state.world);
   state.environment = projectLegacyLivingEnvironment(legacy, state.world);
@@ -363,6 +371,14 @@ export function upgradeGameState(value, { now = Date.now() } = {}) {
       : normalizeNpcState(state.npcs, state.world);
     state.schemaVersion = 25;
   }
+  if (state.schemaVersion === 25) {
+    state.townPlacement = normalizeTownPlacementState(state.townPlacement, { inventory: state.inventory, now });
+    state.npcs = normalizeNpcState(state.npcs, state.world);
+    state.municipalCollection = state.source?.kind === "legacy-import"
+      ? projectLegacyMunicipalCollection(state.legacySnapshot, state.world)
+      : normalizeMunicipalCollectionState(state.municipalCollection, state.world);
+    state.schemaVersion = 26;
+  }
   return state;
 }
 
@@ -392,6 +408,7 @@ export function validateGameState(value) {
   errors.push(...validateInventoryState(value.inventory).errors);
   errors.push(...validateTownPlacementState(value.townPlacement).errors);
   errors.push(...validateNpcState(value.npcs, value.world).errors);
+  errors.push(...validateMunicipalCollectionState(value.municipalCollection).errors);
   errors.push(...validateCustomResidentState(value.customResident).errors);
   errors.push(...validateFarmingState(value.farming, value.world).errors);
   errors.push(...validateLivingEnvironmentState(value.environment, value.world).errors);

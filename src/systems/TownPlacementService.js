@@ -40,6 +40,11 @@ function absoluteGameMinute(world) {
   return (Math.max(1, Math.floor(Number(world?.day) || 1)) - 1) * 1440 + Math.max(0, Math.min(1439, Math.floor(Number(world?.clockMinutes) || 0)));
 }
 
+function collectionLocksObject(state, objectId) {
+  return Boolean(state?.municipalCollection?.active
+    && state.municipalCollection.stops?.some((stop) => stop.type === "placed" && stop.id === objectId));
+}
+
 export class TownPlacementService {
   constructor(gameState, repository, { now = () => Date.now(), catalog = ITEM_CATALOG } = {}) {
     this.gameState = gameState;
@@ -92,6 +97,7 @@ export class TownPlacementService {
     const state = this.gameState.getSnapshot();
     const existing = existingObjectId ? state.townPlacement.objects.find((object) => object.id === existingObjectId) : null;
     if (existingObjectId && (!existing || existing.itemId !== itemId)) return { ok: false, code: "object-missing", message: "That placed object could not be found." };
+    if (existing && collectionLocksObject(state, existing.id)) return { ok: false, code: "collection-locked", message: "Gavin has this bin on today's collection route. It can be moved after the lorry returns to the depot." };
     if (!existing && state.townPlacement.objects.length >= TOWN_PLACEMENT_LIMIT) return { ok: false, code: "placement-limit", message: `Willowmere's safe limit of ${TOWN_PLACEMENT_LIMIT} placed objects has been reached. Store one before placing another.` };
     if (!existing && this.inventory.quantity(state.inventory, itemId) < 1) return { ok: false, code: "not-owned", message: `${item.name} is not in your inventory.` };
     this.active = {
@@ -192,6 +198,9 @@ export class TownPlacementService {
         placedGameMinute: absoluteGameMinute(state.world),
         binCapacity: item.effect?.npcBin ? Math.max(1, Number(item.effect.binCapacity) || 8) : 0,
         binFill: 0,
+        binFullSince: 0,
+        lastEmptiedDay: 0,
+        collections: 0,
         tipped: false,
         tippedAt: 0,
         tippedByNpcId: null,
@@ -221,6 +230,7 @@ export class TownPlacementService {
       const index = state.townPlacement.objects.findIndex((object) => object.id === objectId);
       if (index < 0) return { ok: false, code: "object-missing", message: "That placed object could not be found." };
       const object = state.townPlacement.objects[index];
+      if (collectionLocksObject(state, object.id)) return { ok: false, code: "collection-locked", message: "Gavin has this bin on today's collection route. It can be stored after the lorry returns to the depot." };
       const item = this.catalog[object.itemId];
       const returned = this.inventory.add(state.inventory, object.itemId, 1);
       if (!returned.ok) return { ...returned, message: `${item.name} cannot be returned because its inventory stack is full.` };

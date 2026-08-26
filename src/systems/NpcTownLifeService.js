@@ -24,6 +24,11 @@ const TAKEAWAY_BY_KIND = Object.freeze({
 function absoluteMinute(world) { return Math.max(0, (Number(world?.day || 1) - 1) * 1440 + Number(world?.clockMinutes || 0)); }
 function clamp(value, minimum = 0, maximum = 100) { return Math.max(minimum, Math.min(maximum, Number(value) || 0)); }
 function isPublicBinNode(nodeId) { return NPC_PUBLIC_BINS.some((bin) => bin.nodeId === nodeId); }
+function collectionBinUnavailable(state, type, id) {
+  const collection = state?.municipalCollection;
+  const current = collection?.stops?.[collection.stopIndex];
+  return Boolean(collection?.active && current?.identity === `${type}:${id}` && collection.phase !== "driving");
+}
 
 function reactionFor(state) {
   const band = state.environment?.cleanliness?.band || "restoration-needed";
@@ -96,7 +101,7 @@ export class NpcTownLifeService {
       return { type: "placed", id: object.id, nodeId: node?.id || resident.currentNodeId, x: object.x, y: object.y, capacity: object.binCapacity, fill: object.binFill, tipped: object.tipped, source: object };
     });
     return [...publicBins, ...placedBins]
-      .filter((bin) => !bin.tipped && bin.fill < bin.capacity)
+      .filter((bin) => !bin.tipped && bin.fill < bin.capacity && !collectionBinUnavailable(state, bin.type, bin.id))
       .sort((a, b) => Math.hypot(a.x - resident.x, a.y - resident.y) - Math.hypot(b.x - resident.x, b.y - resident.y));
   }
 
@@ -164,7 +169,10 @@ export class NpcTownLifeService {
     if (resident.binTarget.type === "public") {
       if (bin.fill >= bin.capacity) bin.fullSince = now;
       state.npcs.socialRuntime.publicBinDisposals += 1;
-    } else state.npcs.socialRuntime.placedBinDisposals += 1;
+    } else {
+      if (bin.binFill >= bin.binCapacity) bin.binFullSince = now;
+      state.npcs.socialRuntime.placedBinDisposals += 1;
+    }
     resident.responsibleDisposals += 1;
     resident.completedActivities += 1;
     resident.activity = `Put ${resident.carryLabel} in the bin`;
@@ -247,7 +255,7 @@ export class NpcTownLifeService {
     const publicBins = state.npcs.publicBins.map((bin) => ({ type: "public", bin, definition: NPC_PUBLIC_BINS.find((entry) => entry.id === bin.id) }));
     const placedBins = (state.townPlacement?.objects || []).filter((bin) => bin.hooks?.npcBin).map((bin) => ({ type: "placed", bin, definition: { x: bin.x, y: bin.y } }));
     if ([...publicBins, ...placedBins].filter((entry) => entry.bin.tipped).length >= NPC_SOCIAL_CONFIG.maxTippedBins) return false;
-    const target = [...publicBins, ...placedBins].filter((entry) => !entry.bin.tipped && Math.hypot(entry.definition.x - resident.x, entry.definition.y - resident.y) <= 105)[0];
+    const target = [...publicBins, ...placedBins].filter((entry) => !entry.bin.tipped && !collectionBinUnavailable(state, entry.type, entry.bin.id) && Math.hypot(entry.definition.x - resident.x, entry.definition.y - resident.y) <= 105)[0];
     if (!target || hashUnit(`npc-tip:${resident.id}:${Math.floor(now / 30)}`) >= NPC_SOCIAL_CONFIG.binTipBaseChance * (1 - definition.tidiness + 0.1)) return false;
     target.bin.tipped = true; target.bin.tippedAt = now; target.bin.tippedByNpcId = resident.id;
     const spills = createBinSpillInto(state, { binId: target.bin.id, x: target.definition.x, y: target.definition.y, npcId: resident.id, npcName: definition.name, count: 2 + Math.floor(hashUnit(`npc-tip-count:${resident.id}:${now}`) * 3) });
@@ -408,6 +416,7 @@ export class NpcTownLifeService {
       resident.residentLawnCareEvents = Math.max(resident.residentLawnCareEvents || 0, externalResidents.get(definition.id)?.residentLawnCareEvents || 0);
       return resident;
     });
+    this.npcState.publicBins = structuredClone(next.npcs.publicBins);
     next.npcs = normalizeNpcState(this.npcState, next.world);
     this.advanceBehaviorInto(next);
     next.updatedAt = new Date(this.now()).toISOString();
@@ -437,6 +446,12 @@ export class NpcTownLifeService {
 
   getPublicBins() {
     return NPC_PUBLIC_BINS.map((definition) => ({ ...definition, ...structuredClone(this.npcState.publicBins.find((bin) => bin.id === definition.id)) }));
+  }
+
+  refreshPublicBins() {
+    const snapshot = this.gameState.getSnapshot();
+    this.npcState.publicBins = structuredClone(normalizeNpcState(snapshot.npcs, snapshot.world).publicBins);
+    return this.getPublicBins();
   }
 
   updatePlayerProximity(x, y, world) {

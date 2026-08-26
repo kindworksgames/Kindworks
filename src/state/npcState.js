@@ -170,10 +170,10 @@ function normalizeResident(value, definition, index) {
 
 function normalizePublicBin(value, definition) {
   const fresh = freshPublicBin(definition);
-  const capacity = whole(value?.capacity, 1, 9999, fresh.capacity);
-  const fill = whole(value?.fill, 0, capacity, fresh.fill);
+  const capacity = whole(value?.capacity ?? value?.binCapacity, 1, 9999, fresh.capacity);
+  const fill = whole(value?.fill ?? value?.binFill, 0, capacity, fresh.fill);
   return { ...fresh, capacity, fill,
-    fullSince: fill >= capacity ? (Number.isFinite(Number(value?.fullSince)) ? Math.max(0, Number(value.fullSince)) : 0) : null,
+    fullSince: fill >= capacity ? (Number.isFinite(Number(value?.fullSince ?? value?.binFullSince)) ? Math.max(0, Number(value.fullSince ?? value.binFullSince)) : 0) : null,
     lastEmptiedDay: whole(value?.lastEmptiedDay), collections: whole(value?.collections), tipped: Boolean(value?.tipped),
     tippedAt: whole(value?.tippedAt), tippedByNpcId: residentDefinitions.has(value?.tippedByNpcId) ? value.tippedByNpcId : null,
     spillIds: Array.isArray(value?.spillIds) ? [...new Set(value.spillIds.filter((id) => typeof id === "string"))].slice(0, 6) : [] };

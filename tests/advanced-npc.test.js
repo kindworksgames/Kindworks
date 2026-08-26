@@ -51,7 +51,7 @@ test("fresh residents have bounded needs and symmetric persistent relationship s
   assert.equal(validateNpcState(state, { day: 1, clockMinutes: 360 }).ok, true);
 });
 
-test("legacy advanced residents, public bins and community counters import into schema 25", () => {
+test("legacy advanced residents, public bins and community counters import into schema 26", () => {
   const legacy = {
     npcs: [{ id: "npc-01", currentNodeId: "shop1", targetNodeId: "shop1", route: ["shop1"], routeIndex: 0, x: 305, y: 1120,
       actionState: "SHOPPING", activity: "Buying lunch", visible: false, needs: { hunger: 77 }, relationships: { "npc-03": 52 }, carryItem: "cup", carryLabel: "coffee cup", carryStage: "empty", litterDrops: 4 }],
@@ -67,7 +67,7 @@ test("legacy advanced residents, public bins and community counters import into 
   const old = createFreshGameState({ now: 0 });
   old.schemaVersion = 24;
   const upgraded = upgradeGameState(old, { now: 0 });
-  assert.equal(upgraded.schemaVersion, 25);
+  assert.equal(upgraded.schemaVersion, 26);
   assert.equal(validateGameState(upgraded).ok, true);
 });
 

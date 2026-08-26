@@ -68,7 +68,7 @@ test("upgrades schema 3 saves with a simulation timestamp without losing time", 
   oldState.schemaVersion = 3;
   oldState.world = { day: 9, clockMinutes: 1337 };
   const upgraded = upgradeGameState(oldState, { now: 5000 });
-  assert.equal(upgraded.schemaVersion, 25);
+  assert.equal(upgraded.schemaVersion, 26);
   assert.equal(upgraded.world.day, 9);
   assert.equal(upgraded.world.clockMinutes, 1337);
   assert.equal(upgraded.world.simulation.lastResolvedAt, new Date(5000).toISOString());

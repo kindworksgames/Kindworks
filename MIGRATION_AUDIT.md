@@ -311,3 +311,33 @@ state. A failed write restores the entire prior town. Schema 25 upgrades schema
 records, including public bins and behaviour counters, without changing the
 protected legacy snapshot. All 277 automated tests and the production build
 pass. The protected HTML source remains unchanged.
+
+Milestone 29 completes the original weekly municipal-bin collection. The
+service begins automatically every seventh game day at 07:00, starting on Day
+7, and preserves Gavin's original identity, role and Willowmere recycling
+lorry. The route snapshots all five authored public bins and every valid
+player-placed small, park, recycling or commercial bin present when the lorry
+leaves the depot. Player bins on that snapshot cannot be moved or stored until
+the route finishes.
+
+The lorry uses a separate connected graph containing only the nine authored
+streets and three road bridges. It cannot enter a footpath, track, lawn or
+remote destination. At each closest kerb stop Gavin dismounts and walks the
+remaining distance, so South Meadow, Willow Commons, South Shore and remote
+player placements remain serviceable without allowing the vehicle off-road.
+Each stop retains the original bin coordinates and rotation. Gavin walks to the
+bin, rights it and removes its persistent spill when necessary, lifts it, rolls
+it to the lorry, empties its exact current fill, returns it, places it at the
+exact saved transform, walks back and boards before the next drive leg. The
+player collides safely with the visible lorry while the service is active.
+
+Public and player-bin fill, last-empty day and collection count are committed
+with the shared town state. The complete lorry, collector, lifted-bin, route,
+phase, load and progress state is checkpointed throughout the route, supports
+safe mid-route reload, and rolls back a failed write. Completion returns the
+lorry to the depot, records the totals and advances the next service day by
+exactly seven days. Schema 26 upgrades schema 25, adds the municipal domain and
+placed-bin collection history, and converts the original
+`garbageCollection` record without changing the protected legacy snapshot.
+All 285 automated tests and the production build pass. The protected HTML
+source remains unchanged.

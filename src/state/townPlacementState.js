@@ -32,6 +32,9 @@ function normalizePlacedObject(raw, item, { now = Date.now() } = {}) {
     placedGameMinute: safeInteger(raw.placedGameMinute),
     binCapacity: item.effect?.npcBin ? safeInteger(raw.binCapacity || item.effect.binCapacity, 1, 9999) : 0,
     binFill: item.effect?.npcBin ? safeInteger(raw.binFill, 0, safeInteger(raw.binCapacity || item.effect.binCapacity, 1, 9999)) : 0,
+    binFullSince: item.effect?.npcBin && raw.binFill >= (raw.binCapacity || item.effect.binCapacity) ? safeInteger(raw.binFullSince) : 0,
+    lastEmptiedDay: item.effect?.npcBin ? safeInteger(raw.lastEmptiedDay) : 0,
+    collections: item.effect?.npcBin ? safeInteger(raw.collections) : 0,
     tipped: item.effect?.npcBin ? Boolean(raw.tipped) : false,
     tippedAt: item.effect?.npcBin ? safeInteger(raw.tippedAt) : 0,
     tippedByNpcId: item.effect?.npcBin && typeof raw.tippedByNpcId === "string" ? raw.tippedByNpcId : null,
@@ -129,6 +132,7 @@ export function validateTownPlacementState(state) {
     const expectedHooks = placementBehaviorHooks(item, object);
     if (JSON.stringify(object.hooks) !== JSON.stringify(expectedHooks)) errors.push(`${object.id} has stale behaviour hooks.`);
     if (item.effect?.npcBin && (!Number.isInteger(object.binFill) || object.binFill < 0 || object.binFill > object.binCapacity)) errors.push(`${object.id} has invalid bin contents.`);
+    if (item.effect?.npcBin && (![object.binFullSince, object.lastEmptiedDay, object.collections].every(Number.isInteger) || object.binFullSince < 0 || object.lastEmptiedDay < 0 || object.collections < 0)) errors.push(`${object.id} has invalid collection history.`);
     accepted.push(object);
   }
   if (!state.importReport || typeof state.importReport !== "object" || !state.importReport.returnedToInventory || typeof state.importReport.returnedToInventory !== "object") errors.push("Town placement import report is invalid.");

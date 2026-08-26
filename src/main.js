@@ -23,6 +23,7 @@ import { CleanupJobService } from "./systems/CleanupJobService.js";
 import { WorldSimulationService } from "./systems/WorldSimulationService.js";
 import { LivingEnvironmentService } from "./systems/LivingEnvironmentService.js";
 import { NpcTownLifeService } from "./systems/NpcTownLifeService.js";
+import { MunicipalCollectionService } from "./systems/MunicipalCollectionService.js";
 import { CustomResidentService } from "./systems/CustomResidentService.js";
 import { FarmingService } from "./systems/FarmingService.js";
 import { AnimalService } from "./systems/AnimalService.js";
@@ -55,6 +56,7 @@ worldSimulation.addStateAdvancer((state) => farming.resolveInto(state));
 worldSimulation.addStateAdvancer((state) => livingEnvironment.advanceInto(state));
 const offlineResolution = worldSimulation.resolveOffline();
 const npcTownLife = new NpcTownLifeService(stateRuntime.gameState, stateRuntime.repository);
+const municipalCollection = new MunicipalCollectionService(stateRuntime.gameState, stateRuntime.repository);
 const customResident = new CustomResidentService(stateRuntime.gameState, stateRuntime.repository);
 farming.refresh({ persist: true });
 livingEnvironment.refresh({ persist: true });
@@ -96,6 +98,7 @@ game.registry.set("gameState", stateRuntime.gameState);
 game.registry.set("saveRepository", stateRuntime.repository);
 game.registry.set("worldSimulation", worldSimulation);
 game.registry.set("npcTownLife", npcTownLife);
+game.registry.set("municipalCollection", municipalCollection);
 game.registry.set("customResident", customResident);
 game.registry.set("farming", farming);
 game.registry.set("livingEnvironment", livingEnvironment);
@@ -124,6 +127,7 @@ if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa")
   const balance = stateRuntime.gameState.getSnapshot().economy.coins;
   if (balance < 3000) economy.credit(3000 - balance, { kind: "development-fixture", reason: "Milestone 26 Village Grocer visual QA" });
 }
+if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "collection") municipalCollection.start({ force: true, persist: true });
 const cleanupService = new CleanupJobService(stateRuntime.gameState, stateRuntime.repository, { environment: livingEnvironment });
 game.registry.set("cleanupService", cleanupService);
 const shopService = new ShopService(economy, { farming });
@@ -137,6 +141,7 @@ function setModalOpen(name, open) {
   const anyOpen = openModals.size > 0;
   worldSimulation.setPaused("modal", anyOpen);
   npcTownLife.setPaused("modal", anyOpen);
+  municipalCollection.setPaused("modal", anyOpen);
   document.body.dataset.modalOpen = String(anyOpen);
   const activeScene = game.scene.getScenes(true)[0];
   activeScene?.setOverlayOpen?.(anyOpen);
@@ -211,6 +216,7 @@ game.registry.set("customResidentController", customResidentController);
 
 function handleVisibilityChange() {
   npcTownLife.setPaused("background", document.hidden);
+  municipalCollection.setPaused("background", document.hidden);
   if (document.hidden) worldSimulation.pause("background", { persist: true });
   else {
     const result = worldSimulation.resume("background", { resolveOffline: true });
@@ -223,6 +229,7 @@ window.addEventListener("pagehide", () => {
   farming.refresh({ persist: true });
   livingEnvironment.refresh({ persist: true });
   animals.refresh({ persist: true });
+  municipalCollection.syncState({ persist: true });
   worldSimulation.persist();
   if (morningMug.getActiveSession() && !morningMug.getActiveSession().finished) morningMug.persistActiveSession();
   if (riversideKitchen.getActiveSession() && !riversideKitchen.getActiveSession().finished) riversideKitchen.persistActiveSession();
@@ -314,6 +321,17 @@ window.__KINDWORKS_PHASER__ = {
   },
   getNpcDiagnostics() {
     return npcTownLife.getDiagnostics();
+  },
+  getMunicipalCollectionDiagnostics() {
+    return municipalCollection.getDiagnostics();
+  },
+  qaStartMunicipalCollection() {
+    if (!import.meta.env.DEV) return { ok: false, message: "Visual QA helpers are available only in development." };
+    return municipalCollection.start({ force: true, persist: true });
+  },
+  qaRunMunicipalCollection() {
+    if (!import.meta.env.DEV) return { ok: false, message: "Visual QA helpers are available only in development." };
+    return municipalCollection.runToCompletion();
   },
   getCustomResidentDiagnostics() {
     return customResidentController.getDiagnostics();

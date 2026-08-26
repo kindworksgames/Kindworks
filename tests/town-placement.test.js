@@ -168,7 +168,7 @@ test("schema 21 saves gain a valid empty placement domain without losing prior p
   old.economy.coins = 4321;
   old.economy.lifetimeCoinsEarned = 4321;
   const upgraded = upgradeGameState(old, { now: 1000 });
-  assert.equal(upgraded.schemaVersion, 25);
+  assert.equal(upgraded.schemaVersion, 26);
   assert.equal(upgraded.economy.coins, 4321);
   assert.equal(upgraded.townPlacement.objects.length, 0);
   assert.equal(validateGameState(upgraded).ok, true);
