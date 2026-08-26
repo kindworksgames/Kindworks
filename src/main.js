@@ -68,6 +68,7 @@ import { OnboardingController } from "./ui/OnboardingController.js";
 import { CommerceController } from "./ui/CommerceController.js";
 import { ITEM_IDS } from "./data/items.js";
 import { findSafeFurniturePlacement } from "./data/homeInteriors.js";
+import { getParityCertification } from "./data/parityCertification.js";
 
 const stateRuntime = bootstrapState(window.localStorage);
 const worldSimulation = new WorldSimulationService(stateRuntime.gameState, stateRuntime.repository);
@@ -175,6 +176,14 @@ const onboarding = new OnboardingService(stateRuntime.gameState, stateRuntime.re
     : null,
 });
 game.registry.set("onboarding", onboarding);
+if (import.meta.env.DEV && qaMode === "parity") {
+  const parityCertification = getParityCertification();
+  document.body.dataset.parityQa = "true";
+  document.body.dataset.parityCertified = String(parityCertification.ok);
+  document.body.dataset.parityCampaignLevels = String(parityCertification.counts.campaignLevels);
+  document.body.dataset.parityActivities = String(parityCertification.activities.length);
+  document.body.dataset.paritySource = parityCertification.source.sha256;
+}
 if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "paws") {
   restorationMilestones.unlockForQa("highstreet", { revealed: true });
   const balance = stateRuntime.gameState.getSnapshot().economy.coins;
@@ -399,8 +408,8 @@ const onboardingController = new OnboardingController(onboarding, {
   },
 });
 game.registry.set("onboardingController", onboardingController);
-if (!commerceQa) setTimeout(() => onboardingController.startFirstRun(), 260);
-onboardingController.processLogin();
+if (!commerceQa && qaMode !== "parity") setTimeout(() => onboardingController.startFirstRun(), 260);
+if (qaMode !== "parity") onboardingController.processLogin();
 
 function handleVisibilityChange() {
   npcTownLife.setPaused("background", document.hidden);
@@ -426,6 +435,7 @@ window.addEventListener("pagehide", () => {
 
 window.__KINDWORKS_PHASER__ = {
   game,
+  getParityCertification,
   getMilestoneState() {
     const activeScene = game.scene.getScenes(true)[0];
     return typeof activeScene?.getMilestoneState === "function"

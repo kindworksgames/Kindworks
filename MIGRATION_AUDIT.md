@@ -774,3 +774,31 @@ All 422 automated tests and the production build pass. The protected HTML and
 Desktop source both retain SHA-256
 `0b85bd71385b83e7a13676f7593ce376245959fa4ebf1a6b9a0e6765297aa5a5`.
 The detailed contract is recorded in `LEGACY_SAVE_RECONCILIATION.md`.
+
+Milestone 43 completes the cross-system HTML-to-Phaser parity certification.
+The new executable manifest pins the protected HTML checksum and audits the
+complete 4,200×2,800 town, 19 houses, 12 shops, 35 residents, 56 authored animal
+identities, all permanent restoration, placement, farming, fishing and recipe
+catalogues, 13 activities, and exactly 5,850 campaign levels. Every level-based
+activity also has first, middle and final certification checkpoints while its
+dedicated system suite continues to verify every generated level and gameplay
+rule.
+
+Parity is defined as preservation of authored content, rules, progression,
+economy, stable identities and save meaning, with intentional Phaser rendering,
+accessibility and responsive-layout improvements allowed. Schema 37 and the
+Milestone 42 reconciliation remain unchanged; no save migration or protected
+HTML mutation is introduced. A Vite-only `?qa=parity` route exposes the same
+read-only contract in the running game and suppresses incidental onboarding and
+login-reward processing during comparison.
+
+The mobile rule is now fully consistent: every activity requires landscape
+except River Clear-Out. Fishing and Magnet Fishing gained the missing portrait
+rotation barrier. Browser QA at 1,280×720 desktop, 844×390 landscape and 390×844
+portrait verified the certification route, town presentation, Fishing's
+landscape play and portrait guidance, a clean console and no page overflow. The
+complete contract is recorded in `PARITY_CERTIFICATION.md`.
+
+All 430 automated tests and the production build pass. The protected HTML and
+Desktop source both retain SHA-256
+`0b85bd71385b83e7a13676f7593ce376245959fa4ebf1a6b9a0e6765297aa5a5`.

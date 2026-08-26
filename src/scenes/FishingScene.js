@@ -276,6 +276,8 @@ export class FishingScene extends Phaser.Scene {
     if (badge) badge.textContent = `${this.mode === "magnet" ? "MAGNET FISHING" : this.spot.id === "fishing-reedbank" ? "FISHING + HOME AQUARIUM" : "FISHING"} · MILESTONE ${this.mode === "magnet" ? 15 : 33}`;
     if (location) location.textContent = this.spot.title;
     if (hint) hint.textContent = "Tap water or use arrows to aim · Enter/Space casts or reels · Escape exits safely";
+    const landscapeMessage = document.querySelector("#landscape-required-message");
+    if (landscapeMessage) landscapeMessage.textContent = `${this.mode === "magnet" ? "Magnet Fishing" : "Fishing"} is designed for landscape play. Turn your phone sideways to continue.`;
     document.querySelector("#fishing-mode-label").textContent = this.mode === "magnet" ? "MAGNET FISHING" : "FISHING";
     document.querySelector("#fishing-title").textContent = `${this.spot.icon} ${this.spot.shortTitle}`;
     const aquarium = this.fishing.getSnapshot().aquarium;
@@ -345,6 +347,6 @@ export class FishingScene extends Phaser.Scene {
   }
 
   getMilestoneState() {
-    return { scene: this.scene.key, mode: this.mode, spotId: this.spot.id, phase: this.phase, castsLeft: this.fishing.castsLeft(this.mode), persistent: true, inventoryRewards: true, aquarium: this.fishing.getSnapshot().aquarium };
+    return { scene: this.scene.key, mode: this.mode, spotId: this.spot.id, phase: this.phase, castsLeft: this.fishing.castsLeft(this.mode), persistent: true, inventoryRewards: true, landscapeRequired: true, aquarium: this.fishing.getSnapshot().aquarium };
   }
 }
