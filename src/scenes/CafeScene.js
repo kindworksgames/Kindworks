@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { CAFE_APPLIANCES, CAFE_RECIPES, cafeStep } from "../data/cafe.js";
+import { createRestaurantPresentation, updateRestaurantPresentation } from "../ui/RestaurantPresentation.js";
 
 const ROOM = Object.freeze({ width: 1280, height: 720 });
 
@@ -33,29 +34,7 @@ export class CafeScene extends Phaser.Scene {
   }
 
   drawInterior() {
-    this.add.rectangle(ROOM.width / 2, ROOM.height / 2, ROOM.width, ROOM.height, 0x9db7a0);
-    const art = this.add.graphics();
-    art.fillStyle(0x6f8e72, 1); art.fillRect(0, 0, 500, ROOM.height);
-    art.fillStyle(0xc49463, 1); art.fillRect(500, 0, 390, ROOM.height);
-    art.fillStyle(0x789aa0, 1); art.fillRect(890, 0, 390, ROOM.height);
-    art.lineStyle(7, 0x292238, 1); art.lineBetween(500, 0, 500, ROOM.height); art.lineBetween(890, 0, 890, ROOM.height);
-    art.fillStyle(0x292238, 1); art.fillRect(0, 0, ROOM.width, 68);
-    for (const [x, y] of [[105, 190], [350, 190], [105, 465], [350, 465]]) {
-      art.fillStyle(0x8a5b45, 1); art.fillRoundedRect(x - 64, y - 44, 128, 88, 14);
-      art.fillStyle(0xf5e2b9, 1); art.fillCircle(x, y, 17);
-      art.fillStyle(0x55546a, 1); art.fillRect(x - 5, y - 17, 10, 25);
-    }
-    art.fillStyle(0x9b6547, 1); art.fillRoundedRect(535, 120, 320, 185, 13); art.fillRoundedRect(535, 385, 320, 210, 13);
-    art.fillStyle(0xe4cc9b, 1); art.fillRoundedRect(560, 415, 270, 145, 10);
-    for (const x of [945, 1040, 1135, 1230]) {
-      art.fillStyle(0xa9b8b7, 1); art.fillRoundedRect(x - 34, 155, 68, 82, 8);
-    }
-    this.add.text(28, 24, "CORNER CAFÉ · DINING ROOM", { color: "#fff1c9", fontFamily: "ui-monospace, monospace", fontSize: "17px", fontStyle: "bold" }).setDepth(5);
-    this.add.text(535, 24, "ORDER COUNTER & THREE PREP TRAYS", { color: "#fff1c9", fontFamily: "ui-monospace, monospace", fontSize: "16px", fontStyle: "bold" }).setDepth(5);
-    this.add.text(915, 24, "CAFÉ KITCHEN", { color: "#fff1c9", fontFamily: "ui-monospace, monospace", fontSize: "17px", fontStyle: "bold" }).setDepth(5);
-    this.customerVisual = this.add.text(250, 330, "🧑  ☕  🧑", { fontSize: "48px", backgroundColor: "#fff1c9", padding: { x: 16, y: 10 }, color: "#292238" }).setOrigin(0.5).setDepth(6);
-    this.prepVisual = this.add.text(695, 485, "☕  ① ② ③", { fontSize: "52px" }).setOrigin(0.5).setDepth(6);
-    this.chefVisual = this.add.text(1080, 505, "🧑‍🍳", { fontSize: "78px" }).setOrigin(0.5).setDepth(6);
+    createRestaurantPresentation(this, "cafe");
   }
 
   bindInterface() {
@@ -137,18 +116,18 @@ export class CafeScene extends Phaser.Scene {
         this.setMessage(rejected.message, "error"); this.render(); return false;
       }
       if (this.station?.status === "ready") {
-        this.station = null; this.chefVisual.setText("🧑‍🍳");
+        this.station = null; this.restaurantPresentation.workerTag.setText("READY");
         return this.finishStep(stepId);
       }
       if (this.station) return false;
       this.station = { id: stepId, status: "working" };
-      this.chefVisual.setText("🧑‍🍳💨");
+      this.restaurantPresentation.workerTag.setText("WORKING…");
       this.setMessage(`${definition.name} working…`, "working");
       this.render();
       this.time.delayedCall(Math.max(90, definition.seconds * 1000 * this.timingScale), () => {
         if (this.transitioning || !this.station || this.station.id !== stepId) return;
         this.station.status = "ready";
-        this.chefVisual.setText("🧑‍🍳✨");
+        this.restaurantPresentation.workerTag.setText("READY · TAP");
         this.setMessage(`${definition.name} ready. Tap it again.`, "success");
         this.render();
       });
@@ -207,7 +186,7 @@ export class CafeScene extends Phaser.Scene {
     }
     document.querySelector("#cafe-progress-summary").textContent = `${Object.keys(progress.completed).length} cleared · ${progress.totalStars} stars · ${progress.lifetimeServed} served`;
     document.querySelector("#cafe-balance").textContent = `🪙 ${this.gameState.getSnapshot().economy.coins}`;
-    if (!session) { this.updateDomState(); return; }
+    if (!session) { updateRestaurantPresentation(this); this.updateDomState(); return; }
     const tray = session.trays[session.activeTray]; const order = tray?.orderId ? session.orders.find((candidate) => candidate.id === tray.orderId) : null;
     const recipe = order ? CAFE_RECIPES[order.recipes[tray.recipeIndex]] : null; const expected = recipe?.steps?.[tray.stepIndex] || null;
     document.querySelector("#cafe-level-name").textContent = `Level ${session.level.level} · ${session.level.name}`;
@@ -233,8 +212,19 @@ export class CafeScene extends Phaser.Scene {
     }
     this.worktop?.classList.toggle("hidden", !expected);
     this.controls?.classList.toggle("hidden", !canRevise && Boolean(expected));
-    this.customerVisual.setText(session.activeOrderIds.length ? `🧑 × ${session.activeOrderIds.length}  →  ☕` : "😊  ✓");
-    this.prepVisual.setText(recipe ? expected ? cafeStep(expected).icon : recipe.icon : "✨");
+    updateRestaurantPresentation(this, {
+      orders: session.activeOrderIds.map((id) => session.orders.find((candidate) => candidate.id === id)).filter(Boolean).map((candidate) => ({
+        icons: candidate.recipes.map((id) => CAFE_RECIPES[id].icon).join(" "),
+        patience: candidate.patience / candidate.maxPatience,
+      })),
+      trays: session.trays.map((candidate) => {
+        const customer = candidate.orderId ? session.orders.find((entry) => entry.id === candidate.orderId) : null;
+        const item = customer ? CAFE_RECIPES[customer.recipes[candidate.recipeIndex]] : null;
+        return { active: candidate.index === session.activeTray, icon: item?.icon || "" };
+      }),
+      workerState: this.station?.status || "idle",
+      expectedIcon: expected ? cafeStep(expected).icon : recipe?.icon,
+    });
     this.updateDomState();
   }
 

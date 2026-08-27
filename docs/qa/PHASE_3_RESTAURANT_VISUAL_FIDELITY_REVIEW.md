@@ -1,6 +1,6 @@
 # Phase 3 Restaurant Visual Fidelity Review
 
-Status: **CONFIRMED FIDELITY FAILURE — RECOVERY REQUIRED**  
+Status: **RESTAURANT PRESENTATION RECOVERED — VERIFIED ADAPTED PARITY**
 Review branch: `phase-3-legacy-fidelity-recovery`  
 Protected visual reference: `kindworks_little_bakery_v65_house_rescue_reintegrated_fixed.html`  
 Review viewport: `1280×720`  
@@ -8,29 +8,44 @@ Reviewed: Little Bakery, Corner Café, Morning Mug Coffee, Riverside Kitchen, So
 
 ## Review conclusion
 
-The concern is correct. The Phaser restaurant scenes do not presently reproduce the authored visual experience in the protected HTML game.
+The original concern was correct. At the audit baseline, the Phaser restaurant scenes did not reproduce the authored visual experience in the protected HTML game. That baseline is retained below so the recovery can be reviewed honestly.
 
 The protected HTML contains complete top-down restaurant presentations: individual pixel customers seated at tables, order bubbles, counter tickets, three physical preparation spaces, venue furniture, appliances, ingredient displays, a worker on the floor, carried food, appliance loading/unloading, and distinct visual state changes. South Shore Scoops additionally constructs complete products as crisp procedural artwork and animates customers leaving the queue.
 
-The Phaser versions preserve much of the campaign data and service logic, but their presentation is predominantly large coloured rectangles, a few emoji, static placeholder workers, and an oversized DOM work panel covering the room. These scenes currently communicate the rules, but they do not look or feel like the authored HTML games.
+The Phase 3 recovery replaced those placeholder rooms with a shared Phaser-native presentation system. The five operated venues now reproduce the protected composition, state hierarchy, and visual instructions while retaining the compact Phase 2 mobile control adaptation.
 
-This review does **not** approve the Phaser restaurant visuals as a mobile adaptation. The reduced Phase 2 control hierarchy may remain, but the underlying rooms, actors, food, appliances, animation, and state feedback must be recovered.
+This is classified as **VERIFIED ADAPTED presentation parity**, rather than pixel-identical final art. The protected HTML's procedural visual design is represented in Phaser code and every new runtime art family has a stable Sprite AI label. Future Sprite AI assets can replace these labelled procedural objects without changing the recovered layout or gameplay contract.
+
+## Implemented recovery
+
+- Rebuilt the protected wide dining-room, narrow order/prep counter, and working-kitchen composition.
+- Restored six dining places, chairs, individual pixel customers, large order bubbles, and live patience colour.
+- Restored three physical tickets and three independent preparation spaces.
+- Restored venue appliances and fixtures: kettle/toaster/hob/oven, grinder/espresso/steam/cold, prep/pan/pot/grill/oven, bakery stations, sink, cold storage, stove, pass, pantry, and work surfaces.
+- Restored a visible venue worker, carried payload, and stepped movement between preparation and appliance state.
+- Restored in-room food and active-step presentation linked to the real service state.
+- Rebuilt South Shore Scoops as a numbered picture counter with procedural containers, scoops, sauces, finishes, drinks, lollies, customer pictures, build board, tray, and large selected-order artwork.
+- Replaced the obstructive desktop panel with protected-style compact top and bottom rails while keeping 44-pixel touch targets.
+- Added stable `KW-BAKERY-*`, `KW-CAFE-*`, `KW-MUG-*`, `KW-RIVERSIDE-*`, `KW-SCOOPS-*`, and shared restaurant runtime labels.
+- Left campaign data, recipes, level counts, rewards, unlocks, saves, patience, failure, replay, and town integration unchanged.
 
 ## Operated comparison evidence
 
 Each pair was entered and started through the normal visible controls in both builds.
 
-| Venue | Protected HTML | Current Phaser |
-| --- | --- | --- |
-| Little Bakery | `phase3-evidence/restaurants/legacy-little-bakery.jpg` | `phase3-evidence/restaurants/phaser-little-bakery.jpg` |
-| Corner Café | `phase3-evidence/restaurants/legacy-corner-cafe.jpg` | `phase3-evidence/restaurants/phaser-corner-cafe.jpg` |
-| Morning Mug | `phase3-evidence/restaurants/legacy-morning-mug.jpg` | `phase3-evidence/restaurants/phaser-morning-mug.jpg` |
-| Riverside Kitchen | `phase3-evidence/restaurants/legacy-riverside-kitchen.jpg` | `phase3-evidence/restaurants/phaser-riverside-kitchen.jpg` |
-| South Shore Scoops | `phase3-evidence/restaurants/legacy-south-shore-scoops.jpg` | `phase3-evidence/restaurants/phaser-south-shore-scoops.jpg` |
+| Venue | Protected HTML | Audit baseline | Recovered Phaser |
+| --- | --- | --- | --- |
+| Little Bakery | `phase3-evidence/restaurants/legacy-little-bakery.jpg` | `phase3-evidence/restaurants/phaser-little-bakery.jpg` | `phase3-evidence/restaurants/after-phase3-little-bakery.jpg` |
+| Corner Café | `phase3-evidence/restaurants/legacy-corner-cafe.jpg` | `phase3-evidence/restaurants/phaser-corner-cafe.jpg` | `phase3-evidence/restaurants/after-phase3-corner-cafe.jpg` |
+| Morning Mug | `phase3-evidence/restaurants/legacy-morning-mug.jpg` | `phase3-evidence/restaurants/phaser-morning-mug.jpg` | `phase3-evidence/restaurants/after-phase3-morning-mug.jpg` |
+| Riverside Kitchen | `phase3-evidence/restaurants/legacy-riverside-kitchen.jpg` | `phase3-evidence/restaurants/phaser-riverside-kitchen.jpg` | `phase3-evidence/restaurants/after-phase3-riverside-kitchen.jpg` |
+| South Shore Scoops | `phase3-evidence/restaurants/legacy-south-shore-scoops.jpg` | `phase3-evidence/restaurants/phaser-south-shore-scoops.jpg` | `phase3-evidence/restaurants/after-phase3-south-shore-scoops.jpg` |
 
-The evidence is intentionally recorded at the original 1280×720 reference size. Phone and tablet matrices remain required after each recovery batch.
+The comparison evidence is recorded at the original 1280×720 reference size. The recovered build was also operated across the complete required landscape matrix: 568×320, 667×375, 736×414, 812×375, 844×390, 1024×768, 1180×820, 1280×720, and 1366×768. All nine sizes had no document overflow and retained 44-pixel touch targets. Every venue was additionally operated at 568×320, 844×390, 1024×768, and 1280×720.
 
-## Shared visual gap
+Portrait 390×844 displayed only “Turn your device sideways to play.” A live Morning Mug shift preserved the same scene, level, phase, and served count after portrait pause and landscape resume.
+
+## Baseline shared visual gap (before recovery)
 
 | Area | Protected HTML behavior | Current Phaser behavior | Classification |
 | --- | --- | --- | --- |
@@ -45,7 +60,7 @@ The evidence is intentionally recorded at the original 1280×720 reference size.
 
 Protected source anchors include the restaurant DOM and visual systems around lines 498–930 and 1519–1635, the kitchen worker/payload animation around lines 2057–2122, the shared cooking renderer around lines 5250–5313, the Bakery renderer around lines 5505–5557, and the Scoops product/customer renderer around lines 5678–5725.
 
-## Venue findings
+## Baseline venue findings (before recovery)
 
 ### Little Bakery
 
@@ -165,9 +180,9 @@ Every recovered object must receive a stable asset label before Sprite AI produc
 
 Labels must be attached to runtime objects and included in the existing Milestone 45 inventory so a later Sprite AI export can account for every visible object and state.
 
-## Recovery order
+## Completed recovery order
 
-Do not rebuild all five venues in one untestable change.
+The work was implemented through one shared foundation and verified venue by venue before the final regression:
 
 1. **Shared kitchen presentation foundation**
    - Create reusable customer, table, ticket, tray, worker, carried-payload, appliance, and food-render state contracts.
@@ -198,6 +213,6 @@ Do not rebuild all five venues in one untestable change.
 
 ## Review verdict
 
-**FAIL for restaurant visual fidelity.**
+**PASS for restaurant code-driven visual fidelity, with VERIFIED ADAPTED mobile presentation.**
 
-The restaurant data and much of the gameplay logic are substantially migrated, and Little Bakery’s concurrent model is now recovered. The restaurant presentation is not yet a faithful Phaser migration. Phase 3 must treat the five venue visual recoveries as required work, not optional future art polish.
+The five restaurant games no longer use placeholder colour bands or aggregate emoji. Their protected visual composition, individual actors, customer orders, tickets, preparation spaces, appliances, venue fixtures, product state, and Scoops picture-building language are represented in Phaser and verified through real operation. Final Sprite AI replacement art remains a labelled production-art task, not an untracked migration gap.

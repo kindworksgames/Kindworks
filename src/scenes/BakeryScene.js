@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { BAKERY_APPLIANCES, BAKERY_RECIPES, bakeryStep } from "../data/bakery.js";
+import { createRestaurantPresentation, updateRestaurantPresentation } from "../ui/RestaurantPresentation.js";
 
 const ROOM = Object.freeze({ width: 1280, height: 720 });
 
@@ -36,30 +37,7 @@ export class BakeryScene extends Phaser.Scene {
   }
 
   drawInterior() {
-    this.add.rectangle(ROOM.width / 2, ROOM.height / 2, ROOM.width, ROOM.height, 0x8eb4b5);
-    const art = this.add.graphics();
-    art.fillStyle(0x4d5a61, 1); art.fillRect(0, 0, 360, ROOM.height);
-    art.fillStyle(0xb97650, 1); art.fillRect(360, 0, 420, ROOM.height);
-    art.fillStyle(0x86b7bd, 1); art.fillRect(780, 0, 500, ROOM.height);
-    art.lineStyle(7, 0x292238, 1); art.lineBetween(360, 0, 360, ROOM.height); art.lineBetween(780, 0, 780, ROOM.height);
-    art.fillStyle(0x9b6044, 1); art.fillRoundedRect(390, 110, 360, 165, 12); art.fillRoundedRect(390, 350, 360, 230, 12);
-    art.fillStyle(0xd9c394, 1); art.fillRoundedRect(410, 380, 320, 170, 10);
-    art.fillStyle(0xae704e, 1); art.fillRoundedRect(820, 120, 410, 190, 12); art.fillRoundedRect(820, 390, 410, 210, 12);
-    art.fillStyle(0x292238, 1); art.fillRect(0, 0, ROOM.width, 68);
-    for (const [x, y] of [[95, 210], [255, 210], [95, 465], [255, 465]]) {
-      art.fillStyle(0x8f563f, 1); art.fillRoundedRect(x - 54, y - 38, 108, 76, 12);
-      art.fillStyle(0xf4dfb2, 1); art.fillCircle(x, y, 15);
-    }
-    for (const [x, icon] of [[870, "⚙️"], [965, "🤲"], [1060, "↔️"], [1155, "▣"]]) {
-      art.fillStyle(0x9aaeb2, 1); art.fillRoundedRect(x - 38, 155, 76, 84, 8);
-      this.add.text(x, 197, icon, { fontSize: "32px" }).setOrigin(0.5).setDepth(4);
-    }
-    this.add.text(28, 24, "LITTLE BAKERY · CUSTOMER TABLES", { color: "#fff1c9", fontFamily: "ui-monospace, monospace", fontSize: "17px", fontStyle: "bold" }).setDepth(5);
-    this.add.text(405, 24, "ORDER COUNTER & PREP BENCH", { color: "#fff1c9", fontFamily: "ui-monospace, monospace", fontSize: "17px", fontStyle: "bold" }).setDepth(5);
-    this.add.text(815, 24, "BAKERY KITCHEN", { color: "#fff1c9", fontFamily: "ui-monospace, monospace", fontSize: "17px", fontStyle: "bold" }).setDepth(5);
-    this.customerVisual = this.add.text(180, 330, "🧑  →  🥐", { fontSize: "54px", backgroundColor: "#fff1c9", padding: { x: 16, y: 10 }, color: "#292238" }).setOrigin(0.5).setDepth(6);
-    this.prepVisual = this.add.text(570, 465, "🥣", { fontSize: "66px" }).setOrigin(0.5).setDepth(6);
-    this.bakerVisual = this.add.text(1030, 520, "🧑‍🍳", { fontSize: "78px" }).setOrigin(0.5).setDepth(6);
+    createRestaurantPresentation(this, "bakery");
   }
 
   bindInterface() {
@@ -159,14 +137,14 @@ export class BakeryScene extends Phaser.Scene {
       }
       this.stationBusy = true;
       this.busyTrays.add(trayIndex);
-      this.bakerVisual.setText("🧑‍🍳💨");
+      this.restaurantPresentation.workerTag.setText("WORKING…");
       this.setMessage(`${definition.name} working…`, "working");
       this.render();
       this.time.delayedCall(Math.max(90, definition.seconds * 1000 * this.timingScale), () => {
         if (this.transitioning) return;
         this.busyTrays.delete(trayIndex);
         this.stationBusy = this.busyTrays.size > 0;
-        this.bakerVisual.setText(this.stationBusy ? "🧑‍🍳💨" : "🧑‍🍳");
+        this.restaurantPresentation.workerTag.setText(this.stationBusy ? "WORKING…" : "READY");
         this.finishStep(stepId, trayIndex);
       });
       return true;
@@ -226,7 +204,7 @@ export class BakeryScene extends Phaser.Scene {
     }
     document.querySelector("#bakery-progress-summary").textContent = `${Object.keys(progress.completed).length} cleared · ${progress.totalStars} stars · ${progress.lifetimeServed} served`;
     document.querySelector("#bakery-balance").textContent = `🪙 ${this.gameState.getSnapshot().economy.coins}`;
-    if (!session) { this.updateDomState(); return; }
+    if (!session) { updateRestaurantPresentation(this); this.updateDomState(); return; }
     const order = this.bakery.currentOrder();
     const tray = this.bakery.tray();
     const recipe = this.bakery.currentRecipe();
@@ -259,8 +237,18 @@ export class BakeryScene extends Phaser.Scene {
     }
     this.worktop?.classList.toggle("hidden", !expected);
     this.controls?.classList.toggle("hidden", !canRevise && Boolean(expected));
-    this.customerVisual.setText(session.activeOrderIds.length ? `${session.activeOrderIds.length}× 🧑  →  ${recipe?.icon || "🥐"}` : "😊  ✓");
-    this.prepVisual.setText(recipe ? expected ? bakeryStep(expected).icon : recipe.icon : "✨");
+    updateRestaurantPresentation(this, {
+      orders: session.activeOrderIds.map((id) => session.orders.find((candidate) => candidate.id === id)).filter(Boolean).map((candidate) => ({
+        icons: candidate.recipes.map((id) => BAKERY_RECIPES[id].icon).join(" "),
+        patience: candidate.patience / candidate.maxPatience,
+      })),
+      trays: session.trays.map((candidate) => ({
+        active: candidate.index === session.activeTray,
+        icon: this.bakery.currentRecipe(candidate)?.icon || candidate.completedRecipes.map((id) => BAKERY_RECIPES[id]?.icon || "").join(""),
+      })),
+      workerState: this.stationBusy ? "working" : "idle",
+      expectedIcon: expected ? bakeryStep(expected).icon : recipe?.icon,
+    });
     this.updateDomState();
   }
 

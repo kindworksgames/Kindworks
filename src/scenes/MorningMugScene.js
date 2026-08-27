@@ -5,6 +5,7 @@ import {
   MORNING_MUG_RECIPES,
   morningMugStep,
 } from "../data/morningMug.js";
+import { createRestaurantPresentation, updateRestaurantPresentation } from "../ui/RestaurantPresentation.js";
 
 const ROOM = Object.freeze({ width: 1280, height: 720 });
 
@@ -44,30 +45,7 @@ export class MorningMugScene extends Phaser.Scene {
   }
 
   drawInterior() {
-    this.add.rectangle(ROOM.width / 2, ROOM.height / 2, ROOM.width, ROOM.height, 0x86b7b3);
-    const art = this.add.graphics();
-    art.fillStyle(0x4f8587, 1); art.fillRect(0, 0, 500, ROOM.height);
-    art.fillStyle(0xd0a46b, 1); art.fillRect(500, 0, 390, ROOM.height);
-    art.fillStyle(0x547b79, 1); art.fillRect(890, 0, 390, ROOM.height);
-    art.lineStyle(7, 0x1e3435, 1); art.lineBetween(500, 0, 500, ROOM.height); art.lineBetween(890, 0, 890, ROOM.height);
-    art.fillStyle(0x1e3435, 1); art.fillRect(0, 0, ROOM.width, 68);
-    for (const [x, y] of [[105, 190], [350, 190], [105, 465], [350, 465]]) {
-      art.fillStyle(0x76503e, 1); art.fillRoundedRect(x - 64, y - 44, 128, 88, 14);
-      art.fillStyle(0xf6e4ba, 1); art.fillCircle(x, y, 17);
-      art.fillStyle(0x3c4c52, 1); art.fillRect(x - 5, y - 17, 10, 25);
-    }
-    art.fillStyle(0x875c43, 1); art.fillRoundedRect(535, 120, 320, 185, 13); art.fillRoundedRect(535, 385, 320, 210, 13);
-    art.fillStyle(0xe8d1a2, 1); art.fillRoundedRect(560, 415, 270, 145, 10);
-    for (const x of [945, 1040, 1135, 1230]) {
-      art.fillStyle(0xb2c4c1, 1); art.fillRoundedRect(x - 34, 155, 68, 82, 8);
-      art.fillStyle(0x293e40, 1); art.fillRoundedRect(x - 25, 166, 50, 55, 5);
-    }
-    this.add.text(28, 24, "MORNING MUG · COFFEE LOUNGE", { color: "#fff1c9", fontFamily: "ui-monospace, monospace", fontSize: "17px", fontStyle: "bold" }).setDepth(5);
-    this.add.text(535, 24, "ORDER COUNTER & THREE DRINK TRAYS", { color: "#fff1c9", fontFamily: "ui-monospace, monospace", fontSize: "16px", fontStyle: "bold" }).setDepth(5);
-    this.add.text(915, 24, "BARISTA STATIONS", { color: "#fff1c9", fontFamily: "ui-monospace, monospace", fontSize: "17px", fontStyle: "bold" }).setDepth(5);
-    this.customerVisual = this.add.text(250, 330, "🧑  ☕  🧑", { fontSize: "48px", backgroundColor: "#fff1c9", padding: { x: 16, y: 10 }, color: "#1e3435" }).setOrigin(0.5).setDepth(6);
-    this.prepVisual = this.add.text(695, 485, "☕  ① ② ③", { fontSize: "52px" }).setOrigin(0.5).setDepth(6);
-    this.baristaVisual = this.add.text(1080, 505, "🧑‍🍳", { fontSize: "78px" }).setOrigin(0.5).setDepth(6);
+    createRestaurantPresentation(this, "mug");
   }
 
   bindInterface() {
@@ -145,18 +123,18 @@ export class MorningMugScene extends Phaser.Scene {
         this.setMessage(rejected.message, "error"); this.render(); return false;
       }
       if (this.station?.status === "ready") {
-        this.station = null; this.baristaVisual.setText("🧑‍🍳");
+        this.station = null; this.restaurantPresentation.workerTag.setText("READY");
         return this.finishStep(stepId);
       }
       if (this.station) return false;
       this.station = { id: stepId, status: "working" };
-      this.baristaVisual.setText("🧑‍🍳💨");
+      this.restaurantPresentation.workerTag.setText("WORKING…");
       this.setMessage(`${definition.name} working…`, "working");
       this.render();
       this.time.delayedCall(Math.max(90, definition.seconds * 1000 * this.timingScale), () => {
         if (this.transitioning || !this.station || this.station.id !== stepId) return;
         this.station.status = "ready";
-        this.baristaVisual.setText("🧑‍🍳✨");
+        this.restaurantPresentation.workerTag.setText("READY · TAP");
         this.setMessage(`${definition.name} ready. Tap it again.`, "success");
         this.render();
       });
@@ -215,7 +193,7 @@ export class MorningMugScene extends Phaser.Scene {
     }
     document.querySelector("#morning-mug-progress-summary").textContent = `${Object.keys(progress.completed).length} cleared · ${progress.totalStars} stars · ${progress.lifetimeServed} served`;
     document.querySelector("#morning-mug-balance").textContent = `🪙 ${this.gameState.getSnapshot().economy.coins}`;
-    if (!session) { this.updateDomState(); return; }
+    if (!session) { updateRestaurantPresentation(this); this.updateDomState(); return; }
     const tray = session.trays[session.activeTray]; const customerOrder = tray?.orderId ? session.orders.find((candidate) => candidate.id === tray.orderId) : null;
     const recipe = customerOrder ? MORNING_MUG_RECIPES[customerOrder.recipes[tray.recipeIndex]] : null; const expected = recipe?.steps?.[tray.stepIndex] || null;
     document.querySelector("#morning-mug-level-name").textContent = `Level ${session.level.level} · ${session.level.name}`;
@@ -241,8 +219,19 @@ export class MorningMugScene extends Phaser.Scene {
     }
     this.worktop?.classList.toggle("hidden", !expected);
     this.controls?.classList.toggle("hidden", !canRevise && Boolean(expected));
-    this.customerVisual.setText(session.activeOrderIds.length ? `🧑 × ${session.activeOrderIds.length}  →  ☕` : "😊  ✓");
-    this.prepVisual.setText(recipe ? expected ? morningMugStep(expected).icon : recipe.icon : "✨");
+    updateRestaurantPresentation(this, {
+      orders: session.activeOrderIds.map((id) => session.orders.find((candidate) => candidate.id === id)).filter(Boolean).map((candidate) => ({
+        icons: candidate.recipes.map((id) => MORNING_MUG_RECIPES[id].icon).join(" "),
+        patience: candidate.patience / candidate.maxPatience,
+      })),
+      trays: session.trays.map((candidate) => {
+        const customer = candidate.orderId ? session.orders.find((entry) => entry.id === candidate.orderId) : null;
+        const item = customer ? MORNING_MUG_RECIPES[customer.recipes[candidate.recipeIndex]] : null;
+        return { active: candidate.index === session.activeTray, icon: item?.icon || "" };
+      }),
+      workerState: this.station?.status || "idle",
+      expectedIcon: expected ? morningMugStep(expected).icon : recipe?.icon,
+    });
     this.updateDomState();
   }
 

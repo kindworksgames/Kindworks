@@ -5387,3 +5387,165 @@ body[data-modal-open="true"] .interaction-prompt { visibility: hidden; pointer-e
     flex-basis: 62px;
   }
 }
+
+/* Phase 3 — protected-HTML restaurant presentation recovery.
+   During active shifts the Phaser room remains the main picture. The DOM layer
+   becomes the original game's compact top status and bottom interaction rails. */
+@media (orientation: landscape) {
+  body[data-game-scene="BakeryScene"] #bakery-hud[data-bakery-view="shift"],
+  body[data-game-scene="CafeScene"] #cafe-hud[data-cafe-view="shift"],
+  body[data-game-scene="MorningMugScene"] #morning-mug-hud[data-morning-mug-view="shift"],
+  body[data-game-scene="RiversideKitchenScene"] #riverside-kitchen-hud[data-riverside-kitchen-view="shift"],
+  body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] {
+    position: fixed;
+    inset: max(4px, env(safe-area-inset-top)) max(4px, env(safe-area-inset-right)) max(4px, env(safe-area-inset-bottom)) max(4px, env(safe-area-inset-left));
+    width: auto;
+    max-height: none;
+    overflow: visible;
+    pointer-events: none;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  body[data-game-scene="BakeryScene"] #bakery-hud[data-bakery-view="shift"] .bakery-hud-header,
+  body[data-game-scene="CafeScene"] #cafe-hud[data-cafe-view="shift"] .cafe-hud-header,
+  body[data-game-scene="MorningMugScene"] #morning-mug-hud[data-morning-mug-view="shift"] .cafe-hud-header,
+  body[data-game-scene="RiversideKitchenScene"] #riverside-kitchen-hud[data-riverside-kitchen-view="shift"] .cafe-hud-header,
+  body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-hud-header {
+    position: absolute;
+    inset: 0 0 auto;
+    min-height: 54px;
+    padding: 5px 8px;
+    pointer-events: auto;
+    border: 3px solid #292238;
+    border-radius: 9px;
+    box-shadow: 3px 4px 0 rgb(23 25 41 / 38%);
+  }
+
+  body[data-game-scene="BakeryScene"] #bakery-hud[data-bakery-view="shift"] :is(.bakery-hud-header p, .bakery-hud-header small),
+  body[data-game-scene="CafeScene"] #cafe-hud[data-cafe-view="shift"] :is(.cafe-hud-header p, .cafe-hud-header small),
+  body[data-game-scene="MorningMugScene"] #morning-mug-hud[data-morning-mug-view="shift"] :is(.cafe-hud-header p, .cafe-hud-header small),
+  body[data-game-scene="RiversideKitchenScene"] #riverside-kitchen-hud[data-riverside-kitchen-view="shift"] :is(.cafe-hud-header p, .cafe-hud-header small),
+  body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] :is(.scoops-hud-header p, .scoops-hud-header small) { display: none; }
+
+  body[data-game-scene="BakeryScene"] #bakery-hud[data-bakery-view="shift"] .bakery-shift,
+  body[data-game-scene="CafeScene"] #cafe-hud[data-cafe-view="shift"] .cafe-shift,
+  body[data-game-scene="MorningMugScene"] #morning-mug-hud[data-morning-mug-view="shift"] .cafe-shift,
+  body[data-game-scene="RiversideKitchenScene"] #riverside-kitchen-hud[data-riverside-kitchen-view="shift"] .cafe-shift,
+  body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-shift { display: contents; }
+
+  body[data-game-scene="BakeryScene"] #bakery-hud[data-bakery-view="shift"] :is(.bakery-shift-heading, .bakery-order),
+  body[data-game-scene="CafeScene"] #cafe-hud[data-cafe-view="shift"] :is(.cafe-shift-heading, .cafe-current),
+  body[data-game-scene="MorningMugScene"] #morning-mug-hud[data-morning-mug-view="shift"] :is(.cafe-shift-heading, .cafe-current),
+  body[data-game-scene="RiversideKitchenScene"] #riverside-kitchen-hud[data-riverside-kitchen-view="shift"] :is(.cafe-shift-heading, .cafe-current),
+  body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] :is(.scoops-shift-heading, .scoops-current) {
+    position: absolute;
+    top: 58px;
+    min-height: 48px;
+    padding: 4px 7px;
+    overflow: hidden;
+    pointer-events: auto;
+    border: 3px solid #292238;
+    border-radius: 8px;
+    background: #fff1c9;
+    box-shadow: 2px 3px 0 rgb(23 25 41 / 32%);
+  }
+
+  body[data-game-scene="BakeryScene"] #bakery-hud[data-bakery-view="shift"] .bakery-shift-heading,
+  body[data-game-scene="CafeScene"] #cafe-hud[data-cafe-view="shift"] .cafe-shift-heading,
+  body[data-game-scene="MorningMugScene"] #morning-mug-hud[data-morning-mug-view="shift"] .cafe-shift-heading,
+  body[data-game-scene="RiversideKitchenScene"] #riverside-kitchen-hud[data-riverside-kitchen-view="shift"] .cafe-shift-heading,
+  body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-shift-heading { left: 0; width: 158px; }
+
+  body[data-game-scene="BakeryScene"] #bakery-hud[data-bakery-view="shift"] .bakery-order,
+  body[data-game-scene="CafeScene"] #cafe-hud[data-cafe-view="shift"] .cafe-current,
+  body[data-game-scene="MorningMugScene"] #morning-mug-hud[data-morning-mug-view="shift"] .cafe-current,
+  body[data-game-scene="RiversideKitchenScene"] #riverside-kitchen-hud[data-riverside-kitchen-view="shift"] .cafe-current,
+  body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-current { right: 0; left: auto !important; width: min(270px, calc(100vw - 170px)); }
+
+  body[data-game-scene="BakeryScene"] #bakery-hud[data-bakery-view="shift"] .bakery-shift-heading,
+  body[data-game-scene="CafeScene"] #cafe-hud[data-cafe-view="shift"] .cafe-shift-heading,
+  body[data-game-scene="MorningMugScene"] #morning-mug-hud[data-morning-mug-view="shift"] .cafe-shift-heading,
+  body[data-game-scene="RiversideKitchenScene"] #riverside-kitchen-hud[data-riverside-kitchen-view="shift"] .cafe-shift-heading,
+  body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-shift-heading { right: auto !important; }
+
+  body[data-game-scene="BakeryScene"] #bakery-hud[data-bakery-view="shift"] :is(.bakery-orders, .bakery-trays, .bakery-customer-progress),
+  body[data-game-scene="CafeScene"] #cafe-hud[data-cafe-view="shift"] :is(.cafe-orders, .cafe-trays),
+  body[data-game-scene="MorningMugScene"] #morning-mug-hud[data-morning-mug-view="shift"] :is(.cafe-orders, .cafe-trays),
+  body[data-game-scene="RiversideKitchenScene"] #riverside-kitchen-hud[data-riverside-kitchen-view="shift"] :is(.cafe-orders, .cafe-trays),
+  body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] :is(.scoops-customers, .scoops-preparation) { display: none; }
+
+  body[data-game-scene="BakeryScene"] #bakery-hud[data-bakery-view="shift"] :is(.bakery-worktop, .bakery-controls),
+  body[data-game-scene="CafeScene"] #cafe-hud[data-cafe-view="shift"] :is(.cafe-worktop, .cafe-controls),
+  body[data-game-scene="MorningMugScene"] #morning-mug-hud[data-morning-mug-view="shift"] :is(.morning-mug-worktop, .cafe-controls),
+  body[data-game-scene="RiversideKitchenScene"] #riverside-kitchen-hud[data-riverside-kitchen-view="shift"] :is(.riverside-kitchen-worktop, .cafe-controls),
+  body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] :is(.south-shore-scoops-worktop, .scoops-controls) {
+    position: absolute;
+    pointer-events: auto;
+    border: 3px solid #292238;
+    border-radius: 8px;
+    background: #fff1c9;
+  }
+
+  body[data-game-scene="BakeryScene"] #bakery-hud[data-bakery-view="shift"] .bakery-worktop,
+  body[data-game-scene="CafeScene"] #cafe-hud[data-cafe-view="shift"] .cafe-worktop,
+  body[data-game-scene="MorningMugScene"] #morning-mug-hud[data-morning-mug-view="shift"] .morning-mug-worktop,
+  body[data-game-scene="RiversideKitchenScene"] #riverside-kitchen-hud[data-riverside-kitchen-view="shift"] .riverside-kitchen-worktop,
+  body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] .south-shore-scoops-worktop {
+    right: 188px;
+    bottom: 48px;
+    left: 0;
+    height: 62px;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  body[data-game-scene="BakeryScene"] #bakery-hud[data-bakery-view="shift"] .bakery-controls,
+  body[data-game-scene="CafeScene"] #cafe-hud[data-cafe-view="shift"] .cafe-controls,
+  body[data-game-scene="MorningMugScene"] #morning-mug-hud[data-morning-mug-view="shift"] .cafe-controls,
+  body[data-game-scene="RiversideKitchenScene"] #riverside-kitchen-hud[data-riverside-kitchen-view="shift"] .cafe-controls,
+  body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-controls {
+    right: 0;
+    bottom: 48px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(82px, 1fr));
+    gap: 4px;
+    width: 184px;
+    height: 62px;
+    padding: 4px;
+  }
+
+  body[data-game-scene="BakeryScene"] #bakery-hud[data-bakery-view="shift"] .bakery-status,
+  body[data-game-scene="CafeScene"] #cafe-hud[data-cafe-view="shift"] .cafe-status,
+  body[data-game-scene="MorningMugScene"] #morning-mug-hud[data-morning-mug-view="shift"] .cafe-status,
+  body[data-game-scene="RiversideKitchenScene"] #riverside-kitchen-hud[data-riverside-kitchen-view="shift"] .cafe-status,
+  body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-status {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    max-height: 44px;
+    overflow: hidden;
+    pointer-events: auto;
+    border: 3px solid #292238;
+    border-radius: 8px;
+    box-shadow: 2px 3px 0 rgb(23 25 41 / 32%);
+  }
+
+  body[data-game-scene="BakeryScene"] #bakery-hud[data-bakery-view="shift"] :is(.bakery-step-list, .bakery-controls),
+  body[data-game-scene="CafeScene"] #cafe-hud[data-cafe-view="shift"] :is(.cafe-step-list, .cafe-controls),
+  body[data-game-scene="MorningMugScene"] #morning-mug-hud[data-morning-mug-view="shift"] :is(.cafe-step-list, .cafe-controls),
+  body[data-game-scene="RiversideKitchenScene"] #riverside-kitchen-hud[data-riverside-kitchen-view="shift"] :is(.cafe-step-list, .cafe-controls),
+  body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] :is(.scoops-part-list, .scoops-controls) { max-height: 62px; }
+
+  body[data-game-scene="BakeryScene"] #bakery-hud[data-bakery-view="shift"] :is(.bakery-controls.hidden, .bakery-controls button.hidden, .bakery-worktop.hidden),
+  body[data-game-scene="CafeScene"] #cafe-hud[data-cafe-view="shift"] :is(.cafe-controls.hidden, .cafe-controls button.hidden, .cafe-worktop.hidden),
+  body[data-game-scene="MorningMugScene"] #morning-mug-hud[data-morning-mug-view="shift"] :is(.cafe-controls.hidden, .cafe-controls button.hidden, .morning-mug-worktop.hidden),
+  body[data-game-scene="RiversideKitchenScene"] #riverside-kitchen-hud[data-riverside-kitchen-view="shift"] :is(.cafe-controls.hidden, .cafe-controls button.hidden, .riverside-kitchen-worktop.hidden),
+  body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] :is(.scoops-controls.hidden, .scoops-controls button.hidden, .south-shore-scoops-worktop.hidden) { display: none; }
+}

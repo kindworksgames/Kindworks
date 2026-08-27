@@ -5,6 +5,7 @@ import {
   RIVERSIDE_KITCHEN_RECIPES,
   riversideKitchenStep,
 } from "../data/riversideKitchen.js";
+import { createRestaurantPresentation, updateRestaurantPresentation } from "../ui/RestaurantPresentation.js";
 
 const ROOM = Object.freeze({ width: 1280, height: 720 });
 
@@ -44,30 +45,7 @@ export class RiversideKitchenScene extends Phaser.Scene {
   }
 
   drawInterior() {
-    this.add.rectangle(ROOM.width / 2, ROOM.height / 2, ROOM.width, ROOM.height, 0xc99b69);
-    const art = this.add.graphics();
-    art.fillStyle(0x8c573f, 1); art.fillRect(0, 0, 475, ROOM.height);
-    art.fillStyle(0xd8b881, 1); art.fillRect(475, 0, 405, ROOM.height);
-    art.fillStyle(0x53676a, 1); art.fillRect(880, 0, 400, ROOM.height);
-    art.lineStyle(7, 0x3b2a25, 1); art.lineBetween(475, 0, 475, ROOM.height); art.lineBetween(880, 0, 880, ROOM.height);
-    art.fillStyle(0x3b2a25, 1); art.fillRect(0, 0, ROOM.width, 68);
-    for (const [x, y] of [[110, 185], [350, 185], [110, 455], [350, 455]]) {
-      art.fillStyle(0x684338, 1); art.fillRoundedRect(x - 72, y - 50, 144, 100, 16);
-      art.fillStyle(0xf1dfbd, 1); art.fillCircle(x, y, 22);
-      art.lineStyle(3, 0x916343, 1); art.strokeCircle(x, y, 22);
-    }
-    art.fillStyle(0x76503e, 1); art.fillRoundedRect(505, 115, 340, 205, 14); art.fillRoundedRect(505, 382, 340, 218, 14);
-    art.fillStyle(0xf0d7ad, 1); art.fillRoundedRect(535, 415, 280, 150, 10);
-    for (const [x, color] of [[930, 0xc7d0cb], [1015, 0x9ba5a2], [1100, 0xb66a46], [1185, 0x6a7072]]) {
-      art.fillStyle(color, 1); art.fillRoundedRect(x - 35, 145, 70, 95, 8);
-      art.fillStyle(0x283537, 1); art.fillRoundedRect(x - 27, 158, 54, 66, 5);
-    }
-    this.add.text(24, 24, "RIVERSIDE KITCHEN · DINING ROOM", { color: "#fff0d5", fontFamily: "ui-monospace, monospace", fontSize: "17px", fontStyle: "bold" }).setDepth(5);
-    this.add.text(505, 24, "PASS & THREE MEAL TRAYS", { color: "#fff0d5", fontFamily: "ui-monospace, monospace", fontSize: "16px", fontStyle: "bold" }).setDepth(5);
-    this.add.text(915, 24, "PREP · PAN · POT · GRILL · OVEN", { color: "#fff0d5", fontFamily: "ui-monospace, monospace", fontSize: "15px", fontStyle: "bold" }).setDepth(5);
-    this.customerVisual = this.add.text(240, 325, "🧑  🍽️  🧑", { fontSize: "46px", backgroundColor: "#fff0d5", padding: { x: 16, y: 10 }, color: "#3b2a25" }).setOrigin(0.5).setDepth(6);
-    this.prepVisual = this.add.text(680, 488, "🍽️  ① ② ③", { fontSize: "50px" }).setOrigin(0.5).setDepth(6);
-    this.chefVisual = this.add.text(1080, 510, "🧑‍🍳", { fontSize: "78px" }).setOrigin(0.5).setDepth(6);
+    createRestaurantPresentation(this, "riverside");
   }
 
   bindInterface() {
@@ -145,31 +123,31 @@ export class RiversideKitchenScene extends Phaser.Scene {
         this.setMessage(rejected.message, "error"); this.render(); return false;
       }
       if (this.station?.status === "ready") {
-        this.station = null; this.chefVisual.setText("🧑‍🍳");
+        this.station = null; this.restaurantPresentation.workerTag.setText("READY");
         return this.finishStep(stepId);
       }
       if (this.station?.status === "burnt") {
         const burnt = this.riversideKitchen.recordBurn();
-        this.station = null; this.chefVisual.setText("🧑‍🍳");
+        this.station = null; this.restaurantPresentation.workerTag.setText("READY");
         this.setMessage(burnt.message, "error"); this.render();
         return false;
       }
       if (this.station) return false;
       const station = { id: stepId, status: "working" };
       this.station = station;
-      this.chefVisual.setText("🧑‍🍳💨");
+      this.restaurantPresentation.workerTag.setText("WORKING…");
       this.setMessage(`${definition.name} cooking…`, "working");
       this.render();
       this.time.delayedCall(Math.max(90, definition.seconds * 1000 * this.timingScale), () => {
         if (this.transitioning || this.station !== station) return;
         this.station.status = "ready";
-        this.chefVisual.setText("🧑‍🍳✨");
+        this.restaurantPresentation.workerTag.setText("READY · TAP");
         this.setMessage(`${definition.name} ready. Tap it again.`, "success");
         this.render();
         this.time.delayedCall(Math.max(90, definition.burnWindow * 1000 * this.timingScale), () => {
           if (this.transitioning || this.station !== station || station.status !== "ready") return;
           station.status = "burnt";
-          this.chefVisual.setText("🧑‍🍳💥");
+          this.restaurantPresentation.workerTag.setText("BURNT");
           this.setMessage(`${definition.name} burnt. Tap to clear it.`, "error");
           this.render();
         });
@@ -229,7 +207,7 @@ export class RiversideKitchenScene extends Phaser.Scene {
     }
     document.querySelector("#riverside-kitchen-progress-summary").textContent = `${Object.keys(progress.completed).length} cleared · ${progress.totalStars} stars · ${progress.lifetimeServed} served`;
     document.querySelector("#riverside-kitchen-balance").textContent = `🪙 ${this.gameState.getSnapshot().economy.coins}`;
-    if (!session) { this.updateDomState(); return; }
+    if (!session) { updateRestaurantPresentation(this); this.updateDomState(); return; }
     const tray = session.trays[session.activeTray]; const customerOrder = tray?.orderId ? session.orders.find((candidate) => candidate.id === tray.orderId) : null;
     const recipe = customerOrder ? RIVERSIDE_KITCHEN_RECIPES[customerOrder.recipes[tray.recipeIndex]] : null; const expected = recipe?.steps?.[tray.stepIndex] || null;
     document.querySelector("#riverside-kitchen-level-name").textContent = `Level ${session.level.level} · ${session.level.name}`;
@@ -255,8 +233,19 @@ export class RiversideKitchenScene extends Phaser.Scene {
     }
     this.worktop?.classList.toggle("hidden", !expected);
     this.controls?.classList.toggle("hidden", !canRevise && Boolean(expected));
-    this.customerVisual.setText(session.activeOrderIds.length ? `🧑 × ${session.activeOrderIds.length}  →  🍽️` : "😊  ✓");
-    this.prepVisual.setText(recipe ? expected ? riversideKitchenStep(expected).icon : recipe.icon : "✨");
+    updateRestaurantPresentation(this, {
+      orders: session.activeOrderIds.map((id) => session.orders.find((candidate) => candidate.id === id)).filter(Boolean).map((candidate) => ({
+        icons: candidate.recipes.map((id) => RIVERSIDE_KITCHEN_RECIPES[id].icon).join(" "),
+        patience: candidate.patience / candidate.maxPatience,
+      })),
+      trays: session.trays.map((candidate) => {
+        const customer = candidate.orderId ? session.orders.find((entry) => entry.id === candidate.orderId) : null;
+        const item = customer ? RIVERSIDE_KITCHEN_RECIPES[customer.recipes[candidate.recipeIndex]] : null;
+        return { active: candidate.index === session.activeTray, icon: item?.icon || "" };
+      }),
+      workerState: this.station?.status || "idle",
+      expectedIcon: expected ? riversideKitchenStep(expected).icon : recipe?.icon,
+    });
     this.updateDomState();
   }
 

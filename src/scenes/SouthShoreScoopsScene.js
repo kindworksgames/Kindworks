@@ -6,6 +6,7 @@ import {
   southShoreScoopsOrderText,
   southShoreScoopsPart,
 } from "../data/southShoreScoops.js";
+import { createScoopsPresentation, updateScoopsPresentation } from "../ui/RestaurantPresentation.js";
 
 const ROOM = Object.freeze({ width: 1280, height: 720 });
 const PART_ORDER = Object.freeze(["cone", "waffle", "shavedCup", "sundaeCup", "cup", "drinkCup", "strawberry", "chocolate", "vanilla", "mint", "grape", "blueberry", "strawberrySauce", "chocolateSauce", "caramelSauce", "sprinkles", "chocBits", "marshmallows", "cherry", "milkshake", "lemonade", "shavedIce", "fruitSyrup", "lolly"]);
@@ -57,28 +58,7 @@ export class SouthShoreScoopsScene extends Phaser.Scene {
   }
 
   drawCounter() {
-    this.add.rectangle(ROOM.width / 2, ROOM.height / 2, ROOM.width, ROOM.height, 0x8fd0d2);
-    const art = this.add.graphics();
-    art.fillStyle(0x79c8d0, 1); art.fillRect(0, 0, ROOM.width, 230);
-    art.fillStyle(0xf2d787, 1); art.fillRect(0, 230, ROOM.width, 490);
-    art.fillStyle(0x69aebe, 1); art.fillRect(0, 205, ROOM.width, 55);
-    art.fillStyle(0xf7f1d0, 1); art.fillRect(0, 252, ROOM.width, 18);
-    for (let x = 25; x < ROOM.width; x += 84) {
-      art.fillStyle(x % 168 ? 0xf2e4b2 : 0xe9ce8c, 1); art.fillCircle(x, 318 + (x % 4) * 4, 9);
-    }
-    art.fillStyle(0x2e6d72, 1); art.fillRoundedRect(450, 72, 780, 510, 20);
-    art.fillStyle(0xfff1c9, 1); art.fillRoundedRect(480, 105, 720, 420, 16);
-    art.fillStyle(0xd75f63, 1); art.fillRect(480, 105, 720, 47);
-    for (let x = 510; x <= 1160; x += 93) {
-      art.fillStyle(0x8a5a43, 1); art.fillRoundedRect(x, 197, 70, 78, 8);
-      art.fillStyle([0xf6edc9, 0xee9aa8, 0x8c5a43, 0x8bd0a5, 0x7687c5, 0xaa78bd][Math.floor((x - 510) / 93) % 6], 1); art.fillEllipse(x + 35, 199, 62, 25);
-    }
-    art.fillStyle(0x8e6549, 1); art.fillRoundedRect(485, 350, 710, 145, 10);
-    art.fillStyle(0xf4dfb1, 1); art.fillRoundedRect(505, 370, 670, 103, 8);
-    this.add.text(24, 24, "SOUTH SHORE · BEACH QUEUE", { color: "#fff7d7", fontFamily: "ui-monospace, monospace", fontSize: "17px", fontStyle: "bold", backgroundColor: "#2e6d72", padding: { x: 10, y: 6 } }).setDepth(5);
-    this.add.text(490, 114, "SOUTH SHORE SCOOPS · PICTURE COUNTER", { color: "#fff7d7", fontFamily: "ui-monospace, monospace", fontSize: "18px", fontStyle: "bold" }).setDepth(5);
-    this.queueVisual = this.add.text(218, 430, "🙂  →  🙂  →  🙂", { fontSize: "44px", color: "#292238", backgroundColor: "#fff7d7", padding: { x: 14, y: 10 } }).setOrigin(0.5).setDepth(6);
-    this.buildVisual = this.add.text(835, 422, "🔻  ●  🍓  →  🍦", { fontSize: "42px", color: "#292238" }).setOrigin(0.5).setDepth(6);
+    createScoopsPresentation(this);
   }
 
   bindInterface() {
@@ -193,7 +173,7 @@ export class SouthShoreScoopsScene extends Phaser.Scene {
     }
     document.querySelector("#south-shore-scoops-progress-summary").textContent = `${Object.keys(progress.completed).length} cleared · ${progress.totalStars} stars · restoration tier ${progress.restorationTier}`;
     document.querySelector("#south-shore-scoops-balance").textContent = `🪙 ${this.gameState.getSnapshot().economy.coins}`;
-    if (!session) { this.updateDomState(); return; }
+    if (!session) { updateScoopsPresentation(this); this.updateDomState(); return; }
     const order = session.orders.find((candidate) => candidate.id === session.selectedOrderId) || null;
     const work = order ? session.work[order.id] : { build: [], tray: [] };
     const expectedItem = order?.items[work.tray.length] || null;
@@ -229,8 +209,12 @@ export class SouthShoreScoopsScene extends Phaser.Scene {
     if (this.addTrayButton) { this.addTrayButton.disabled = !canAddTray; this.addTrayButton.classList.toggle("hidden", !canAddTray); }
     if (this.serveButton) { this.serveButton.disabled = !canServe; this.serveButton.classList.toggle("hidden", !canServe); this.serveButton.textContent = "Serve"; }
     this.controls?.classList.toggle("hidden", !canUndo && !canDiscard && !canAddTray && !canServe);
-    this.queueVisual.setText(queue.length ? queue.map((_, index) => index === 0 ? "🙂" : "🧑").join("  →  ") : "😊  ✓");
-    this.buildVisual.setText(expectedItem ? expectedItem.parts.map((id) => SOUTH_SHORE_SCOOPS_PARTS[id].icon).join("  ") : "✨");
+    updateScoopsPresentation(this, {
+      customers: queue.map((customer) => ({ parts: customer.items[0]?.parts || [] })),
+      buildParts: work.build,
+      trayItems: work.tray,
+      selectedParts: expectedItem?.parts || [],
+    });
     this.updateDomState();
   }
 
