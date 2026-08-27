@@ -71,15 +71,18 @@ export class BakeryScene extends Phaser.Scene {
     this.replayButton = document.querySelector("#bakery-replay");
     this.returnButton = document.querySelector("#bakery-return");
     this.stepList = document.querySelector("#bakery-step-list");
+    this.worktop = document.querySelector(".bakery-worktop");
+    this.controls = document.querySelector(".bakery-controls");
     document.querySelector("#bakery-picker")?.classList.remove("hidden");
     document.querySelector("#bakery-shift")?.classList.add("hidden");
     document.querySelector("#bakery-result")?.classList.add("hidden");
-    if (this.exitButton) this.exitButton.textContent = "Exit bakery";
-    this.setMessage("Choose an available bakery level to begin.", "neutral");
+    if (this.hud) this.hud.dataset.bakeryView = "picker";
+    if (this.exitButton) this.exitButton.textContent = "Exit";
+    this.setMessage("Choose a bakery shift.", "neutral");
     this.onStart = () => this.startLevel(Number(this.levelSelect?.value || 1));
     this.onExit = () => this.requestExit();
     this.onUndo = () => { const result = this.bakery.undoStep(); this.setMessage(result.ok ? `${bakeryStep(result.removed).name} removed.` : result.message, result.ok ? "neutral" : "error"); this.render(); };
-    this.onDiscard = () => { const result = this.bakery.discardRecipe(); this.setMessage(result.ok ? "Preparation discarded. The customer is still waiting." : result.message, result.ok ? "error" : "neutral"); this.render(); };
+    this.onDiscard = () => { const result = this.bakery.discardRecipe(); this.setMessage(result.ok ? "Preparation cleared. Start again." : result.message, result.ok ? "error" : "neutral"); this.render(); };
     this.onServe = () => this.serveCurrentRecipe();
     this.onNext = () => this.startLevel(Math.min(150, (this.bakery.getActiveSession()?.level.level || 1) + 1));
     this.onReplay = () => this.startLevel(this.bakery.getActiveSession()?.level.level || 1);
@@ -106,7 +109,7 @@ export class BakeryScene extends Phaser.Scene {
     const hint = document.querySelector("#control-hint");
     if (badge) badge.textContent = "LITTLE BAKERY · MILESTONE 15";
     const landscapeMessage = document.querySelector("#landscape-required-message");
-    if (landscapeMessage) landscapeMessage.textContent = "Little Bakery is designed for landscape play. Turn your phone sideways to continue this shift.";
+    if (landscapeMessage) landscapeMessage.textContent = "Turn your device sideways to play.";
     if (status) status.textContent = "Inside Little Bakery";
     if (hint) hint.textContent = "Follow the highlighted recipe steps · Escape exits safely";
   }
@@ -121,7 +124,9 @@ export class BakeryScene extends Phaser.Scene {
     document.querySelector("#bakery-picker")?.classList.add("hidden");
     document.querySelector("#bakery-shift")?.classList.remove("hidden");
     document.querySelector("#bakery-result")?.classList.add("hidden");
-    this.setMessage(`Welcome ${result.session.orders[0].customerName}. Follow the highlighted steps for their order.`, "success");
+    if (this.hud) this.hud.dataset.bakeryView = "shift";
+    if (this.exitButton) this.exitButton.textContent = "Exit";
+    this.setMessage(`${result.session.orders[0].customerName} is ready. Follow the highlight.`, "success");
     this.render();
     return true;
   }
@@ -156,8 +161,8 @@ export class BakeryScene extends Phaser.Scene {
   finishStep(stepId) {
     const result = this.bakery.applyStep(stepId);
     if (!result.ok) this.setMessage(result.message, "error");
-    else if (result.complete) this.setMessage(`${result.recipe.name} is ready—finish the dish.`, "success");
-    else this.setMessage(`${result.step.name} added. Next: ${bakeryStep(result.expectedStep).name}.`, "neutral");
+    else if (result.complete) this.setMessage(`${result.recipe.name} is ready. Finish it.`, "success");
+    else this.setMessage(`Added ${result.step.name}. Next: ${bakeryStep(result.expectedStep).name}.`, "neutral");
     this.render();
     return result.ok;
   }
@@ -167,8 +172,8 @@ export class BakeryScene extends Phaser.Scene {
     const result = this.bakery.serveRecipe();
     if (!result.ok) { this.setMessage(result.message, "error"); this.render(); return false; }
     if (result.result) { this.showResult(result.result); return true; }
-    if (result.code === "dish-added") this.setMessage(`${result.message} Now prepare ${result.nextRecipe.name}.`, "success");
-    else this.setMessage(`${result.customerName} loved the order! ${result.nextCustomer} is ready next.`, "success");
+    if (result.code === "dish-added") this.setMessage(`Dish ready. Next: ${result.nextRecipe.name}.`, "success");
+    else this.setMessage(`${result.customerName} served. ${result.nextCustomer} is next.`, "success");
     this.render();
     return true;
   }
@@ -176,14 +181,15 @@ export class BakeryScene extends Phaser.Scene {
   showResult(result) {
     document.querySelector("#bakery-shift")?.classList.add("hidden");
     document.querySelector("#bakery-result")?.classList.remove("hidden");
+    if (this.hud) this.hud.dataset.bakeryView = "result";
     document.querySelector("#bakery-result-title").textContent = result.won ? "Shift complete!" : "Shift needs another try";
     document.querySelector("#bakery-result-stars").textContent = `${"★".repeat(result.stars)}${"☆".repeat(3 - result.stars)}`;
-    document.querySelector("#bakery-result-message").textContent = result.won ? result.firstClear ? "Every customer was served. The next bakery level is unlocked." : "Best score saved. Replay coins are first-clear only." : result.failureReason || "A customer left before their order was ready.";
+    document.querySelector("#bakery-result-message").textContent = result.won ? result.firstClear ? "All served. Next shift unlocked." : "Best score saved. Replay pays no coins." : result.failureReason || "A customer left. Try again.";
     document.querySelector("#bakery-result-accuracy").textContent = `${result.accuracy}%`;
     document.querySelector("#bakery-result-happiness").textContent = `${result.happiness}%`;
     document.querySelector("#bakery-result-waste").textContent = String(result.waste);
     document.querySelector("#bakery-result-coins").textContent = `+${result.coins}`;
-    this.setMessage(result.won ? "Bakery shift complete." : result.failureReason, result.won ? "success" : "error");
+    this.setMessage(result.won ? `Shift complete. +${result.coins} coins.` : result.failureReason, result.won ? "success" : "error");
     if (this.nextButton) this.nextButton.disabled = !result.won || this.bakery.getActiveSession().level.level >= 150;
     this.render();
   }
@@ -221,9 +227,17 @@ export class BakeryScene extends Phaser.Scene {
     const availableIds = [...new Set(session.level.menu.flatMap((id) => BAKERY_RECIPES[id].steps))];
     availableIds.sort((a, b) => a === expected ? -1 : b === expected ? 1 : (BAKERY_APPLIANCES[a] ? 1 : 0) - (BAKERY_APPLIANCES[b] ? 1 : 0));
     if (this.stepList) this.stepList.innerHTML = availableIds.map((id) => { const item = bakeryStep(id); const station = Boolean(BAKERY_APPLIANCES[id]); return `<button type="button" data-bakery-step="${id}" class="${id === expected ? "next" : ""} ${station ? "station" : "ingredient"}" ${this.stationBusy ? "disabled" : ""}><span>${item.icon}</span><strong>${item.name}</strong><small>${station ? "Station" : "Ingredient"}</small></button>`; }).join("");
-    if (this.undoButton) this.undoButton.disabled = this.stationBusy || session.stepIndex < 1;
-    if (this.discardButton) this.discardButton.disabled = this.stationBusy || session.stepIndex < 1;
-    if (this.serveButton) { this.serveButton.disabled = this.stationBusy || Boolean(expected); this.serveButton.textContent = session.recipeIndex < (order?.recipes.length || 0) - 1 ? "Finish dish" : "Serve customer"; }
+    const canRevise = !this.stationBusy && session.stepIndex > 0 && Boolean(expected);
+    if (this.undoButton) { this.undoButton.disabled = !canRevise; this.undoButton.classList.toggle("hidden", !canRevise); }
+    if (this.discardButton) { this.discardButton.disabled = !canRevise; this.discardButton.classList.toggle("hidden", !canRevise); }
+    if (this.serveButton) {
+      const canServe = !this.stationBusy && !expected;
+      this.serveButton.disabled = !canServe;
+      this.serveButton.classList.toggle("hidden", !canServe);
+      this.serveButton.textContent = session.recipeIndex < (order?.recipes.length || 0) - 1 ? "Finish dish" : "Serve";
+    }
+    this.worktop?.classList.toggle("hidden", !expected);
+    this.controls?.classList.toggle("hidden", !canRevise && Boolean(expected));
     this.customerVisual.setText(order && recipe ? `🧑  →  ${recipe.icon}` : "😊  ✓");
     this.prepVisual.setText(recipe ? expected ? bakeryStep(expected).icon : recipe.icon : "✨");
     this.updateDomState();
@@ -233,8 +247,8 @@ export class BakeryScene extends Phaser.Scene {
     const session = this.bakery.getActiveSession();
     if (session && !session.finished && Date.now() > this.exitArmedUntil) {
       this.exitArmedUntil = Date.now() + 3000;
-      if (this.exitButton) this.exitButton.textContent = "Confirm exit shift";
-      this.setMessage("Press Confirm exit shift within three seconds to abandon only this attempt.", "error");
+      if (this.exitButton) this.exitButton.textContent = "Confirm Exit";
+      this.setMessage("Leave this shift? Tap Confirm Exit.", "error");
       return false;
     }
     return this.returnToTown(false);

@@ -729,10 +729,10 @@
         <header class="bakery-hud-header">
           <div><p>MILESTONE 13 · BAKERY VERTICAL SLICE</p><h2 id="bakery-hud-title">🥖 Little Bakery</h2><small id="bakery-progress-summary">0 cleared · 0 stars · 0 served</small></div>
           <span id="bakery-balance">🪙 100</span>
-          <button id="bakery-exit" type="button">Exit bakery</button>
+          <button id="bakery-exit" type="button" aria-label="Exit Little Bakery safely">Exit</button>
         </header>
         <section id="bakery-picker" class="bakery-picker" aria-label="Choose a bakery level">
-          <div><strong>150-shift bakery campaign</strong><small>Complete each no-miss shift to unlock the next. First clears award coins once.</small></div>
+          <div><strong>150 bakery shifts</strong><small>First clears unlock the next shift and pay once.</small></div>
           <label for="bakery-level-select">Available shift<select id="bakery-level-select"><option value="1">Level 1</option></select></label>
           <button id="bakery-start" type="button">Open for Level 1</button>
         </section>
@@ -740,7 +740,7 @@
           <div class="bakery-shift-heading"><div><small id="bakery-level-name">Level 1 · Opening Shift</small><strong id="bakery-customer-name">Customer</strong></div><span>Served<strong id="bakery-served">0 / 3</strong></span><span>Time<strong id="bakery-timer">2:00</strong></span></div>
           <div class="bakery-customer-progress"><progress id="bakery-patience" max="100" value="100">100%</progress><strong id="bakery-patience-label">100% patience</strong></div>
           <div class="bakery-order"><small>CURRENT PRODUCT</small><h3 id="bakery-order-name">🍞 Classic bread loaf</h3><div id="bakery-recipe-sequence" class="bakery-recipe-sequence"></div></div>
-          <div><p class="bakery-worktop-label">Tap the highlighted next ingredient or station</p><div id="bakery-step-list" class="bakery-step-list"></div></div>
+          <div class="bakery-worktop"><p class="bakery-worktop-label">Choose the highlighted step</p><div id="bakery-step-list" class="bakery-step-list"></div></div>
           <div class="bakery-controls"><button id="bakery-undo" type="button" disabled>↶ Undo</button><button id="bakery-discard" type="button" disabled>🗑 Discard</button><button id="bakery-serve" class="primary" type="button" disabled>Serve customer</button></div>
         </section>
         <p id="bakery-status" class="bakery-status" data-status="neutral" role="status" aria-live="assertive">Choose an available bakery level to begin.</p>
