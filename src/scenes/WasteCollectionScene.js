@@ -96,17 +96,18 @@ export class WasteCollectionScene extends Phaser.Scene {
     document.querySelector("#cleanup-hud")?.classList.add("hidden");
     document.querySelector("#cleanup-result")?.classList.add("hidden");
     this.buttons.qa?.classList.toggle("hidden", !this.qaMode);
+    if (this.exitButton) this.exitButton.textContent = "Exit";
     this.populateLevelSelect();
     if (this.session?.mode === "campaign") {
       document.querySelector("#waste-campaign-picker")?.classList.add("hidden");
       document.querySelector("#waste-campaign-gameplay")?.classList.remove("hidden");
       document.querySelector("#waste-campaign-result")?.classList.add("hidden");
-      this.setCampaignMessage(this.session.status === "failed" ? "The five-slot tray is full. Replay this level to try another matching order." : "Choose an uncovered rubbish card. Three matching cards clear automatically.", this.session.status === "failed" ? "error" : "success");
+      this.setCampaignMessage(this.session.status === "failed" ? "Tray full. Restart to try another order." : "Pick an uncovered card. Match three before the tray fills.", this.session.status === "failed" ? "error" : "success");
     } else {
       document.querySelector("#waste-campaign-picker")?.classList.remove("hidden");
       document.querySelector("#waste-campaign-gameplay")?.classList.add("hidden");
       document.querySelector("#waste-campaign-result")?.classList.add("hidden");
-      this.setCampaignMessage("Choose any of the 750 authored Waste Collection levels.", "neutral");
+      this.setCampaignMessage("Choose a level.", "neutral");
     }
     this.renderCampaign();
   }
@@ -140,7 +141,7 @@ export class WasteCollectionScene extends Phaser.Scene {
     document.querySelector("#waste-campaign-picker")?.classList.add("hidden");
     document.querySelector("#waste-campaign-gameplay")?.classList.remove("hidden");
     document.querySelector("#waste-campaign-result")?.classList.add("hidden");
-    this.setCampaignMessage("Choose an uncovered card. Match rubbish in triples before the five-slot tray fills.", "success");
+    this.setCampaignMessage("Pick an uncovered card. Match three before the tray fills.", "success");
     this.renderCampaign();
     return true;
   }
@@ -158,9 +159,9 @@ export class WasteCollectionScene extends Phaser.Scene {
     }
     this.session = this.cleanup.getActiveSession();
     const rubbish = result.matchedTypeId === null ? result.tile.label : WASTE_RUBBISH_CATALOG[result.matchedTypeId].label;
-    if (result.code === "tray-full") this.setCampaignMessage("The tray reached five cards. Replay and choose a different exposed-card order.", "error");
-    else if (result.code === "triple-matched") this.setCampaignMessage(`${rubbish} triple matched and cleared from the tray.`, "success");
-    else this.setCampaignMessage(`${rubbish} collected. Keep matching groups of three.`, "neutral");
+    if (result.code === "tray-full") this.setCampaignMessage("Tray full. Try another order.", "error");
+    else if (result.code === "triple-matched") this.setCampaignMessage(`${rubbish} matched.`, "success");
+    else this.setCampaignMessage(`${rubbish} added.`, "neutral");
     this.renderCampaign();
     return true;
   }
@@ -204,8 +205,14 @@ export class WasteCollectionScene extends Phaser.Scene {
       for (let index = 0; index < 5; index += 1) slots.push(`<span class="waste-tray-slot${state.tray[index] === undefined ? "" : " filled"}">${state.tray[index] === undefined ? "·" : WASTE_RUBBISH_CATALOG[state.tray[index]].icon}</span>`);
       this.trayElement.innerHTML = slots.join("");
     }
-    if (this.buttons.hint) this.buttons.hint.disabled = this.session.status === "failed";
-    if (this.buttons.retry) this.buttons.retry.disabled = this.session.moves === 0;
+    if (this.buttons.hint) {
+      this.buttons.hint.disabled = this.session.status === "failed";
+      this.buttons.hint.classList.toggle("hidden", this.session.status === "failed");
+    }
+    if (this.buttons.retry) {
+      this.buttons.retry.disabled = this.session.moves === 0;
+      this.buttons.retry.classList.toggle("hidden", this.session.moves === 0);
+    }
     if (this.buttons.qa) this.buttons.qa.disabled = this.session.status === "failed";
     this.updateDomState();
   }
@@ -234,7 +241,7 @@ export class WasteCollectionScene extends Phaser.Scene {
     if (!result.ok) { this.setCampaignMessage(result.message, "error"); return false; }
     this.session = result.session;
     this.hintTileId = null;
-    this.setCampaignMessage("Level restarted. Choose an uncovered card and keep the five-slot tray below capacity.", "success");
+    this.setCampaignMessage("Level restarted. Pick an uncovered card.", "success");
     this.renderCampaign();
     return true;
   }
@@ -256,7 +263,7 @@ export class WasteCollectionScene extends Phaser.Scene {
     setText("#waste-result-message", result.firstClear ? "The first clear is saved and its KindlyCoins were added once." : "Your best result remains saved. Campaign replays do not pay again.");
     setText("#waste-result-percent", "100%"); setText("#waste-result-moves", result.moves); setText("#waste-result-matches", result.matches); setText("#waste-result-coins", `+${result.rewardCoins}`);
     if (this.buttons.next) this.buttons.next.textContent = result.level >= WASTE_TOTAL_LEVELS ? "Back to Level 1" : "Next level";
-    this.setCampaignMessage(`Waste Collection Level ${result.level} completed and safely saved.`, "success");
+    this.setCampaignMessage("Level saved.", "success");
     this.renderCampaign();
   }
 
@@ -272,7 +279,7 @@ export class WasteCollectionScene extends Phaser.Scene {
     this.campaignHud?.classList.add("hidden");
     this.townHud = document.querySelector("#cleanup-hud");
     this.townHud?.classList.remove("hidden");
-    setText("#cleanup-status", `Choose each piece of rubbish in ${this.job.title}.`);
+    setText("#cleanup-status", `Pick up ${this.job.items.length} pieces.`);
     const list = document.querySelector("#cleanup-item-list");
     if (list) list.innerHTML = this.job.items.map((item) => `<button type="button" data-cleanup-item="${item.id}"><span>${item.icon}</span><span>${item.label}</span></button>`).join("");
     this.onTownItem = (event) => { const button = event.target.closest("[data-cleanup-item]"); if (button) this.collectTownItem(button.dataset.cleanupItem); };
@@ -307,8 +314,8 @@ export class WasteCollectionScene extends Phaser.Scene {
     const count = this.collected.size; const total = this.job.items.length;
     const progress = document.querySelector("#cleanup-progress"); if (progress) { progress.max = total; progress.value = count; }
     setText("#cleanup-progress-text", `${count} / ${total} collected`);
-    setText("#cleanup-status", count === total ? `All ${total} pieces are ready. Finish to save this persistent cleanup.` : `${total - count} pieces remain in ${this.job.title}.`);
-    const finish = document.querySelector("#cleanup-finish"); if (finish) finish.disabled = count !== total;
+    setText("#cleanup-status", count === total ? "Everything is collected." : `${total - count} pieces left.`);
+    const finish = document.querySelector("#cleanup-finish"); if (finish) { finish.disabled = count !== total; finish.classList.toggle("hidden", count !== total); }
     for (const button of document.querySelectorAll("[data-cleanup-item]")) { const done = this.collected.has(button.dataset.cleanupItem); button.disabled = done; button.classList.toggle("collected", done); }
     this.updateDomState();
   }
@@ -326,8 +333,8 @@ export class WasteCollectionScene extends Phaser.Scene {
     if (this.session?.mode === "town-job") return this.returnToTown(false);
     if (this.session?.mode === "campaign" && this.session.moves > 0 && Date.now() > this.exitArmedUntil) {
       this.exitArmedUntil = Date.now() + 3000;
-      if (this.exitButton) this.exitButton.textContent = "Confirm exit level";
-      this.setCampaignMessage("Press Confirm exit level within three seconds to abandon only this attempt.", "error");
+      if (this.exitButton) this.exitButton.textContent = "Confirm Exit";
+      this.setCampaignMessage("Tap Confirm Exit to leave this attempt.", "error");
       return false;
     }
     return this.returnToTown(false);

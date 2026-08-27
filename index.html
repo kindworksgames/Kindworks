@@ -777,18 +777,18 @@
         <header class="waste-campaign-header">
           <div><p>MILESTONE 17 · 750-LEVEL CAMPAIGN</p><h2 id="waste-campaign-title">🧹 Waste Collection</h2><small id="waste-campaign-summary">0 cleared · 0 stars · Level 1 next</small></div>
           <span id="waste-campaign-balance">🪙 100</span>
-          <button id="waste-campaign-exit" type="button">Exit campaign</button>
+          <button id="waste-campaign-exit" type="button" aria-label="Exit Waste Collection safely">Exit</button>
         </header>
         <section id="waste-campaign-picker" class="waste-campaign-picker" aria-label="Choose a Waste Collection level">
-          <div><strong>Match all the rubbish in triples</strong><small>Every authored level is available. Only uncovered cards can move; do not fill the five-slot collection tray.</small></div>
-          <label for="waste-level-select">Park challenge<select id="waste-level-select"><option value="1">Level 1</option></select></label>
+          <div><strong>Match rubbish in threes</strong><small>Pick uncovered cards. Keep the five-slot tray open.</small></div>
+          <label for="waste-level-select">Level<select id="waste-level-select"><option value="1">Level 1</option></select></label>
           <button id="waste-level-start" type="button">Start Level 1</button>
         </section>
         <section id="waste-campaign-gameplay" class="waste-campaign-gameplay hidden" aria-label="Active Waste Collection level">
           <div class="waste-campaign-heading"><div><small id="waste-level-name">Level 1 of 750</small><strong id="waste-level-band">30 cards · 10 types · 2 layers</strong></div><span>Left<strong id="waste-level-remaining">30</strong></span><span>Matches<strong id="waste-level-matches">0</strong></span><span>Tray<strong id="waste-level-tray-count">0 / 5</strong></span></div>
           <div id="waste-board-viewport" class="waste-board-viewport"><div id="waste-board" class="waste-board" aria-label="Waste Collection matching board"></div></div>
-          <div class="waste-tray-wrap"><small>COLLECTION TRAY · THREE MATCHING CARDS CLEAR AUTOMATICALLY</small><div id="waste-tray" class="waste-tray" aria-label="Five-slot collection tray"></div></div>
-          <div class="waste-campaign-actions"><button id="waste-hint" type="button">💡 Highlight a safe card</button><button id="waste-retry" type="button">↻ Retry level</button><button id="waste-qa-solve" class="hidden" type="button">✓ Certified QA clear</button></div>
+          <div class="waste-tray-wrap"><small>TRAY · THREE MATCHES CLEAR</small><div id="waste-tray" class="waste-tray" aria-label="Five-slot collection tray"></div></div>
+          <div class="waste-campaign-actions"><button id="waste-hint" type="button">💡 Hint</button><button id="waste-retry" type="button">↻ Restart</button><button id="waste-qa-solve" class="hidden" type="button">✓ QA clear</button></div>
         </section>
         <p id="waste-campaign-status" class="waste-campaign-status" data-status="neutral" role="status" aria-live="assertive">Choose any of the 750 Waste Collection levels.</p>
         <section id="waste-campaign-result" class="waste-campaign-result hidden" aria-labelledby="waste-result-title">
@@ -803,7 +803,7 @@
             <p>MILESTONE 6 · FIRST CLEANUP JOB</p>
             <h2 id="cleanup-hud-title">🧹 Waste Collection</h2>
           </div>
-          <button id="cleanup-exit" type="button" aria-label="Exit Waste Collection without changing the town">Exit safely</button>
+          <button id="cleanup-exit" type="button" aria-label="Exit Waste Collection without changing the town">Exit</button>
         </header>
         <div class="cleanup-progress-row">
           <progress id="cleanup-progress" max="6" value="0" aria-label="Waste Collection progress">0 of 6</progress>
@@ -811,7 +811,7 @@
         </div>
         <div id="cleanup-item-list" class="cleanup-item-list" aria-label="Rubbish pieces"></div>
         <p id="cleanup-status" class="cleanup-status" role="status" aria-live="polite">Choose a piece of rubbish.</p>
-        <button id="cleanup-finish" class="cleanup-finish" type="button" disabled>Finish cleanup</button>
+        <button id="cleanup-finish" class="cleanup-finish hidden" type="button" disabled>Finish</button>
       </section>
       <section id="cleanup-result" class="cleanup-result hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="cleanup-result-title" aria-describedby="cleanup-result-message">
         <div class="cleanup-result-card">
