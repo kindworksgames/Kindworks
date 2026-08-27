@@ -5,7 +5,7 @@ const ACTIVITY_DATA = Object.freeze({
   lawn: Object.freeze({ scene: "LawnCareScene" }),
   river: Object.freeze({ scene: "RiverClearoutScene" }),
   waste: Object.freeze({ scene: "WasteCollectionScene" }),
-  "house-rescue": Object.freeze({ scene: "HouseRescueScene", houseId: "house-01" }),
+  "house-rescue": Object.freeze({ scene: "HouseRescueScene", houseId: "house-1" }),
   beach: Object.freeze({ scene: "BeachCleanupScene" }),
   powerwash: Object.freeze({ scene: "PlaygroundPowerwashScene" }),
   fishing: Object.freeze({ scene: "FishingScene", mode: "fish", spotId: "fishing-reedbank" }),

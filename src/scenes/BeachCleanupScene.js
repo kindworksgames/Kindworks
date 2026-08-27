@@ -13,7 +13,7 @@ function show(selector, visible) { document.querySelector(selector)?.classList.t
 
 export class BeachCleanupScene extends Phaser.Scene {
   constructor() { super("BeachCleanupScene"); this.entryData = {}; }
-  init(data = {}) { this.entryData = data; this.transitioning = false; this.exitArmedUntil = 0; this.lastResultContext = null; this.pointerStart = null; this.pointerDirection = null; this.pointerHoldTimer = null; this.hintDirection = null; }
+  init(data = {}) { this.entryData = data; this.transitioning = false; this.exitArmedUntil = 0; this.lastResultContext = null; this.pointerStart = null; this.pointerDirection = null; this.pointerHoldTimer = null; this.pointerRunSequence = 0; this.hintDirection = null; }
 
   create() {
     this.beachCleanup = this.registry.get("beachCleanup");
@@ -43,7 +43,7 @@ export class BeachCleanupScene extends Phaser.Scene {
     this.buttons = { start: document.querySelector("#beach-level-start"), exit: document.querySelector("#beach-exit"), U: document.querySelector("#beach-up"), D: document.querySelector("#beach-down"), L: document.querySelector("#beach-left"), R: document.querySelector("#beach-right"), undo: document.querySelector("#beach-undo"), hint: document.querySelector("#beach-hint"), retry: document.querySelector("#beach-retry"), qa: document.querySelector("#beach-qa-complete"), replay: document.querySelector("#beach-replay"), next: document.querySelector("#beach-next"), return: document.querySelector("#beach-return") };
     this.onStart = () => this.startLevel(Number(this.levelSelect?.value || 1));
     this.onLevelChange = () => { if (this.buttons.start) this.buttons.start.textContent = `Start Level ${this.levelSelect.value}`; };
-    this.onExit = () => this.requestExit(); this.onUndo = () => { const undone = this.runAction(() => this.beachCleanup.undo(this.beachCleanup.getActiveSession()?.id)); if (undone) { this.setMessage("Step undone.", "hint"); this.render(); } return undone; };
+    this.onExit = () => this.requestExit(); this.onUndo = () => { const undone = this.runAction(() => this.beachCleanup.undo(this.beachCleanup.getActiveSession()?.id)); if (undone) { this.setMessage("Run undone.", "hint"); this.render(); } return undone; };
     this.onHint = () => this.showHint(); this.onRetry = () => this.restart(); this.onQa = () => this.runCertifiedCompletion();
     this.onReplay = () => this.startLevel(this.lastResultContext?.level || 1); this.onNext = () => this.startLevel(this.beachCleanup.getCampaignSnapshot().nextLevel); this.onReturn = () => this.returnToTown(true);
     this.directionHandlers = Object.fromEntries(Object.keys(KEYS).map((direction) => [direction, () => this.walk(direction)]));
@@ -63,7 +63,7 @@ export class BeachCleanupScene extends Phaser.Scene {
       this.stopPointerHold();
       if (!direction || this.beachCleanup.getSessionState()?.won) return;
       this.pointerHoldTimer = this.time.addEvent({ delay: 140, loop: true, callback: () => {
-        if (!this.pointerStart || this.pointerDirection !== direction || !this.walk(direction) || this.beachCleanup.getSessionState()?.won) this.stopPointerHold();
+        if (!this.pointerStart || this.pointerDirection !== direction || !this.walk(direction, { batchId: this.pointerStart.runId }) || this.beachCleanup.getSessionState()?.won) this.stopPointerHold();
       } });
     };
     this.onPointerDown = (event) => {
@@ -72,7 +72,8 @@ export class BeachCleanupScene extends Phaser.Scene {
       this.board?.setPointerCapture?.(event.pointerId);
       this.stopPointerHold();
       this.pointerDirection = null;
-      this.pointerStart = { x: event.clientX, y: event.clientY, id: event.pointerId };
+      this.pointerRunSequence += 1;
+      this.pointerStart = { x: event.clientX, y: event.clientY, id: event.pointerId, runId: `swipe-${this.pointerRunSequence}` };
     };
     this.onPointerMove = (event) => {
       if (!this.pointerStart || this.pointerStart.id !== event.pointerId) return;
@@ -80,15 +81,15 @@ export class BeachCleanupScene extends Phaser.Scene {
       const direction = cardinalDirection(event.clientX - this.pointerStart.x, event.clientY - this.pointerStart.y, 18);
       if (!direction || direction === this.pointerDirection) return;
       this.pointerStart.x = event.clientX; this.pointerStart.y = event.clientY; this.pointerDirection = direction;
-      if (this.walk(direction)) this.startPointerHold(direction); else this.stopPointerHold();
+      if (this.walk(direction, { batchId: this.pointerStart.runId })) this.startPointerHold(direction); else this.stopPointerHold();
     };
     this.onPointerUp = (event) => {
       if (!this.pointerStart || this.pointerStart.id !== event.pointerId) return;
       event.preventDefault();
       const direction = this.pointerDirection || cardinalDirection(event.clientX - this.pointerStart.x, event.clientY - this.pointerStart.y, 18);
-      const alreadyMoved = Boolean(this.pointerDirection);
+      const alreadyMoved = Boolean(this.pointerDirection); const runId = this.pointerStart.runId;
       this.stopPointerHold(); this.pointerStart = null; this.pointerDirection = null;
-      if (!alreadyMoved && direction) this.walk(direction);
+      if (!alreadyMoved && direction) this.walk(direction, { batchId: runId });
     };
     this.onPointerCancel = (event) => {
       if (!this.pointerStart || (event?.pointerId !== undefined && this.pointerStart.id !== event.pointerId)) return;
@@ -118,10 +119,10 @@ export class BeachCleanupScene extends Phaser.Scene {
     this.lastResultContext = null; this.hintDirection = null; show("#beach-picker", false); show("#beach-gameplay", true); show("#beach-result", false); this.setMessage("Rake every tile. Find every item.", "success"); this.render(); return true;
   }
 
-  walk(direction) {
+  walk(direction, options = {}) {
     const session = this.beachCleanup.getActiveSession(); if (!session || this.transitioning) return false;
     const before = this.beachCleanup.getSessionState(); this.hintDirection = null;
-    const moved = this.runAction(() => this.beachCleanup.move(session.id, direction));
+    const moved = this.runAction(() => this.beachCleanup.move(session.id, direction, options));
     const after = this.beachCleanup.getSessionState();
     if (moved && after) {
       if (after.collectedRubbish > before.collectedRubbish) this.setMessage(`Item found! ${after.totalRubbish - after.collectedRubbish} left.`, "success");

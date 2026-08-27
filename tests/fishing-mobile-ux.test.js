@@ -49,3 +49,9 @@ test("does not change protected fishing data or reward formulas", async () => {
   assert.match(data, /\["sealed-coin-tin", "Sealed Coin Tin", "🪙", "treasure", 3, 350,/);
   assert.match(service, /kind: "magnet-recovery"/);
 });
+
+test("restores the protected rod, curved line, bobber ripples and magnet descent phases", async () => {
+  const scene = await readText("src/scenes/FishingScene.js");
+  for (const contract of ["floatMarker", "drawCurvedLine", "quadraticBezierTo", "spawnRipple", 'this.phase = "sinking"', 'this.phase = "settling"', "Magnet sinking…", "Magnet settling on the riverbed…"]) assert.ok(scene.includes(contract), contract);
+  assert.match(scene, /duration: this\.duration\(MAGNET_FISHING_CONFIG\.sinkAnimationMs\)/);
+});

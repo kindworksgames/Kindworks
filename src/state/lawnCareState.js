@@ -45,11 +45,14 @@ function normalizeFrame(level, value) {
     .filter((cell) => level.indexByCell.has(cell)))];
   const current = lawnCellKey(row, col);
   if (!cutCells.includes(current)) cutCells.push(current);
+  const cutSet = new Set(cutCells);
   return {
     row,
     col,
     facing: DIRECTIONS.has(value.facing) ? value.facing : "U",
     cutCells,
+    cutDirections: Object.fromEntries(Object.entries(value.cutDirections && typeof value.cutDirections === "object" ? value.cutDirections : {})
+      .filter(([cell, direction]) => cutSet.has(cell) && DIRECTIONS.has(direction))),
     moves: whole(value.moves, 0, level.canonicalSolution.length + 2),
   };
 }

@@ -76,6 +76,12 @@ export class FishingScene extends Phaser.Scene {
     this.aim = this.add.circle(this.target.x, this.target.y, 24, 0xfff0a0, 0.18).setStrokeStyle(4, 0xfff0a0, 0.92).setDepth(20);
     this.aimInner = this.add.circle(this.target.x, this.target.y, 5, 0xfff0a0, 1).setDepth(21);
     this.line = this.add.graphics().setDepth(25);
+    this.rod = this.add.graphics().setDepth(24);
+    this.floatMarker = this.add.container(this.target.x, this.target.y).setVisible(false).setDepth(29);
+    const floatArt = this.add.graphics();
+    floatArt.lineStyle(3, 0x172638, 1); floatArt.fillStyle(0xfff7dc, 1); floatArt.fillCircle(0, 0, 9); floatArt.strokeCircle(0, 0, 9);
+    floatArt.fillStyle(0xe7564d, 1); floatArt.fillRect(-8, -8, 16, 8); floatArt.lineStyle(3, 0x172638, 1); floatArt.lineBetween(0, -19, 0, -8);
+    this.floatMarker.add(floatArt);
     this.resultIcon = this.add.text(this.target.x, this.target.y - 20, magnet ? "🧲" : "🎣", { fontSize: "45px" }).setOrigin(0.5).setVisible(false).setDepth(30);
     this.input.on("pointerdown", (pointer) => this.handlePrimaryAction(pointer));
   }
@@ -140,11 +146,13 @@ export class FishingScene extends Phaser.Scene {
       return false;
     }
     this.phase = "casting";
-    this.resultIcon.setText(this.mode === "magnet" ? "🧲" : "🎣").setPosition(270, 555).setVisible(true).setAlpha(1).setScale(1);
+    this.resultIcon.setText(this.mode === "magnet" ? "🧲" : "").setPosition(270, 555).setVisible(this.mode === "magnet").setAlpha(1).setScale(1);
+    this.floatMarker.setPosition(270, 555).setVisible(this.mode === "fish");
     this.aim.setVisible(false);
     this.aimInner.setVisible(false);
-    this.drawLine(250, 540, this.target.x, this.target.y);
-    this.tweens.add({ targets: this.resultIcon, x: this.target.x, y: this.target.y, duration: this.duration(this.mode === "magnet" ? MAGNET_FISHING_CONFIG.castAnimationMs : FISHING_CONFIG.castAnimationMs), ease: "Sine.easeInOut" });
+    this.drawCurvedLine(this.mode === "magnet" ? 210 : 390, this.mode === "magnet" ? 574 : 562, 270, 555);
+    const castTarget = this.mode === "magnet" ? this.resultIcon : this.floatMarker;
+    this.tweens.add({ targets: castTarget, x: this.target.x, y: this.target.y, duration: this.duration(this.mode === "magnet" ? MAGNET_FISHING_CONFIG.castAnimationMs : FISHING_CONFIG.castAnimationMs), ease: "Sine.easeInOut", onComplete: () => this.spawnRipple(this.target.x, this.target.y) });
     this.refreshInterface(this.mode === "magnet" ? "Waiting for the riverbed…" : "Watch for a bite.");
     const wait = this.mode === "magnet"
       ? MAGNET_FISHING_CONFIG.castAnimationMs + MAGNET_FISHING_CONFIG.sinkAnimationMs + MAGNET_FISHING_CONFIG.settleAnimationMs
@@ -158,12 +166,26 @@ export class FishingScene extends Phaser.Scene {
         this.refreshInterface("Float settled. Wait for a bite.");
       });
     }
+    if (this.mode === "magnet") {
+      this.later(MAGNET_FISHING_CONFIG.castAnimationMs, () => {
+        if (this.phase !== "casting") return;
+        this.phase = "sinking";
+        this.refreshInterface("Magnet sinking…");
+        this.tweens.add({ targets: this.resultIcon, y: this.target.y + 18, alpha: 0.72, duration: this.duration(MAGNET_FISHING_CONFIG.sinkAnimationMs), ease: "Sine.easeIn" });
+      });
+      this.later(MAGNET_FISHING_CONFIG.castAnimationMs + MAGNET_FISHING_CONFIG.sinkAnimationMs, () => {
+        if (this.phase !== "sinking") return;
+        this.phase = "settling";
+        this.refreshInterface("Magnet settling on the riverbed…");
+        this.spawnRipple(this.target.x, this.target.y, 0x9ce7ef);
+      });
+    }
     this.later(wait, () => this.readyCast());
     return true;
   }
 
   readyCast() {
-    if (this.transitioning || !["casting", "waiting"].includes(this.phase)) return;
+    if (this.transitioning || !["casting", "waiting", "sinking", "settling"].includes(this.phase)) return;
     const result = this.fishing.signalReady();
     if (this.mode === "magnet" && result.ok) {
       this.phase = "ready";
@@ -174,7 +196,9 @@ export class FishingScene extends Phaser.Scene {
     if (result.code === "fish-bite") {
       this.phase = "bite";
       this.biteStartedAt = performance.now();
-      this.resultIcon.setText("❗").setPosition(this.target.x, this.target.y - 24);
+      this.resultIcon.setText("❗").setPosition(this.target.x, this.target.y - 24).setVisible(true);
+      this.floatMarker.setY(this.target.y + 8);
+      this.spawnRipple(this.target.x, this.target.y, 0xffef91);
       this.refreshInterface("Bite! Reel now.", "bite");
       this.vibrate([45, 35, 70]);
       this.later(FISHING_CONFIG.biteWindowMs, () => {
@@ -249,16 +273,33 @@ export class FishingScene extends Phaser.Scene {
   }
 
   showResult(icon) {
+    this.floatMarker.setVisible(false);
     this.resultIcon.setText(icon).setVisible(true).setAlpha(1).setScale(1.2).setPosition(this.target.x, this.target.y - 16);
     this.aim.setVisible(true).setPosition(this.target.x, this.target.y);
     this.aimInner.setVisible(true).setPosition(this.target.x, this.target.y);
     this.tweens.add({ targets: this.resultIcon, y: this.resultIcon.y - 22, duration: 380, yoyo: true, ease: "Sine.easeOut" });
   }
 
-  drawLine(fromX, fromY, toX, toY) {
+  drawCurvedLine(fromX, fromY, toX, toY) {
     this.line.clear();
     this.line.lineStyle(3, 0xfff4cf, 0.9);
-    this.line.lineBetween(fromX, fromY, toX, toY);
+    this.line.beginPath(); this.line.moveTo(fromX, fromY);
+    this.line.quadraticBezierTo((fromX + toX) / 2, Math.max(fromY, toY) + Math.min(95, Math.abs(toX - fromX) * 0.12), toX, toY);
+    this.line.strokePath();
+    this.rod.clear(); this.rod.lineStyle(10, 0x2a1b18, 1); this.rod.lineBetween(395, 575, fromX, fromY); this.rod.lineStyle(5, 0x9a6235, 1); this.rod.lineBetween(395, 575, fromX, fromY);
+  }
+
+  spawnRipple(x, y, colour = 0xbceff4) {
+    for (let index = 0; index < 3; index += 1) {
+      const ring = this.add.ellipse(x, y + 7, 32, 12).setStrokeStyle(3, colour, 0.75).setDepth(22).setScale(0.35);
+      this.tweens.add({ targets: ring, scaleX: 1.7 + index * 0.35, scaleY: 1.7 + index * 0.35, alpha: 0, delay: index * 90, duration: 650, onComplete: () => ring.destroy() });
+    }
+  }
+
+  update() {
+    if (!["casting", "waiting", "bite", "ready", "sinking", "settling", "reeling"].includes(this.phase)) return;
+    const target = this.mode === "magnet" ? this.resultIcon : this.floatMarker;
+    this.drawCurvedLine(this.mode === "magnet" ? 210 : 390, this.mode === "magnet" ? 574 : 562, target.x, target.y);
   }
 
   duration(milliseconds) {

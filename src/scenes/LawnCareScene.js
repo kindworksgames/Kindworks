@@ -3,6 +3,7 @@ import {
   LAWN_TOTAL_LEVELS,
   LAWN_WEED_TYPES,
   getLawnLevel,
+  lawnTravelPlan,
   lawnCellKey,
   lawnLevelSummary,
 } from "../data/lawnCare.js";
@@ -31,6 +32,8 @@ export class LawnCareScene extends Phaser.Scene {
     this.exitArmedUntil = 0;
     this.lastResultContext = null;
     this.pointerStart = null;
+    this.mowerAnimating = false;
+    this.queuedDirection = null;
   }
 
   create() {
@@ -168,7 +171,38 @@ export class LawnCareScene extends Phaser.Scene {
   mow(direction) {
     const session = this.lawnCare.getActiveSession();
     if (!session || session.status === "failed" || this.transitioning) return false;
-    return this.runServiceAction(() => this.lawnCare.move(session.id, direction));
+    if (this.mowerAnimating) { this.queuedDirection = direction; return true; }
+    const before = this.lawnCare.getSessionState();
+    const result = this.lawnCare.move(session.id, direction);
+    if (!result.ok) { this.setMessage(result.message || "That mower move is not available.", "error"); return false; }
+    this.animateMowerMove(before, result, session);
+    return true;
+  }
+
+  async animateMowerMove(before, result, context) {
+    this.mowerAnimating = true;
+    this.boardElement?.classList.add("mower-moving");
+    const level = getLawnLevel(context.assignedLevel);
+    const cutCells = new Set(before.cutCells);
+    const cutDirections = { ...(before.cutDirections || {}) };
+    const plan = lawnTravelPlan(context.assignedLevel, result.crossed, result.direction, this.lawnCare.getMowerLoadout());
+    for (const step of plan) {
+      const [row, col] = step.cell.split(",").map(Number);
+      cutCells.add(step.cell); cutDirections[step.cell] = step.direction;
+      this.boardElement?.classList.toggle("mower-straining", step.strain);
+      this.renderBoard({ ...before, row, col, facing: step.direction, cutCells: [...cutCells], cutDirections }, context.assignedLevel);
+      await new Promise((resolve) => this.time.delayedCall(step.durationMs, resolve));
+    }
+    this.boardElement?.classList.remove("mower-moving", "mower-straining");
+    this.mowerAnimating = false;
+    if (result.result) this.showResult(result.result, context, Boolean(result.failed));
+    else {
+      if (result.endReason === "dead-end") this.setMessage("Dead end. Undo or restart this route.", "error");
+      else if (result.endReason === "out-of-gas") this.setMessage("Out of moves. Restart to try another route.", "error");
+      this.render();
+    }
+    const queued = this.queuedDirection; this.queuedDirection = null;
+    if (queued && this.lawnCare.getActiveSession()?.status === "playing") this.mow(queued);
   }
 
   runServiceAction(action) {
@@ -227,7 +261,8 @@ export class LawnCareScene extends Phaser.Scene {
         }
         const isMower = sessionState.row === row && sessionState.col === col;
         const weed = level.weeds.get(key);
-        const classes = ["lawn-cell", cut.has(key) ? "cut" : "tall", weed ? `weed-${weed}` : "", isMower ? `mower facing-${sessionState.facing.toLowerCase()}` : ""].filter(Boolean).join(" ");
+        const cutDirection = sessionState.cutDirections?.[key];
+        const classes = ["lawn-cell", cut.has(key) ? "cut" : "tall", cutDirection ? `cut-${["L", "R"].includes(cutDirection) ? "horizontal" : "vertical"}` : "", weed ? `weed-${weed}` : "", isMower ? `mower facing-${sessionState.facing.toLowerCase()}` : ""].filter(Boolean).join(" ");
         const icon = isMower || cut.has(key) ? "" : weed === LAWN_WEED_TYPES.woody ? "🪵" : weed === LAWN_WEED_TYPES.tough ? "🌿" : "";
         const label = isMower ? `Mower, ${cut.has(key) ? "cut grass" : "tall grass"}` : weed ? `${weed} weed, ${cut.has(key) ? "cut" : "uncut"}` : cut.has(key) ? "Cut grass" : "Tall grass";
         cells.push(`<span class="${classes}" role="gridcell" aria-label="${label}">${icon}</span>`);

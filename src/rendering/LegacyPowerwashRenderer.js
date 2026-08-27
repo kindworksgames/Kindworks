@@ -58,7 +58,8 @@ export class LegacyPowerwashRenderer {
     this.addLevelDirtDetail(rng);
     this.addSoapRequiredStains(rng);
     this.initialDirtySamples = this.countDirtySamples();
-    if (state?.strokes > 0) this.rehydrateGridProgress(state);
+    if (state?.visualCheckpoint?.paths?.length) this.rehydrateVisualCheckpoint(state.visualCheckpoint);
+    else if (state?.strokes > 0) this.rehydrateGridProgress(state);
     this.lastPercent = this.calculatePercent();
     return this.lastPercent;
   }
@@ -236,6 +237,17 @@ export class LegacyPowerwashRenderer {
       if (!resistant.has(cell)) for (const name of ["resistant", "resistantMask", "soapMask", "foam"]) this.layers[name].context.clearRect(x, y, cellWidth + 1, cellHeight + 1);
       else if (soaped.has(cell)) this.soapAt(x + cellWidth / 2, y + cellHeight / 2, Math.max(cellWidth, cellHeight));
     }
+  }
+
+  rehydrateVisualCheckpoint(checkpoint) {
+    for (const path of checkpoint.paths || []) {
+      const replayState = { toolMode: path.toolMode === "soap" ? "soap" : "water", nozzle: path.nozzle || "precision" };
+      for (let index = 1; index < path.points.length; index += 1) {
+        const [fromX, fromY] = path.points[index - 1]; const [toX, toY] = path.points[index];
+        this.applySegment({ x: fromX, y: fromY }, { x: toX, y: toY }, replayState);
+      }
+    }
+    this.particles.length = 0;
   }
 
   drawNozzle(context, active, state) {

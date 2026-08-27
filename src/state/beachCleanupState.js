@@ -64,6 +64,7 @@ function normalizeUndoFrame(value, level) {
   const hasRakeVisuals = Object.hasOwn(value, "rakePatterns") || Object.hasOwn(value, "entryDirection");
   return {
     row, col, rakedCells, collectedCells,
+    ...(typeof value.batchId === "string" && value.batchId ? { batchId: value.batchId.slice(0, 80) } : {}),
     ...(hasRakeVisuals ? { rakePatterns: validRakePatterns(value.rakePatterns, rakedCells), entryDirection: validEntryDirection(value.entryDirection) } : {}),
     collectedItems: (Array.isArray(value.collectedItems) ? value.collectedItems : []).slice(0, collectedCells.length).map((item, index) => ({ icon: String(item?.icon || "🧹"), name: String(item?.name || "Rubbish"), coins: whole(item?.coins, 0, 170), cell: collectedCells[index] })),
     earnedCoins: whole(value.earnedCoins, 0, 170), moves: whole(value.moves), undoUsed: Boolean(value.undoUsed), steppedOnRaked: Boolean(value.steppedOnRaked),

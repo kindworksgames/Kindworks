@@ -20,6 +20,7 @@ test("keeps portrait River controls finger-sized and its repeated feedback short
   const [markup, styles, scene] = await Promise.all([readText("index.html"), readText("src/style.css"), readText("src/scenes/RiverClearoutScene.js")]);
   assert.match(markup, /id="river-exit"[^>]*>Exit<\/button>/);
   assert.match(markup, /id="river-undo"[^>]*aria-label="Undo last river move"[^>]*>↶<\/button>/);
+  assert.match(markup, /id="river-result-undo"[^>]*>↶ Undo last<\/button>/);
   assert.match(markup, /Restore 750 river stretches/);
   assert.match(markup, /Place recovery shapes to clear rubbish\. First clears earn coins\./);
   assert.match(styles, /\.river-controls button \{ min-height: var\(--kw-touch-min\)/);
@@ -28,4 +29,7 @@ test("keeps portrait River controls finger-sized and its repeated feedback short
   assert.match(styles, /\.river-side-panel \{ grid-template-columns: 44px 68px 92px 78px; \}/);
   assert.match(scene, /textContent = "Confirm Exit"/);
   for (const copy of ["Choose a river level.", "Clear rows. Recover at least 50%.", "River saved.", "Try another placement."]) assert.ok(scene.includes(copy), copy);
+  assert.match(scene, /Hint 1 · Try the/);
+  assert.match(scene, /Hint 2 · Aim for column/);
+  assert.match(scene, /Hint 3 · Column/);
 });

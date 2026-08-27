@@ -123,7 +123,7 @@ test("full-resolution completion defers the grid tolerance to the approved pixel
 test("ports the protected layered dirt, radial wash, foam, wetness, mist and wand renderer", async () => {
   assert.equal(LEGACY_POWERWASH_RENDER_REVISION, "phase-3-full-resolution-layers-v1");
   const renderer = await readFile(new URL("../src/rendering/LegacyPowerwashRenderer.js", import.meta.url), "utf8");
-  for (const contract of ["restoreFullyDirtyReference", "addBalancedDirtCoverage", "addLevelDirtDetail", "addSoapRequiredStains", "destination-out", "createRadialGradient", "spawnMist", "drawNozzle"]) assert.match(renderer, new RegExp(contract));
+  for (const contract of ["restoreFullyDirtyReference", "addBalancedDirtCoverage", "addLevelDirtDetail", "addSoapRequiredStains", "destination-out", "createRadialGradient", "spawnMist", "drawNozzle", "rehydrateVisualCheckpoint"]) assert.match(renderer, new RegExp(contract));
 });
 
 test("water and soap recover by elapsed idle time without switching tools", () => {
@@ -216,6 +216,20 @@ test("an exact active washer, supplies, tool and return point survive a safe rel
   assert.deepEqual(session.returnPosition, { x: 1900, y: 1170 });
   assert.equal(session.returnFacing, "right");
   assert.equal(validateGameState(resumed.gameState.getSnapshot()).ok, true);
+});
+
+test("the exact full-resolution wash path survives reload independently of the coarse grid", () => {
+  const storage = new MemoryStorage(); const repository = new SaveRepository(storage);
+  const first = runtime({ repository }); const started = first.powerwash.beginCampaign(375);
+  const segment = { from: { x: 345.25, y: 250.5 }, to: { x: 410.75, y: 286.25 } };
+  const state = first.powerwash.getSessionState(); const index = state.normal[0][0];
+  const row = Math.floor(index / POWERWASH_GRID.columns); const col = index % POWERWASH_GRID.columns;
+  assert.equal(first.powerwash.sprayPath(started.session.id, { row, col }, { row, col }, 55, { autoComplete: false, visualSegment: segment }).ok, true);
+  const savedCheckpoint = first.powerwash.getActiveSession().visualCheckpoint;
+  assert.deepEqual(savedCheckpoint.paths[0].points, [[345.25, 250.5], [410.75, 286.25]]);
+  const loaded = repository.load(); assert.equal(loaded.ok, true);
+  const resumed = runtime({ state: loaded.state, repository });
+  assert.deepEqual(resumed.powerwash.getActiveSession().visualCheckpoint, savedCheckpoint);
 });
 
 test("schema 16 and legacy playground data upgrade to schema 19 while failed saves roll back exactly", () => {

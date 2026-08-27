@@ -2195,6 +2195,11 @@ body:not([data-game-scene="TownScene"]) .first-session-checklist {
 .house-rescue-sort-layout { display: grid; grid-template-columns: minmax(0, 1fr) 142px; gap: 7px; }
 .house-rescue-sort-floor, .house-rescue-vacuum-floor { position: relative; min-height: 355px; overflow: hidden; border: 4px solid #5c4938; border-radius: 10px; background: repeating-linear-gradient(90deg, #d5b881 0 39px, #c7a875 39px 42px); box-shadow: inset 0 0 0 3px rgb(255 250 227 / 38%); touch-action: none; }
 .house-rescue-sort-floor::before, .house-rescue-vacuum-floor::before { content: ""; position: absolute; inset: 5% 3% 6%; border: 2px dashed rgb(84 65 48 / 24%); border-radius: 8px; pointer-events: none; }
+.house-rescue-room-geometry { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.house-rescue-furniture { position: absolute; display: grid; place-items: center; border: 2px solid #554231; border-radius: 5px; background: #80664d; box-shadow: 2px 2px 0 rgb(59 48 40 / 28%); color: #fff7da; transform: none; overflow: hidden; }
+.house-rescue-furniture span { font-style: normal; font-size: clamp(12px, 2.4vw, 25px); filter: saturate(.8); }
+.house-rescue-furniture.floor-layer { z-index: 0; border-color: rgb(85 66 49 / 30%); background: rgb(184 122 99 / 42%); box-shadow: none; opacity: .72; }
+.house-rescue-partition { position: absolute; height: 7px; border: 1px solid #4b392d; border-radius: 4px; background: #72533b; box-shadow: 0 2px 0 rgb(59 48 40 / 22%); transform-origin: 0 50%; }
 .house-rescue-item { position: absolute; z-index: 2; display: grid; place-items: center; width: 78px; min-height: 62px !important; padding: 3px !important; transform: translate(-50%, -50%); cursor: grab; box-shadow: 2px 2px 0 rgb(59 48 40 / 28%) !important; }
 .house-rescue-item span { font-size: 25px; line-height: 1; }
 .house-rescue-item small { overflow: hidden; max-width: 70px; font: 800 7px/1.1 system-ui, sans-serif; text-overflow: ellipsis; white-space: nowrap; }
@@ -2208,7 +2213,7 @@ body:not([data-game-scene="TownScene"]) .first-session-checklist {
 .house-rescue-bins [data-house-rescue-bin="recycle"] { background: #4389c7; }
 .house-rescue-bins [data-house-rescue-bin="garbage"] { background: #333a3d; }
 .house-rescue-vacuum-floor { min-height: 365px; background: repeating-linear-gradient(90deg, #d7b982 0 42px, #c7a875 42px 45px); cursor: crosshair; }
-.house-rescue-stain { position: absolute; z-index: 1; width: var(--stain-size); height: calc(var(--stain-size) * .75); border-radius: 50%; background: #49372d; opacity: .42; transform: translate(-50%, -50%) rotate(18deg); pointer-events: none; }
+.house-rescue-stain { position: absolute; z-index: 2; width: var(--stain-size); height: calc(var(--stain-size) * .75); border-radius: 50%; background: #49372d; opacity: .42; transform: translate(-50%, -50%) rotate(18deg); pointer-events: none; }
 .house-rescue-stain.strength-3, .house-rescue-stain.strength-4, .house-rescue-stain.strength-5 { opacity: .56; box-shadow: 3px 1px 0 rgb(52 39 31 / 24%); }
 .house-rescue-vacuum { position: absolute; z-index: 3; display: grid; place-items: center; width: 48px; height: 48px; border: 3px solid #3b3028; border-radius: 50%; background: var(--vacuum-color, #ffe47c); font-size: 27px; box-shadow: 3px 3px 0 rgb(59 48 40 / 32%); transform: translate(-50%, -50%); pointer-events: none; }
 #house-rescue-qa-complete { color: #fff; background: #765a91; }
@@ -4547,7 +4552,9 @@ body[data-game-scene="WasteCollectionScene"] .town-hud {
 .waste-campaign-heading > span strong { color: #283d32; font-size: 12px; }
 .waste-board-viewport { position: relative; height: min(48vh, 445px); min-height: 270px; overflow: hidden; border: 4px solid #283d32; border-radius: 6px; background: radial-gradient(circle at 15% 22%, #8fca5f 0 2px, transparent 3px), radial-gradient(circle at 78% 68%, #496e38 0 2px, transparent 3px), linear-gradient(#5d9747, #4b853e); box-shadow: inset 0 0 0 5px #82b45d; }
 .waste-board { position: absolute; inset: 4px; }
-.waste-card { position: absolute; display: grid; place-items: center; width: 8.15%; height: 11.9%; min-width: var(--kw-touch-min) !important; min-height: var(--kw-touch-min) !important; padding: 0 !important; border-width: 2px !important; border-radius: 4px !important; background: #efe2bc !important; box-shadow: 2px 3px 0 #27372e !important; transform: rotate(var(--card-rotation)); transform-origin: center; touch-action: manipulation; }
+.waste-card { position: absolute; display: grid; place-items: center; width: 8.15%; height: 11.9%; padding: 0 !important; border-width: 2px !important; border-radius: 4px !important; background: #efe2bc !important; box-shadow: 2px 3px 0 #27372e !important; transform: rotate(var(--card-rotation)); transform-origin: center; touch-action: manipulation; }
+.waste-card-hit { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; }
+@media (pointer: coarse) { .waste-card:not(.blocked) .waste-card-hit { inset: 50% auto auto 50%; width: max(100%, var(--kw-touch-min)); height: max(100%, var(--kw-touch-min)); transform: translate(-50%, -50%); pointer-events: auto; } }
 .waste-card.blocked { opacity: .48; filter: saturate(.55) brightness(.82); cursor: not-allowed; }
 .waste-card.safe-hint { outline: 5px solid #ffdc48; outline-offset: 2px; animation: wasteHintPulse .7s ease-in-out infinite alternate; }
 .waste-card span { font-size: clamp(14px, 2.7vw, 28px); filter: drop-shadow(1px 2px 0 rgb(50 61 48 / 28%)); }
@@ -4693,6 +4700,8 @@ body[data-game-scene="WasteCollectionScene"] .town-hud {
 .river-cell.placed { background: #a9e69b; }
 .river-cell.current { background: #ffe875; outline: 2px solid #fff; outline-offset: -2px; }
 .river-cell.ghost { opacity: .42; background: rgb(231 255 239 / 65%); }
+.river-cell.hint { background: #b9e3ff; outline: 3px dashed #285f78; outline-offset: -3px; animation: river-hint-pulse .72s steps(2, end) infinite; }
+@keyframes river-hint-pulse { 50% { filter: brightness(1.18); } }
 .river-side-panel { display: grid; align-content: start; gap: 7px; min-width: 0; }
 .river-stars { padding: 5px; color: #e7ad2f; background: #173f50; border-radius: 7px; font-size: 23px; letter-spacing: 2px; text-align: center; text-shadow: 1px 1px #fff; }
 .river-preview-card { padding: 7px; border: 2px solid #86b9b0; border-radius: 7px; background: #fbfff9; }
@@ -4720,7 +4729,7 @@ body[data-game-scene="WasteCollectionScene"] .town-hud {
 .river-result-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 11px 0; }
 .river-result-stats span { display: grid; gap: 3px; padding: 7px; border: 2px solid #9cc8bf; border-radius: 7px; background: #fbfff9; color: #58736f; font-size: 7px; }
 .river-result-stats strong { color: #173f50; font-size: 13px; }
-.river-result-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.river-result-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
 .river-result-actions #river-next { color: #fff; background: #317d73; }
 body[data-game-scene="RiverClearoutScene"] .touch-controls,
 body[data-game-scene="RiverClearoutScene"] .zoom-controls,
@@ -5072,7 +5081,9 @@ body[data-game-scene="HarbourGeneralScene"] .weather-effects { display: none; }
 .lawn-cell { position: relative; display: grid; place-items: center; min-width: 0; min-height: 0; overflow: hidden; border: 1px solid rgb(42 87 48 / 23%); font-size: clamp(11px, 2.3vw, 23px); line-height: 1; }
 .lawn-cell.tall { background: repeating-linear-gradient(85deg, #719d43 0 3px, #84ad4c 3px 6px); }
 .lawn-cell.tall::after { content: ""; position: absolute; inset: 15%; border-radius: 50%; background: radial-gradient(circle, rgb(219 241 127 / 48%) 0 12%, transparent 13%); background-size: 8px 8px; }
-.lawn-cell.cut { background: repeating-linear-gradient(90deg, #a8c96a 0 5px, #b7d879 5px 10px); }
+.lawn-cell.cut { background: #acd06d; }
+.lawn-cell.cut-horizontal { background: repeating-linear-gradient(0deg, #a8c96a 0 5px, #b7d879 5px 10px); }
+.lawn-cell.cut-vertical { background: repeating-linear-gradient(90deg, #a8c96a 0 5px, #b7d879 5px 10px); }
 .lawn-cell.hedge { color: #204a2f; background: repeating-linear-gradient(45deg, #315d38 0 5px, #3d7142 5px 10px); text-shadow: 1px 1px #75a964; }
 .lawn-cell.weed-tough, .lawn-cell.weed-woody { isolation: isolate; }
 .lawn-cell.mower { z-index: 3; overflow: visible; color: transparent; background-color: #c3dc80; }
@@ -5080,6 +5091,9 @@ body[data-game-scene="HarbourGeneralScene"] .weather-effects { display: none; }
 .lawn-cell.mower.facing-u::before { transform: rotate(-90deg); }
 .lawn-cell.mower.facing-d::before { transform: rotate(90deg); }
 .lawn-cell.mower.facing-l::before { transform: scaleX(-1); }
+.lawn-board.mower-moving .lawn-cell.mower::before { transition: transform 55ms linear; }
+.lawn-board.mower-straining .lawn-cell.mower::before { animation: lawn-mower-strain 90ms ease-in-out infinite alternate; filter: drop-shadow(2px 2px 0 rgb(28 64 38 / 48%)) saturate(1.35); }
+@keyframes lawn-mower-strain { to { margin-left: 2px; margin-top: -1px; } }
 .lawn-care-side { display: grid; align-content: start; gap: 7px; min-width: 0; }
 .lawn-live-stars { padding: 5px; color: #f0c13e; border-radius: 7px; background: #244f32; font-size: 23px; letter-spacing: 2px; text-align: center; text-shadow: 1px 1px #6b4c1c; }
 .lawn-care-side article { display: grid; gap: 4px; padding: 7px; border: 2px solid #94bd68; border-radius: 7px; background: #fbfff2; }

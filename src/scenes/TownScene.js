@@ -51,6 +51,13 @@ import { createMunicipalCollectionVehicle } from "../entities/MunicipalCollectio
 import { RESTORATION_MILESTONE_ORDER } from "../data/restorationMilestones.js";
 import { cinemaAccess } from "../data/impactProjects.js";
 import { RUBBISH_PRESENTATION, riverItemPosition } from "../data/livingEnvironment.js";
+import {
+  CROP_STAGE_VISUALS,
+  HOUSE_ARCHITECTURE_KITS,
+  ORCHARD_STAGE_VISUALS,
+  SHOP_VISUAL_STATES,
+} from "../data/legacyVisualStates.js";
+import { setSpriteAiLabelHint } from "../plugins/SpriteAiLabelPlugin.js";
 import { startLazyScene } from "./lazyScenes.js";
 
 const PLAYER_RADIUS = 17;
@@ -101,6 +108,9 @@ export class TownScene extends Phaser.Scene {
     this.restorationVisuals = [];
     this.restorationSignature = null;
     this.restorationCameraFocus = false;
+    this.townWindowLights = [];
+    this.ambientPondDucks = [];
+    this.interactionHighlight = null;
   }
 
   create() {
@@ -144,6 +154,7 @@ export class TownScene extends Phaser.Scene {
     const savedState = this.gameState?.getSnapshot();
     this.cameras.main.setBounds(0, 0, WORLD.width, WORLD.height);
     this.drawTown();
+    this.updateWorldObjectLighting(savedState?.world);
     this.renderLivingEnvironment();
     this.renderTownPlacements();
     this.renderNpcPublicBins();
@@ -577,6 +588,7 @@ export class TownScene extends Phaser.Scene {
     pond.fillEllipse(1390, 1035, 190, 56);
     pond.fillStyle(COLORS.water, 1);
     pond.fillEllipse(2005, 2335, 440, 300);
+    this.drawAmbientPondDucks();
 
     this.drawBridges();
     this.drawParkDetails();
@@ -595,9 +607,35 @@ export class TownScene extends Phaser.Scene {
     this.drawLabels();
     this.drawRestorationChanges();
 
+    this.interactionHighlight = this.add.ellipse(0, 0, 86, 42, 0xfff2a3, 0.12)
+      .setStrokeStyle(6, 0xffef93, 0.95)
+      .setDepth(475)
+      .setVisible(false);
+    setSpriteAiLabelHint(this.interactionHighlight, { id: "world.selection-highlight", label: "Current town interaction highlight", kind: "selection-highlight" });
+    this.tweens.add({ targets: this.interactionHighlight, scale: 1.15, alpha: 0.03, duration: 650, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
+
     this.add.rectangle(WORLD.width / 2, WORLD.height / 2, WORLD.width - 24, WORLD.height - 24)
       .setStrokeStyle(24, 0x315e3f, 1)
       .setDepth(300);
+  }
+
+  drawAmbientPondDucks() {
+    const positions = [
+      [1340, 1040, false], [1415, 1115, true], [1480, 1018, false], [1530, 1125, true], [1380, 1160, false],
+      [1890, 2300, false], [1960, 2370, true], [2040, 2275, false], [2110, 2350, false], [2025, 2430, true],
+    ];
+    positions.forEach(([x, y, resting], index) => {
+      const duck = this.add.container(x, y).setDepth(43 + y / 100);
+      const wake = this.add.ellipse(-16, 8, resting ? 34 : 55, 13, 0xd9fbff, resting ? 0.16 : 0.28).setStrokeStyle(2, 0xffffff, 0.35);
+      const body = this.add.ellipse(0, 0, resting ? 27 : 35, resting ? 18 : 22, 0xe8bc4e, 1).setStrokeStyle(2, 0x315e3f, 0.6);
+      const head = this.add.circle(13, -9, resting ? 7 : 9, 0x4f8355, 1).setStrokeStyle(1, 0x315e3f, 0.7);
+      const beak = this.add.triangle(24, -8, 0, 0, 10, 4, 0, 8, 0xf09a45, 1);
+      duck.add([wake, body, head, beak]);
+      setSpriteAiLabelHint(duck, { id: `world.wildlife.pond-duck-${index + 1}`, label: `${resting ? "Resting" : "Swimming"} pond duck ${index + 1}`, kind: "ambient-wildlife" });
+      setSpriteAiLabelHint(wake, { id: `world.wildlife.duck-wake-${index + 1}`, label: `Pond duck wake ${index + 1}`, kind: "water-effect" });
+      if (!resting) this.tweens.add({ targets: duck, x: x + (index % 2 ? -38 : 38), duration: 4200 + index * 170, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
+      this.ambientPondDucks.push(duck);
+    });
   }
 
   drawBridges() {
@@ -654,6 +692,8 @@ export class TownScene extends Phaser.Scene {
     const y = house.y + house.height - height;
     const wallColor = personalHome ? PERSONAL_HOME_OPTIONS.wallPalette[personalHome.wallColor] : COLORS.wall;
     const roofColor = personalHome ? PERSONAL_HOME_OPTIONS.roofPalette[personalHome.roofColor] : house.roof;
+    const architecture = HOUSE_ARCHITECTURE_KITS.find(({ id }) => id === house.architectureKit) || HOUSE_ARCHITECTURE_KITS[0];
+    const roofStyle = personalHome?.roofStyle || architecture.roof;
     const layer = this.add.graphics().setDepth(60 + house.y / 100);
     if (personalHome) this.personalHomeGraphics = layer;
     layer.fillStyle(0x5c864e, 0.5);
@@ -667,14 +707,14 @@ export class TownScene extends Phaser.Scene {
     }
     layer.fillRoundedRect(x, y + height * 0.22, width, height * 0.78, 10);
     layer.fillStyle(roofColor, 1);
-    if (personalHome?.roofStyle === "hip") {
+    if (roofStyle === "hip" || roofStyle === "bay") {
       layer.fillPoints([
         { x: x + width * 0.28, y: y - height * 0.05 },
         { x: x + width * 0.72, y: y - height * 0.05 },
         { x: x + width + 12 * scale, y: y + height * 0.32 },
         { x: x - 12 * scale, y: y + height * 0.32 },
       ], true);
-    } else if (personalHome?.roofStyle === "gambrel") {
+    } else if (roofStyle === "gambrel" || roofStyle === "thatch") {
       layer.fillPoints([
         { x: x + width * 0.37, y: y - height * 0.08 },
         { x: x + width * 0.63, y: y - height * 0.08 },
@@ -692,6 +732,27 @@ export class TownScene extends Phaser.Scene {
     layer.fillStyle(0x8ac5d5, 1);
     layer.fillRect(x + 28 * scale, y + height * 0.57, 34 * scale, 30 * scale);
     layer.fillRect(x + width - 62 * scale, y + height * 0.57, 34 * scale, 30 * scale);
+    if (!personalHome) {
+      if (architecture.detail === "brick-chimney") {
+        layer.fillStyle(0x9a5c48, 1).fillRect(x + width * 0.72, y + 2, 18, 43);
+      } else if (architecture.detail === "flower-box") {
+        layer.fillStyle(0x765238, 1).fillRect(x + 23, y + height * 0.77, 44, 8).fillRect(x + width - 67, y + height * 0.77, 44, 8);
+        layer.fillStyle(0xe47e86, 1).fillCircle(x + 33, y + height * 0.75, 5).fillCircle(x + width - 34, y + height * 0.75, 5);
+      } else if (architecture.detail === "round-window") {
+        layer.fillStyle(0xa9d6df, 1).fillCircle(x + width / 2, y + height * 0.18, 14).lineStyle(3, 0x6f4c35, 0.8).strokeCircle(x + width / 2, y + height * 0.18, 14);
+      } else if (architecture.detail === "awning") {
+        layer.fillStyle(0xf2d5a0, 1).fillTriangle(x + 17, y + height * 0.53, x + 75, y + height * 0.53, x + 46, y + height * 0.41);
+      } else if (architecture.detail === "porch") {
+        layer.fillStyle(0xc49a69, 1).fillRoundedRect(x + width * 0.31, y + height - 10, width * 0.38, 15, 4);
+      }
+      const lightDepth = 61 + house.y / 100;
+      for (const [lightX, side] of [[x + 45 * scale, "left"], [x + width - 45 * scale, "right"]]) {
+        const glow = this.add.rectangle(lightX, y + height * 0.57 + 15 * scale, 30 * scale, 26 * scale, 0xffe79a, 1).setDepth(lightDepth).setAlpha(0.08);
+        setSpriteAiLabelHint(glow, { id: `building.${house.id}.window-${side}-night-glow`, label: `${house.id} ${side} window night glow`, kind: "window-light" });
+        this.townWindowLights.push(glow);
+      }
+      setSpriteAiLabelHint(layer, { id: architecture.assetId, label: `${house.id} ${architecture.id} architecture`, kind: "house-exterior" });
+    }
     if (personalHome?.level >= 3) {
       layer.fillStyle(roofColor, 1);
       for (const offset of [-0.2, 0.2]) {
@@ -736,6 +797,7 @@ export class TownScene extends Phaser.Scene {
   }
 
   drawShop(shop) {
+    const visual = SHOP_VISUAL_STATES[shop.title] || { fixture: "shop-window", merchandise: [shop.icon], assetId: `shop.${shop.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.exterior` };
     const layer = this.add.graphics().setDepth(70 + shop.y / 100);
     layer.fillStyle(0x526e48, 0.42);
     layer.fillRoundedRect(shop.x - 18, shop.y - 16, shop.width + 36, shop.height + 34, 14);
@@ -748,6 +810,14 @@ export class TownScene extends Phaser.Scene {
     layer.fillStyle(0xa9dae2, 1);
     layer.fillRect(shop.x + 26, shop.y + 92, 46, 43);
     layer.fillRect(shop.x + shop.width - 72, shop.y + 92, 46, 43);
+    layer.fillStyle(0xfff0bd, 0.94);
+    layer.fillTriangle(shop.x + 16, shop.y + 85, shop.x + 82, shop.y + 85, shop.x + 49, shop.y + 69);
+    layer.fillTriangle(shop.x + shop.width - 82, shop.y + 85, shop.x + shop.width - 16, shop.y + 85, shop.x + shop.width - 49, shop.y + 69);
+    setSpriteAiLabelHint(layer, { id: visual.assetId, label: `${shop.title} ${visual.fixture} exterior`, kind: "shop-exterior" });
+    const merchandise = this.add.text(shop.x + shop.width / 2, shop.y + 113, visual.merchandise.join("  "), {
+      fontFamily: "Apple Color Emoji, system-ui", fontSize: "19px",
+    }).setOrigin(0.5).setDepth(96 + shop.y / 100);
+    setSpriteAiLabelHint(merchandise, { id: `${visual.assetId}.merchandise`, label: `${shop.title} window merchandise`, kind: "shop-merchandise" });
     this.add.text(shop.x + shop.width / 2, shop.y + 30, `${shop.icon} ${shop.title}`, {
       color: "#fff9df",
       fontFamily: "system-ui, sans-serif",
@@ -921,9 +991,15 @@ export class TownScene extends Phaser.Scene {
       graphics.strokeRoundedRect(x, y, 225, 82, 11);
       if (bed.cropId) {
         const crop = FARMING_CROPS[bed.cropId];
-        const count = bed.status === "ready" ? 6 : 3;
+        const progress = bed.status === "ready" ? 1 : Phaser.Math.Clamp(bed.growthMinutes / crop.growMinutes, 0, 0.99);
+        const stage = [...CROP_STAGE_VISUALS].reverse().find((entry) => progress >= entry.progress) || CROP_STAGE_VISUALS[0];
+        const count = stage.id === "ready" ? 6 : stage.id === "seed" ? 4 : stage.id === "sprout" ? 3 : 5;
         for (let plant = 0; plant < count; plant += 1) {
-          this.farmingLabels.push(this.add.text(x + 28 + plant * 32, y + 41 + (plant % 2) * 6, crop.icon, { fontSize: bed.status === "ready" ? "24px" : "18px" }).setOrigin(0.5).setDepth(118));
+          const plantIcon = stage.id === "seed" ? "•" : stage.id === "sprout" ? "🌱" : stage.id === "flowering" ? `🌼${crop.icon}` : crop.icon;
+          const label = this.add.text(x + 28 + plant * 32, y + 41 + (plant % 2) * 6, plantIcon, { fontSize: stage.id === "ready" ? "24px" : stage.id === "seed" ? "20px" : "18px" }).setOrigin(0.5).setDepth(118);
+          label.setData("cropStage", stage.id);
+          setSpriteAiLabelHint(label, { id: `${stage.assetId}.${crop.id}`, label: `${crop.label} ${stage.id} stage`, kind: "crop-stage" });
+          this.farmingLabels.push(label);
         }
       } else if (!bed.unlocked) {
         this.farmingLabels.push(this.add.text(x + 112, y + 41, "🔒", { fontSize: "24px" }).setOrigin(0.5).setDepth(118));
@@ -932,9 +1008,13 @@ export class TownScene extends Phaser.Scene {
 
     for (const tree of state.orchard.trees) {
       const progress = tree.status === "growing" ? tree.growthMinutes / ORCHARD_CONFIG.maturityMinutes : 1;
-      const icon = tree.status === "growing" ? "🌱" : tree.availableFruit ? "🌳🍎" : "🌳";
+      const stageId = tree.status === "growing" ? progress < 0.35 ? "sapling" : progress < 0.72 ? "young" : "mature" : tree.availableFruit ? "fruiting" : "picked";
+      const stage = ORCHARD_STAGE_VISUALS.find(({ id }) => id === stageId);
+      const icon = stageId === "sapling" ? "🌱" : stageId === "young" ? "🌿" : stageId === "fruiting" ? "🌳🍎" : "🌳";
       const label = this.add.text(tree.x, tree.y, icon, { fontSize: tree.status === "growing" ? `${Math.round(30 + progress * 22)}px` : "58px" }).setOrigin(0.5).setDepth(118 + tree.y / 100);
       label.setData("orchardTreeId", tree.id);
+      label.setData("orchardStage", stageId);
+      setSpriteAiLabelHint(label, { id: stage.assetId, label: `Apple tree ${stageId} stage`, kind: "orchard-stage" });
       this.farmingLabels.push(label);
     }
     for (const plot of LAWN_PLOTS) {
@@ -1288,16 +1368,22 @@ export class TownScene extends Phaser.Scene {
     if (!state) return;
     for (const item of state.land.items.filter((entry) => entry.active)) {
       const presentation = RUBBISH_PRESENTATION[item.type] || RUBBISH_PRESENTATION.wrapper;
+      const stain = this.add.ellipse(item.x, item.y + 6, 38, 18, 0x765c42, 0.2).setStrokeStyle(2, 0x5b4633, 0.18).setDepth(119 + item.y / 100);
       const shadow = this.add.ellipse(item.x, item.y + 9, 28, 10, 0x263d2d, 0.24).setDepth(120 + item.y / 100);
       const icon = this.add.text(item.x, item.y, presentation.icon, { fontFamily: "Apple Color Emoji, system-ui", fontSize: "18px" }).setOrigin(0.5).setDepth(121 + item.y / 100);
-      this.environmentVisuals.push(shadow, icon);
+      setSpriteAiLabelHint(stain, { id: `world.ground-stain.${item.id}`, label: `${item.type} ground stain`, kind: "environment-effect" });
+      setSpriteAiLabelHint(icon, { id: `world.rubbish.${item.type}.${item.id}`, label: `${item.type} town rubbish`, kind: "environment-rubbish" });
+      this.environmentVisuals.push(stain, shadow, icon);
     }
     for (const item of state.river.items) {
       const position = riverItemPosition(item);
       const presentation = RUBBISH_PRESENTATION[item.type] || RUBBISH_PRESENTATION.wrapper;
+      const pollution = this.add.ellipse(position.x, position.y + 5, item.status === "stuck" ? 52 : 43, item.status === "stuck" ? 21 : 17, item.status === "stuck" ? 0x805d36 : 0x7aaab0, item.status === "stuck" ? 0.31 : 0.18).setDepth(41 + position.y / 100);
       const ring = this.add.ellipse(position.x, position.y + 5, 34, 14, item.status === "stuck" ? 0x805d36 : 0xd9fbff, 0.38).setDepth(42 + position.y / 100);
       const icon = this.add.text(position.x, position.y, presentation.icon, { fontFamily: "Apple Color Emoji, system-ui", fontSize: "17px" }).setOrigin(0.5).setDepth(43 + position.y / 100);
-      this.environmentVisuals.push(ring, icon);
+      setSpriteAiLabelHint(pollution, { id: `world.river-pollution.${item.id}`, label: `${item.type} river pollution`, kind: "water-effect" });
+      setSpriteAiLabelHint(icon, { id: `world.river-rubbish.${item.type}.${item.id}`, label: `${item.type} river rubbish`, kind: "environment-rubbish" });
+      this.environmentVisuals.push(pollution, ring, icon);
     }
     const clean = state.cleanliness;
     if (!this.environmentBadge) this.environmentBadge = this.add.text(18, 64, "", { color: "#294637", backgroundColor: "rgba(255,249,223,.94)", fontFamily: "system-ui, sans-serif", fontSize: "13px", fontStyle: "bold", padding: { x: 9, y: 6 } }).setScrollFactor(0).setDepth(1200);
@@ -1632,10 +1718,22 @@ export class TownScene extends Phaser.Scene {
     if (!prompt || !button) return;
     prompt.classList.toggle("hidden", !interaction);
     prompt.setAttribute("aria-hidden", interaction ? "false" : "true");
+    this.interactionHighlight?.setVisible(Boolean(interaction));
     if (interaction) {
+      const diameter = Phaser.Math.Clamp((Number(interaction.radius) || 76) * 1.05, 58, 140);
+      this.interactionHighlight?.setPosition(interaction.x, interaction.y).setDisplaySize(diameter, diameter * 0.48);
       button.textContent = `${interaction.icon || "✨"} ${interaction.label}`;
       if (detail) detail.textContent = interaction.detail || "Press E or Space";
     }
+  }
+
+  updateWorldObjectLighting(world) {
+    const minutes = Number(world?.clockMinutes ?? 720);
+    const night = minutes < 360 || minutes >= 1140;
+    const weather = String(world?.weather?.current?.kind || "clear");
+    const glow = night ? 0.9 : ["rain", "storm", "snow"].includes(weather) ? 0.32 : 0.08;
+    for (const windowLight of this.townWindowLights || []) windowLight.setAlpha(glow);
+    document.querySelector("#game")?.setAttribute("data-town-window-light", night ? "night" : weather === "clear" ? "day" : "weather-dim");
   }
 
   enterBakery() {
@@ -2156,6 +2254,7 @@ export class TownScene extends Phaser.Scene {
     }
     if (this.stateSyncElapsed >= 250) {
       this.stateSyncElapsed = 0;
+      this.updateWorldObjectLighting(currentWorld);
       if (!controlling) {
         this.gameState?.updatePlayer({
           scene: this.scene.key,

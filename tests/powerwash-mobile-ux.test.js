@@ -24,7 +24,7 @@ test("keeps all four protected Power Washing modes with short contextual control
   for (const copy of ["Wash at least 97% clean.", "Drag to wash. Soap dark stains first.", "Playground restarted.", "Playground saved.", "Tap Confirm Exit to leave this attempt."]) assert.ok(scene.includes(copy), copy);
   assert.match(scene, /buttons\.retry\.classList\.toggle\("hidden", state\.strokes === 0\)/);
   assert.doesNotMatch(scene, /key === this\.lastSprayCell/);
-  assert.match(scene, /this\.powerwash\.sprayPath\(session\.id, from, cell, elapsedMs, \{ autoComplete: false \}\)/);
+  assert.match(scene, /this\.powerwash\.sprayPath\(session\.id, from, cell, elapsedMs, \{ autoComplete: false, visualSegment:/);
   assert.match(scene, /LegacyPowerwashRenderer/);
   assert.match(scene, /this\.powerwash\.completeVisual\(session\.id, visualPercent\)/);
   assert.match(scene, /this\.powerwash\.recoverSupplies\(session\.id, elapsed\)/);

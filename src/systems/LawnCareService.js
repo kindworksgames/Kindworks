@@ -40,6 +40,7 @@ function engineFields(engine) {
     col: snapshot.col,
     facing: snapshot.facing,
     cutCells: snapshot.cutCells,
+    cutDirections: snapshot.cutDirections,
     moves: snapshot.moves,
     undoStack: snapshot.undoStack,
   };
@@ -174,7 +175,7 @@ export class LawnCareService {
       if (!engine.ended) return { ...moved, session: structuredClone(session), lawnState: engine.snapshot() };
       if (engine.stars < 1) {
         session.status = "failed";
-        return { ...moved, code: "lawn-attempt-failed", failed: true, result: this.resultFromEngine(engine), session: structuredClone(session) };
+        return { ...moved, code: moved.endReason ? `lawn-${moved.endReason}` : "lawn-attempt-failed", failed: true, result: this.resultFromEngine(engine), session: structuredClone(session) };
       }
       return this.applyResult(state, session, engine);
     });
@@ -225,7 +226,7 @@ export class LawnCareService {
       const verification = verifyLawnSolution(session.assignedLevel);
       if (!verification.ok) return { ok: false, code: "certificate-failed", message: verification.reason };
       const engine = new LawnCareEngine(session.assignedLevel);
-      for (const direction of getLawnLevel(session.assignedLevel).canonicalSolution) engine.move(direction);
+      for (const direction of getLawnLevel(session.assignedLevel).canonicalSolution) engine.move(direction, { checkRoute: false });
       return this.applyResult(state, session, engine);
     });
   }

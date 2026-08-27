@@ -165,7 +165,8 @@ export class PlaygroundPowerwashScene extends Phaser.Scene {
     const session = this.powerwash.getActiveSession(); const cell = this.pointerCell; const point = this.pointerCanvas; if (!session || !cell || !point || this.transitioning) return false;
     const visualState = this.powerwash.getSessionState();
     const from = this.lastAppliedCell || cell;
-    const result = this.powerwash.sprayPath(session.id, from, cell, elapsedMs, { autoComplete: false });
+    const visualFrom = this.lastAppliedPoint || point;
+    const result = this.powerwash.sprayPath(session.id, from, cell, elapsedMs, { autoComplete: false, visualSegment: { from: visualFrom, to: point } });
     if (result.ok) this.visualRenderer?.applySegment(this.lastAppliedPoint || point, point, visualState);
     this.lastAppliedCell = { ...cell };
     this.lastAppliedPoint = { ...point };
@@ -268,7 +269,8 @@ export class PlaygroundPowerwashScene extends Phaser.Scene {
     const state = this.powerwash?.getSessionState?.();
     if (!state || !this.canvas || !this.artworkReady || !this.masterArtwork || !this.referenceDirtArtwork) return null;
     if (!force && this.visualRenderer?.level === state.level) return this.visualRenderer;
-    this.visualRenderer = new LegacyPowerwashRenderer({ canvas: this.canvas, masterArtwork: this.masterArtwork, referenceDirtArtwork: this.referenceDirtArtwork, level: state.level, state });
+    const session = this.powerwash.getActiveSession();
+    this.visualRenderer = new LegacyPowerwashRenderer({ canvas: this.canvas, masterArtwork: this.masterArtwork, referenceDirtArtwork: this.referenceDirtArtwork, level: state.level, state: { ...state, visualCheckpoint: session?.visualCheckpoint } });
     if (this.pointerCanvas) this.visualRenderer.pointer = { ...this.pointerCanvas };
     return this.visualRenderer;
   }

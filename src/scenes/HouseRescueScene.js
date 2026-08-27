@@ -7,6 +7,13 @@ import {
 } from "../data/houseRescue.js";
 import { startLazyScene } from "./lazyScenes.js";
 
+const FURNITURE_ICONS = Object.freeze({
+  bed: "🛏️", table: "🍽️", kitchen: "🥣", wardrobe: "🚪", rug: "▰", sofa: "🛋️",
+  bookshelf: "📚", hearth: "🔥", plant: "🪴", picture: "🖼️", radio: "🎵", petbed: "🐾", petbowls: "🥛",
+});
+
+function furnitureIcon(kind) { return FURNITURE_ICONS[kind] || "◆"; }
+
 function setText(selector, value) {
   const element = document.querySelector(selector);
   if (element) element.textContent = String(value);
@@ -40,18 +47,44 @@ export class HouseRescueScene extends Phaser.Scene {
   }
 
   drawRoom() {
-    this.add.rectangle(640, 360, 1280, 720, 0xc9a978);
+    const geometry = this.houseRescue.getGeometry(this.entryData.houseId);
+    const floorColour = geometry?.theme?.floor || 0xc9a978;
+    const wallColour = geometry?.theme?.wall || 0xf1dfb6;
+    this.add.rectangle(640, 360, 1280, 720, 0xc9d7ad).setName("KW-HOUSE-RESCUE-BACKGROUND");
     const art = this.add.graphics();
-    art.fillStyle(0x7e5d3e, 1); art.fillRect(70, 45, 1140, 620);
-    art.fillStyle(0xf1dfb6, 1); art.fillRoundedRect(90, 65, 1100, 580, 18);
-    art.lineStyle(3, 0xd3bb8a, 0.55);
-    for (let x = 110; x < 1180; x += 54) art.lineBetween(x, 80, x, 630);
-    art.fillStyle(0x895d42, 1); art.fillRoundedRect(100, 82, 230, 110, 12);
-    art.fillStyle(0x789b70, 1); art.fillRoundedRect(940, 475, 220, 140, 16);
-    art.fillStyle(0x547067, 1); art.fillRoundedRect(455, 70, 370, 65, 10);
-    this.add.text(215, 137, "🛋️", { fontSize: "64px" }).setOrigin(0.5);
-    this.add.text(1050, 530, "🛏️", { fontSize: "72px" }).setOrigin(0.5);
+    art.setName("KW-HOUSE-RESCUE-AUTHORED-FLOOR-GEOMETRY");
+    art.fillStyle(0x5c4938, 1); art.fillRoundedRect(58, 37, 1164, 636, 20);
+    art.fillStyle(wallColour, 1); art.fillRoundedRect(76, 55, 1128, 600, 16);
+    art.fillStyle(floorColour, 1); art.fillRoundedRect(92, 72, 1096, 565, 10);
+    art.lineStyle(2, 0x6b5038, 0.16);
+    for (let y = 88; y < 630; y += 24) art.lineBetween(96, y, 1184, y);
+    const room = { x: 92, y: 72, w: 1096, h: 565 };
+    for (const partition of geometry?.partitions || []) {
+      art.lineStyle(12, 0x72533b, 0.88);
+      art.lineBetween(room.x + partition.x / 100 * room.w, room.y + partition.y / 100 * room.h, room.x + partition.x2 / 100 * room.w, room.y + partition.y2 / 100 * room.h);
+    }
+    for (const item of geometry?.furniture || []) {
+      const x = room.x + item.x / 100 * room.w;
+      const y = room.y + item.y / 100 * room.h;
+      const w = item.w / 100 * room.w;
+      const h = item.h / 100 * room.h;
+      art.fillStyle(item.floorLayer ? 0xb87a63 : 0x725a45, item.floorLayer ? 0.4 : 0.92);
+      art.fillRoundedRect(x, y, w, h, 7);
+      this.add.text(x + w / 2, y + h / 2, furnitureIcon(item.kind), { fontSize: `${Math.max(18, Math.min(42, Math.min(w, h) * 0.58))}px` }).setOrigin(0.5).setName(`KW-HOUSE-RESCUE-FURNITURE-${item.kind.toUpperCase()}-${item.id.toUpperCase()}`);
+    }
     this.add.text(640, 102, "🏠 HOUSE RESCUE · WILLOWMERE HOME TEAM", { color: "#fff7da", fontFamily: "ui-monospace, monospace", fontSize: "18px", fontStyle: "bold", stroke: "#493529", strokeThickness: 5 }).setOrigin(0.5);
+  }
+
+  geometryMarkup() {
+    const geometry = this.houseRescue.getGeometry(this.houseRescue.getActiveSession()?.houseId || this.entryData.houseId);
+    if (!geometry) return "";
+    const furniture = geometry.furniture.map((item) => `<i class="house-rescue-furniture kind-${item.kind}${item.floorLayer ? " floor-layer" : ""}" style="left:${item.x}%;top:${item.y}%;width:${item.w}%;height:${item.h}%" data-asset-label="KW-HOUSE-RESCUE-FURNITURE-${item.kind.toUpperCase()}-${item.id.toUpperCase()}" aria-hidden="true"><span>${furnitureIcon(item.kind)}</span></i>`).join("");
+    const partitions = geometry.partitions.map((wall, index) => {
+      const length = Math.hypot(wall.x2 - wall.x, wall.y2 - wall.y);
+      const angle = Math.atan2(wall.y2 - wall.y, wall.x2 - wall.x) * 180 / Math.PI;
+      return `<i class="house-rescue-partition" style="left:${wall.x}%;top:${wall.y}%;width:${length}%;transform:rotate(${angle}deg)" data-asset-label="KW-HOUSE-RESCUE-PARTITION-${index + 1}" aria-hidden="true"></i>`;
+    }).join("");
+    return `<span class="house-rescue-room-geometry" data-asset-label="KW-HOUSE-RESCUE-ROOM-${geometry.houseId.toUpperCase()}">${furniture}${partitions}</span>`;
   }
 
   bindInterface() {
@@ -213,7 +246,7 @@ export class HouseRescueScene extends Phaser.Scene {
     if (!this.sortFloor) return;
     const wave = this.currentWave(session);
     const visible = session.items.filter((item) => !item.sorted && item.wave === wave);
-    this.sortFloor.innerHTML = visible.map((item) => `<button type="button" draggable="true" class="house-rescue-item${item.id === this.selectedItemId ? " selected" : ""}" data-house-rescue-item="${item.id}" style="left:${item.x}%;top:${item.y}%" aria-label="${item.label}, ${item.category}"><span>${item.icon}</span><small>${item.label}</small></button>`).join("");
+    this.sortFloor.innerHTML = `${this.geometryMarkup()}${visible.map((item) => `<button type="button" draggable="true" class="house-rescue-item${item.id === this.selectedItemId ? " selected" : ""}" data-house-rescue-item="${item.id}" style="left:${item.x}%;top:${item.y}%" aria-label="${item.label}, ${item.category}"><span>${item.icon}</span><small>${item.label}</small></button>`).join("")}`;
     setText("#house-rescue-wave", `${wave + 1} / ${Math.ceil(session.items.length / HOUSE_RESCUE_RULES.visibleItemsPerWave)}`);
     setText("#house-rescue-remaining", session.items.length - session.correct);
   }
@@ -222,7 +255,7 @@ export class HouseRescueScene extends Phaser.Scene {
     if (!this.vacuumFloor) return;
     const remaining = session.dirt.filter((stain) => stain.remaining > 0);
     const vacuum = this.houseRescue.getVacuumLoadout();
-    this.vacuumFloor.innerHTML = `${remaining.map((stain) => `<i class="house-rescue-stain strength-${stain.strength}" style="left:${stain.x}%;top:${stain.y}%;--stain-size:${5 + stain.remaining * 2}px" aria-hidden="true"></i>`).join("")}<span class="house-rescue-vacuum" style="left:${session.vacuum.x}%;top:${session.vacuum.y}%;--vacuum-color:${vacuum.color}" aria-hidden="true">${vacuum.icon}</span>`;
+    this.vacuumFloor.innerHTML = `${this.geometryMarkup()}${remaining.map((stain) => `<i class="house-rescue-stain strength-${stain.strength}" style="left:${stain.x}%;top:${stain.y}%;--stain-size:${5 + stain.remaining * 2}px" aria-hidden="true"></i>`).join("")}<span class="house-rescue-vacuum" style="left:${session.vacuum.x}%;top:${session.vacuum.y}%;--vacuum-color:${vacuum.color}" data-asset-label="KW-HOUSE-RESCUE-VACUUM-${vacuum.itemId.toUpperCase()}" aria-hidden="true">${vacuum.icon}</span>`;
     setText("#house-rescue-layers", remaining.reduce((sum, stain) => sum + stain.remaining, 0));
   }
 

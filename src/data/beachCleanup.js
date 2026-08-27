@@ -192,15 +192,18 @@ export class BeachCleanupEngine {
   tileAt(row, col) { return this.level.rows[row]?.[col] ?? null; }
   passable(row, col) { return this.tileAt(row, col) !== null && ![BEACH_TILE.umbrella, BEACH_TILE.chair, BEACH_TILE.tide].includes(this.tileAt(row, col)); }
 
-  move(direction) {
+  move(direction, { batchId = null } = {}) {
     if (this.won) return { ok: false, code: "level-complete", message: "This beach is already clean." };
     const delta = DIRECTIONS[direction];
     if (!delta) return { ok: false, code: "invalid-direction", message: "Choose a valid walking direction." };
     const nextRow = this.row + delta[0];
     const nextCol = this.col + delta[1];
     if (!this.passable(nextRow, nextCol)) return { ok: false, code: "blocked", message: "An obstacle blocks that step." };
-    this.history.push(copyFrame(this));
-    this.history = this.history.slice(-30);
+    const normalizedBatchId = typeof batchId === "string" && batchId ? batchId : null;
+    if (!normalizedBatchId || this.history.at(-1)?.batchId !== normalizedBatchId) {
+      this.history.push({ ...copyFrame(this), ...(normalizedBatchId ? { batchId: normalizedBatchId } : {}) });
+      this.history = this.history.slice(-30);
+    }
     const fromTile = this.tileAt(this.row, this.col);
     const fromKey = beachCellKey(this.row, this.col);
     if (this.rakedCells.has(beachCellKey(nextRow, nextCol))) this.steppedOnRaked = true;

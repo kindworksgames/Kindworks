@@ -46,6 +46,7 @@ export const ROADS = Object.freeze([
 export const PATHS = Object.freeze([
   { id: "commons-main", width: 26, points: [[1050, 1100], [1145, 965], [1270, 875], [1450, 840], [1615, 890], [1710, 990], [1650, 1130], [1540, 1245], [1380, 1290], [1220, 1220], [1115, 1110], [1050, 1100]] },
   { id: "commons-play", width: 25, points: [[1615, 890], [1775, 850], [1950, 855], [2110, 930], [2185, 1065], [2150, 1200], [2020, 1320], [1840, 1340], [1650, 1130], [1710, 990], [1615, 890]] },
+  { id: "mill-walk", width: 25, points: [[2185, 1065], [2325, 1050], [2440, 1010], [2525, 1000]] },
   { id: "south-pond-walk", width: 25, points: [[1670, 1545], [1670, 2050], [1700, 2260], [1850, 2390], [2040, 2460], [2200, 2440]] },
   { id: "harbour-walk", width: 25, points: [[3710, 1545], [3710, 2020], [3740, 2100], [3740, 2260]] },
 ]);
@@ -85,6 +86,7 @@ export const HOUSES = Object.freeze([
   width,
   height,
   roof,
+  architectureKit: ["willow-gable", "market-hip", "reedbank-cottage", "east-bay", "shore-gambrel"][index % 5],
 })));
 
 export const SHOPS = Object.freeze([

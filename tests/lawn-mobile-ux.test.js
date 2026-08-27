@@ -21,4 +21,7 @@ test("uses short action-led Lawn Care feedback without changing validated game r
   assert.match(markup, /id="lawn-undo"[^>]*aria-label="Undo last mower move"[^>]*>↶<\/button>/);
   for (const copy of ["Mow this lawn. Your result updates the town.", "Swipe to mow. Cut at least 50%.", "Lawn reset. Progress is safe.", "Result saved.", "Restart to try again."]) assert.match(scene, new RegExp(copy.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   assert.doesNotMatch(scene, /LAWN_TOTAL_LEVELS\s*=/);
+  assert.match(scene, /lawnTravelPlan/);
+  assert.match(scene, /queuedDirection/);
+  assert.match(scene, /Dead end\. Undo or restart this route\./);
 });

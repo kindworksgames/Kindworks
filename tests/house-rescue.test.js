@@ -57,7 +57,7 @@ test("all 750 levels deterministically preserve scaling, balanced categories and
     assert.equal(dirt.length, config.dirtCount);
     assert.deepEqual(items, generateHouseRescueItems({ houseId: "house-1", jobSerial: 3, level }));
     assert.deepEqual(dirt, generateHouseRescueDirt({ houseId: "house-1", jobSerial: 3, level }));
-    assert.ok(items.every((item) => HOUSE_RESCUE_CATEGORIES[item.category] && item.x >= 0 && item.x <= 75 && item.y >= 0 && item.y <= 100));
+    assert.ok(items.every((item) => HOUSE_RESCUE_CATEGORIES[item.category] && item.x >= 0 && item.x <= 100 && item.y >= 0 && item.y <= 100));
     for (const wave of new Set(items.map((item) => item.wave))) {
       const visible = items.filter((item) => item.wave === wave);
       assert.ok(visible.length <= HOUSE_RESCUE_RULES.visibleItemsPerWave);

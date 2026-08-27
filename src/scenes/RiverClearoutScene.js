@@ -66,6 +66,7 @@ export class RiverClearoutScene extends Phaser.Scene {
       rotate: document.querySelector("#river-rotate"), down: document.querySelector("#river-down"),
       drop: document.querySelector("#river-drop"), undo: document.querySelector("#river-undo"),
       hint: document.querySelector("#river-hint"), qa: document.querySelector("#river-qa-solve"),
+      resultUndo: document.querySelector("#river-result-undo"),
       replay: document.querySelector("#river-replay"), next: document.querySelector("#river-next"),
       return: document.querySelector("#river-return"),
     };
@@ -85,6 +86,15 @@ export class RiverClearoutScene extends Phaser.Scene {
     this.onDown = () => this.runAction(() => this.river.softDrop());
     this.onDrop = () => this.runAction(() => this.river.hardDrop());
     this.onUndo = () => this.runAction(() => this.river.undo());
+    this.onResultUndo = () => {
+      const result = this.river.undo();
+      if (!result.ok) { this.setMessage(result.message || "That result cannot be reopened.", "error"); return false; }
+      document.querySelector("#river-result")?.classList.add("hidden");
+      document.querySelector("#river-gameplay")?.classList.remove("hidden");
+      this.setMessage("Last placement undone. Keep restoring the river.", "success");
+      this.render();
+      return true;
+    };
     this.onHint = () => this.showHint();
     this.onQa = () => this.runCertifiedDemo();
     this.onReplay = () => this.startLevel(this.river.getActiveSession()?.level.id || 1);
@@ -146,6 +156,7 @@ export class RiverClearoutScene extends Phaser.Scene {
     this.buttons.left?.addEventListener("click", this.onLeft); this.buttons.right?.addEventListener("click", this.onRight); this.buttons.rotate?.addEventListener("click", this.onRotate);
     this.buttons.down?.addEventListener("click", this.onDown); this.buttons.drop?.addEventListener("click", this.onDrop); this.buttons.undo?.addEventListener("click", this.onUndo);
     this.buttons.hint?.addEventListener("click", this.onHint); this.buttons.qa?.addEventListener("click", this.onQa); this.buttons.replay?.addEventListener("click", this.onReplay);
+    this.buttons.resultUndo?.addEventListener("click", this.onResultUndo);
     this.buttons.next?.addEventListener("click", this.onNext); this.buttons.return?.addEventListener("click", this.onReturn);
     this.boardElement?.addEventListener("pointerdown", this.onBoardPointerDown); this.boardElement?.addEventListener("pointermove", this.onBoardPointerMove);
     this.boardElement?.addEventListener("pointerup", this.onBoardPointerUp); this.boardElement?.addEventListener("pointercancel", this.onBoardPointerCancel);
@@ -184,8 +195,16 @@ export class RiverClearoutScene extends Phaser.Scene {
   showHint() {
     const result = this.river.hint();
     if (!result.ok) { this.setMessage("No placement hint is available for this piece.", "error"); return; }
+    this.lastHint = result.hint;
+    const side = result.hint.x < 3 ? "left side" : result.hint.x > 5 ? "right side" : "centre";
     const turns = result.hint.rotation === 0 ? "without rotating" : `after ${result.hint.rotation} clockwise turn${result.hint.rotation === 1 ? "" : "s"}`;
-    this.setMessage(`Hint: aim for column ${result.hint.x + 1} ${turns}${result.hint.removed ? `; this can recover ${result.hint.removed} rubbish.` : "."}`, "hint");
+    const message = result.hint.tier === 1
+      ? `Hint 1 · Try the ${side}. Three stars remain possible.`
+      : result.hint.tier === 2
+        ? `Hint 2 · Aim for column ${result.hint.x + 1}. Star cap: 2.`
+        : `Hint 3 · Column ${result.hint.x + 1}, ${turns}. Star cap: 1.`;
+    this.setMessage(message, "hint");
+    this.render();
   }
 
   async runCertifiedDemo() {
@@ -216,6 +235,7 @@ export class RiverClearoutScene extends Phaser.Scene {
         overlays.set(`${session.current.x + dx},${session.current.y + dy}`, { kind: "current", icon: session.current.icon });
       }
     }
+    if (this.lastHint?.tier >= 3) for (const [dx, dy] of this.lastHint.shape) overlays.set(`${this.lastHint.x + dx},${this.lastHint.y + dy}`, { kind: "hint", icon: session.current?.icon || "" });
     const cells = [];
     for (let row = 0; row < session.level.height; row += 1) {
       for (let column = 0; column < session.level.width; column += 1) {
@@ -255,6 +275,7 @@ export class RiverClearoutScene extends Phaser.Scene {
     const preview = document.querySelector("#river-preview");
     if (preview) preview.innerHTML = session.preview.map((piece) => `<span>${piece.type || "—"}<small>${piece.type ? getRiverRubbish(piece.icon).icon : ""}</small></span>`).join("");
     if (this.buttons.undo) this.buttons.undo.disabled = session.finished || session.undosRemaining === session.level.maxUndos;
+    if (this.buttons.resultUndo) this.buttons.resultUndo.disabled = !session.finished || !session.canUndo;
     for (const key of ["left", "right", "rotate", "down", "drop", "hint"]) if (this.buttons[key]) this.buttons[key].disabled = session.finished || this.solving;
     if (this.buttons.qa) this.buttons.qa.disabled = session.finished || this.solving;
     this.renderBoard(session);
@@ -270,6 +291,7 @@ export class RiverClearoutScene extends Phaser.Scene {
     setText("#river-result-message", result.won ? result.firstClear ? "Progress saved. This first clear also earned town coins." : "Your best result was saved. Replay coins are first-clear only." : "Restore at least 50% of the original rubbish to complete this level.");
     setText("#river-result-percent", `${result.percent}%`); setText("#river-result-pieces", result.pieces); setText("#river-result-rows", result.rows); setText("#river-result-coins", `+${result.coins}`);
     if (this.buttons.next) this.buttons.next.disabled = !result.won;
+    if (this.buttons.resultUndo) this.buttons.resultUndo.disabled = !this.river.getActiveSession()?.canUndo;
     this.setMessage(result.won ? "River saved." : "Try another placement.", result.won ? "success" : "error");
     this.render();
   }
@@ -325,6 +347,7 @@ export class RiverClearoutScene extends Phaser.Scene {
     this.buttons.left?.removeEventListener("click", this.onLeft); this.buttons.right?.removeEventListener("click", this.onRight); this.buttons.rotate?.removeEventListener("click", this.onRotate);
     this.buttons.down?.removeEventListener("click", this.onDown); this.buttons.drop?.removeEventListener("click", this.onDrop); this.buttons.undo?.removeEventListener("click", this.onUndo);
     this.buttons.hint?.removeEventListener("click", this.onHint); this.buttons.qa?.removeEventListener("click", this.onQa); this.buttons.replay?.removeEventListener("click", this.onReplay);
+    this.buttons.resultUndo?.removeEventListener("click", this.onResultUndo);
     this.buttons.next?.removeEventListener("click", this.onNext); this.buttons.return?.removeEventListener("click", this.onReturn);
     this.boardElement?.removeEventListener("pointerdown", this.onBoardPointerDown); this.boardElement?.removeEventListener("pointermove", this.onBoardPointerMove);
     this.boardElement?.removeEventListener("pointerup", this.onBoardPointerUp); this.boardElement?.removeEventListener("pointercancel", this.onBoardPointerCancel);

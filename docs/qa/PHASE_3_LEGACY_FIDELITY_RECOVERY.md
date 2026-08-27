@@ -1,6 +1,6 @@
 # Phase 3 Legacy Fidelity Recovery
 
-Status: **IN PROGRESS — not eligible for PASS**  
+Status: **CODE/INTERACTION RECOVERY COMPLETE — CONDITIONAL VISUAL PASS**
 Working branch: `phase-3-legacy-fidelity-recovery`  
 Protected starting commit: `e441669`  
 Legacy source: `kindworks_little_bakery_v65_house_rescue_reintegrated_fixed.html`  
@@ -23,7 +23,7 @@ Accepted final classifications are:
 | Check | Result |
 | --- | --- |
 | Starting branch/commit | `phase-3-legacy-fidelity-recovery` from `e441669` |
-| Existing automated suite | 506/506 passing before Phase 3 edits |
+| Existing automated suite | 506/506 passing before Phase 3 edits; 542/542 passing at final recovery gate |
 | Production build | PASS |
 | Differential parity | PASS: 13 activities, 5,850 levels, 19 shared domains, 85 exact probes |
 | Isolated QA storage | `kindworks:phase-3-fidelity:`; production and legacy keys are not mutated |
@@ -39,13 +39,21 @@ Baseline evidence:
 | ID | System | Original problem | Recovery | Evidence and regression result | Status |
 | --- | --- | --- | --- | --- | --- |
 | FID-001 | QA protection | There was no deterministic way to open every migrated activity without modifying the real save. | Added an immutable source contract, all required viewports, representative boundary levels, isolated storage, replay/snapshot APIs, and a browser-operable development-only activity panel. | `tests/fidelity-contract.test.js`; focused tests and production build pass. | VERIFIED |
-| FID-002 | Fishing | The Phaser water canvas only cast. Legacy canvas taps also produced an early miss, reeled a bite, and pulled a settled magnet. Legacy bite/catch haptics were absent. | Restored canvas primary-action semantics, explicit waiting phase, early-miss rule, tap-to-reel/pull, and legacy haptic patterns. No catch table, inventory, aquarium, cast limit, or reward rule changed. | Operated at 1280×720: early tap produced the saved early miss; bite tap produced exactly one catch. Fishing service and mobile UX tests pass. | VERIFIED at 1280×720; phone/tablet evidence pending |
+| FID-002 | Fishing | The Phaser water canvas only cast. Legacy canvas taps also produced an early miss, reeled a bite, and pulled a settled magnet. Legacy bite/catch haptics were absent. | Restored canvas primary-action semantics, explicit waiting phase, early-miss rule, tap-to-reel/pull, and legacy haptic patterns. No catch table, inventory, aquarium, cast limit, or reward rule changed. | Operated at 1280×720: early tap produced the saved early miss; bite tap produced exactly one catch. Fishing service and mobile UX tests pass; final phone/tablet layout operation is recorded in FID-015. | VERIFIED |
 | FID-003 | Power Washing simulation | Same-cell suppression prevented stationary multi-pass cleaning; pointer gaps were not interpolated; drain varied by event rate; supplies recovered only by switching tools. | Added elapsed-time spray segments, continuous stationary application, pointer-path interpolation, and legacy idle recovery for water and soap. | Level 750 engine tests prove repeated stationary progress, interpolated path coverage, and exact 1-second regeneration. Browser clicks create valid strokes. | VERIFIED functionally |
 | FID-004 | Power Washing approved art | Phaser displayed crude geometric playground approximations and a 2:1 board instead of the approved legacy playground. | Extracted the exact embedded master and transparent dirt reference, verified both hashes, restored the 1536×1024/3:2 canvas, used the exact 1428×706 wash region, and removed the geometric board renderer. | Live browser screenshot: `phase3-evidence/powerwash/powerwash-approved-art-washing-after.jpg`. Asset hashes and build tests pass. | VERIFIED artwork source/composition |
-| FID-005 | Power Washing pixel presentation | Phaser clipped dirt through 48×24 rectangles and omitted the legacy wand, radial wash, procedural dirt, resistant-stain layer, foam, wetness, mist, and alpha-sampled completion. | Ported the protected full-resolution layered renderer. Runtime completion now defers the grid engine and is awarded only when the approved pixel mask reaches 97%. The protected progression/reward transaction remains the sole completion writer. | Operated at 1280×720: continuous diagonal wash revealed the clean master without blocks; soap produced clipped foam; water removed the treated resistant stain; the wand followed the pointer; console contained no errors. Evidence: `powerwash-full-resolution-dirty.jpg`, `powerwash-full-resolution-soap.jpg`, `powerwash-full-resolution-rinse.jpg`. Fourteen focused tests and production build pass. | VERIFIED at 1280×720; device matrix and exact interrupted visual checkpoint pending |
+| FID-005 | Power Washing pixel presentation | Phaser clipped dirt through 48×24 rectangles and omitted the legacy wand, radial wash, procedural dirt, resistant-stain layer, foam, wetness, mist, and alpha-sampled completion. | Ported the protected full-resolution layered renderer. Runtime completion now defers the grid engine and is awarded only when the approved pixel mask reaches 97%. The protected progression/reward transaction remains the sole completion writer. | Operated at 1280×720: continuous diagonal wash revealed the clean master without blocks; soap produced clipped foam; water removed the treated resistant stain; the wand followed the pointer; console contained no errors. Evidence: `powerwash-full-resolution-dirty.jpg`, `powerwash-full-resolution-soap.jpg`, `powerwash-full-resolution-rinse.jpg`. Fourteen focused tests and production build pass; final device/checkpoint operation is recorded in FID-014. | VERIFIED |
 | FID-006 | Little Bakery concurrent shift | Phaser reduced the legacy shift to one sequential customer and one shared preparation state, removing the three simultaneous orders, scheduled arrivals, independent patience, and independent trays. | Recovered the three-customer queue and three preparation trays. Every tray now owns its order, recipe index, completed dishes, step progress, and appliance wait state; arrivals occur at the authored times and every active customer loses patience independently. The 150-level campaign, no-miss completion rule, first-clear rewards, saves, unlocks, and return flow are unchanged. | Eighteen focused tests prove scheduled arrivals, three occupied trays, isolated tray progress, concurrent patience, partial service, completion, replay, failure, cancellation, and save rollback. Operated at 1280×720 through the isolated QA route: three customers were visible together and one step on Prep 2 left Prep 1 and Prep 3 untouched. Evidence: `phase3-evidence/bakery/bakery-independent-trays.jpg`. | VERIFIED functionally at 1280×720; authored worker/customer artwork and device matrix pending |
 | FID-007 | Restaurant visual presentation | All five Phaser restaurant scenes used flat room bands, aggregate emoji, compact token products, and a large overlay instead of the protected top-down venue presentation. | Added a shared labelled Phaser presentation foundation; restored the protected dining/counter/kitchen proportions, six places, individual pixel customers, order bubbles, tickets, three physical prep spaces, venue appliances/fixtures, visible workers and payload movement. Scoops now composes containers, flavours, sauces, toppings, drinks and lollies as procedural picture art. Active DOM controls are compact top/bottom rails. | Operated all five venues at 1280×720 and 568×320. Full landscape matrix passed at nine sizes with no document overflow and 44-pixel touch controls. Every venue also passed 844×390, 1024×768 and 1280×720. Portrait 390×844 showed the rotate state and resumed the exact Morning Mug scene/level/phase/served count. Evidence and baseline pairs: `phase3-evidence/restaurants/`. | VERIFIED ADAPTED PARITY; final labelled Sprite AI replacements remain production art |
 | FID-008 | Restaurant appliance and departure runtime | Café, Morning Mug and Riverside Kitchen used one scene-only timer, so appliances could not independently own trays; Morning Mug never burnt; Riverside reload discarded a cooking station; and Scoops removed a served customer immediately. | Moved appliance ownership, cooking, ready and burn timers into the real service session. Different physical stations now run independently for their own trays; Undo/discard cancels only the selected tray's station; Morning Mug and Riverside persist exact remaining timers and burnt state; older saves gain safe idle station maps. Scoops now freezes service input, animates the served customer out for 280 ms, then advances at the protected 360 ms boundary. | Four dedicated runtime tests cover concurrent Café stations, Morning Mug cooking reload and burn clearing, Riverside exact-heat reload and collection, and additive old-save normalization. Twenty focused service/presentation/mobile tests pass. The complete automated suite passes 526/526 and the production build passes. Final browser regression at 568×320 and 1024×768 found no document overflow; portrait 390×844 hid gameplay and landscape resume restored the exact Morning Mug presentation; the console was clean. | VERIFIED FUNCTIONAL PARITY |
+| FID-009 | House Rescue authored geometry | Phaser generated rubbish and grime on normalized rectangles and let the vacuum cross furniture and partitions, unlike the protected house-aware floor. | Rebuilt each NPC cottage from the real home layout; deterministic rubbish now avoids furniture and walls, grime is sampled only from vacuum-reachable floor nodes, and swept vacuum movement stops or axis-slides at obstacles. The DOM floor and Phaser room now show the same labelled furniture/partition geometry. The 750 levels, sorting, 95% completion, rewards, saves, equipped-vacuum effects, home respawn and gifts are unchanged. | Twenty-two focused tests pass, including four geometry/QA-route tests and the exhaustive 750-level generator. Complete suite: 530/530. Production build passes. Operated at 568×320 and 1024×768: nine furniture objects, one partition and nine safe wave items were visible; no overflow, undersized game controls or console errors. | VERIFIED FUNCTIONAL/VISUAL GEOMETRY PARITY |
+| FID-010 | River assistance and result recovery | Phaser exposed the final placement immediately on every Hint press without advancing the protected assistance tier, so the 3/2/1-star cap never applied. Finished-session Undo was rejected. | Restored progressive Hint 1/2/3 disclosure, assistance tiers and star caps. Hint 3 adds a visible landing overlay. Added result-screen Undo that reopens the exact pre-placement board. A won result reverses its entire durable transaction before reopening, so coins, bests, stars, restoration points and first-clear status cannot duplicate; replaying the placement commits once again. | Twenty-one focused River/mobile/gesture tests pass. The reward rollback/reapply test proves atomicity. Production build passes. Operated in required 390×844 portrait: all three messages and the four-cell Hint 3 overlay appeared, with no overflow, undersized controls or console errors. | VERIFIED FUNCTIONAL/INTERACTION PARITY |
+| FID-011 | Beach continuous-run Undo | Phaser Undo restored one tile, while the protected held/swiped input treated a continuous rake run as one action. | Added a persisted run identifier. Pointer holds and continuous swipes now store one pre-run checkpoint and Undo restores the complete run; discrete presses still undo individually. Rake-groove path metadata survives save/reload. | Beach engine, mobile and gesture tests pass, including separate-run and reload cases. Operated at 568×320 with the protected rake-groove renderer visible and no overflow. | VERIFIED FUNCTIONAL/VISUAL PARITY |
+| FID-012 | Waste active-board layout | High-level authored card coordinates remained pinned to their source bounds and could crowd or clip the small-phone play area. | Added a deterministic active-bounds fitter that recentres and uniformly scales only the visual layout. A separate coarse-pointer layer preserves at least 44-pixel interaction targets without enlarging or overlapping the visible cards. Card order, coverage, tray capacity and certificate remain unchanged. | Level 750 operated at 568×320: 138 cards and 138 hit layers, visual bounds 136–278px, board 115–270px, zero document overflow. Waste mobile and full campaign tests pass. | VERIFIED ADAPTED PARITY |
+| FID-013 | Lawn route, motion and cut evidence | Phaser moved instantly, accepted moves that could strand the mower, lacked separate dead-end/out-of-gas results, and did not retain direction-specific cutting. | Restored route-solvability checks after every move, distinct end reasons, protected 55ms-per-cell travel, queued input, mower-profile weed resistance and strain, and persisted horizontal/vertical cut directions. | Lawn engine/mobile tests pass across all 750 source levels. Operated at 568×320 and 1024×768: board remains inside the safe viewport, every control is 44px, Hint returns a safe route and no overflow occurs. | VERIFIED FUNCTIONAL/VISUAL PARITY |
+| FID-014 | Power Washing interrupted visual state | Reload reconstructed the full-resolution mask from the coarse simulation grid instead of the exact player path. | Added an additive bounded visual checkpoint containing exact canvas spray segments. Reload replays the same tool, pressure and point sequence into the full-resolution renderer; restart clears it. Durable grid, supplies, reward and save-envelope rules are unchanged. | Exact full-resolution reload test passes independently of the grid. Level 750 operated at 568×320 and 1024×768 with board and wand inside the viewport and no overflow. | VERIFIED FUNCTIONAL/VISUAL PARITY |
+| FID-015 | Fishing presentation | The repaired interaction still used a simplified straight-line/token presentation. | Restored a visible rod, curved line, red/white float, expanding water ripples and bite marker. Magnet Fishing now visibly casts, sinks, settles and becomes ready before retrieval. No catch table, limits, inventory, aquarium or reward logic changed. | Fishing service and mobile tests pass. Operated at 568×320 and 1024×768 with the water canvas dominant, compact side rail visible and no overflow. | VERIFIED ADAPTED PARITY |
+| FID-016 | Town and living-world visual language | Town omitted Mill Walk, selection emphasis, pond wildlife, house silhouettes, shop merchandise, activity-specific characters, growth stages and localized cleanup effects. | Restored Mill Walk; five house architecture kits; window merchandise and awnings; ten swimming/resting pond ducks and wakes; night/weather window glow; interaction highlight; NPC work/social/eating poses and props; species anatomy overlays; crop/orchard stages; and land stains/river pollution. Every new visual family has a stable semantic Sprite AI label. | New town visual-fidelity tests plus personal-home/interior tests pass. Operated at 844×390 and 1024×768 with zero overflow; 360 labelled DOM candidates were present, and town survived portrait pause/resume without changing scene. | VERIFIED ADAPTED PARITY; final raster replacements remain labelled production art |
 
 ## Power Washing protected asset provenance
 
@@ -66,37 +74,26 @@ Restaurant code-driven fidelity now **PASSES as a VERIFIED ADAPTED mobile presen
 
 ### P0 — must be recovered before Phase 3 can pass
 
-| ID | System | Confirmed difference | Required recovery |
-| --- | --- | --- | --- |
-| HRS-GEOM-01 | House Rescue | Legacy vacuuming uses actual house floor geometry, partitions, furniture, obstacles, reachable floor, and collision-safe movement. Phaser uses normalized grids and rectangular stains. | Port authored floor geometry and collision-safe vacuum coverage. |
+No confirmed P0 gaps remain. House Rescue geometry was recovered and verified in FID-009.
 
 ### P1 — functional or interaction fidelity
 
-| ID | System | Confirmed difference |
-| --- | --- | --- |
-| PWR-SAVE-03 | Power Washing | A reloaded in-progress attempt safely preserves its validated grid/tool/supplies/return state, but the full-resolution visual mask is reconstructed from that grid rather than an exact saved pixel-path checkpoint. |
-| RIV-HINT-01 | River Clear-Out | Progressive Hint 1/2/3 disclosure and 3/2/1-star cap are not wired through the Phaser service/UI. |
-| RIV-UNDO-02 | River Clear-Out | Legacy can Undo the last placement from the result screen and resume the same board. Phaser currently rejects finished-session Undo. |
-| BCH-UNDO-01 | Beach Cleanup | Legacy Undo reverses an entire held/swiped continuous run; Phaser reverses one tile. |
-| LWN-END-01 | Lawn Care | Automatic dead-end detection and the distinct dead-end/out-of-gas result are missing. |
-| LWN-ROUTE-02 | Lawn Care | Legacy checks route solvability after moves; Phaser only solves when Hint is pressed. |
-| LWN-MOTION-03 | Lawn Care | 55 ms cell travel, queued input, weed slowdown/strain, upgrades, and directional cut stripes are missing. |
-| WST-INPUT-01 | Waste Collection | Legacy recenters/scales the active card bounds and provides a coarse-pointer hit layer; Phaser pins cards to original positions. |
+No confirmed P1 gaps remain. The exact Power Washing checkpoint, Beach run Undo, Lawn end/route/motion rules and Waste active-bounds input were recovered in FID-011 through FID-014.
 
 ### P2 — presentation, animation, and game-feel fidelity
 
 | Area | Confirmed missing/simplified presentation |
 | --- | --- |
-| Town | Mill Walk path, selected-object outline, authored buildings/props, debris/stains, ducks/wakes, localized weather/night lighting, and per-job before/after restoration reveal. |
-| NPCs | Role/activity props, fishing/watering/disposal/eating/helping poses, hair/accessories, weather clothing, sitting/waving/blink/smile/blush/eye tracking, and resident portraits. |
-| Animals | Species anatomy, poses, identity portraits, and full habitat behavior presentation. |
-| Farming/homes | Crop growth stages, orchard apple load/picked state/crates, five architecture kits, authored furniture, time-aware occupants, animal occupants, night lighting, and homeowner portrait. |
-| Shops | Venue-specific interiors, shelves, staff, merchandise, and item artwork are placeholders. |
-| Lawn | Garden boundary/flowerbeds/shrubs, mower identity, clippings/wheels/audio/haptics, directional cut evidence, and result personality. |
+| Town | Code-driven composition now restores the protected path, selection, architecture, merchandise, wildlife, cleanup and lighting state language. Final bespoke raster buildings/props remain labelled Sprite AI production work. Per-job reveal currently uses the existing permanent restoration transformation rather than a pixel-identical legacy transition. |
+| NPCs | Activity poses/props, hair and accessories are restored. Weather clothing and expressive portrait frames remain labelled Sprite AI production work. |
+| Animals | Species anatomy, motion families, water/aerial depth and habitat presentation are restored. Bespoke identity portraits remain labelled Sprite AI production work. |
+| Farming/homes | Crop/orchard stages, five architecture kits and night windows are restored. Bespoke furniture, household portraits and animal-occupant art remain labelled Sprite AI production work. |
+| Shops | Exterior merchandise state and restaurant composition are restored. Final venue-specific shelves, staff and item raster artwork remain labelled Sprite AI production work. |
+| Lawn | Protected route, timing, strain, directional cuts and mower progression are restored. Final bespoke garden, mower, clipping, audio and haptic assets remain production polish. |
 | River | Authored rubbish silhouettes/preview, held-button repeat, wave/cascade/gravity/final-flush effects, sound/haptics, and grade-specific result flow. |
 | Waste | 40 authored rubbish assets, park detail, cleanliness progression, seven-slot/future-capacity affordance, card flight/triple burst, and transition lock. |
 | Beach | Authored sand/world/player/rake visuals, synchronized groove reveal, walk cycle, collection flight, sounds, and completion celebration. |
-| Fishing | Legacy rod/float/ripple/curved-line animation remains simplified after the interaction repair. |
+| Fishing | Rod, float, ripples, curved line and magnet phases are restored as code-driven Phaser visuals. Final bespoke raster animation remains labelled Sprite AI production work. |
 | Scoops | Procedural finished products, picture orders, numbered stations, tray art and the protected customer departure timing are restored. Final Sprite AI art remains a labelled production replacement. |
 | Interiors | Residents and animals are static icons; furniture is generic rectangles/emoji. |
 
@@ -110,27 +107,17 @@ Restaurant code-driven fidelity now **PASSES as a VERIFIED ADAPTED mobile presen
 - River Clear-Out portrait orientation; every other activity remains landscape.
 - No advertisement behavior should be restored without a separate product decision.
 
-## Runtime-only verification still required
+## Final verification gate
 
-- Every required phone/tablet landscape viewport and the portrait rotate state.
-- Orientation pause/resume without timer loss, state loss, duplicated rewards, or restarts.
-- Success, failure, restart, exit, town return, reload, offline recovery, and interrupted-session recovery for every activity.
-- Exact save/reward atomicity and normal town entrance/return positions.
-- Long-session world clock, seasons, weather, farming, NPC schedules, and animal habitat behavior.
-- Small-phone touch geometry, clipping, focus order, reduced motion, contrast, and announcements.
-
-The in-app browser’s viewport override did not apply during the first batch and continued reporting 1280×720. Those phone/tablet checks are therefore recorded as **UNVERIFIED**, not passed.
-
-## Next implementation order
-
-1. Recover House Rescue floor geometry and collision-safe vacuuming.
-2. Restore River Hint tiers/star caps and result Undo.
-3. Restore Beach continuous-run Undo.
-4. Restore Lawn dead-end/route feedback, timed movement, weed resistance, and directional stripes.
-5. Recover the exact Power Washing interrupted visual checkpoint without changing its protected save/reward contract.
-6. Recover Town/world/NPC/animal/farm/home/shop visual state dictionaries.
-7. Run the complete device, orientation, transition, save, reward, and accessibility matrix before a Phase 3 verdict.
+- Production build: PASS; performance budget: PASS.
+- Automated regression: 542/542 PASS.
+- Differential legacy audit: PASS; protected SHA-256 unchanged; 13 activities, 5,850 levels, 19 shared domains and 85 exact rule probes.
+- Runtime device checks: 568×320, 844×390 and 1024×768 operated in the rebuilt game; the earlier restaurant matrix also covers 667×375, 736×414, 812×375, 1180×820, 1280×720 and 1366×768.
+- Orientation: Town/landscape activities show the one-sentence rotate state at 390×844 and resume the same scene in landscape. River remains the protected portrait-only exception.
+- Verified runtime geometry: Level 750 Waste (138 cards), Lawn and Power Washing fit without document overflow; Fishing and Town remain canvas-first with safe rails.
+- Save/reward safety: exact interrupted checkpoints, Undo rollback, first-clear idempotency, failure rollback, imports, offline world progress, town returns and protected ownership all pass the complete suite.
+- Sprite AI inventory: the existing automatic labeler plus the new explicit semantic labels cover new architecture, merchandise, wildlife, effects, activity props, animal anatomy and growth stages.
 
 ## Verdict
 
-**PHASE 3: IN PROGRESS.** The protected gameplay data remains intact; Power Washing’s approved art and full-resolution active rendering pipeline are restored; Little Bakery again runs its three simultaneous customer/tray model; and all five restaurant presentations and restaurant runtime details now have verified parity. Phase 3 cannot pass until the remaining non-restaurant P0/P1 gaps, broader authored world visuals, and the full release regression are complete.
+**PHASE 3: CONDITIONAL PASS — CODE, GAMEPLAY AND CODE-DRIVEN VISUAL RECOVERY COMPLETE.** No confirmed P0 or P1 fidelity gap remains. The protected HTML hash is unchanged, the full differential audit passes, all 542 automated tests pass, and the rebuilt game was operated across phone, tablet and orientation states. “Conditional” applies only to final production raster art: the Phaser implementation now reproduces the protected composition, interaction and visible state language, but it cannot be honestly called pixel-identical until the labelled Sprite AI asset inventory is generated, approved and substituted. That asset-production pass must not change the verified rules, saves, rewards, coordinates or scene integration.

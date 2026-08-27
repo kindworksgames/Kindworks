@@ -191,6 +191,39 @@ test("a save failure rolls back coins and progress and leaves the final placemen
   assert.equal(gameState.getSnapshot().economy.coins, 200);
 });
 
+test("progressive river hints disclose three tiers and enforce the protected 3/2/1 star caps", () => {
+  const { river } = runtime();
+  river.startLevel(1, { autoFall: false });
+  const first = river.hint();
+  const second = river.hint();
+  const third = river.hint();
+  const repeated = river.hint();
+  assert.deepEqual([first.hint.tier, first.hint.starCap], [1, 3]);
+  assert.deepEqual([second.hint.tier, second.hint.starCap], [2, 2]);
+  assert.deepEqual([third.hint.tier, third.hint.starCap], [3, 1]);
+  assert.deepEqual([repeated.hint.tier, repeated.hint.starCap], [3, 1]);
+  assert.deepEqual([river.getActiveSession().assistanceTier, river.getActiveSession().starCap], [3, 1]);
+});
+
+test("result-screen Undo reopens the same river board and atomically reverses the committed reward", async () => {
+  const { gameState, river, repository } = runtime();
+  river.startLevel(1, { autoFall: false });
+  const certified = await river.certifiedPath({ threeStars: true, beamWidth: 250 });
+  const completed = river.playPath(certified.path);
+  assert.equal(completed.result.coins, 100);
+  assert.equal(gameState.getSnapshot().economy.coins, 200);
+  const undone = river.undo();
+  assert.equal(undone.code, "river-result-undo");
+  assert.equal(undone.session.finished, false);
+  assert.equal(undone.session.piecesPlaced, 4);
+  assert.equal(gameState.getSnapshot().economy.coins, 100);
+  assert.equal(gameState.getSnapshot().river.completed, 0);
+  assert.equal(repository.load().state.economy.coins, 100);
+  const recompleted = river.playPath([certified.path.at(-1)]);
+  assert.equal(recompleted.result.firstClear, true);
+  assert.equal(gameState.getSnapshot().economy.coins, 200);
+});
+
 test("legacy river progress projects without relocking the 750-level campaign", () => {
   const projected = projectLegacyRiver({ miniGames: { progress: { river: { nextLevel: 43, completed: 2, best: { 1: { stars: 3, percent: 100, pieces: 5 }, 42: { stars: 2, percent: 84 } } } } } });
   assert.equal(projected.nextLevel, 43);

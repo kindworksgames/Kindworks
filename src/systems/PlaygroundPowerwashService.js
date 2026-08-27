@@ -41,6 +41,20 @@ function engineFields(engine) {
   };
 }
 
+function appendVisualSegment(checkpoint, segment, state) {
+  const source = checkpoint && typeof checkpoint === "object" ? structuredClone(checkpoint) : { revision: 1, paths: [] };
+  if (!segment?.from || !segment?.to) return source;
+  if (![segment.from.x, segment.from.y, segment.to.x, segment.to.y].every(Number.isFinite)) return source;
+  const point = (value) => [Math.round(Number(value.x) * 100) / 100, Math.round(Number(value.y) * 100) / 100];
+  const from = point(segment.from); const to = point(segment.to);
+  const toolMode = state.toolMode === "soap" ? "soap" : "water";
+  const nozzle = state.nozzle || "precision";
+  const last = source.paths.at(-1); const tail = last?.points?.at(-1);
+  if (last && last.toolMode === toolMode && last.nozzle === nozzle && tail?.[0] === from[0] && tail?.[1] === from[1]) last.points.push(to);
+  else source.paths.push({ toolMode, nozzle, points: [from, to] });
+  return source;
+}
+
 export class PlaygroundPowerwashService {
   constructor(gameState, repository, { now = () => Date.now() } = {}) {
     this.gameState = gameState;
@@ -111,6 +125,7 @@ export class PlaygroundPowerwashService {
         status: "playing",
         startedAt: new Date(this.now()).toISOString(),
         ...engineFields(engine),
+        visualCheckpoint: { revision: 1, paths: [] },
         returnPosition: returnPosition(position),
         returnFacing: ["up", "down", "left", "right"].includes(returnFacing) ? returnFacing : "up",
       };
@@ -145,14 +160,16 @@ export class PlaygroundPowerwashService {
     });
   }
 
-  sprayPath(sessionId, from, to, deltaMs, { autoComplete = true } = {}) {
+  sprayPath(sessionId, from, to, deltaMs, { autoComplete = true, visualSegment = null } = {}) {
     return this.commit((state) => {
       const session = state.playgroundPowerwash.activeSession;
       if (!session || session.id !== sessionId) return { ok: false, code: "unknown-session", message: "That Power Wash attempt is no longer active." };
       const engine = new PlaygroundPowerwashEngine(session.assignedLevel, session);
+      const visualState = engine.snapshot();
       const sprayed = engine.spraySegment(from.row, from.col, to.row, to.col, { deltaMs, autoComplete });
       if (!sprayed.ok) return sprayed;
       Object.assign(session, engineFields(engine));
+      if (visualSegment) session.visualCheckpoint = appendVisualSegment(session.visualCheckpoint, visualSegment, visualState);
       if (!engine.won) return { ...sprayed, powerwashState: engine.snapshot() };
       return this.applyWin(state, session, engine);
     });
@@ -177,7 +194,7 @@ export class PlaygroundPowerwashService {
     return this.commit((state) => {
       const session = state.playgroundPowerwash.activeSession;
       if (!session || session.id !== sessionId) return { ok: false, code: "unknown-session", message: "That Power Wash attempt is no longer active." };
-      Object.assign(session, engineFields(new PlaygroundPowerwashEngine(session.assignedLevel)), { startedAt: new Date(this.now()).toISOString() });
+      Object.assign(session, engineFields(new PlaygroundPowerwashEngine(session.assignedLevel)), { visualCheckpoint: { revision: 1, paths: [] }, startedAt: new Date(this.now()).toISOString() });
       return { ok: true, code: "powerwash-restarted", session: structuredClone(session) };
     });
   }

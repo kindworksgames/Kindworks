@@ -14,6 +14,11 @@ import {
 import { COIN_LEDGER_LIMIT } from "../state/economyState.js";
 import { ITEM_CATALOG } from "../data/items.js";
 import { queueHomeownerGiftInto } from "./HomeownerGiftService.js";
+import {
+  buildHouseRescueGeometry,
+  constrainHouseRescueVacuum,
+  houseRescueVacuumStart,
+} from "../data/houseRescueGeometry.js";
 
 function appendLedger(state, now, details) {
   const id = `coin-${String(state.economy.nextTransactionId).padStart(6, "0")}`;
@@ -63,6 +68,7 @@ export class HouseRescueService {
   getSnapshot() { return structuredClone(this.gameState.getSnapshot().houseRescue); }
   getActiveSession() { return this.getSnapshot().active; }
   getLastResult() { return this.lastResult ? structuredClone(this.lastResult) : null; }
+  getGeometry(houseId = this.getActiveSession()?.houseId) { return structuredClone(buildHouseRescueGeometry(houseId)); }
 
   getVacuumLoadout(stateOverride = null) {
     const state = stateOverride || this.gameState.getSnapshot();
@@ -146,7 +152,7 @@ export class HouseRescueService {
         correct: 0,
         items: generateHouseRescueItems({ houseId, jobSerial: home.jobSerial, level: requested }).map((item) => ({ ...item })),
         dirt: generateHouseRescueDirt({ houseId, jobSerial: home.jobSerial, level: requested }).map((stain) => ({ ...stain })),
-        vacuum: { x: 8, y: 92 },
+        vacuum: houseRescueVacuumStart(buildHouseRescueGeometry(houseId)),
         vacuumContacts: [],
         returnPosition: validPosition(returnPosition),
         returnFacing: ["up", "down", "left", "right"].includes(returnFacing) ? returnFacing : "down",
@@ -180,13 +186,15 @@ export class HouseRescueService {
   }
 
   moveVacuum(x, y) {
-    const targetX = Math.max(0, Math.min(100, Number(x) || 0));
-    const targetY = Math.max(0, Math.min(100, Number(y) || 0));
     return this.commit((state) => {
       const session = state.houseRescue.active;
       if (!session || session.phase !== "vacuum") return { ok: false, code: "vacuum-unavailable", message: "Sort every rubbish item before vacuuming." };
       const loadout = this.getVacuumLoadout(state);
       const from = { ...session.vacuum };
+      const geometry = buildHouseRescueGeometry(session.houseId);
+      const target = constrainHouseRescueVacuum(geometry, from, { x, y });
+      const targetX = target.x;
+      const targetY = target.y;
       const distance = Math.hypot(targetX - from.x, targetY - from.y);
       const steps = Math.max(1, Math.ceil(distance / 1.5));
       const contacted = new Set();

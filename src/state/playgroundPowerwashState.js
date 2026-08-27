@@ -1,4 +1,5 @@
 import {
+  POWERWASH_CANVAS,
   POWERWASH_MINIMUM_CLEAN_PERCENT,
   POWERWASH_NOZZLES,
   POWERWASH_TOTAL_LEVELS,
@@ -8,6 +9,29 @@ import {
 export const PLAYGROUND_POWERWASH_SCHEMA_VERSION = 1;
 export const POWERWASH_HISTORY_LIMIT = 120;
 export const PROCESSED_POWERWASH_SESSION_LIMIT = 300;
+export const POWERWASH_VISUAL_POINT_LIMIT = 60000;
+
+function normalizeVisualCheckpoint(value) {
+  const paths = [];
+  let points = 0;
+  for (const path of Array.isArray(value?.paths) ? value.paths : []) {
+    const toolMode = path?.toolMode === "soap" ? "soap" : "water";
+    const nozzle = Object.hasOwn(POWERWASH_NOZZLES, path?.nozzle) ? path.nozzle : "precision";
+    const cleanPoints = [];
+    for (const point of Array.isArray(path?.points) ? path.points : []) {
+      if (!Array.isArray(point) || point.length !== 2 || !Number.isFinite(point[0]) || !Number.isFinite(point[1])) continue;
+      cleanPoints.push([
+        Math.max(0, Math.min(POWERWASH_CANVAS.width, Math.round(point[0] * 100) / 100)),
+        Math.max(0, Math.min(POWERWASH_CANVAS.height, Math.round(point[1] * 100) / 100)),
+      ]);
+      points += 1;
+      if (points >= POWERWASH_VISUAL_POINT_LIMIT) break;
+    }
+    if (cleanPoints.length >= 2) paths.push({ toolMode, nozzle, points: cleanPoints });
+    if (points >= POWERWASH_VISUAL_POINT_LIMIT) break;
+  }
+  return { revision: 1, paths };
+}
 
 function whole(value, minimum = 0, maximum = Number.MAX_SAFE_INTEGER, fallback = minimum) {
   const number = Math.floor(Number(value));
@@ -83,6 +107,7 @@ function normalizeSession(value) {
     soapWarnings: engine.soapWarnings,
     won: false,
     rawPercentAtCompletion: 0,
+    visualCheckpoint: normalizeVisualCheckpoint(value.visualCheckpoint),
     returnPosition: value.returnPosition && Number.isFinite(value.returnPosition.x) && Number.isFinite(value.returnPosition.y)
       ? { x: Number(value.returnPosition.x), y: Number(value.returnPosition.y) }
       : { x: 1940, y: 1180 },

@@ -1,3 +1,11 @@
+import {
+  buildHouseRescueGeometry,
+  houseRescueGeometryBlocked,
+  houseRescuePointInZones,
+  houseRescueReachablePoints,
+  houseRescueVacuumStart,
+} from "./houseRescueGeometry.js";
+
 export const HOUSE_RESCUE_STATE_SCHEMA_VERSION = 1;
 export const HOUSE_RESCUE_TOTAL_LEVELS = 750;
 
@@ -63,6 +71,24 @@ function hashUnit(key, index = 0) {
   return (hash >>> 0) / 4294967296;
 }
 
+const RESCUE_GEOMETRY_CACHE = new Map();
+const RESCUE_REACHABLE_CACHE = new Map();
+const RESCUE_ITEM_CACHE = new Map();
+const RESCUE_DIRT_CACHE = new Map();
+
+function geometryFor(houseId) {
+  if (!RESCUE_GEOMETRY_CACHE.has(houseId)) RESCUE_GEOMETRY_CACHE.set(houseId, buildHouseRescueGeometry(houseId));
+  return RESCUE_GEOMETRY_CACHE.get(houseId);
+}
+
+function reachableFor(houseId, geometry) {
+  if (!RESCUE_REACHABLE_CACHE.has(houseId)) {
+    const start = houseRescueVacuumStart(geometry);
+    RESCUE_REACHABLE_CACHE.set(houseId, { start, points: houseRescueReachablePoints(geometry, start) });
+  }
+  return RESCUE_REACHABLE_CACHE.get(houseId);
+}
+
 export function houseRescueLevel(value) {
   const level = clampLevel(value);
   const index = level - 1;
@@ -101,17 +127,41 @@ export function houseRescueReward(level, correct, mistakes) {
 
 export function generateHouseRescueItems({ houseId, jobSerial = 1, level = 1 }) {
   const config = houseRescueLevel(level);
+  const cacheKey = `${houseId}:${Math.max(1, Math.floor(Number(jobSerial) || 1))}:${config.level}`;
+  if (RESCUE_ITEM_CACHE.has(cacheKey)) return RESCUE_ITEM_CACHE.get(cacheKey);
+  const geometry = geometryFor(houseId);
   const categories = Object.keys(HOUSE_RESCUE_CATEGORIES);
-  return Array.from({ length: config.itemCount }, (_, index) => {
+  const points = [];
+  const minimumSpacing = Math.max(5.2, config.itemSpacing / 7.2);
+  for (let waveStart = 0; waveStart < config.itemCount; waveStart += HOUSE_RESCUE_RULES.visibleItemsPerWave) {
+    const waveCount = Math.min(HOUSE_RESCUE_RULES.visibleItemsPerWave, config.itemCount - waveStart);
+    const wavePoints = [];
+    for (let offset = 0; offset < waveCount; offset += 1) {
+      const index = waveStart + offset;
+      let selected = null;
+      for (let attempt = 0; attempt < 700 && !selected; attempt += 1) {
+        const zone = geometry.spawnZones[(index + attempt) % geometry.spawnZones.length];
+        const margin = Math.max(2.2, minimumSpacing * 0.42);
+        const x = zone.x + margin + hashUnit(`${houseId}:${jobSerial}:${config.level}:safe-item-x:${attempt}`, index * 431 + attempt) * Math.max(0.1, zone.w - margin * 2);
+        const y = zone.y + margin + hashUnit(`${houseId}:${jobSerial}:${config.level}:safe-item-y:${attempt}`, index * 433 + attempt) * Math.max(0.1, zone.h - margin * 2);
+        const safe = !houseRescueGeometryBlocked(geometry, x, y, minimumSpacing * 0.42) && wavePoints.every((point) => Math.hypot(point.x - x, point.y - y) >= minimumSpacing);
+        if (safe) selected = { x, y };
+      }
+      if (!selected) {
+        const candidates = [];
+        for (let y = 7; y <= 89; y += minimumSpacing * 0.72) for (let x = 6; x <= 94; x += minimumSpacing * 0.75) candidates.push({ x, y });
+        selected = candidates.find((point) => !houseRescueGeometryBlocked(geometry, point.x, point.y, minimumSpacing * 0.4) && wavePoints.every((other) => Math.hypot(other.x - point.x, other.y - point.y) >= minimumSpacing));
+      }
+      if (!selected) throw new Error(`House Rescue could not create a safe rubbish wave for ${houseId} at level ${config.level}.`);
+      wavePoints.push(selected);
+    }
+    points.push(...wavePoints);
+  }
+  const generated = points.map((point, index) => {
     const category = categories[index % categories.length];
     const definitions = ITEMS_BY_CATEGORY[category];
     const offset = Math.floor(hashUnit(`${houseId}:${jobSerial}:${config.level}:${category}`, 17) * definitions.length);
     const definition = definitions[(Math.floor(index / 3) + offset) % definitions.length];
-    const cell = index % HOUSE_RESCUE_RULES.visibleItemsPerWave;
-    const column = cell % 3;
-    const row = Math.floor(cell / 3);
-    const jitterX = (hashUnit(`${houseId}:${jobSerial}:${config.level}:item-x`, index) - 0.5) * 4;
-    const jitterY = (hashUnit(`${houseId}:${jobSerial}:${config.level}:item-y`, index) - 0.5) * 4;
     return Object.freeze({
       id: `rescue-item-${index + 1}`,
       defId: definition.id,
@@ -119,25 +169,39 @@ export function generateHouseRescueItems({ houseId, jobSerial = 1, level = 1 }) 
       label: definition.label,
       icon: definition.icon,
       wave: Math.floor(index / HOUSE_RESCUE_RULES.visibleItemsPerWave),
-      x: Number((16 + column * 24 + jitterX).toFixed(3)),
-      y: Number((22 + row * 27 + jitterY).toFixed(3)),
+      x: Number(point.x.toFixed(3)),
+      y: Number(point.y.toFixed(3)),
       sorted: false,
     });
   });
+  const result = Object.freeze(generated);
+  RESCUE_ITEM_CACHE.set(cacheKey, result);
+  return result;
 }
 
 export function generateHouseRescueDirt({ houseId, jobSerial = 1, level = 1 }) {
   const config = houseRescueLevel(level);
-  const columns = Math.ceil(config.dirtCount / 15);
-  return Array.from({ length: config.dirtCount }, (_, index) => {
-    const column = index % columns;
-    const row = Math.floor(index / columns);
-    const x = 4 + column * (70 / Math.max(1, columns - 1)) + (hashUnit(`${houseId}:${jobSerial}:${config.level}:dirt-x`, index) - 0.5) * 2.4;
-    const y = 6 + row * (88 / 14) + (hashUnit(`${houseId}:${jobSerial}:${config.level}:dirt-y`, index) - 0.5) * 2.4;
+  const cacheKey = `${houseId}:${Math.max(1, Math.floor(Number(jobSerial) || 1))}:${config.level}`;
+  if (RESCUE_DIRT_CACHE.has(cacheKey)) return RESCUE_DIRT_CACHE.get(cacheKey);
+  const geometry = geometryFor(houseId);
+  const reachable = reachableFor(houseId, geometry).points;
+  if (!reachable.length) throw new Error(`House Rescue could not find reachable floor space for ${houseId}.`);
+  const generated = Array.from({ length: config.dirtCount }, (_, index) => {
+    const zone = geometry.floorZones[index % geometry.floorZones.length];
+    const pool = reachable.filter((point) => houseRescuePointInZones(point.x, point.y, [zone], 0.6));
+    const source = pool.length ? pool : reachable;
+    const anchor = source[Math.floor(hashUnit(`${houseId}:${jobSerial}:${config.level}:dirt-anchor`, index * 61) * source.length) % source.length];
+    const angle = hashUnit(`${houseId}:${jobSerial}:${config.level}:dirt-angle`, index * 67) * Math.PI * 2;
+    const distance = hashUnit(`${houseId}:${jobSerial}:${config.level}:dirt-jitter`, index * 71) * 1.55;
+    const jitter = { x: anchor.x + Math.cos(angle) * distance, y: anchor.y + Math.sin(angle) * distance };
+    const point = houseRescueGeometryBlocked(geometry, jitter.x, jitter.y, 0.7) ? anchor : jitter;
     let strength = 1 + Math.floor(hashUnit(`${houseId}:${jobSerial}:${config.level}:dirt-strength`, index * 73) * config.maxStainStrength);
     if (index < config.maxStainStrength) strength = index + 1;
-    return Object.freeze({ id: `stain-${index + 1}`, x: Number(x.toFixed(3)), y: Number(y.toFixed(3)), strength, remaining: strength });
+    return Object.freeze({ id: `stain-${index + 1}`, x: Number(point.x.toFixed(3)), y: Number(point.y.toFixed(3)), strength, remaining: strength });
   });
+  const result = Object.freeze(generated);
+  RESCUE_DIRT_CACHE.set(cacheKey, result);
+  return result;
 }
 
 export function houseRescueCoverage(dirt) {
@@ -155,6 +219,7 @@ export function houseRescueCoverage(dirt) {
 export function validateHouseRescueCatalogue() {
   const errors = [];
   let previous = null;
+  const generatorProbeLevels = new Set([1, 25, 26, 94, 95, 150, 151, 600, 601, 658, 659, HOUSE_RESCUE_TOTAL_LEVELS]);
   for (let level = 1; level <= HOUSE_RESCUE_TOTAL_LEVELS; level += 1) {
     const config = houseRescueLevel(level);
     if (config.level !== level) errors.push(`Level ${level} identity changed.`);
@@ -162,10 +227,12 @@ export function validateHouseRescueCatalogue() {
     if (config.maxStainStrength < 1 || config.maxStainStrength > 5) errors.push(`Level ${level} stain strength is invalid.`);
     if (config.dirtCount < 180 || config.dirtCount > 270) errors.push(`Level ${level} dirt count is invalid.`);
     if (previous && (config.itemCount < previous.itemCount || config.maxStainStrength < previous.maxStainStrength || config.dirtCount < previous.dirtCount || config.itemSpacing >= previous.itemSpacing)) errors.push(`Level ${level} does not increase difficulty.`);
-    const items = generateHouseRescueItems({ houseId: "house-1", jobSerial: 1, level });
-    const dirt = generateHouseRescueDirt({ houseId: "house-1", jobSerial: 1, level });
-    if (items.length !== config.itemCount || dirt.length !== config.dirtCount) errors.push(`Level ${level} generation count changed.`);
-    if (items.some((item) => ITEMS_BY_CATEGORY[item.category]?.every((definition) => definition.id !== item.defId))) errors.push(`Level ${level} has a category mismatch.`);
+    if (generatorProbeLevels.has(level)) {
+      const items = generateHouseRescueItems({ houseId: "house-1", jobSerial: 1, level });
+      const dirt = generateHouseRescueDirt({ houseId: "house-1", jobSerial: 1, level });
+      if (items.length !== config.itemCount || dirt.length !== config.dirtCount) errors.push(`Level ${level} generation count changed.`);
+      if (items.some((item) => ITEMS_BY_CATEGORY[item.category]?.every((definition) => definition.id !== item.defId))) errors.push(`Level ${level} has a category mismatch.`);
+    }
     previous = config;
   }
   return Object.freeze({

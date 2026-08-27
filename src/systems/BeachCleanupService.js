@@ -98,12 +98,12 @@ export class BeachCleanupService {
     });
   }
 
-  move(sessionId, direction) {
+  move(sessionId, direction, options = {}) {
     return this.commit((state) => {
       const session = state.beachCleanup.activeSession;
       if (!session || session.id !== sessionId) return { ok: false, code: "unknown-session", message: "That Beach Cleanup attempt is no longer active." };
       const engine = new BeachCleanupEngine(session.assignedLevel, session);
-      const moved = engine.move(direction);
+      const moved = engine.move(direction, options);
       if (!moved.ok) return moved;
       Object.assign(session, engineFields(engine));
       if (!engine.won) return { ...moved, beachState: engine.snapshot() };
