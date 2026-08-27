@@ -145,6 +145,34 @@ export class PlaygroundPowerwashService {
     });
   }
 
+  sprayPath(sessionId, from, to, deltaMs) {
+    return this.commit((state) => {
+      const session = state.playgroundPowerwash.activeSession;
+      if (!session || session.id !== sessionId) return { ok: false, code: "unknown-session", message: "That Power Wash attempt is no longer active." };
+      const engine = new PlaygroundPowerwashEngine(session.assignedLevel, session);
+      const sprayed = engine.spraySegment(from.row, from.col, to.row, to.col, { deltaMs });
+      if (!sprayed.ok) return sprayed;
+      Object.assign(session, engineFields(engine));
+      if (!engine.won) return { ...sprayed, powerwashState: engine.snapshot() };
+      return this.applyWin(state, session, engine);
+    });
+  }
+
+  recoverSupplies(sessionId, deltaMs) {
+    const active = this.getActiveSession();
+    if (!active || active.id !== sessionId) return { ok: false, code: "unknown-session", message: "That Power Wash attempt is no longer active." };
+    if (active.water >= 100 && active.soap >= 100) return { ok: true, code: "supplies-full", changed: false, powerwashState: this.getSessionState() };
+    return this.commit((state) => {
+      const session = state.playgroundPowerwash.activeSession;
+      if (!session || session.id !== sessionId) return { ok: false, code: "unknown-session", message: "That Power Wash attempt is no longer active." };
+      const engine = new PlaygroundPowerwashEngine(session.assignedLevel, session);
+      const recovered = engine.recover(deltaMs);
+      if (!recovered.ok) return recovered;
+      Object.assign(session, engineFields(engine));
+      return { ...recovered, powerwashState: engine.snapshot() };
+    });
+  }
+
   restart(sessionId) {
     return this.commit((state) => {
       const session = state.playgroundPowerwash.activeSession;

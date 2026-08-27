@@ -1,5 +1,6 @@
 export const POWERWASH_BUILD_VERSION = "1.1.0-kindworks-soap-restored";
 export const POWERWASH_VISUAL_REVISION = "v33-pixel-soap-stains";
+export const POWERWASH_SIMULATION_REVISION = "phase-3-continuous-spray-v1";
 export const POWERWASH_TOTAL_LEVELS = 750;
 export const POWERWASH_REWARD_CAP = 170;
 export const POWERWASH_MINIMUM_CLEAN_PERCENT = 97;
@@ -9,6 +10,11 @@ export const POWERWASH_MASTER_ART_SHA256 = "0679fe2c14f28b750f61415641b73e6d17d1
 export const POWERWASH_REFERENCE_DIRT_SHA256 = "5db4c213d34d1e435f74f03a49590f766e172f01d8ac97703dc090ded7d36736";
 
 export const POWERWASH_GRID = Object.freeze({ columns: 48, rows: 24 });
+export const POWERWASH_CANVAS = Object.freeze({
+  width: 1536,
+  height: 1024,
+  wash: Object.freeze({ x: 54, y: 117, width: 1428, height: 706 }),
+});
 export const POWERWASH_NOZZLES = Object.freeze({
   precision: Object.freeze({ radius: 0.64, drain: 8.5, power: 1.15, label: "Precision" }),
   standard: Object.freeze({ radius: 1, drain: 12, power: 1, label: "Standard" }),
@@ -150,20 +156,22 @@ export class PlaygroundPowerwashEngine {
     return cells;
   }
 
-  sprayAt(row, col) {
+  sprayAt(row, col, { deltaMs = 180 } = {}) {
     if (this.won) return { ok: false, code: "level-complete", message: "This playground is already clean." };
     const supply = this.toolMode === "soap" ? this.soap : this.water;
     if (supply <= 2) return { ok: false, code: "supply-empty", message: `${this.toolMode === "soap" ? "Soap" : "Water pressure"} is recovering.` };
+    const elapsedMs = clamp(Number(deltaMs) || 0, 1, 250);
+    const elapsedSeconds = elapsedMs / 1000;
+    const effectScale = elapsedMs / 180;
     const cells = this.affectedCells(row, col);
     let changed = 0;
     let resisted = 0;
     if (this.toolMode === "soap") {
       for (const index of cells) if (this.resistant.has(index) && !this.soaped.has(index)) { this.soaped.add(index); changed += 1; }
-      this.soap = clamp(this.soap - POWERWASH_SOAP_TOOL.drain * 0.18, 0, 100);
-      this.water = clamp(this.water + this.level.regen * 0.18, 0, 100);
+      this.soap = clamp(this.soap - POWERWASH_SOAP_TOOL.drain * elapsedSeconds, 0, 100);
     } else {
       const nozzle = POWERWASH_NOZZLES[this.nozzle];
-      const strength = clamp(this.level.cleanStrength * nozzle.power, 0.18, 1);
+      const strength = clamp(this.level.cleanStrength * nozzle.power, 0.18, 1) * effectScale;
       for (const index of cells) {
         if (this.normal.has(index)) {
           const remaining = Number((this.normal.get(index) - strength).toFixed(3));
@@ -175,14 +183,57 @@ export class PlaygroundPowerwashEngine {
           else { this.resistant.delete(index); this.soaped.delete(index); changed += 1; }
         }
       }
-      this.water = clamp(this.water - nozzle.drain * this.level.drainMult * 0.18, 0, 100);
-      this.soap = clamp(this.soap + this.level.regen * 0.1296, 0, 100);
+      this.water = clamp(this.water - nozzle.drain * this.level.drainMult * elapsedSeconds, 0, 100);
     }
     if (resisted && !changed) this.soapWarnings += 1;
     this.strokes += 1;
     const rawPercent = this.rawPercent();
     if (rawPercent >= POWERWASH_MINIMUM_CLEAN_PERCENT) this.finish(rawPercent);
     return { ok: true, code: this.won ? "level-cleared" : resisted && !changed ? "soap-first" : changed ? "sprayed" : "already-clean", changed, resisted, state: this.snapshot() };
+  }
+
+  spraySegment(fromRow, fromCol, toRow, toCol, { deltaMs = 180 } = {}) {
+    const start = { row: clamp(Number(fromRow), 0, POWERWASH_GRID.rows - 1), col: clamp(Number(fromCol), 0, POWERWASH_GRID.columns - 1) };
+    const end = { row: clamp(Number(toRow), 0, POWERWASH_GRID.rows - 1), col: clamp(Number(toCol), 0, POWERWASH_GRID.columns - 1) };
+    const steps = Math.max(1, Math.ceil(Math.hypot(end.row - start.row, end.col - start.col) / 0.72));
+    const strokeBefore = this.strokes;
+    let changed = 0;
+    let resisted = 0;
+    let last = null;
+    for (let index = 0; index <= steps; index += 1) {
+      const progress = index / steps;
+      const row = start.row + (end.row - start.row) * progress;
+      const col = start.col + (end.col - start.col) * progress;
+      const result = this.sprayAt(row, col, { deltaMs: Math.max(1, Number(deltaMs) / (steps + 1)) });
+      if (!result.ok) {
+        if (index === 0) return result;
+        break;
+      }
+      changed += result.changed;
+      resisted += result.resisted;
+      last = result;
+      if (this.won) break;
+    }
+    this.strokes = strokeBefore + 1;
+    return {
+      ok: true,
+      code: this.won ? "level-cleared" : resisted && !changed ? "soap-first" : changed ? "sprayed" : last?.code || "already-clean",
+      changed,
+      resisted,
+      samples: steps + 1,
+      state: this.snapshot(),
+    };
+  }
+
+  recover(deltaMs) {
+    if (this.won) return { ok: false, code: "level-complete", changed: false, state: this.snapshot() };
+    const elapsedSeconds = clamp(Number(deltaMs) || 0, 0, 2000) / 1000;
+    const previousWater = this.water;
+    const previousSoap = this.soap;
+    this.water = clamp(this.water + this.level.regen * elapsedSeconds, 0, 100);
+    this.soap = clamp(this.soap + this.level.regen * 0.72 * elapsedSeconds, 0, 100);
+    const changed = this.water !== previousWater || this.soap !== previousSoap;
+    return { ok: true, code: changed ? "supplies-recovered" : "supplies-full", changed, state: this.snapshot() };
   }
 
   rawPercent() {
