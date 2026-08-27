@@ -20,15 +20,20 @@
           <div id="world-clock-status" class="world-status-pill" aria-label="Day 1, 07:00">Day 1 · 07:00</div>
           <div id="weather-status" class="world-status-pill weather-status" data-weather="clear" aria-label="Clear weather"><span aria-hidden="true">☀️</span> Clear <small>20°C</small></div>
           <button id="coin-status-button" class="economy-hud-button" type="button" aria-label="Open wallet">🪙 100</button>
+          <button id="town-menu-button" class="economy-hud-button town-menu-button" type="button" aria-label="Open town menu" aria-expanded="false" aria-controls="town-menu-panel">☰ Menu</button>
+        </div>
+      </section>
+      <section id="town-menu-panel" class="town-menu-panel hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="town-menu-title">
+        <header><div><small>PAUSED</small><h2 id="town-menu-title">Town menu</h2></div><button id="town-menu-close" type="button" aria-label="Close town menu">✕</button></header>
+        <div class="town-menu-actions">
           <button id="shop-button" class="economy-hud-button shop-hud-button" type="button" aria-label="Open Willowmere Shop">🛍️ Shop</button>
-          <button id="inventory-button" class="economy-hud-button" type="button" aria-label="Open inventory">🎒 2</button>
-          <button id="custom-resident-button" class="economy-hud-button resident-hud-button" type="button" aria-label="Create your personal resident">💚 Create resident</button>
+          <button id="inventory-button" class="economy-hud-button" type="button" aria-label="Open inventory">🎒 Inventory</button>
+          <button id="custom-resident-button" class="economy-hud-button resident-hud-button" type="button" aria-label="Create your personal resident">💚 Resident</button>
+          <button id="animal-friends-button" class="economy-hud-button animal-hud-button" type="button" aria-label="Open Animal Friends">🐾 Animals</button>
           <button id="onboarding-button" class="economy-hud-button onboarding-hud-button" type="button" aria-label="Open welcome, setup and login rewards">🏡 Welcome</button>
-          <button id="animal-friends-button" class="economy-hud-button animal-hud-button" type="button" aria-label="Open Animal Friends">🐾 Animal Friends</button>
           <button id="impact-button" class="economy-hud-button impact-hud-button" type="button" aria-label="Open KindWorks Impact">❤️ Impact</button>
           <button id="npc-stories-button" class="economy-hud-button npc-stories-hud-button" type="button" aria-label="Open Willowmere resident stories">📖 Stories</button>
-          <button id="save-status-button" class="save-status-button" type="button" data-status="new">Save not started</button>
-          <div class="milestone-badge">PHASER TOWN · MILESTONE 41</div>
+          <button id="save-status-button" class="save-status-button" type="button" data-status="new">✓ Save</button>
         </div>
       </section>
       <section id="onboarding-panel" class="onboarding-panel hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="onboarding-title" aria-describedby="onboarding-description">
@@ -62,7 +67,7 @@
         </div>
       </section>
       <section id="first-session-checklist" class="first-session-checklist hidden" aria-label="Your first three jobs" aria-hidden="true">
-        <div><strong>🌱 Restore your town</strong><small>Try each original KindWorks job</small></div>
+        <div><strong>🌱 First jobs</strong><small>Try each KindWorks job</small></div>
         <ol id="first-session-items"><li><span>○</span>Lawn Care</li><li><span>○</span>Waste Collection</li><li><span>○</span>River Clear-Out</li></ol>
         <button id="first-session-find" type="button">Find Lawn Care</button>
       </section>

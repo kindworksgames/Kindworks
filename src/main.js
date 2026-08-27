@@ -55,6 +55,7 @@ import { CommerceController } from "./ui/CommerceController.js";
 import { ResponsiveShellController } from "./ui/ResponsiveShellController.js";
 import { InteractionFeedbackController } from "./ui/InteractionFeedbackController.js";
 import { SharedOverlayController } from "./ui/SharedOverlayController.js";
+import { TownMenuController } from "./ui/TownMenuController.js";
 import { ITEM_IDS } from "./data/items.js";
 import { findSafeFurniturePlacement } from "./data/homeInteriors.js";
 import { getParityCertification } from "./data/parityCertification.js";
@@ -301,6 +302,15 @@ function setModalOpen(name, open) {
   const activeScene = game.scene.getScenes(true)[0];
   activeScene?.setOverlayOpen?.(anyOpen);
 }
+const townMenuController = new TownMenuController({
+  onModalChange(open) {
+    setModalOpen("town-menu", open);
+  },
+  canOpen() {
+    return Boolean(activeTownScene()) && document.body.dataset.modalOpen !== "true";
+  },
+});
+game.registry.set("townMenuController", townMenuController);
 const restorationMilestoneController = new RestorationMilestoneController(restorationMilestones, {
   onModalChange(open) {
     setModalOpen("restoration-milestone", open);

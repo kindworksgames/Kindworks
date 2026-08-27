@@ -276,9 +276,68 @@ body[data-game-scene="WasteCollectionScene"] .weather-effects {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 8px;
   pointer-events: auto;
+}
+
+.town-menu-panel {
+  position: absolute;
+  z-index: 68;
+  top: max(68px, calc(env(safe-area-inset-top) + 58px));
+  right: max(12px, env(safe-area-inset-right));
+  display: grid;
+  width: min(330px, calc(100vw - 24px));
+  max-height: calc(100dvh - 82px);
+  overflow: auto;
+  border: 2px solid var(--kw-cream);
+  border-radius: 20px;
+  background: var(--kw-cloud);
+  color: var(--kw-ink);
+  box-shadow: 0 12px 0 rgb(41 65 75 / 22%), 0 24px 60px rgb(10 29 20 / 35%);
+  pointer-events: auto;
+}
+
+.town-menu-panel.hidden { display: none; }
+
+.town-menu-panel > header {
+  display: grid;
+  grid-template-columns: 1fr 44px;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 12px 10px 16px;
+  border-bottom: 1px solid rgb(41 65 75 / 18%);
+  background: var(--kw-cream);
+}
+
+.town-menu-panel > header small,
+.town-menu-panel > header h2 { margin: 0; }
+.town-menu-panel > header small { color: var(--kw-willow); font: 900 9px/1 system-ui, sans-serif; letter-spacing: .12em; }
+.town-menu-panel > header h2 { margin-top: 3px; font: 900 20px/1.05 system-ui, sans-serif; }
+.town-menu-panel > header button { width: 44px; min-height: 44px; border: 0; border-radius: 12px; background: var(--kw-cloud); color: var(--kw-ink); font-weight: 900; }
+
+.town-menu-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+  padding: 12px;
+}
+
+.town-menu-actions button {
+  width: 100%;
+  min-width: 0;
+  min-height: var(--kw-touch-min);
+  padding: 9px 10px;
+  border-radius: var(--kw-radius-control);
+  text-align: left;
+  white-space: nowrap;
+}
+
+@media (max-height: 420px) and (orientation: landscape) {
+  .town-menu-panel > header { padding: 6px 8px 6px 12px; }
+  .town-menu-panel > header h2 { font-size: 17px; }
+  .town-menu-actions { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; padding: 8px; }
+  .town-menu-actions button { min-height: var(--kw-touch-min); padding: 7px 6px; font-size: 11px; }
 }
 
 .save-status-button,
@@ -319,6 +378,7 @@ body[data-game-scene="WasteCollectionScene"] .weather-effects {
 
 .economy-hud-button {
   min-width: 72px;
+  min-height: var(--kw-touch-min);
   background: rgb(61 84 50 / 94%);
   color: #fff6c7;
   font-size: 13px;
@@ -1377,14 +1437,27 @@ body[data-game-scene="BakeryScene"] .zoom-controls {
   }
 
   .hud-actions {
-    max-width: 56vw;
+    gap: 5px;
+    max-width: none;
   }
 
   .economy-hud-button {
     min-width: 58px;
-    min-height: 34px;
+    min-height: var(--kw-touch-min);
     padding: 7px 9px;
   }
+
+  .world-status-pill {
+    min-width: 0;
+    min-height: 34px;
+    padding: 7px 9px;
+    white-space: nowrap;
+  }
+
+  .weather-status { min-width: 0; }
+  .weather-status small { display: none; }
+  #coin-status-button { min-width: 58px; }
+  .town-menu-button { min-width: 66px; }
 
   .touch-controls {
     grid-template: repeat(2, 48px) / repeat(3, 48px);
@@ -1708,6 +1781,11 @@ body[data-game-scene="BakeryScene"] .zoom-controls {
 .first-session-checklist > div small { color: #647765; font: 700 10px/1.25 system-ui, sans-serif; }
 .first-session-checklist button { min-height: 37px; box-shadow: 0 3px 0 #245534; }
 
+body:not([data-game-scene="TownScene"]) .town-menu-panel,
+body:not([data-game-scene="TownScene"]) .first-session-checklist {
+  display: none !important;
+}
+
 .login-reward-toast {
   position: absolute;
   z-index: 76;
@@ -1817,15 +1895,33 @@ body[data-game-scene="BakeryScene"] .zoom-controls {
   .onboarding-icon { width: 43px; height: 43px; font-size: 24px; }
   .onboarding-layout { grid-template-columns: 1fr; gap: 8px; padding: 9px; }
   .onboarding-setup, .onboarding-rewards { padding: 12px; }
-  .first-session-checklist { top: auto; bottom: max(84px, calc(env(safe-area-inset-bottom) + 72px)); left: 50%; grid-template-columns: 1fr auto; width: min(410px, calc(100vw - 18px)); transform: translateX(-50%); }
-  .first-session-checklist ol { grid-column: 1 / -1; grid-template-columns: repeat(3, 1fr); }
-  .first-session-checklist li { font-size: 10px; }
+  .first-session-checklist { top: max(82px, calc(env(safe-area-inset-top) + 74px)); bottom: auto; left: max(8px, env(safe-area-inset-left)); grid-template-columns: 1fr; gap: 6px; width: min(236px, calc(100vw - 16px)); padding: 8px; transform: none; }
+  .first-session-checklist > div small { display: none; }
+  .first-session-checklist ol { display: none; }
+  .first-session-checklist li { display: grid; grid-template-columns: 16px 1fr; gap: 3px; font-size: 9px; line-height: 1.05; }
+  .first-session-checklist li span { width: 16px; height: 16px; }
+  .first-session-checklist button { min-height: var(--kw-touch-min); padding: 8px; }
+  .interaction-prompt #interaction-detail { display: none; }
+  .town-menu-panel { top: max(56px, calc(env(safe-area-inset-top) + 50px)); right: max(6px, env(safe-area-inset-right)); width: min(310px, calc(100vw - 12px)); max-height: calc(100dvh - 62px); }
   .commerce-view { gap: 9px; }
   .commerce-hero { grid-template-columns: 1fr; padding: 11px; }
   #commerce-authority { max-width: none; }
   .coin-pack-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .kindly-club-grid { grid-template-columns: 1fr; }
   .kindly-club-card { min-height: auto; }
+}
+
+@media (min-width: 721px) and (max-width: 900px) and (orientation: landscape) {
+  .first-session-checklist {
+    top: max(82px, calc(env(safe-area-inset-top) + 74px));
+    gap: 6px;
+    padding: 8px;
+  }
+
+  .first-session-checklist > div small,
+  .first-session-checklist ol,
+  .interaction-prompt #interaction-detail { display: none; }
+  .first-session-checklist button { min-height: var(--kw-touch-min); padding: 8px; }
 }
 
 @media (max-width: 520px) {

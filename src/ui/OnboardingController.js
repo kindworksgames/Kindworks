@@ -166,7 +166,7 @@ export class OnboardingController {
     const state = this.service.getSnapshot();
     if (this.townLabel) this.townLabel.textContent = state.townName;
     document.title = `KindWorks — ${state.townName} Living Town`;
-    if (this.openButton) this.openButton.textContent = state.complete ? "🎁 Welcome back" : "🏡 Welcome";
+    if (this.openButton) this.openButton.textContent = state.complete ? "🎁 Welcome" : "🏡 Welcome";
     if (this.input && document.activeElement !== this.input) this.input.value = state.townName;
     this.form?.classList.toggle("hidden", state.townNamed);
     this.residentButton?.classList.toggle("hidden", !state.townNamed || state.residentCreated);

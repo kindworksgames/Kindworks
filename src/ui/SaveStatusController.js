@@ -57,7 +57,12 @@ export class SaveStatusController {
       game.dataset.legacyUntouched = "true";
     }
     if (this.button) {
-      this.button.textContent = status.hasCurrent ? "✓ Save healthy" : status.legacyAvailable ? `Legacy save v${status.legacyVersion} found` : "Save not started";
+      this.button.textContent = status.hasCurrent ? "✓ Saved" : status.legacyAvailable ? "⚠ Save" : "Save";
+      this.button.setAttribute("aria-label", status.hasCurrent
+        ? "Save healthy. Open save details."
+        : status.legacyAvailable
+          ? `Legacy save version ${status.legacyVersion} found. Open save details.`
+          : "Save not started. Open save details.");
       this.button.dataset.status = status.hasCurrent ? "healthy" : status.legacyAvailable ? "legacy" : "new";
     }
     if (!this.title || !this.message || !this.details || !this.primary) return;
