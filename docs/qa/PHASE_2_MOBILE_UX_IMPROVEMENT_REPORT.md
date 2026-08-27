@@ -7,7 +7,7 @@
 - Starting branch: `main` (matched `origin/main`)
 - Phase 1 contract: `docs/qa/PHASE_1_MIGRATION_PARITY_AUDIT.md`
 - Baseline automated tests: 450 passed, 0 failed
-- Current automated tests: 458 passed, 0 failed after the second Wave 2 batch
+- Current automated tests: 460 passed, 0 failed after the first Wave 3 batch
 - Baseline build: existing production `dist`, Phaser 4.2.1
 - Baseline input: mouse and keyboard through the local browser preview
 - Available visual reference: `KindWorks_Visual_Style_Bible_v3.0.pdf`
@@ -19,16 +19,16 @@ The v3 reference is used provisionally for established KindWorks tokens only: wa
 
 | Device class | Viewport | Baseline captured | Current observation |
 | ------------ | -------: | ----------------- | ------------------- |
-| Small phone | 568×320 | Yes | Wave 1 shell passes with no crop/overflow; town objective and HUD crowding remains for Wave 3 |
-| Phone | 667×375 | Yes | Wave 1 shell passes; town hierarchy remains queued for Wave 3 |
-| Phone | 736×414 | Yes | Wave 1 shell passes; secondary town actions remain queued for Wave 3 |
-| Wider phone | 812×375 | Yes | Wave 1 shell passes; bottom/side rail decision remains queued per game |
-| Modern phone | 844×390 | Yes | Wave 1 shell passes with exact viewport dimensions and no overflow |
-| Tablet | 1024×768 | Yes | Wave 1 shell passes with exact viewport dimensions and no overflow |
-| Large tablet | 1180×820 | Yes | Wave 1 shell passes with exact viewport dimensions and no overflow |
-| Original reference | 1280×720 | Yes | Wave 1 shell passes with exact viewport dimensions and no overflow |
-| Desktop QA | 1366×768 | Yes | Wave 1 shell passes with exact viewport dimensions and no overflow |
-| Portrait safety | 390×844 | Yes | Town pauses behind one rotate icon and “Turn your device sideways to play.” |
+| Small phone | 568×320 | Yes | Town HUD uses four essential top items; objective and contextual action do not overlap; all eight menu destinations fit without scrolling |
+| Phone | 667×375 | Yes | Town HUD, compact objective and 44px menu target pass without crop or overflow |
+| Phone | 736×414 | Yes | 721–900px compact-objective breakpoint prevents prompt overlap; 44px menu target passes |
+| Wider phone | 812×375 | Yes | Compact objective and action-led prompt preserve the playable map; no document overflow |
+| Modern phone | 844×390 | Yes | Town hierarchy, prompt separation and menu target pass with exact viewport dimensions |
+| Tablet | 1024×768 | Yes | Full first-job checklist fits without touching the contextual action |
+| Large tablet | 1180×820 | Yes | Full town layout passes with no crop or overflow |
+| Original reference | 1280×720 | Yes | Full town layout passes with no crop or overflow |
+| Desktop QA | 1366×768 | Yes | Full town layout passes with no crop or overflow |
+| Portrait safety | 390×844 | Yes | Town pauses behind one rotate icon and resumes at the exact map position |
 
 Baseline evidence is stored outside the repository under `phase2-evidence/baseline/` in the Codex task workspace.
 
@@ -40,6 +40,7 @@ Baseline evidence is stored outside the repository under `phase2-evidence/baseli
 | Global landscape shell | Portrait displayed active, overlapping town gameplay and did not pause its systems | Added one global orientation controller, a single-sentence safe rotate state, exact game-loop freeze/wake, service pause reasons and River portrait exemption | 568×320, 667×375, 736×414, 812×375, 844×390, 1024×768, 1180×820, 1280×720, 1366×768, 390×844 | Production build and performance budget pass; 454 full tests pass; movement, wallet open/close, rotate/resume and saved town state pass | `phase2-evidence/baseline/town-390x844-before.png` | `phase2-evidence/wave1/town-390x844-after.png` plus full Wave 1 matrix | `1469a93` |
 | Shared control states | Controls used unrelated pressed, disabled, selected and focus treatments; dynamically rendered controls had no shared state contract | Added reusable tokens and one delegated controller for normal, pressed, disabled and selected states across fixed and dynamic buttons | All required landscape sizes plus 390×844 portrait; wallet inspected at 844×390 | 206/206 live controls enhanced on the saved test game; wallet tab switch and close pass; no overflow; no runtime warning/error logs; production build and performance budget pass; 456/456 tests pass | `phase2-evidence/wave2/wallet-844x390-before.png` | `phase2-evidence/wave2/wallet-844x390-after.png` | `1d8cb7e` |
 | Shared loading and error feedback | Lazy activity imports changed an invisible attribute and failures were console-only, leaving players without a clear transition or recovery message | Added one shared `Loading…` state and one dismissible “That area couldn’t open. Try again.” notification, wired into every lazy scene transition | 568×320, 844×390, 1024×768, 1280×720 and 390×844 portrait in Waste Collection | Entered through the normal town action, loading cleared, portrait paused, safe exit returned to the same position, Sprite AI coverage stayed complete, runtime logs clean, build/performance pass and 458/458 tests pass | No visible loading/error component existed | `phase2-evidence/wave2/waste-844x390-loading-cleared.png` | `cc89540` |
+| Town HUD and secondary navigation | Seventeen visible buttons competed with the map; eight secondary destinations occupied the top HUD; the first-job card and nearby-action card overlapped at phone breakpoints; Waste Collection inherited the town objective; compact-menu labels and Save fell outside the smallest panel | Kept day, weather, coins and one Menu entry; moved all eight secondary destinations into a pausing, focus-contained menu; shortened labels; compacted the current objective and contextual detail at phone widths; hid town-only objective/menu outside Town; added width- and height-adaptive layouts | All nine required landscape sizes plus 390×844 portrait; menu inspected at 568×320 and 844×390 | Menu-to-Inventory, Escape, complete Tab focus cycle, touch/keyboard movement, portrait exact-state resume, normal Town-to-Waste entry and safe return all pass; location remains exact, wallet remains 100, runtime logs clean, build/performance pass and 460/460 tests pass | `phase2-evidence/baseline/town-568x320-before.png`; `phase2-evidence/baseline/town-844x390-before.png` | `phase2-evidence/wave3/` full matrix, including `town-568x320-after.png` and `town-menu-568x320-after.png` | `3c7034e` |
 
 ## Change register
 
@@ -49,6 +50,7 @@ Baseline evidence is stored outside the repository under `phase2-evidence/baseli
 | KW-P2-001 | Global responsive shell | Prevent broken portrait gameplay and protect exact running state during rotation | `index.html`; `src/main.js`; `src/style.css`; `src/ui/ResponsiveShellController.js`; responsive shell tests; this report | Yes: non-River portrait now pauses; River remains portrait-supported | No schema or durable-state change; current state is persisted before sleep and resumed without offline advancement | 4 responsive shell tests, including all required landscape sizes and exact pause/wake calls | Verified |
 | KW-P2-002 | Shared UI interaction foundation | Make every fixed and dynamically rendered button communicate input and availability consistently | `src/main.js`; `src/style.css`; `src/ui/InteractionFeedbackController.js`; interaction feedback tests; this report | No gameplay rule change; presentation state follows existing button state | None | 2 focused state/token tests; full 456-test suite | Verified |
 | KW-P2-003 | Shared loading and error states | Explain scene imports and recover visibly when a lazy activity cannot open | `src/main.js`; `src/scenes/lazyScenes.js`; `src/style.css`; `src/ui/SharedOverlayController.js`; shared overlay tests; this report | No gameplay rule change; scene loading now has visible transient feedback | None | 2 focused copy/wiring tests; full 458-test suite | Verified |
+| KW-P2-004 | Town HUD and navigation | Make the map dominant, remove equally prominent secondary choices, prevent mobile overlap and keep every destination reachable | `index.html`; `src/main.js`; `src/style.css`; `src/ui/TownMenuController.js`; `src/ui/OnboardingController.js`; `src/ui/SaveStatusController.js`; town-menu tests; this report | No gameplay rule change; the town menu adds a runtime-only pause reason while open | None; no schema, balance, reward, ownership, placement or progression data changed | 2 focused town-menu tests; full 460-test suite | Verified |
 
 ### KW-P2-001 protected rule record
 
@@ -62,6 +64,14 @@ Baseline evidence is stored outside the repository under `phase2-evidence/baseli
 ### KW-P2-002 verification note
 
 The first live implementation attempt observed every CSS class mutation while adding its own class. Computer-controlled testing caught the resulting browser feedback loop before commit. The controller was corrected to observe only disabled and accessibility selection attributes, then resynchronise the clicked control and its sibling group once after the real click. The rebuilt game reported 206 controls, 206 enhanced controls and zero controls without a state at every required viewport. Wallet and Inventory tabs changed between `selected` and `normal` correctly, disabled controls remained disabled, the panel closed normally, portrait protection still worked and the browser runtime log contained no warnings or errors.
+
+### KW-P2-004 verification note
+
+- Original presentation: the saved Town state exposed 17 visible buttons at every measured size. Shop, Inventory, Resident, Animals, Welcome, Impact, Stories and Save competed directly with exploration. At 568×320 the first-job card and contextual action overlapped; at 736–844px the expanded checklist still touched the action; Waste Collection displayed the Town objective behind its own HUD.
+- Smallest effective change: preserve all eight destination buttons and their existing controllers, but move them behind one `Menu` control. The menu contributes its own modal pause reason, closes in the capture phase before a destination opens, traps keyboard focus, closes with Escape and uses three columns only below 420px landscape height. The phone objective shows one short goal and its next action; larger tablets retain the full checklist.
+- Runtime proof: the 568×320 menu displayed all eight destinations, including Save, with 44px controls and no internal scroll. A complete Tab cycle returned from Save to Close. Menu → Inventory kept the inventory dialog open, closing restored movement, and a real right-arrow input changed `WILLOW COMMONS · 1244, 1294` to `1257, 1294`.
+- Integration proof: Waste Collection was entered through `Collect 4 pieces of rubbish`; only its own HUD was visible. Safe exit returned to `TownScene` at `1244, 1294` with `🪙 100`, proving no cleanup reward or location change was introduced.
+- Responsive proof: every required landscape viewport reported exact viewport/document dimensions, no objective/action overlap and a 44px Menu target. A 390×844 rotation retained the exact Town position when returning to 844×390. Browser warnings/errors remained empty.
 
 ## Baseline interaction inventory
 
@@ -95,7 +105,7 @@ Contextual:
 - Nearby resident, animal, building, bin or job action
 - Zoom when the map is being explored
 
-Baseline town exposes 17 visible buttons at every measured viewport. At 568×320, the first-session objective panel covers the central play field and several top actions compete for limited width. At 390×844, the game remains playable in portrait and the global HUD becomes a tall stack instead of pausing behind a rotate prompt.
+The baseline town exposed 17 visible buttons at every measured viewport. KW-P2-004 reduces the same saved Town state to 10 visible controls: four essential/contextual actions plus six movement/zoom controls. All eight secondary destinations remain available in the Town menu. The smallest-phone objective now presents one goal and one next action instead of repeating the complete three-job list.
 
 ## Deferred ideas
 
@@ -107,7 +117,6 @@ These are not implementation requirements until supported by evidence or the mis
 - Repricing, reward rebalancing or level-curve changes
 - Removing legacy import/reconciliation code
 - Adding a broad music system that does not exist in the validated baseline
-- Waste Collection currently leaves the first-session objective card visible behind its job HUD, causing two overlapping primary panels at 844×390. Fix with the town/mini-game HUD consolidation; do not alter Waste gameplay rules in the shared-overlay batch.
 
 ## Verification rules
 
