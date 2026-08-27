@@ -677,10 +677,10 @@
         <header class="cafe-hud-header">
           <div><p>MILESTONE 22 · 150-LEVEL RESTAURANT CAMPAIGN</p><h2 id="riverside-kitchen-hud-title">🍽️ Riverside Kitchen</h2><small id="riverside-kitchen-progress-summary">0 cleared · 0 stars · 0 served</small></div>
           <span id="riverside-kitchen-balance">🪙 100</span>
-          <button id="riverside-kitchen-exit" type="button">Save &amp; exit</button>
+          <button id="riverside-kitchen-exit" type="button" aria-label="Save the Riverside Kitchen shift and exit">Save &amp; Exit</button>
         </header>
         <section id="riverside-kitchen-picker" class="cafe-picker" aria-label="Choose a Riverside Kitchen level">
-          <div><strong>150 restaurant shifts · 32 exact recipes</strong><small>Prepare, control the heat and plate every meal. First clears award coins once.</small></div>
+          <div><strong>150 restaurant shifts · 32 recipes</strong><small>First clears unlock the next shift and pay once.</small></div>
           <label for="riverside-kitchen-level-select">Available shift<select id="riverside-kitchen-level-select"><option value="1">Level 1</option></select></label>
           <button id="riverside-kitchen-start" type="button">Open for Level 1</button>
         </section>
@@ -689,7 +689,7 @@
           <div id="riverside-kitchen-orders" class="cafe-orders" aria-label="Diner meal orders"></div>
           <div id="riverside-kitchen-trays" class="cafe-trays" aria-label="Meal preparation trays"></div>
           <div class="cafe-current"><small>CURRENT MEAL</small><h3 id="riverside-kitchen-order-name">🍔 Burger</h3><div id="riverside-kitchen-recipe-sequence" class="cafe-recipe-sequence"></div></div>
-          <div><p class="cafe-worktop-label">Tap the highlighted ingredient, preparation step or exact heat station</p><div id="riverside-kitchen-step-list" class="cafe-step-list"></div></div>
+          <div class="riverside-kitchen-worktop"><p class="cafe-worktop-label">Choose the highlighted step or heat station</p><div id="riverside-kitchen-step-list" class="cafe-step-list"></div></div>
           <div class="cafe-controls"><button id="riverside-kitchen-undo" type="button" disabled>↶ Undo</button><button id="riverside-kitchen-discard" type="button" disabled>🗑 Discard</button><button id="riverside-kitchen-serve" class="primary" type="button" disabled>Serve diner</button></div>
         </section>
         <p id="riverside-kitchen-status" class="cafe-status" data-status="neutral" role="status" aria-live="assertive">Choose an available Riverside Kitchen level to begin.</p>
