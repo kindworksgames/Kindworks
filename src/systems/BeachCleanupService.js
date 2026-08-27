@@ -16,6 +16,7 @@ function engineFields(engine) {
   const state = engine.snapshot();
   return {
     row: state.row, col: state.col, rakedCells: state.rakedCells, collectedCells: state.collectedCells,
+    rakePatterns: state.rakePatterns, entryDirection: state.entryDirection,
     collectedItems: state.collectedItems, earnedCoins: state.earnedCoins, bonusCoins: state.bonusCoins,
     moves: state.moves, undoUsed: state.undoUsed, steppedOnRaked: state.steppedOnRaked,
     challenges: state.challenges, undoStack: state.undoStack, won: false,

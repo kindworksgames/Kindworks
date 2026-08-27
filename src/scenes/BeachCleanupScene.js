@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import { BEACH_TILE, BEACH_TOTAL_LEVELS, BeachCleanupEngine, beachLevelSummary, generateBeachLevel } from "../data/beachCleanup.js";
 import { cardinalDirection } from "../input/mobileGestures.js";
+import { renderBeachRakeGrooves } from "../ui/BeachRakePattern.js";
 
 const ROOM = Object.freeze({ width: 1280, height: 720 });
 const KEYS = Object.freeze({ U: "up", D: "down", L: "left", R: "right" });
@@ -163,8 +164,9 @@ export class BeachCleanupScene extends Phaser.Scene {
       for (let row = 0; row < level.height; row += 1) for (let col = 0; col < level.width; col += 1) {
         const tile = level.rows[row][col]; const key = `${row},${col}`; const player = state.row === row && state.col === col;
         const classes = ["beach-cell", tile === BEACH_TILE.boardwalk || tile === BEACH_TILE.player ? "boardwalk" : tile === BEACH_TILE.sand || tile === BEACH_TILE.rubbish ? raked.has(key) ? "raked" : "sand" : tile === BEACH_TILE.tide ? "tide" : "obstacle", player ? "beach-player" : ""].filter(Boolean).join(" ");
-        const content = player ? "🧑‍🌾" : tile === BEACH_TILE.rubbish && !collected.has(key) ? "·" : ICONS[tile] || "";
-        cells.push(`<span class="${classes}" role="gridcell" aria-label="${player ? "Beach raker" : raked.has(key) ? "Raked sand" : tile === BEACH_TILE.rubbish ? "Sand with hidden rubbish" : "Beach tile"}">${content}</span>`);
+        const grooves = raked.has(key) ? renderBeachRakeGrooves(state.rakePatterns[key] || "h") : "";
+        const content = player ? '<span class="beach-player-icon" aria-hidden="true">🧑‍🌾</span>' : tile === BEACH_TILE.rubbish && !collected.has(key) ? "·" : ICONS[tile] || "";
+        cells.push(`<span class="${classes}" role="gridcell" data-rake-pattern="${raked.has(key) ? state.rakePatterns[key] || "h" : ""}" aria-label="${player ? "Beach raker" : raked.has(key) ? "Raked sand" : tile === BEACH_TILE.rubbish ? "Sand with hidden rubbish" : "Beach tile"}">${grooves}${content}</span>`);
       }
       this.board.style.setProperty("--beach-columns", level.width); this.board.style.setProperty("--beach-rows", level.height); this.board.innerHTML = cells.join(""); this.board.setAttribute("aria-label", `Beach Cleanup Level ${session.assignedLevel}, ${state.rakedCount} of ${state.totalSand} sand tiles raked`);
     }

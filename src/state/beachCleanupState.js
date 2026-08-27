@@ -1,4 +1,4 @@
-import { BEACH_RUBBISH_ITEMS, BEACH_TOTAL_LEVELS, BeachCleanupEngine, beachCellKey, generateBeachLevel } from "../data/beachCleanup.js";
+import { BEACH_RAKE_PATTERNS, BEACH_RUBBISH_ITEMS, BEACH_TOTAL_LEVELS, BeachCleanupEngine, beachCellKey, generateBeachLevel } from "../data/beachCleanup.js";
 
 export const BEACH_CLEANUP_SCHEMA_VERSION = 1;
 export const BEACH_HISTORY_LIMIT = 120;
@@ -35,6 +35,22 @@ function validCellList(value, level) {
   }))];
 }
 
+function validRakePatterns(value, rakedCells) {
+  const allowedCells = new Set(rakedCells);
+  return Object.fromEntries(Object.entries(value && typeof value === "object" && !Array.isArray(value) ? value : {})
+    .filter(([key, pattern]) => allowedCells.has(key) && BEACH_RAKE_PATTERNS.includes(pattern)));
+}
+
+function validEntryDirection(value) {
+  return ["U", "D", "L", "R"].includes(value) ? value : null;
+}
+
+function canonicalJson(value) {
+  if (Array.isArray(value)) return value.map(canonicalJson);
+  if (!value || typeof value !== "object") return value;
+  return Object.fromEntries(Object.keys(value).sort().map((key) => [key, canonicalJson(value[key])]));
+}
+
 function normalizeUndoFrame(value, level) {
   if (!value || typeof value !== "object") return null;
   const row = whole(value.row, 0, level.height - 1, level.start[0]);
@@ -45,8 +61,10 @@ function normalizeUndoFrame(value, level) {
     const [itemRow, itemCol] = key.split(",").map(Number);
     return level.rows[itemRow]?.[itemCol] === "R";
   });
+  const hasRakeVisuals = Object.hasOwn(value, "rakePatterns") || Object.hasOwn(value, "entryDirection");
   return {
     row, col, rakedCells, collectedCells,
+    ...(hasRakeVisuals ? { rakePatterns: validRakePatterns(value.rakePatterns, rakedCells), entryDirection: validEntryDirection(value.entryDirection) } : {}),
     collectedItems: (Array.isArray(value.collectedItems) ? value.collectedItems : []).slice(0, collectedCells.length).map((item, index) => ({ icon: String(item?.icon || "🧹"), name: String(item?.name || "Rubbish"), coins: whole(item?.coins, 0, 170), cell: collectedCells[index] })),
     earnedCoins: whole(value.earnedCoins, 0, 170), moves: whole(value.moves), undoUsed: Boolean(value.undoUsed), steppedOnRaked: Boolean(value.steppedOnRaked),
   };
@@ -67,11 +85,14 @@ function normalizeSession(value) {
   const collectedItems = (Array.isArray(value.collectedItems) ? value.collectedItems : []).filter((item) => item && BEACH_RUBBISH_ITEMS.some((source) => source.name === item.name)).slice(0, collectedCells.length).map((item, index) => ({
     icon: String(item.icon || "🧹"), name: String(item.name), coins: whole(item.coins, 0, 170), cell: collectedCells[index],
   }));
+  const hasRakeVisuals = Object.hasOwn(value, "rakePatterns") || Object.hasOwn(value, "entryDirection");
   const mode = value.mode === "town-job" ? "town-job" : "campaign";
   const session = {
     id: value.id, mode, targetId: mode === "town-job" ? "south-shore" : null, assignedLevel,
     status: value.status === "failed" ? "failed" : "playing", startedAt: iso(value.startedAt) || new Date(0).toISOString(),
-    row, col, rakedCells, collectedCells, collectedItems,
+    row, col, rakedCells, collectedCells,
+    ...(hasRakeVisuals ? { rakePatterns: validRakePatterns(value.rakePatterns, rakedCells), entryDirection: validEntryDirection(value.entryDirection) } : {}),
+    collectedItems,
     earnedCoins: whole(value.earnedCoins, 0, 170), bonusCoins: whole(value.bonusCoins, 0, 100), moves: whole(value.moves),
     undoUsed: Boolean(value.undoUsed), steppedOnRaked: Boolean(value.steppedOnRaked),
     challenges: { noUndo: Boolean(value.challenges?.noUndo), underMoves: Boolean(value.challenges?.underMoves), cleanSweep: Boolean(value.challenges?.cleanSweep) },
@@ -80,7 +101,10 @@ function normalizeSession(value) {
     returnFacing: ["up", "down", "left", "right"].includes(value.returnFacing) ? value.returnFacing : "down",
   };
   const verified = new BeachCleanupEngine(assignedLevel, session).snapshot();
-  return { ...session, row: verified.row, col: verified.col, rakedCells: verified.rakedCells, collectedCells: verified.collectedCells };
+  return {
+    ...session, row: verified.row, col: verified.col, rakedCells: verified.rakedCells, collectedCells: verified.collectedCells,
+    ...(hasRakeVisuals ? { rakePatterns: verified.rakePatterns, entryDirection: verified.entryDirection } : {}),
+  };
 }
 
 export function createFreshBeachCleanupState() {
@@ -145,7 +169,7 @@ export function validateBeachCleanupState(value) {
   if (!shore || typeof shore.dirty !== "boolean" || !Number.isInteger(shore.litterCount) || shore.litterCount < 0 || shore.litterCount > 50 || (!shore.dirty && shore.litterCount !== 0)) errors.push("South Shore cleanup state is invalid.");
   if (value.activeSession !== null) {
     const normalized = normalizeSession(value.activeSession);
-    if (!normalized || JSON.stringify(normalized) !== JSON.stringify(value.activeSession)) errors.push("Active Beach Cleanup session is invalid.");
+    if (!normalized || JSON.stringify(canonicalJson(normalized)) !== JSON.stringify(canonicalJson(value.activeSession))) errors.push("Active Beach Cleanup session is invalid.");
   }
   return { ok: errors.length === 0, errors };
 }
