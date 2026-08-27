@@ -26,7 +26,8 @@ test("uses one compact Café tray summary and only contextual preparation action
     "Turn your device sideways to play.",
   ]) assert.ok(scene.includes(copy), copy);
   assert.match(scene, /\$\{item\.icon\} \$\{item\.name\} · \$\{patience\}%/);
-  assert.match(scene, /this\.undoButton\.classList\.toggle\("hidden", !canRevise \|\| tray\.stepIndex < 1\)/);
+  assert.match(scene, /const activeAppliance = this\.cafe\.activeAppliance\(\)/);
+  assert.match(scene, /!activeAppliance && tray\.stepIndex < 1/);
   assert.match(scene, /this\.discardButton\.classList\.toggle\("hidden", !canRevise\)/);
   assert.match(scene, /this\.serveButton\.classList\.toggle\("hidden", !canServe\)/);
   assert.match(scene, /this\.nextButton\.classList\.toggle\("hidden", !result\.won\)/);

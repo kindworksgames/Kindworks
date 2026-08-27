@@ -20,7 +20,8 @@ test("preserves resumable Save & Exit while using contextual drink actions", asy
   for (const copy of ["Choose a coffee shift.", "Choose a drink. Follow the highlight.", "Drink cleared. Start again.", "Turn your device sideways to play."]) assert.ok(scene.includes(copy), copy);
   assert.match(scene, /this\.onExit = \(\) => this\.returnToTown\(false\)/);
   assert.match(scene, /const suspended = this\.morningMug\.suspend\(\)/);
-  assert.match(scene, /this\.undoButton\.classList\.toggle\("hidden", !canRevise \|\| tray\.stepIndex < 1\)/);
+  assert.match(scene, /const activeAppliance = this\.morningMug\.activeAppliance\(\)/);
+  assert.match(scene, /!activeAppliance && tray\.stepIndex < 1/);
   assert.match(scene, /this\.serveButton\.classList\.toggle\("hidden", !canServe\)/);
   assert.match(scene, /this\.nextButton\.classList\.toggle\("hidden", !result\.won\)/);
 });

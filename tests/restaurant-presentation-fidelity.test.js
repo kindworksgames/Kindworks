@@ -20,6 +20,8 @@ test("replaces restaurant placeholder rooms with the protected top-down presenta
   assert.match(presentation, /function tray/);
   assert.match(presentation, /function assetLabel/);
   for (const family of ["ROOM-PROCEDURAL-V1", "WORKER-PIXEL", "CUSTOMER-GROUP", "WORKER-PAYLOAD"]) assert.ok(presentation.includes(family), family);
+  assert.match(presentation, /snapshot\.appliances/);
+  assert.match(presentation, /APPLIANCE-\$\{String\(appliance\.id\)/);
 });
 
 test("all four indoor venues render individual customers, orders, trays and worker state", async () => {
@@ -54,6 +56,8 @@ test("South Shore Scoops restores a composed picture counter instead of token-on
   assert.match(presentation, /SCOOP_COLOURS/);
   assert.match(presentation, /KW-SCOOPS-COUNTER-PROCEDURAL-V1/);
   assert.match(presentation, /KW-SCOOPS-BUILD-TRAY-SELECTED-PRODUCTS/);
+  assert.match(presentation, /export function animateScoopsDeparture/);
+  assert.match(presentation, /duration: 280/);
   assert.match(scene, /createScoopsPresentation\(this\)/);
   assert.match(scene, /buildParts: work\.build/);
   assert.match(scene, /trayItems: work\.tray/);

@@ -26,6 +26,8 @@ test("preserves resumable picture orders while revealing only contextual Scoops 
   assert.match(scene, /this\.nextButton\.classList\.toggle\("hidden", !result\.won\)/);
   assert.match(scene, /guided && left === expectedPart/);
   assert.match(scene, /if \(guided\) this\.partList\.scrollLeft = 0/);
+  assert.match(scene, /animateScoopsDeparture\(this\)/);
+  assert.match(scene, /this\.time\.delayedCall\(360/);
 });
 
 test("retains the protected 750-shift, 60-percent and first-clear Scoops engine", async () => {

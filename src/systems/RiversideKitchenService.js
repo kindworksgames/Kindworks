@@ -18,6 +18,15 @@ import {
   resetRecipePreparation,
   undoRecipeStep,
 } from "./RecipeOrderService.js";
+import {
+  activeApplianceForTray,
+  advanceRestaurantAppliances,
+  applianceFor,
+  cancelRestaurantTrayAppliances,
+  clearRestaurantAppliance,
+  createRestaurantAppliances,
+  startRestaurantAppliance,
+} from "./RestaurantApplianceRuntime.js";
 
 function appendLedger(state, now, details) {
   const id = `coin-${String(state.economy.nextTransactionId).padStart(6, "0")}`;
@@ -117,6 +126,7 @@ export class RiversideKitchenService {
       spawnIndex: 0,
       activeOrderIds: [],
       trays: Array.from({ length: RIVERSIDE_KITCHEN_CONFIG.trayCount }, (_, index) => emptyTray(index)),
+      appliances: createRestaurantAppliances(RIVERSIDE_KITCHEN_APPLIANCES, null, RIVERSIDE_KITCHEN_CONFIG.trayCount),
       activeTray: 0,
       elapsed: 0,
       served: 0,
@@ -167,11 +177,48 @@ export class RiversideKitchenService {
   orderForTray(tray = this.tray()) { return tray?.orderId ? this.orderById(tray.orderId) : null; }
   currentRecipe(tray = this.tray()) { return recipeForOrder(this.orderForTray(tray), tray?.recipeIndex || 0, RIVERSIDE_KITCHEN_RECIPES); }
   expectedStep(tray = this.tray()) { return this.currentRecipe(tray)?.steps?.[tray?.stepIndex || 0] || null; }
+  appliance(id) { return structuredClone(applianceFor(this.activeSession, id)); }
+  activeAppliance(trayIndex = this.activeSession?.activeTray) { return structuredClone(activeApplianceForTray(this.activeSession, trayIndex)); }
 
   persistMutation(checkpoint, result) {
     const saved = this.persistActiveSession();
     if (!saved.ok) { this.activeSession = checkpoint; return saved; }
     return { ...result, save: saved.save };
+  }
+
+  useAppliance(stepId, trayIndex = this.activeSession?.activeTray, { durationScale = 1 } = {}) {
+    const session = this.activeSession;
+    const tray = this.tray(trayIndex);
+    const definition = RIVERSIDE_KITCHEN_APPLIANCES[stepId];
+    const appliance = applianceFor(session, stepId);
+    if (!session || session.finished || !tray?.orderId) return { ok: false, code: "no-active-preparation", message: "Choose an active diner tray first." };
+    const checkpoint = structuredClone(session);
+    if (!definition || !appliance) return this.recordMistake("Choose a valid Riverside Kitchen station.", tray);
+    if (appliance.status === "burnt") {
+      clearRestaurantAppliance(appliance);
+      session.waste += 1;
+      session.mistakes += 1;
+      return this.persistMutation(checkpoint, { ok: false, code: "station-burnt", message: `${definition.name} burnt. Cleared—cook that step again.`, expectedStep: this.expectedStep(tray), waste: session.waste, mistakes: session.mistakes });
+    }
+    if (appliance.status === "cooking") return { ok: false, code: "station-cooking", message: `${definition.name} is still cooking.` };
+    if (appliance.status === "ready") {
+      const owner = this.tray(appliance.trayIndex);
+      if (!owner?.orderId || this.expectedStep(owner) !== stepId) {
+        clearRestaurantAppliance(appliance);
+        session.waste += 1;
+        return this.persistMutation(checkpoint, { ok: false, code: "station-orphaned", message: `${definition.name} no longer matches that tray, so it was cleared.`, waste: session.waste });
+      }
+      session.activeTray = owner.index;
+      const recipe = this.currentRecipe(owner);
+      const result = applyRecipeStep(owner, recipe, stepId, riversideKitchenStep);
+      if (!result.ok) { this.activeSession = checkpoint; return result; }
+      clearRestaurantAppliance(appliance);
+      return this.persistMutation(checkpoint, { ...result, code: "appliance-collected", applianceId: stepId, recipe, recipeId: this.orderForTray(owner).recipes[owner.recipeIndex], tray: structuredClone(owner), session: this.getActiveSession() });
+    }
+    const expected = this.expectedStep(tray);
+    if (expected !== stepId) { this.activeSession = checkpoint; return this.recordMistake(expected ? `That meal needs ${riversideKitchenStep(expected).name} next.` : "Finish the prepared meal first.", this.tray(trayIndex)); }
+    if (!startRestaurantAppliance(session, RIVERSIDE_KITCHEN_APPLIANCES, stepId, tray.index, durationScale)) return { ok: false, code: "station-unavailable", message: `${definition.name} is unavailable.` };
+    return this.persistMutation(checkpoint, { ok: true, code: "appliance-started", applianceId: stepId, appliance: this.appliance(stepId), tray: structuredClone(tray) });
   }
 
   selectTray(index) {
@@ -231,6 +278,7 @@ export class RiversideKitchenService {
     const tray = this.tray(trayIndex);
     if (!tray?.orderId) return { ok: false, code: "no-active-preparation", message: "Choose an active diner tray first." };
     const checkpoint = structuredClone(this.activeSession);
+    if (cancelRestaurantTrayAppliances(this.activeSession, tray.index)) return this.persistMutation(checkpoint, { ok: true, code: "appliance-cancelled", message: "The active station was stopped.", expectedStep: this.expectedStep(tray), tray: structuredClone(tray) });
     const result = undoRecipeStep(tray);
     return result.ok ? this.persistMutation(checkpoint, { ...result, expectedStep: this.expectedStep(tray), tray: structuredClone(tray) }) : result;
   }
@@ -240,7 +288,8 @@ export class RiversideKitchenService {
     const tray = this.tray(trayIndex);
     if (!session || session.finished || !tray?.orderId) return { ok: false, code: "no-active-preparation", message: "Choose an active diner tray first." };
     const checkpoint = structuredClone(session);
-    if (!resetRecipePreparation(tray) && tray.completedRecipes.length === 0) return { ok: false, code: "nothing-to-discard", message: "The tray is already empty." };
+    const cancelled = cancelRestaurantTrayAppliances(session, tray.index);
+    if (!resetRecipePreparation(tray) && tray.completedRecipes.length === 0 && !cancelled) return { ok: false, code: "nothing-to-discard", message: "The tray is already empty." };
     tray.recipeIndex = 0;
     tray.completedRecipes = [];
     session.waste += 1;
@@ -268,6 +317,7 @@ export class RiversideKitchenService {
     session.bestStreak = Math.max(session.bestStreak, session.streak);
     customerOrder.status = "served";
     session.activeOrderIds = session.activeOrderIds.filter((id) => id !== customerOrder.id);
+    cancelRestaurantTrayAppliances(session, tray.index);
     Object.assign(tray, emptyTray(tray.index));
     this.spawnOrders();
     const nextTray = session.trays.find((candidate) => candidate.orderId);
@@ -288,6 +338,8 @@ export class RiversideKitchenService {
     const delta = Math.max(0, Math.min(1, Number(seconds) || 0));
     session.elapsed = Math.min(session.level.duration, session.elapsed + delta);
     const spawned = this.spawnOrders();
+    const applianceChanges = advanceRestaurantAppliances(session, delta);
+    if (applianceChanges.some((change) => change.status === "burnt")) session.streak = 0;
     for (const customerOrder of this.activeOrders()) {
       customerOrder.patience -= delta;
       if (customerOrder.patience <= -RIVERSIDE_KITCHEN_CONFIG.graceSeconds) {
@@ -307,11 +359,11 @@ export class RiversideKitchenService {
       if (!finished.ok) this.activeSession = checkpoint;
       return finished;
     }
-    if (Math.floor(session.elapsed) > this.lastCheckpointSecond) {
+    if (applianceChanges.length || Math.floor(session.elapsed) > this.lastCheckpointSecond) {
       const saved = this.persistActiveSession();
       if (!saved.ok) { this.activeSession = checkpoint; return saved; }
     }
-    return { ok: true, code: "riverside-kitchen-tick", remaining: session.level.duration - session.elapsed, spawned, activeOrders: session.activeOrderIds.length };
+    return { ok: true, code: "riverside-kitchen-tick", remaining: session.level.duration - session.elapsed, spawned, activeOrders: session.activeOrderIds.length, applianceChanges };
   }
 
   finishSession({ failureReason = null } = {}) {
@@ -386,6 +438,7 @@ export class RiversideKitchenService {
       totalStars: state.totalStars,
       lifetimeServed: state.lifetimeServed,
       activeSession: Boolean(this.activeSession && !this.activeSession.finished),
+      activeAppliances: Object.values(active?.appliances || {}).filter((appliance) => appliance.status !== "idle").length,
       resumableSession: Boolean(active && !active.finished),
       resumableLevel: active?.level.level || null,
     };

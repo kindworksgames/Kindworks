@@ -23,11 +23,24 @@ This is classified as **VERIFIED ADAPTED presentation parity**, rather than pixe
 - Restored three physical tickets and three independent preparation spaces.
 - Restored venue appliances and fixtures: kettle/toaster/hob/oven, grinder/espresso/steam/cold, prep/pan/pot/grill/oven, bakery stations, sink, cold storage, stove, pass, pantry, and work surfaces.
 - Restored a visible venue worker, carried payload, and stepped movement between preparation and appliance state.
+- Restored independent per-appliance ownership: each physical station keeps its own tray, cooking timer, ready window and burnt state.
+- Restored visible Morning Mug burning and exact Morning Mug/Riverside station state across Save & Exit and reload.
+- Restored the protected Scoops departure beat: the served customer animates for 280 ms and the queue advances after 360 ms.
 - Restored in-room food and active-step presentation linked to the real service state.
 - Rebuilt South Shore Scoops as a numbered picture counter with procedural containers, scoops, sauces, finishes, drinks, lollies, customer pictures, build board, tray, and large selected-order artwork.
 - Replaced the obstructive desktop panel with protected-style compact top and bottom rails while keeping 44-pixel touch targets.
 - Added stable `KW-BAKERY-*`, `KW-CAFE-*`, `KW-MUG-*`, `KW-RIVERSIDE-*`, `KW-SCOOPS-*`, and shared restaurant runtime labels.
 - Left campaign data, recipes, level counts, rewards, unlocks, saves, patience, failure, replay, and town integration unchanged.
+
+## Runtime fidelity verification
+
+The original HTML appliance contract at the protected `cafeEmptyAppliances`, `cafeUseAppliance`, `cafeTick`, and `scoopsServe` implementations was compared directly with the recovered service state.
+
+- Corner Café can run two different stations for two different preparation trays at the same time; each returns only to its owning tray.
+- Morning Mug saves and reloads the exact running-station countdown, progresses through ready to burnt, and requires the burnt item to be cleared before retrying the same step.
+- Riverside Kitchen saves and reloads the exact heat station, then collects the completed component onto the correct meal tray.
+- Pre-recovery active saves without appliance maps normalize to safe idle stations without losing order, tray, recipe or step progress.
+- Scoops holds the old queue picture during the departure and blocks double-service input until the 360 ms transition completes.
 
 ## Operated comparison evidence
 
@@ -44,6 +57,8 @@ Each pair was entered and started through the normal visible controls in both bu
 The comparison evidence is recorded at the original 1280×720 reference size. The recovered build was also operated across the complete required landscape matrix: 568×320, 667×375, 736×414, 812×375, 844×390, 1024×768, 1180×820, 1280×720, and 1366×768. All nine sizes had no document overflow and retained 44-pixel touch targets. Every venue was additionally operated at 568×320, 844×390, 1024×768, and 1280×720.
 
 Portrait 390×844 displayed only “Turn your device sideways to play.” A live Morning Mug shift preserved the same scene, level, phase, and served count after portrait pause and landscape resume.
+
+The final runtime recovery regression repeated every venue at 568×320 and 1024×768 after independent appliances and the Scoops departure were added. No venue introduced document overflow, every in-game control retained its 44-pixel minimum touch size, portrait again hid the active game safely, landscape restored the exact Morning Mug presentation, and the browser console contained no warnings or errors. The complete automated suite passes **526/526**.
 
 ## Baseline shared visual gap (before recovery)
 

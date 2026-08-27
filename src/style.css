@@ -3253,7 +3253,8 @@ body[data-resident-control="true"] #control-hint { display: none; }
 .cafe-step-list button small { color: #786a58; font-size: 6px; }
 .cafe-step-list button.station { background: #b9ced0; }
 .cafe-step-list button.next { background: #ffe074; outline: 2px solid #d66d4d; }
-.cafe-step-list button.working { background: #efc56f; }
+.cafe-step-list button.working,
+.cafe-step-list button.cooking { background: #efc56f; }
 .cafe-step-list button.ready { background: #a8d58e; animation: cafe-ready-pulse .7s ease-in-out infinite alternate; }
 .cafe-step-list button.burnt { color: #fff; background: #b9453e; outline: 2px solid #732f32; }
 @keyframes cafe-ready-pulse { to { transform: translateY(-2px); box-shadow: 0 0 0 3px #4e9156; } }

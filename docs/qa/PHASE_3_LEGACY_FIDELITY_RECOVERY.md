@@ -45,6 +45,7 @@ Baseline evidence:
 | FID-005 | Power Washing pixel presentation | Phaser clipped dirt through 48×24 rectangles and omitted the legacy wand, radial wash, procedural dirt, resistant-stain layer, foam, wetness, mist, and alpha-sampled completion. | Ported the protected full-resolution layered renderer. Runtime completion now defers the grid engine and is awarded only when the approved pixel mask reaches 97%. The protected progression/reward transaction remains the sole completion writer. | Operated at 1280×720: continuous diagonal wash revealed the clean master without blocks; soap produced clipped foam; water removed the treated resistant stain; the wand followed the pointer; console contained no errors. Evidence: `powerwash-full-resolution-dirty.jpg`, `powerwash-full-resolution-soap.jpg`, `powerwash-full-resolution-rinse.jpg`. Fourteen focused tests and production build pass. | VERIFIED at 1280×720; device matrix and exact interrupted visual checkpoint pending |
 | FID-006 | Little Bakery concurrent shift | Phaser reduced the legacy shift to one sequential customer and one shared preparation state, removing the three simultaneous orders, scheduled arrivals, independent patience, and independent trays. | Recovered the three-customer queue and three preparation trays. Every tray now owns its order, recipe index, completed dishes, step progress, and appliance wait state; arrivals occur at the authored times and every active customer loses patience independently. The 150-level campaign, no-miss completion rule, first-clear rewards, saves, unlocks, and return flow are unchanged. | Eighteen focused tests prove scheduled arrivals, three occupied trays, isolated tray progress, concurrent patience, partial service, completion, replay, failure, cancellation, and save rollback. Operated at 1280×720 through the isolated QA route: three customers were visible together and one step on Prep 2 left Prep 1 and Prep 3 untouched. Evidence: `phase3-evidence/bakery/bakery-independent-trays.jpg`. | VERIFIED functionally at 1280×720; authored worker/customer artwork and device matrix pending |
 | FID-007 | Restaurant visual presentation | All five Phaser restaurant scenes used flat room bands, aggregate emoji, compact token products, and a large overlay instead of the protected top-down venue presentation. | Added a shared labelled Phaser presentation foundation; restored the protected dining/counter/kitchen proportions, six places, individual pixel customers, order bubbles, tickets, three physical prep spaces, venue appliances/fixtures, visible workers and payload movement. Scoops now composes containers, flavours, sauces, toppings, drinks and lollies as procedural picture art. Active DOM controls are compact top/bottom rails. | Operated all five venues at 1280×720 and 568×320. Full landscape matrix passed at nine sizes with no document overflow and 44-pixel touch controls. Every venue also passed 844×390, 1024×768 and 1280×720. Portrait 390×844 showed the rotate state and resumed the exact Morning Mug scene/level/phase/served count. Evidence and baseline pairs: `phase3-evidence/restaurants/`. | VERIFIED ADAPTED PARITY; final labelled Sprite AI replacements remain production art |
+| FID-008 | Restaurant appliance and departure runtime | Café, Morning Mug and Riverside Kitchen used one scene-only timer, so appliances could not independently own trays; Morning Mug never burnt; Riverside reload discarded a cooking station; and Scoops removed a served customer immediately. | Moved appliance ownership, cooking, ready and burn timers into the real service session. Different physical stations now run independently for their own trays; Undo/discard cancels only the selected tray's station; Morning Mug and Riverside persist exact remaining timers and burnt state; older saves gain safe idle station maps. Scoops now freezes service input, animates the served customer out for 280 ms, then advances at the protected 360 ms boundary. | Four dedicated runtime tests cover concurrent Café stations, Morning Mug cooking reload and burn clearing, Riverside exact-heat reload and collection, and additive old-save normalization. Twenty focused service/presentation/mobile tests pass. The complete automated suite passes 526/526 and the production build passes. Final browser regression at 568×320 and 1024×768 found no document overflow; portrait 390×844 hid gameplay and landscape resume restored the exact Morning Mug presentation; the console was clean. | VERIFIED FUNCTIONAL PARITY |
 
 ## Power Washing protected asset provenance
 
@@ -59,7 +60,7 @@ Baseline evidence:
 
 Direct operation of all five restaurant games at 1280×720 originally confirmed that their Phaser rooms did not reproduce the protected HTML presentation. The comparison evidence, recovery, asset labels, viewport matrix, and final verdict are recorded in `docs/qa/PHASE_3_RESTAURANT_VISUAL_FIDELITY_REVIEW.md`.
 
-Restaurant code-driven visual fidelity now **PASSES as a VERIFIED ADAPTED mobile presentation**. The protected composition and player-facing state are restored in Phaser, while every procedural visual family is labelled for final Sprite AI replacement. Separate durable transient-appliance gaps remain explicitly tracked below and are not hidden by this presentation verdict.
+Restaurant code-driven fidelity now **PASSES as a VERIFIED ADAPTED mobile presentation**. The protected composition and player-facing state are restored in Phaser, every procedural visual family is labelled for final Sprite AI replacement, and the protected appliance ownership/timing and Scoops departure contracts are durable runtime behaviour.
 
 ## Confirmed remaining fidelity ledger
 
@@ -81,9 +82,6 @@ Restaurant code-driven visual fidelity now **PASSES as a VERIFIED ADAPTED mobile
 | LWN-ROUTE-02 | Lawn Care | Legacy checks route solvability after moves; Phaser only solves when Hint is pressed. |
 | LWN-MOTION-03 | Lawn Care | 55 ms cell travel, queued input, weed slowdown/strain, upgrades, and directional cut stripes are missing. |
 | WST-INPUT-01 | Waste Collection | Legacy recenters/scales the active card bounds and provides a coarse-pointer hit layer; Phaser pins cards to original positions. |
-| COOK-WORKER-01 | Café/Morning Mug/Riverside | Worker movement, carried payload and individual customer presentation are restored. The remaining difference is that these three services still expose one selected scene-level appliance transition instead of durable independent appliance ownership. |
-| MUG-BURN-01 | Morning Mug | Burn windows exist in data, but the Phaser scene does not visibly enter the burnt state. |
-| KIT-SAVE-01 | Riverside Kitchen | Scene-only appliance working/ready/burnt phase is not serialized, so reload loses the transient station state. |
 
 ### P2 — presentation, animation, and game-feel fidelity
 
@@ -99,7 +97,7 @@ Restaurant code-driven visual fidelity now **PASSES as a VERIFIED ADAPTED mobile
 | Waste | 40 authored rubbish assets, park detail, cleanliness progression, seven-slot/future-capacity affordance, card flight/triple burst, and transition lock. |
 | Beach | Authored sand/world/player/rake visuals, synchronized groove reveal, walk cycle, collection flight, sounds, and completion celebration. |
 | Fishing | Legacy rod/float/ripple/curved-line animation remains simplified after the interaction repair. |
-| Scoops | Procedural finished products, picture orders, numbered stations and tray art are restored; the protected customer departure motion remains simplified. |
+| Scoops | Procedural finished products, picture orders, numbered stations, tray art and the protected customer departure timing are restored. Final Sprite AI art remains a labelled production replacement. |
 | Interiors | Residents and animals are static icons; furniture is generic rectangles/emoji. |
 
 ## Intentional adaptations that must not be casually reverted
@@ -130,10 +128,9 @@ The in-app browser’s viewport override did not apply during the first batch an
 3. Restore Beach continuous-run Undo.
 4. Restore Lawn dead-end/route feedback, timed movement, weed resistance, and directional stripes.
 5. Recover the exact Power Washing interrupted visual checkpoint without changing its protected save/reward contract.
-6. Persist independent Café, Morning Mug and Riverside appliance transitions, including Morning Mug burn state and Riverside reload.
-7. Recover Town/world/NPC/animal/farm/home/shop visual state dictionaries.
-8. Run the complete device, orientation, transition, save, reward, and accessibility matrix before a Phase 3 verdict.
+6. Recover Town/world/NPC/animal/farm/home/shop visual state dictionaries.
+7. Run the complete device, orientation, transition, save, reward, and accessibility matrix before a Phase 3 verdict.
 
 ## Verdict
 
-**PHASE 3: IN PROGRESS.** The protected gameplay data remains intact; Power Washing’s approved art and full-resolution active rendering pipeline are restored; Little Bakery again runs its three simultaneous customer/tray model; and all five restaurant presentations now have verified adapted parity. Phase 3 cannot pass until the remaining non-restaurant P0/P1 gaps, durable transient-appliance gaps, broader authored world visuals, and the full release regression are complete.
+**PHASE 3: IN PROGRESS.** The protected gameplay data remains intact; Power Washing’s approved art and full-resolution active rendering pipeline are restored; Little Bakery again runs its three simultaneous customer/tray model; and all five restaurant presentations and restaurant runtime details now have verified parity. Phase 3 cannot pass until the remaining non-restaurant P0/P1 gaps, broader authored world visuals, and the full release regression are complete.

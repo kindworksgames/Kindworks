@@ -176,15 +176,27 @@ export function updateRestaurantPresentation(scene, snapshot = {}) {
     if (trayState.active) icon.setScale(1.13);
     presentation.stateObjects.push(icon);
   });
-  presentation.workerTag.setText(snapshot.workerState === "ready" ? "READY · TAP" : snapshot.workerState === "working" ? "WORKING…" : snapshot.workerState === "burnt" ? "BURNT" : "READY");
-  presentation.workerTag.setBackgroundColor(snapshot.workerState === "burnt" ? "#d55a4d" : snapshot.workerState === "ready" ? "#b9dc93" : snapshot.workerState === "working" ? "#f1bf67" : "#fff1c9");
-  const workerAtStation = ["working", "ready", "burnt"].includes(snapshot.workerState);
+  const workerWorking = ["working", "cooking"].includes(snapshot.workerState);
+  presentation.workerTag.setText(snapshot.workerState === "ready" ? "READY · TAP" : workerWorking ? "WORKING…" : snapshot.workerState === "burnt" ? "BURNT" : "READY");
+  presentation.workerTag.setBackgroundColor(snapshot.workerState === "burnt" ? "#d55a4d" : snapshot.workerState === "ready" ? "#b9dc93" : workerWorking ? "#f1bf67" : "#fff1c9");
+  const workerAtStation = workerWorking || ["ready", "burnt"].includes(snapshot.workerState);
   scene.tweens.killTweensOf([presentation.worker, presentation.workerTag]);
   scene.tweens.add({ targets: [presentation.worker, presentation.workerTag], x: workerAtStation ? -145 : 0, y: workerAtStation ? -175 : 0, duration: 260, ease: "Stepped", easeParams: [4] });
   if (snapshot.expectedIcon) {
     const expected = assetLabel(scene.add.text(workerAtStation ? 893 : 1038, workerAtStation ? 263 : 438, snapshot.expectedIcon, { fontSize: "22px", backgroundColor: "#fff1c9", color: "#292238", padding: { x: 5, y: 3 }, resolution: 2 }), `KW-${presentation.venue.toUpperCase()}-WORKER-PAYLOAD`).setOrigin(0.5).setDepth(10);
     presentation.stateObjects.push(expected);
   }
+  (snapshot.appliances || []).slice(0, 5).forEach((appliance, index) => {
+    const stateColour = appliance.status === "burnt" ? 0xd55a4d : appliance.status === "ready" ? 0x83c56a : 0xf1bf67;
+    const chip = assetLabel(scene.add.graphics(), `KW-${presentation.venue.toUpperCase()}-APPLIANCE-${String(appliance.id).toUpperCase()}-${String(appliance.status).toUpperCase()}`).setDepth(11);
+    const x = 842 + index * 80;
+    chip.fillStyle(INK, 1); chip.fillRoundedRect(x, 262, 74, 44, 5);
+    chip.fillStyle(stateColour, 1); chip.fillRoundedRect(x + 3, 265, 68, 38, 3);
+    const text = assetLabel(scene.add.text(x + 37, 284, `${appliance.icon || "♨"} ${appliance.status === "cooking" ? "COOK" : String(appliance.status).toUpperCase()}\nT${Number(appliance.trayIndex) + 1}`, {
+      color: "#292238", fontFamily: "ui-monospace, monospace", fontSize: "8px", fontStyle: "bold", align: "center", resolution: 2,
+    }), `KW-${presentation.venue.toUpperCase()}-APPLIANCE-${String(appliance.id).toUpperCase()}-LABEL`).setOrigin(0.5).setDepth(12);
+    presentation.stateObjects.push(chip, text);
+  });
 }
 
 function drawScoopsCustomer(graphics, x, y, index, active) {
@@ -244,14 +256,19 @@ export function updateScoopsPresentation(scene, snapshot = {}) {
   if (!presentation) return;
   presentation.stateObjects.forEach((object) => object.destroy()); presentation.stateObjects.length = 0;
   const customers = snapshot.customers || [];
-  const people = assetLabel(scene.add.graphics(), "KW-SCOOPS-CUSTOMER-GROUP").setDepth(8);
-  [[80, 190], [235, 190], [80, 420], [235, 420]].forEach(([x, y], index) => drawScoopsCustomer(people, x, y, index + 2, Boolean(customers[index])));
-  presentation.stateObjects.push(people);
+  presentation.customerTargets = [];
+  [[80, 190], [235, 190], [80, 420], [235, 420]].forEach(([x, y], index) => {
+    const person = assetLabel(scene.add.graphics(), `KW-SCOOPS-CUSTOMER-${index + 1}-PIXEL`).setDepth(8);
+    drawScoopsCustomer(person, x, y, index + 2, Boolean(customers[index]));
+    presentation.stateObjects.push(person);
+    presentation.customerTargets[index] = [person];
+  });
   customers.slice(0, 4).forEach((customer, index) => {
     const [x, y] = [[80, 190], [235, 190], [80, 420], [235, 420]][index];
     const bubble = assetLabel(scene.add.graphics(), `KW-SCOOPS-CUSTOMER-${index + 1}-ORDER-BUBBLE`).setDepth(9); bubble.fillStyle(INK, 1); bubble.fillRoundedRect(x - 42, y - 102, 84, 58, 7); bubble.fillStyle(WHITE, 1); bubble.fillRoundedRect(x - 38, y - 98, 76, 50, 4);
     const picture = assetLabel(scene.add.graphics(), `KW-SCOOPS-CUSTOMER-${index + 1}-PRODUCT`).setDepth(10); drawScoopsProduct(picture, x, y - 72, customer.parts || [], 0.48);
     presentation.stateObjects.push(bubble, picture);
+    presentation.customerTargets[index].push(bubble, picture);
   });
   const productArt = assetLabel(scene.add.graphics(), "KW-SCOOPS-BUILD-TRAY-SELECTED-PRODUCTS").setDepth(10);
   if (snapshot.buildParts?.length) drawScoopsProduct(productArt, 582, 448, snapshot.buildParts, 1.55);
@@ -262,6 +279,13 @@ export function updateScoopsPresentation(scene, snapshot = {}) {
   (snapshot.trayItems || []).slice(0, 2).forEach((parts, index) => drawScoopsProduct(productArt, 831, 426 + index * 94, parts, 0.82));
   if (snapshot.selectedParts?.length) drawScoopsProduct(productArt, 1087, 447, snapshot.selectedParts, 1.35);
   presentation.stateObjects.push(productArt);
+}
+
+export function animateScoopsDeparture(scene, index = 0) {
+  const targets = scene.scoopsPresentation?.customerTargets?.[index] || [];
+  if (!targets.length) return false;
+  scene.tweens.add({ targets, x: -20, alpha: 0, duration: 280, ease: "Sine.easeIn" });
+  return true;
 }
 
 const SCOOP_COLOURS = Object.freeze({

@@ -15,7 +15,6 @@ export class RiversideKitchenScene extends Phaser.Scene {
   init(data = {}) {
     this.entryData = data;
     this.transitioning = false;
-    this.station = null;
     this.lastTickResult = null;
     this.renderElapsed = 0;
   }
@@ -72,15 +71,15 @@ export class RiversideKitchenScene extends Phaser.Scene {
     this.onStart = () => this.startLevel(Number(this.levelSelect?.value || 1));
     this.onLevelChange = () => { if (this.startButton) this.startButton.textContent = `Open for Level ${Number(this.levelSelect?.value || 1)}`; };
     this.onExit = () => this.returnToTown(false);
-    this.onUndo = () => { const result = this.riversideKitchen.undoStep(); this.setMessage(result.ok ? `${riversideKitchenStep(result.removed).name} removed.` : result.message, result.ok ? "neutral" : "error"); this.render(); };
+    this.onUndo = () => { const result = this.riversideKitchen.undoStep(); this.setMessage(result.ok ? result.message || `${riversideKitchenStep(result.removed).name} removed.` : result.message, result.ok ? "neutral" : "error"); this.render(); };
     this.onDiscard = () => { const result = this.riversideKitchen.discardTray(); this.setMessage(result.ok ? "This meal tray was cleared. The diner is still waiting." : result.message, result.ok ? "error" : "neutral"); this.render(); };
     this.onServe = () => this.serveActive();
     this.onNext = () => this.startLevel(Math.min(RIVERSIDE_KITCHEN_CONFIG.levelCount, (this.riversideKitchen.getActiveSession()?.level.level || 1) + 1));
     this.onReplay = () => this.startLevel(this.riversideKitchen.getActiveSession()?.level.level || 1);
     this.onReturn = () => this.returnToTown(true);
     this.onSteps = (event) => { const button = event.target.closest?.("[data-riverside-kitchen-step]"); if (button) this.useStep(button.dataset.riversideKitchenStep); };
-    this.onTrays = (event) => { const button = event.target.closest?.("[data-riverside-kitchen-tray]"); if (button && !this.station) { const result = this.riversideKitchen.selectTray(Number(button.dataset.riversideKitchenTray)); this.setMessage(result.ok ? `Meal tray ${Number(button.dataset.riversideKitchenTray) + 1} selected for ${result.order.customerName}.` : result.message, result.ok ? "neutral" : "error"); this.render(); } };
-    this.onOrders = (event) => { const button = event.target.closest?.("[data-riverside-kitchen-order-tray]"); if (button && !this.station) { this.riversideKitchen.selectTray(Number(button.dataset.riversideKitchenOrderTray)); this.render(); } };
+    this.onTrays = (event) => { const button = event.target.closest?.("[data-riverside-kitchen-tray]"); if (button) { const result = this.riversideKitchen.selectTray(Number(button.dataset.riversideKitchenTray)); this.setMessage(result.ok ? `Meal tray ${Number(button.dataset.riversideKitchenTray) + 1} selected for ${result.order.customerName}.` : result.message, result.ok ? "neutral" : "error"); this.render(); } };
+    this.onOrders = (event) => { const button = event.target.closest?.("[data-riverside-kitchen-order-tray]"); if (button) { this.riversideKitchen.selectTray(Number(button.dataset.riversideKitchenOrderTray)); this.render(); } };
     this.onKeyDown = (event) => { if (event.key === "Escape") this.returnToTown(false); };
     this.onPageHide = () => this.riversideKitchen.persistActiveSession();
     this.startButton?.addEventListener("click", this.onStart); this.levelSelect?.addEventListener("change", this.onLevelChange); this.exitButton?.addEventListener("click", this.onExit);
@@ -101,7 +100,7 @@ export class RiversideKitchenScene extends Phaser.Scene {
   }
 
   startLevel(level) {
-    this.lastTickResult = null; this.renderElapsed = 0; this.station = null;
+    this.lastTickResult = null; this.renderElapsed = 0;
     const result = this.riversideKitchen.startLevel(level, { returnPosition: this.entryData.returnPosition, returnFacing: this.entryData.returnFacing || "down", instantOrders: this.qaMode });
     if (!result.ok) { this.setMessage(result.message, "error"); return false; }
     document.querySelector("#riverside-kitchen-picker")?.classList.add("hidden");
@@ -114,45 +113,15 @@ export class RiversideKitchenScene extends Phaser.Scene {
   }
 
   useStep(stepId) {
-    if (this.station && this.station.id !== stepId) return false;
     const definition = riversideKitchenStep(stepId);
     if (!definition) return false;
     if (RIVERSIDE_KITCHEN_APPLIANCES[stepId]) {
-      if (this.riversideKitchen.expectedStep() !== stepId) {
-        const rejected = this.riversideKitchen.applyStep(stepId);
-        this.setMessage(rejected.message, "error"); this.render(); return false;
-      }
-      if (this.station?.status === "ready") {
-        this.station = null; this.restaurantPresentation.workerTag.setText("READY");
-        return this.finishStep(stepId);
-      }
-      if (this.station?.status === "burnt") {
-        const burnt = this.riversideKitchen.recordBurn();
-        this.station = null; this.restaurantPresentation.workerTag.setText("READY");
-        this.setMessage(burnt.message, "error"); this.render();
-        return false;
-      }
-      if (this.station) return false;
-      const station = { id: stepId, status: "working" };
-      this.station = station;
-      this.restaurantPresentation.workerTag.setText("WORKING…");
-      this.setMessage(`${definition.name} cooking…`, "working");
+      const result = this.riversideKitchen.useAppliance(stepId, undefined, { durationScale: this.timingScale });
+      if (result.code === "appliance-started") this.setMessage(`${definition.name} cooking on its own station.`, "working");
+      else if (result.code === "appliance-collected") this.setMessage(result.complete ? `${result.recipe.name} is ready. Finish it.` : `${definition.name} returned to the tray.`, "success");
+      else this.setMessage(result.message, result.code === "station-cooking" ? "working" : "error");
       this.render();
-      this.time.delayedCall(Math.max(90, definition.seconds * 1000 * this.timingScale), () => {
-        if (this.transitioning || this.station !== station) return;
-        this.station.status = "ready";
-        this.restaurantPresentation.workerTag.setText("READY · TAP");
-        this.setMessage(`${definition.name} ready. Tap it again.`, "success");
-        this.render();
-        this.time.delayedCall(Math.max(90, definition.burnWindow * 1000 * this.timingScale), () => {
-          if (this.transitioning || this.station !== station || station.status !== "ready") return;
-          station.status = "burnt";
-          this.restaurantPresentation.workerTag.setText("BURNT");
-          this.setMessage(`${definition.name} burnt. Tap to clear it.`, "error");
-          this.render();
-        });
-      });
-      return true;
+      return result.ok;
     }
     return this.finishStep(stepId);
   }
@@ -167,7 +136,7 @@ export class RiversideKitchenScene extends Phaser.Scene {
   }
 
   serveActive() {
-    if (this.station) return false;
+    if (this.riversideKitchen.activeAppliance()) { this.setMessage("Collect or stop this tray's active station first.", "working"); return false; }
     const result = this.riversideKitchen.serveActive();
     if (!result.ok) { this.setMessage(result.message, "error"); this.render(); return false; }
     if (result.result) { this.showResult(result.result); return true; }
@@ -221,12 +190,13 @@ export class RiversideKitchenScene extends Phaser.Scene {
     if (sequence) sequence.innerHTML = recipe ? recipe.steps.map((step, index) => `<span class="${index < tray.stepIndex ? "done" : index === tray.stepIndex ? "next" : ""}">${riversideKitchenStep(step).icon}<small>${riversideKitchenStep(step).name}</small></span>`).join("") : "";
     const availableIds = [...new Set(session.level.menu.flatMap((id) => RIVERSIDE_KITCHEN_RECIPES[id].steps))];
     availableIds.sort((a, b) => a === expected ? -1 : b === expected ? 1 : (RIVERSIDE_KITCHEN_APPLIANCES[a] ? 1 : 0) - (RIVERSIDE_KITCHEN_APPLIANCES[b] ? 1 : 0));
-    if (this.stepList) this.stepList.innerHTML = availableIds.map((id) => { const item = riversideKitchenStep(id); const station = Boolean(RIVERSIDE_KITCHEN_APPLIANCES[id]); const stationState = this.station?.id === id ? this.station.status : ""; return `<button type="button" data-riverside-kitchen-step="${id}" class="${id === expected ? "next" : ""} ${station ? "station" : "ingredient"} ${stationState}" ${this.station && this.station.id !== id ? "disabled" : ""}><span>${item.icon}</span><strong>${item.name}</strong><small>${stationState === "working" ? "Cooking…" : stationState === "ready" ? "Ready · tap" : stationState === "burnt" ? "Burnt · clear" : station ? "Heat / station" : "Ingredient"}</small></button>`; }).join("");
-    const canRevise = !this.station && Boolean(tray?.orderId) && Boolean(expected) && (tray.stepIndex > 0 || tray.completedRecipes.length > 0);
-    if (this.undoButton) { this.undoButton.disabled = !canRevise || tray.stepIndex < 1; this.undoButton.classList.toggle("hidden", !canRevise || tray.stepIndex < 1); }
+    if (this.stepList) this.stepList.innerHTML = availableIds.map((id) => { const item = riversideKitchenStep(id); const station = Boolean(RIVERSIDE_KITCHEN_APPLIANCES[id]); const stationState = session.appliances?.[id]?.status || "idle"; return `<button type="button" data-riverside-kitchen-step="${id}" class="${id === expected ? "next" : ""} ${station ? "station" : "ingredient"} ${stationState}"><span>${item.icon}</span><strong>${item.name}</strong><small>${stationState === "cooking" ? "Cooking…" : stationState === "ready" ? "Ready · tap" : stationState === "burnt" ? "Burnt · clear" : station ? "Heat / station" : "Ingredient"}</small></button>`; }).join("");
+    const activeAppliance = this.riversideKitchen.activeAppliance();
+    const canRevise = Boolean(tray?.orderId) && Boolean(expected) && (tray.stepIndex > 0 || tray.completedRecipes.length > 0 || activeAppliance);
+    if (this.undoButton) { this.undoButton.disabled = !canRevise || (!activeAppliance && tray.stepIndex < 1); this.undoButton.classList.toggle("hidden", !canRevise || (!activeAppliance && tray.stepIndex < 1)); }
     if (this.discardButton) { this.discardButton.disabled = !canRevise; this.discardButton.classList.toggle("hidden", !canRevise); }
     if (this.serveButton) {
-      const canServe = !this.station && Boolean(recipe) && !expected;
+      const canServe = !activeAppliance && Boolean(recipe) && !expected;
       this.serveButton.disabled = !canServe;
       this.serveButton.classList.toggle("hidden", !canServe);
       this.serveButton.textContent = tray?.recipeIndex < (customerOrder?.recipes.length || 0) - 1 ? "Finish meal" : "Serve";
@@ -243,8 +213,9 @@ export class RiversideKitchenScene extends Phaser.Scene {
         const item = customer ? RIVERSIDE_KITCHEN_RECIPES[customer.recipes[candidate.recipeIndex]] : null;
         return { active: candidate.index === session.activeTray, icon: item?.icon || "" };
       }),
-      workerState: this.station?.status || "idle",
+      workerState: activeAppliance?.status || "idle",
       expectedIcon: expected ? riversideKitchenStep(expected).icon : recipe?.icon,
+      appliances: Object.values(session.appliances || {}).filter((appliance) => appliance.status !== "idle").map((appliance) => ({ ...appliance, icon: riversideKitchenStep(appliance.id).icon, name: riversideKitchenStep(appliance.id).name })),
     });
     this.updateDomState();
   }
@@ -253,7 +224,7 @@ export class RiversideKitchenScene extends Phaser.Scene {
     const game = document.querySelector("#game"); if (!game) return;
     const session = this.riversideKitchen.getActiveSession(); const diagnostics = this.riversideKitchen.getDiagnostics();
     game.dataset.scene = this.scene.key; game.dataset.riversideKitchenLevel = String(session?.level.level || diagnostics.unlockedLevel);
-    game.dataset.riversideKitchenPhase = session?.finished ? "result" : session ? this.station?.status || "playing" : "picker";
+    game.dataset.riversideKitchenPhase = session?.finished ? "result" : session ? this.riversideKitchen.activeAppliance()?.status || "playing" : "picker";
     game.dataset.riversideKitchenExpectedStep = this.riversideKitchen.expectedStep() || "none"; game.dataset.riversideKitchenServed = String(session?.served || 0);
     game.dataset.riversideKitchenActiveOrders = String(session?.activeOrderIds.length || 0); game.dataset.riversideKitchenUnlocked = String(diagnostics.unlockedLevel); game.dataset.riversideKitchenCompleted = String(diagnostics.completedLevels);
     game.dataset.riversideKitchenResumable = String(diagnostics.resumableSession);
@@ -293,7 +264,7 @@ export class RiversideKitchenScene extends Phaser.Scene {
       else if (!result?.ok && result?.code === "persistence-failed") this.setMessage(result.message, "error");
       else {
         this.renderElapsed += delta;
-        if (result?.spawned) { this.renderElapsed = 0; this.render(); }
+        if (result?.spawned || result?.applianceChanges?.length) { this.renderElapsed = 0; this.render(); }
         else if (this.renderElapsed >= 100) { this.renderElapsed = 0; this.renderLiveMetrics(); }
       }
     }

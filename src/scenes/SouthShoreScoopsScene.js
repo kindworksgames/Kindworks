@@ -6,7 +6,7 @@ import {
   southShoreScoopsOrderText,
   southShoreScoopsPart,
 } from "../data/southShoreScoops.js";
-import { createScoopsPresentation, updateScoopsPresentation } from "../ui/RestaurantPresentation.js";
+import { animateScoopsDeparture, createScoopsPresentation, updateScoopsPresentation } from "../ui/RestaurantPresentation.js";
 
 const ROOM = Object.freeze({ width: 1280, height: 720 });
 const PART_ORDER = Object.freeze(["cone", "waffle", "shavedCup", "sundaeCup", "cup", "drinkCup", "strawberry", "chocolate", "vanilla", "mint", "grape", "blueberry", "strawberrySauce", "chocolateSauce", "caramelSauce", "sprinkles", "chocBits", "marshmallows", "cherry", "milkshake", "lemonade", "shavedIce", "fruitSyrup", "lolly"]);
@@ -133,9 +133,14 @@ export class SouthShoreScoopsScene extends Phaser.Scene {
   serveCurrent() {
     const result = this.scoops.serveCurrent();
     if (!result.ok) { this.setMessage(result.message, "error"); this.render(); return false; }
-    if (result.result) { this.showResult(result.result); return true; }
-    this.setMessage(`${result.customerName} served. Next: ${result.nextCustomer}.`, "success");
-    this.render();
+    this.transitioning = true;
+    animateScoopsDeparture(this);
+    this.setMessage(`${result.customerName} served — next customer is stepping forward.`, "success");
+    this.time.delayedCall(360, () => {
+      this.transitioning = false;
+      if (result.result) this.showResult(result.result);
+      else this.render();
+    });
     return true;
   }
 
