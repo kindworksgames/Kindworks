@@ -2,10 +2,53 @@
   color-scheme: dark;
   font-family: system-ui, sans-serif;
   background: #14251c;
+  --kw-ink: #29414b;
+  --kw-cloud: #f7f4ea;
+  --kw-cream: #f6e7c9;
+  --kw-sunflower: #f2c85b;
+  --kw-willow: #5e8f62;
+  --kw-terracotta: #d9825b;
+  --kw-focus: #efaf29;
+  --kw-radius-control: 12px;
+  --kw-touch-min: 44px;
+  --kw-control-shift: 2px;
 }
 
 * {
   box-sizing: border-box;
+}
+
+/* Phase 2 shared control states. Layout and art direction remain owned by each screen. */
+button.kw-control {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 90ms ease, filter 90ms ease, opacity 90ms ease, box-shadow 90ms ease;
+}
+
+button.kw-control[data-ui-state="pressed"] {
+  transform: translateY(var(--kw-control-shift)) scale(.98) !important;
+  filter: brightness(.92) saturate(1.08);
+  box-shadow: none !important;
+}
+
+button.kw-control[data-ui-state="disabled"] {
+  opacity: .46;
+  cursor: not-allowed;
+  filter: grayscale(.18);
+  transform: none !important;
+}
+
+button.kw-control[data-ui-state="selected"] {
+  box-shadow: inset 0 0 0 3px rgb(242 200 91 / 70%);
+}
+
+button.kw-control:focus-visible {
+  outline: 3px solid var(--kw-focus) !important;
+  outline-offset: 3px !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button.kw-control { transition: none; }
 }
 
 html,

@@ -53,6 +53,7 @@ import { NpcNarrativeController } from "./ui/NpcNarrativeController.js";
 import { OnboardingController } from "./ui/OnboardingController.js";
 import { CommerceController } from "./ui/CommerceController.js";
 import { ResponsiveShellController } from "./ui/ResponsiveShellController.js";
+import { InteractionFeedbackController } from "./ui/InteractionFeedbackController.js";
 import { ITEM_IDS } from "./data/items.js";
 import { findSafeFurniturePlacement } from "./data/homeInteriors.js";
 import { getParityCertification } from "./data/parityCertification.js";
@@ -125,6 +126,8 @@ const responsiveShell = new ResponsiveShellController(game, {
   municipalCollection,
 }).start();
 game.registry.set("responsiveShell", responsiveShell);
+const interactionFeedback = new InteractionFeedbackController().start();
+game.registry.set("interactionFeedback", interactionFeedback);
 game.registry.set("spriteAiInventory", spriteAiInventory);
 game.registry.set("gameState", stateRuntime.gameState);
 game.registry.set("saveRepository", stateRuntime.repository);
