@@ -159,3 +159,9 @@ The protected HTML remains the historical comparison fixture and recovery
 reference. Future content changes should update the Phaser source and its tests;
 the protected HTML checksum must change only if a new reference source is
 deliberately adopted and reviewed.
+
+Milestone 46 strengthens this certification with a parsed differential audit of
+all protected public interfaces and 85 exact source-to-Phaser scalar rules. It
+also corrects and regression-tests visible river cleanup in Magnet Fishing. See
+`DIFFERENTIAL_PARITY_AUDIT.md` for the complete result and remaining manual
+Sprite AI, audio, animation and physical-device gates.

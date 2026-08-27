@@ -55,6 +55,7 @@ import { CommerceController } from "./ui/CommerceController.js";
 import { ITEM_IDS } from "./data/items.js";
 import { findSafeFurniturePlacement } from "./data/homeInteriors.js";
 import { getParityCertification } from "./data/parityCertification.js";
+import { getDifferentialParityCertification } from "./data/differentialParityAudit.js";
 import { getReleaseCandidateCertification } from "./data/releaseCandidate.js";
 
 installSpriteAiDomLabels(document, window);
@@ -151,7 +152,7 @@ const economy = new EconomyService(stateRuntime.gameState, stateRuntime.reposito
 game.registry.set("economy", economy);
 const qaMode = new URLSearchParams(window.location.search).get("qa");
 const commerceQa = import.meta.env.DEV && ["commerce", "commerce-disabled"].includes(qaMode);
-const readOnlyQa = import.meta.env.DEV && ["parity", "release-candidate"].includes(qaMode);
+const readOnlyQa = import.meta.env.DEV && ["parity", "differential-parity", "release-candidate"].includes(qaMode);
 const developmentCommerce = import.meta.env.DEV && qaMode === "commerce";
 const billingBridge = developmentCommerce
   ? createDevelopmentBillingBridge(stateRuntime.gameState)
@@ -178,6 +179,15 @@ if (import.meta.env.DEV && qaMode === "parity") {
   document.body.dataset.parityCampaignLevels = String(parityCertification.counts.campaignLevels);
   document.body.dataset.parityActivities = String(parityCertification.activities.length);
   document.body.dataset.paritySource = parityCertification.source.sha256;
+}
+if (import.meta.env.DEV && qaMode === "differential-parity") {
+  const differentialParity = getDifferentialParityCertification();
+  document.body.dataset.differentialParityQa = "true";
+  document.body.dataset.differentialParityReady = String(differentialParity.ok);
+  document.body.dataset.differentialParityActivities = String(differentialParity.scope.activities);
+  document.body.dataset.differentialParitySharedDomains = String(differentialParity.scope.sharedDomains);
+  document.body.dataset.differentialParityRuleProbes = String(differentialParity.scope.exactRuleProbes);
+  document.body.dataset.differentialParitySource = differentialParity.source.sha256;
 }
 if (import.meta.env.DEV && qaMode === "release-candidate") {
   const releaseCandidate = getReleaseCandidateCertification();
@@ -440,6 +450,7 @@ window.addEventListener("pagehide", () => {
 window.__KINDWORKS_PHASER__ = {
   game,
   getParityCertification,
+  getDifferentialParityCertification,
   getReleaseCandidateCertification,
   getMilestoneState() {
     const activeScene = game.scene.getScenes(true)[0];

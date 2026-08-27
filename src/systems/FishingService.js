@@ -18,6 +18,7 @@ import {
 import { COIN_LEDGER_LIMIT } from "../state/economyState.js";
 import { aquariumFishCount, aquariumSnapshot, placedFishTank, routeOrnamentalCatchInto } from "../state/aquariumState.js";
 import { InventoryService } from "./InventoryService.js";
+import { removeMagnetRiverItemInto } from "./LivingEnvironmentService.js";
 
 function clampQuality(value) {
   return Math.max(0, Math.min(1, Number(value) || 0));
@@ -234,9 +235,14 @@ export class FishingService {
         return { ok: true, code: "magnet-empty", empty: true, rewardCoins: 0, castsLeft: MAGNET_FISHING_CONFIG.dailyCasts - progress.castsToday };
       }
       if (state.economy.coins + recovery.coins > Number.MAX_SAFE_INTEGER) return { ok: false, code: "balance-overflow", message: "Coin balance limit reached." };
+      const { removedRiverGarbage } = removeMagnetRiverItemInto(state, {
+        sectionIds: MAGNET_FISHING_CONFIG.targetRiverSections,
+        graceGameMinutes: MAGNET_FISHING_CONFIG.cleanupGraceGameMinutes,
+      });
       progress.currentPullStreak += 1;
       progress.bestPullStreak = Math.max(progress.bestPullStreak, progress.currentPullStreak);
       progress.totalCoinsEarned += recovery.coins;
+      progress.riverItemsRemoved += removedRiverGarbage ? 1 : 0;
       progress.recoveredByItem[recovery.id] += 1;
       progress.lastCatchId = recovery.id;
       if (!progress.bestCatchId || recovery.coins > MAGNET_RECOVERY_CATALOG[progress.bestCatchId].coins) progress.bestCatchId = recovery.id;
@@ -246,12 +252,27 @@ export class FishingService {
       if (rarityRank >= MAGNET_RARITY_ORDER.treasure) { progress.treasureFinds += 1; progress.pullsWithoutTreasure = 0; }
       else progress.pullsWithoutTreasure = Math.min(MAGNET_FISHING_CONFIG.treasurePityPulls, progress.pullsWithoutTreasure + 1);
       if (recovery.rarity === "legendary") progress.legendaryFinds += 1;
-      progress.recentFinds.push({ catchId: recovery.id, day: state.world.day, coins: recovery.coins, at: this.now() });
+      progress.recentFinds.push({
+        catchId: recovery.id,
+        day: state.world.day,
+        coins: recovery.coins,
+        at: this.now(),
+        riverItemId: removedRiverGarbage?.id || null,
+        riverSectionId: removedRiverGarbage?.sectionId || null,
+      });
       progress.recentFinds = progress.recentFinds.slice(-MAGNET_FISHING_CONFIG.recentFindLimit);
       state.economy.coins += recovery.coins;
       state.economy.lifetimeCoinsEarned += recovery.coins;
-      const ledger = appendLedger(state, this.now(), { amount: recovery.coins, kind: "magnet-recovery", reason: `Recovered ${recovery.name}`, catchId: recovery.id, rarity: recovery.rarity });
-      return { ok: true, code: "magnet-recovered", empty: false, recovery: { ...recovery }, rewardCoins: recovery.coins, balance: state.economy.coins, ledger, castsLeft: MAGNET_FISHING_CONFIG.dailyCasts - progress.castsToday };
+      const ledger = appendLedger(state, this.now(), {
+        amount: recovery.coins,
+        kind: "magnet-recovery",
+        reason: `Recovered ${recovery.name}`,
+        catchId: recovery.id,
+        rarity: recovery.rarity,
+        riverItemId: removedRiverGarbage?.id || null,
+        riverSectionId: removedRiverGarbage?.sectionId || null,
+      });
+      return { ok: true, code: "magnet-recovered", empty: false, recovery: { ...recovery }, removedRiverGarbage, rewardCoins: recovery.coins, balance: state.economy.coins, ledger, castsLeft: MAGNET_FISHING_CONFIG.dailyCasts - progress.castsToday };
     });
     if (result.ok) Object.assign(session, { phase: result.empty ? "miss" : "success", result: recovery?.id || null });
     return result;
@@ -279,7 +300,7 @@ export class FishingService {
       activePhase: this.activeSession?.phase || null,
       hiddenZonesPerSession: TARGETING_CONFIG.zonesPerSession,
       inventoryIntegrated: true,
-      visibleRiverCleanupIntegrated: false,
+      visibleRiverCleanupIntegrated: true,
       aquariumHomeDisplayIntegrated: true,
       aquarium: state.aquarium,
     };

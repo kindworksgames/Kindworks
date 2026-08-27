@@ -67,7 +67,14 @@ function normalizeMagnet(value, world) {
   const recentFinds = (Array.isArray(source.recentFinds) ? source.recentFinds : [])
     .filter((entry) => MAGNET_RECOVERY_CATALOG[entry?.catchId])
     .slice(-Math.min(MAGNET_FISHING_CONFIG.recentFindLimit, totalPulls))
-    .map((entry) => ({ catchId: entry.catchId, day: whole(entry.day, 1, world.day), coins: whole(entry.coins), at: whole(entry.at) }));
+    .map((entry) => ({
+      catchId: entry.catchId,
+      day: whole(entry.day, 1, world.day),
+      coins: whole(entry.coins),
+      at: whole(entry.at),
+      riverItemId: typeof entry.riverItemId === "string" ? entry.riverItemId : null,
+      riverSectionId: MAGNET_FISHING_CONFIG.targetRiverSections.includes(entry.riverSectionId) ? entry.riverSectionId : null,
+    }));
   const currentPullStreak = whole(source.currentPullStreak, 0, pullsToday);
   const rareFinds = whole(source.rareFinds, 0, totalPulls);
   const treasureFinds = whole(source.treasureFinds, 0, rareFinds);
@@ -141,7 +148,7 @@ export function validateFishingState(value, world) {
     for (const key of ["castsToday", "pullsToday", "totalCasts", "totalPulls", "bestPullStreak", "currentPullStreak", "totalCoinsEarned", "riverItemsRemoved", "rareFinds", "treasureFinds", "legendaryFinds", "pullsWithoutRare", "pullsWithoutTreasure"]) if (!Number.isInteger(magnet[key]) || magnet[key] < 0) errors.push(`Magnet-fishing ${key} is invalid.`);
     if (magnet.castsToday > MAGNET_FISHING_CONFIG.dailyCasts || magnet.pullsToday > magnet.castsToday || magnet.totalPulls > magnet.totalCasts || magnet.currentPullStreak > magnet.pullsToday || magnet.bestPullStreak < magnet.currentPullStreak || magnet.treasureFinds > magnet.rareFinds || magnet.legendaryFinds > magnet.treasureFinds) errors.push("Magnet-fishing counters are inconsistent.");
     for (const id of MAGNET_RECOVERY_IDS) if (!Number.isInteger(magnet.recoveredByItem?.[id]) || magnet.recoveredByItem[id] < 0) errors.push(`${id} recovery count is invalid.`);
-    if (!Array.isArray(magnet.recentFinds) || magnet.recentFinds.length > MAGNET_FISHING_CONFIG.recentFindLimit || magnet.recentFinds.some((entry) => !MAGNET_RECOVERY_CATALOG[entry.catchId])) errors.push("Recent magnet finds are invalid.");
+    if (!Array.isArray(magnet.recentFinds) || magnet.recentFinds.length > MAGNET_FISHING_CONFIG.recentFindLimit || magnet.recentFinds.some((entry) => !MAGNET_RECOVERY_CATALOG[entry.catchId] || (entry.riverItemId !== null && typeof entry.riverItemId !== "string") || (entry.riverSectionId !== null && !MAGNET_FISHING_CONFIG.targetRiverSections.includes(entry.riverSectionId)))) errors.push("Recent magnet finds are invalid.");
     if (magnet.lastCatchId !== null && !MAGNET_RECOVERY_CATALOG[magnet.lastCatchId]) errors.push("Last magnet find is invalid.");
     if (magnet.bestCatchId !== null && !MAGNET_RECOVERY_CATALOG[magnet.bestCatchId]) errors.push("Best magnet find is invalid.");
     if (magnet.bestCatchId && MAGNET_RARITY_ORDER[MAGNET_RECOVERY_CATALOG[magnet.bestCatchId].rarity] < 0) errors.push("Best magnet rarity is invalid.");

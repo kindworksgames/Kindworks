@@ -71,6 +71,8 @@ export const MAGNET_FISHING_CONFIG = Object.freeze({
   sinkAnimationMs: 720,
   settleAnimationMs: 360,
   reelAnimationMs: 980,
+  cleanupGraceGameMinutes: 180,
+  targetRiverSections: Object.freeze(["river-03", "river-02"]),
   rarePityPulls: 12,
   treasurePityPulls: 40,
   recentFindLimit: 12,

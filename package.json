@@ -8,6 +8,7 @@
     "build": "vite build",
     "postbuild": "node scripts/verify-performance-budget.mjs",
     "performance:check": "node scripts/verify-performance-budget.mjs",
+    "parity:differential": "node scripts/verify-differential-parity.mjs",
     "preview": "vite preview",
     "test": "node --test"
   },

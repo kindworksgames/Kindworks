@@ -439,6 +439,30 @@ export function removeRiverItemsInto(state, itemIds) {
   return { removed, calm };
 }
 
+export function removeMagnetRiverItemInto(state, {
+  sectionIds = ["river-03", "river-02"],
+  graceGameMinutes = 180,
+} = {}) {
+  const priority = new Map(sectionIds.map((sectionId, index) => [sectionId, index]));
+  const removedRiverGarbage = state.environment.river.items
+    .filter((item) => priority.has(item.sectionId))
+    .sort((left, right) => {
+      const typeDifference = (left.type === "can" ? 0 : 1) - (right.type === "can" ? 0 : 1);
+      if (typeDifference) return typeDifference;
+      const sectionDifference = priority.get(left.sectionId) - priority.get(right.sectionId);
+      if (sectionDifference) return sectionDifference;
+      const centreDifference = Math.abs(0.5 - left.t) - Math.abs(0.5 - right.t);
+      return centreDifference || left.id.localeCompare(right.id);
+    })[0] || null;
+  state.environment.river.nextSpawnAt = Math.max(
+    Number(state.environment.river.nextSpawnAt) || 0,
+    absoluteWorldMinute(state.world) + Math.max(0, Number(graceGameMinutes) || 0),
+  );
+  if (removedRiverGarbage) state.environment.river.items = state.environment.river.items.filter((item) => item.id !== removedRiverGarbage.id);
+  updateEnvironmentMetricsInto(state);
+  return { removedRiverGarbage: removedRiverGarbage ? structuredClone(removedRiverGarbage) : null };
+}
+
 export class LivingEnvironmentService {
   constructor(gameState, repository, { now = () => Date.now() } = {}) {
     this.gameState = gameState;

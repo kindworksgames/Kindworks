@@ -9,6 +9,7 @@ import {
   ORNAMENTAL_FISH_IDS,
   TARGETING_CONFIG,
 } from "../src/data/fishing.js";
+import { absoluteWorldMinute } from "../src/data/farming.js";
 import { createFreshGameState, GameStateService, upgradeGameState, validateGameState } from "../src/state/GameState.js";
 import { projectLegacyFishing } from "../src/state/fishingState.js";
 import { normalizeWorldState } from "../src/state/worldState.js";
@@ -115,6 +116,28 @@ test("magnet recovery records a named collection find and reconciled coin ledger
   assert.equal(repository.load().state.economy.coins, 450);
 });
 
+test("magnet recovery removes the original visible river target and delays respawn for 180 game minutes", () => {
+  const { gameState, fishing, repository } = runtime();
+  const before = gameState.getSnapshot();
+  const eligibleBefore = before.environment.river.items.filter(({ sectionId }) => MAGNET_FISHING_CONFIG.targetRiverSections.includes(sectionId));
+  assert.ok(eligibleBefore.length > 0);
+  beginAtHiddenZone(fishing, "magnet");
+  const result = fishing.retrieveMagnet({ forcedRecoveryId: "sealed-coin-tin" });
+  assert.equal(result.code, "magnet-recovered");
+  assert.ok(result.removedRiverGarbage);
+  assert.ok(MAGNET_FISHING_CONFIG.targetRiverSections.includes(result.removedRiverGarbage.sectionId));
+  const after = gameState.getSnapshot();
+  assert.equal(after.environment.river.items.some(({ id }) => id === result.removedRiverGarbage.id), false);
+  assert.equal(after.environment.river.items.filter(({ sectionId }) => MAGNET_FISHING_CONFIG.targetRiverSections.includes(sectionId)).length, eligibleBefore.length - 1);
+  assert.ok(after.environment.river.nextSpawnAt >= absoluteWorldMinute(after.world) + MAGNET_FISHING_CONFIG.cleanupGraceGameMinutes);
+  assert.equal(after.fishing.magnet.riverItemsRemoved, 1);
+  assert.equal(after.fishing.magnet.recentFinds.at(-1).riverItemId, result.removedRiverGarbage.id);
+  assert.equal(after.fishing.magnet.recentFinds.at(-1).riverSectionId, result.removedRiverGarbage.sectionId);
+  assert.equal(after.economy.ledger.at(-1).riverItemId, result.removedRiverGarbage.id);
+  assert.deepEqual(repository.load().state.environment.river.items, after.environment.river.items);
+  assert.equal(fishing.getDiagnostics().visibleRiverCleanupIntegrated, true);
+});
+
 test("empty magnet water awards no coins and advances both pity counters", () => {
   const { gameState, fishing } = runtime();
   fishing.begin("magnet", "magnet-mill-bridge");
@@ -167,6 +190,14 @@ test("persistence failure rolls a cast or reward back without duplication", () =
   const failedReward = rewardFailure.fishing.reelFish({ forcedItemId: "river-minnows" });
   assert.equal(failedReward.code, "persistence-failed");
   assert.deepEqual(rewardFailure.gameState.getSnapshot(), before);
+
+  saves = 0;
+  const magnetFailure = runtime({ repository: { save: () => (++saves === 1 ? { ok: true, status: "saved" } : { ok: false, status: "write-failed" }) } });
+  beginAtHiddenZone(magnetFailure.fishing, "magnet");
+  const beforeMagnetReward = magnetFailure.gameState.getSnapshot();
+  const failedMagnetReward = magnetFailure.fishing.retrieveMagnet({ forcedRecoveryId: "sealed-coin-tin" });
+  assert.equal(failedMagnetReward.code, "persistence-failed");
+  assert.deepEqual(magnetFailure.gameState.getSnapshot(), beforeMagnetReward);
 });
 
 test("legacy fishing and magnet records preserve aquarium and release counts separately", () => {

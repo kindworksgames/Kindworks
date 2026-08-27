@@ -866,3 +866,31 @@ All 444 automated tests pass. Live 1,280×720 desktop, 844×390 landscape and
 Fishing labelled all 10 Phaser objects and returned safely to town. The
 protected HTML and Desktop source remain byte-for-byte unchanged at SHA-256
 `0b85bd71385b83e7a13676f7593ce376245959fa4ebf1a6b9a0e6765297aa5a5`.
+
+Milestone 46 completes the definitive differential HTML-to-Phaser parity audit.
+The executable source parser inventories 1,704 unique named functions, 80
+validator identifiers, 161 getters, 65 configuration constants and 218 public
+API entries in the protected HTML. Every public entry maps to one of 13 activity
+or 19 shared-system owners, all 5,850 campaign levels remain covered, and 85
+scalar rules across 12 high-risk contracts compare exactly with the imported
+Phaser modules.
+
+The audit found and corrected one genuine behavior gap. Phaser Magnet Fishing
+now removes the deterministic eligible visible rubbish item from river sections
+03 or 02, delays the next river spawn for the protected 180 game minutes,
+records the removed item and section in progress and the coin ledger, and rolls
+the fishing, environment and economy changes back atomically if persistence
+fails. A dedicated regression test protects the complete flow.
+
+The read-only `?qa=differential-parity` route exposes the certification without
+processing onboarding or login rewards. The complete evidence model, activity
+matrix, shared-system inventory, exact rule probes, corrected gap and remaining
+manual Sprite AI/device gates are recorded in `DIFFERENTIAL_PARITY_AUDIT.md`.
+
+All 450 automated tests pass. The production build and performance gate pass at
+2,998,403 bytes for the initial application, 1,374,829 bytes for Phaser, 16 lazy
+scene chunks and 4,622,052 JavaScript bytes in total. Live 1,280×720 desktop,
+844×390 landscape and 390×844 portrait QA reported all 13 activities, 19 shared
+domains and 12 rule probes with no page overflow or console errors. The
+protected HTML remains byte-for-byte unchanged at SHA-256
+`0b85bd71385b83e7a13676f7593ce376245959fa4ebf1a6b9a0e6765297aa5a5`.
