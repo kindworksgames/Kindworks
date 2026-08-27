@@ -1,4 +1,6 @@
 import Phaser from "phaser";
+import { setSpriteAiLabelHint } from "../plugins/SpriteAiLabelPlugin.js";
+import { spriteAiInventory } from "../assets/spriteAiLabels.js";
 
 const DIRECTIONS = ["down", "left", "right", "up"];
 const WALK_FRAMES = 4;
@@ -74,6 +76,14 @@ export function createPlayerAssets(scene) {
   for (const direction of DIRECTIONS) {
     for (let frame = 0; frame < WALK_FRAMES; frame += 1) {
       const key = `resident-${direction}-${frame}`;
+      spriteAiInventory.register({
+        id: `texture.player.${direction}.${frame}`,
+        label: `Player character — ${direction} walk frame ${frame + 1}`,
+        kind: "character-frame",
+        source: "generated-texture",
+        scene: "BootScene",
+        replacement: "sprite-ai",
+      });
       if (scene.textures.exists(key)) continue;
       drawResidentFrame(graphics, direction, frame);
       graphics.generateTexture(key, 40, 54);
@@ -98,6 +108,7 @@ export function createPlayerAssets(scene) {
 export class PlayerCharacter extends Phaser.GameObjects.Sprite {
   constructor(scene, x, y, { direction = "down" } = {}) {
     super(scene, x, y, `resident-${direction}-0`);
+    setSpriteAiLabelHint(this, { id: "character.player.main", label: "Player character — all walk and idle directions", kind: "character-sprite" });
     scene.add.existing(this);
     this.direction = direction;
     this.moving = false;

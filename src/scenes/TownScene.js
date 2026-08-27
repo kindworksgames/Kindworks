@@ -51,6 +51,7 @@ import { createMunicipalCollectionVehicle } from "../entities/MunicipalCollectio
 import { RESTORATION_MILESTONE_ORDER } from "../data/restorationMilestones.js";
 import { cinemaAccess } from "../data/impactProjects.js";
 import { RUBBISH_PRESENTATION, riverItemPosition } from "../data/livingEnvironment.js";
+import { startLazyScene } from "./lazyScenes.js";
 
 const PLAYER_RADIUS = 17;
 const WALK_SPEED = 270;
@@ -1608,6 +1609,19 @@ export class TownScene extends Phaser.Scene {
     if (hint) hint.textContent = "Walk with arrows or WASD · Restore the Station to reopen KindWorks Cinema";
   }
 
+  startActivityScene(key, data) {
+    return startLazyScene(this, key, data).catch((error) => {
+      console.error(`Unable to load ${key}.`, error);
+      this.transitioning = false;
+      this.gameState?.updatePlayer?.({ scene: "TownScene", x: this.player.x, y: this.player.y, facing: this.player.direction });
+      this.movement?.setEnabled?.(true);
+      this.interactions?.setEnabled?.(true);
+      this.cameras.main.fadeIn(160, 23, 43, 31);
+      document.querySelector("#game")?.setAttribute("data-transition", "scene-load-recovered");
+      return false;
+    });
+  }
+
   renderInteractionPrompt(interaction) {
     const prompt = document.querySelector("#interaction-prompt");
     const button = document.querySelector("#interaction-action");
@@ -1632,7 +1646,7 @@ export class TownScene extends Phaser.Scene {
     document.querySelector("#game")?.setAttribute("data-transition", "entering-bakery");
     this.cameras.main.fadeOut(220, 23, 43, 31);
     this.time.delayedCall(240, () => {
-      this.scene.start("BakeryScene", {
+      this.startActivityScene("BakeryScene", {
         returnPosition: { ...LITTLE_BAKERY.approach },
         returnFacing: "down",
         transitionCount: Number(this.entryData.transitionCount || 0) + 1,
@@ -1652,7 +1666,7 @@ export class TownScene extends Phaser.Scene {
     document.querySelector("#game")?.setAttribute("data-transition", "entering-cafe");
     this.cameras.main.fadeOut(220, 31, 29, 24);
     this.time.delayedCall(240, () => {
-      this.scene.start("CafeScene", {
+      this.startActivityScene("CafeScene", {
         returnPosition: { ...CORNER_CAFE.approach },
         returnFacing: "down",
         transitionCount: Number(this.entryData.transitionCount || 0) + 1,
@@ -1672,7 +1686,7 @@ export class TownScene extends Phaser.Scene {
     document.querySelector("#game")?.setAttribute("data-transition", "entering-morning-mug");
     this.cameras.main.fadeOut(220, 30, 52, 53);
     this.time.delayedCall(240, () => {
-      this.scene.start("MorningMugScene", {
+      this.startActivityScene("MorningMugScene", {
         returnPosition: { ...MORNING_MUG.approach },
         returnFacing: "down",
         transitionCount: Number(this.entryData.transitionCount || 0) + 1,
@@ -1692,7 +1706,7 @@ export class TownScene extends Phaser.Scene {
     document.querySelector("#game")?.setAttribute("data-transition", "entering-riverside-kitchen");
     this.cameras.main.fadeOut(220, 58, 35, 28);
     this.time.delayedCall(240, () => {
-      this.scene.start("RiversideKitchenScene", {
+      this.startActivityScene("RiversideKitchenScene", {
         returnPosition: { ...RIVERSIDE_KITCHEN.approach },
         returnFacing: "down",
         transitionCount: Number(this.entryData.transitionCount || 0) + 1,
@@ -1712,7 +1726,7 @@ export class TownScene extends Phaser.Scene {
     document.querySelector("#game")?.setAttribute("data-transition", "entering-south-shore-scoops");
     this.cameras.main.fadeOut(220, 40, 91, 103);
     this.time.delayedCall(240, () => {
-      this.scene.start("SouthShoreScoopsScene", {
+      this.startActivityScene("SouthShoreScoopsScene", {
         returnPosition: { ...SOUTH_SHORE_SCOOPS.approach },
         returnFacing: "down",
         transitionCount: Number(this.entryData.transitionCount || 0) + 1,
@@ -1733,7 +1747,7 @@ export class TownScene extends Phaser.Scene {
     document.querySelector("#game")?.setAttribute("data-transition", "entering-river-clearout");
     this.cameras.main.fadeOut(220, 24, 55, 66);
     this.time.delayedCall(240, () => {
-      this.scene.start("RiverClearoutScene", {
+      this.startActivityScene("RiverClearoutScene", {
         returnPosition: { ...RIVER_CLEAROUT.approach },
         returnFacing: "down",
         environmentTargetId,
@@ -1759,7 +1773,7 @@ export class TownScene extends Phaser.Scene {
     document.querySelector("#game")?.setAttribute("data-transition", "entering-house-rescue");
     this.cameras.main.fadeOut(220, 53, 42, 35);
     this.time.delayedCall(240, () => {
-      this.scene.start("HouseRescueScene", {
+      this.startActivityScene("HouseRescueScene", {
         houseId,
         returnPosition,
         returnFacing: this.player.direction,
@@ -1784,7 +1798,7 @@ export class TownScene extends Phaser.Scene {
     this.gameState?.updatePlayer({ scene: "HouseInteriorScene", x: returnPosition.x, y: returnPosition.y, facing: returnFacing });
     document.querySelector("#game")?.setAttribute("data-transition", "entering-home-interior");
     this.cameras.main.fadeOut(220, 46, 39, 31);
-    this.time.delayedCall(240, () => this.scene.start("HouseInteriorScene", {
+    this.time.delayedCall(240, () => this.startActivityScene("HouseInteriorScene", {
       houseId,
       focusFurnitureId,
       returnPosition,
@@ -1813,7 +1827,7 @@ export class TownScene extends Phaser.Scene {
     this.gameState?.updatePlayer({ scene: "VillageGrocerScene", x: returnPosition.x, y: returnPosition.y, facing: returnFacing });
     document.querySelector("#game")?.setAttribute("data-transition", "entering-village-grocer");
     this.cameras.main.fadeOut(220, 29, 54, 36);
-    this.time.delayedCall(240, () => this.scene.start("VillageGrocerScene", {
+    this.time.delayedCall(240, () => this.startActivityScene("VillageGrocerScene", {
       returnPosition,
       returnFacing,
       focusItemId,
@@ -1838,7 +1852,7 @@ export class TownScene extends Phaser.Scene {
     this.gameState?.updatePlayer({ scene: "PawsWondersScene", x: returnPosition.x, y: returnPosition.y, facing: returnFacing });
     document.querySelector("#game")?.setAttribute("data-transition", "entering-paws-wonders");
     this.cameras.main.fadeOut(220, 35, 57, 43);
-    this.time.delayedCall(240, () => this.scene.start("PawsWondersScene", { returnPosition, returnFacing, focusItemId, transitionCount: Number(this.entryData.transitionCount || 0) + 1 }));
+    this.time.delayedCall(240, () => this.startActivityScene("PawsWondersScene", { returnPosition, returnFacing, focusItemId, transitionCount: Number(this.entryData.transitionCount || 0) + 1 }));
     return { ok: true, targetScene: "PawsWondersScene", focusItemId };
   }
 
@@ -1861,7 +1875,7 @@ export class TownScene extends Phaser.Scene {
     this.gameState?.updatePlayer({ scene: "HarbourGeneralScene", x: returnPosition.x, y: returnPosition.y, facing: returnFacing });
     document.querySelector("#game")?.setAttribute("data-transition", "entering-harbour-general");
     this.cameras.main.fadeOut(220, 28, 64, 63);
-    this.time.delayedCall(240, () => this.scene.start("HarbourGeneralScene", { returnPosition, returnFacing, slot, itemId, transitionCount: Number(this.entryData.transitionCount || 0) + 1 }));
+    this.time.delayedCall(240, () => this.startActivityScene("HarbourGeneralScene", { returnPosition, returnFacing, slot, itemId, transitionCount: Number(this.entryData.transitionCount || 0) + 1 }));
     return { ok: true, targetScene: "HarbourGeneralScene", purchased: purchasedDeed };
   }
 
@@ -1896,7 +1910,7 @@ export class TownScene extends Phaser.Scene {
     this.interactions.setEnabled(false);
     this.player.setMovement(0, 0, false);
     this.cameras.main.fadeOut(220, 12, 35, 42);
-    this.time.delayedCall(240, () => this.scene.start("FishingScene"));
+    this.time.delayedCall(240, () => this.startActivityScene("FishingScene"));
     return { ok: true, targetScene: "FishingScene", mode, spotId };
   }
 
@@ -1917,7 +1931,7 @@ export class TownScene extends Phaser.Scene {
     this.player.setMovement(0, 0, false);
     document.querySelector("#game")?.setAttribute("data-transition", "entering-waste-collection");
     this.cameras.main.fadeOut(220, 23, 43, 31);
-    this.time.delayedCall(240, () => this.scene.start("WasteCollectionScene", { returnPosition, returnFacing }));
+    this.time.delayedCall(240, () => this.startActivityScene("WasteCollectionScene", { returnPosition, returnFacing }));
     return { ok: true, targetScene: "WasteCollectionScene", session: result.session };
   }
 
@@ -1938,7 +1952,7 @@ export class TownScene extends Phaser.Scene {
     this.player.setMovement(0, 0, false);
     document.querySelector("#game")?.setAttribute("data-transition", "entering-lawn-care");
     this.cameras.main.fadeOut(220, 38, 75, 42);
-    this.time.delayedCall(240, () => this.scene.start("LawnCareScene", { returnPosition, returnFacing }));
+    this.time.delayedCall(240, () => this.startActivityScene("LawnCareScene", { returnPosition, returnFacing }));
     return { ok: true, targetScene: "LawnCareScene", session: result.session };
   }
 
@@ -1973,7 +1987,7 @@ export class TownScene extends Phaser.Scene {
     this.player.setMovement(0, 0, false);
     document.querySelector("#game")?.setAttribute("data-transition", "entering-beach-cleanup");
     this.cameras.main.fadeOut(220, 20, 49, 70);
-    this.time.delayedCall(240, () => this.scene.start("BeachCleanupScene", { returnPosition, returnFacing }));
+    this.time.delayedCall(240, () => this.startActivityScene("BeachCleanupScene", { returnPosition, returnFacing }));
     return { ok: true, targetScene: "BeachCleanupScene", session: result.session };
   }
 
@@ -1995,7 +2009,7 @@ export class TownScene extends Phaser.Scene {
     this.player.setMovement(0, 0, false);
     document.querySelector("#game")?.setAttribute("data-transition", "entering-playground-powerwash");
     this.cameras.main.fadeOut(220, 7, 20, 43);
-    this.time.delayedCall(240, () => this.scene.start("PlaygroundPowerwashScene", { returnPosition, returnFacing }));
+    this.time.delayedCall(240, () => this.startActivityScene("PlaygroundPowerwashScene", { returnPosition, returnFacing }));
     return { ok: true, targetScene: "PlaygroundPowerwashScene", session: result.session };
   }
 

@@ -44,9 +44,10 @@ test("requires landscape for every mobile activity except River Clear-Out", () =
 });
 
 test("keeps every certified scene, HUD and orientation barrier wired into the build", async () => {
-  const [main, markup, styles] = await Promise.all([readText("src/main.js"), readText("index.html"), readText("src/style.css")]);
+  const [main, lazyScenes, markup, styles] = await Promise.all([readText("src/main.js"), readText("src/scenes/lazyScenes.js"), readText("index.html"), readText("src/style.css")]);
+  const sceneWiring = `${main}\n${lazyScenes}`;
   for (const activity of PARITY_ACTIVITIES) {
-    assert.match(main, new RegExp(`\\b${activity.scene}\\b`), `${activity.scene} must be registered`);
+    assert.match(sceneWiring, new RegExp(`\\b${activity.scene}\\b`), `${activity.scene} must be registered or lazy-loaded`);
     assert.match(markup, new RegExp(`id=["']${activity.hudId}["']`), `${activity.hudId} must exist`);
     if (activity.mobileOrientation === "landscape") {
       assert.ok(styles.includes(`body[data-game-scene="${activity.scene}"] .landscape-required`), `${activity.scene} needs a portrait rotation barrier`);

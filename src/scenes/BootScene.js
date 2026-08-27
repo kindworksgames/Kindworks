@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { createPlayerAssets } from "../entities/PlayerCharacter.js";
+import { startLazyScene } from "./lazyScenes.js";
 
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -12,6 +13,11 @@ export class BootScene extends Phaser.Scene {
     const activeLawnCare = this.registry.get("lawnCare")?.getActiveSession();
     const activeBeachCleanup = this.registry.get("beachCleanup")?.getActiveSession();
     const activeCleanup = this.registry.get("cleanupService")?.getActiveSession();
-    this.scene.start(activePowerwash ? "PlaygroundPowerwashScene" : activeBeachCleanup ? "BeachCleanupScene" : activeLawnCare ? "LawnCareScene" : activeCleanup ? "WasteCollectionScene" : "TownScene");
+    const target = activePowerwash ? "PlaygroundPowerwashScene" : activeBeachCleanup ? "BeachCleanupScene" : activeLawnCare ? "LawnCareScene" : activeCleanup ? "WasteCollectionScene" : "TownScene";
+    if (target === "TownScene") this.scene.start(target);
+    else startLazyScene(this, target).catch((error) => {
+      console.error(`Unable to resume ${target}. Returning safely to Willowmere.`, error);
+      this.scene.start("TownScene");
+    });
   }
 }

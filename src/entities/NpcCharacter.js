@@ -1,9 +1,11 @@
 import Phaser from "phaser";
+import { setSpriteAiLabelHint } from "../plugins/SpriteAiLabelPlugin.js";
 
 export class NpcCharacter extends Phaser.GameObjects.Container {
   constructor(scene, resident) {
     super(scene, resident.x, resident.y);
     this.residentId = resident.id;
+    setSpriteAiLabelHint(this, { id: `character.npc.${resident.id}`, label: `${resident.name} — ${resident.role}`, kind: "character-sprite" });
     this.walkPhase = (Number(resident.id.slice(-2)) || 1) * 0.73;
     this.hovered = false;
     this.controlMoving = false;

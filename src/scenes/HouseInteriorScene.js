@@ -3,6 +3,7 @@ import { ITEM_CATALOG } from "../data/items.js";
 import { PERSONAL_HOME_HOUSE_ID } from "../data/customResident.js";
 import { HOME_INTERIOR_VIEW, validateFurniturePlacement } from "../data/homeInteriors.js";
 import { AQUARIUM_SPECIES_BY_ID } from "../data/aquarium.js";
+import { startLazyScene } from "./lazyScenes.js";
 
 const VIEW = Object.freeze({ x: 20, y: 78, scale: 0.89 });
 const OBJECT_ICONS = Object.freeze({
@@ -399,13 +400,17 @@ export class HouseInteriorScene extends Phaser.Scene {
     this.transitioning = true;
     this.homeInteriors.cancelPlacement();
     this.cameras.main.fadeOut(180, 53, 42, 35);
-    this.time.delayedCall(200, () => this.scene.start("HouseRescueScene", {
+    this.time.delayedCall(200, () => startLazyScene(this, "HouseRescueScene", {
       houseId: this.houseId,
       returnPosition: this.entryData.returnPosition,
       returnFacing: this.entryData.returnFacing || "down",
       returnScene: "HouseInteriorScene",
       returnHouseId: this.houseId,
       transitionCount: Number(this.entryData.transitionCount || 0) + 1,
+    }).catch((error) => {
+      console.error("Unable to load House Rescue.", error);
+      this.transitioning = false;
+      this.cameras.main.fadeIn(160, 53, 42, 35);
     }));
     return true;
   }

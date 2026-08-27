@@ -1,23 +1,9 @@
 import Phaser from "phaser";
 import "./style.css";
 import { BootScene } from "./scenes/BootScene.js";
-import { BakeryScene } from "./scenes/BakeryScene.js";
-import { CafeScene } from "./scenes/CafeScene.js";
-import { MorningMugScene } from "./scenes/MorningMugScene.js";
-import { RiversideKitchenScene } from "./scenes/RiversideKitchenScene.js";
-import { SouthShoreScoopsScene } from "./scenes/SouthShoreScoopsScene.js";
-import { RiverClearoutScene } from "./scenes/RiverClearoutScene.js";
-import { HouseRescueScene } from "./scenes/HouseRescueScene.js";
-import { HouseInteriorScene } from "./scenes/HouseInteriorScene.js";
 import { TownScene } from "./scenes/TownScene.js";
-import { WasteCollectionScene } from "./scenes/WasteCollectionScene.js";
-import { LawnCareScene } from "./scenes/LawnCareScene.js";
-import { BeachCleanupScene } from "./scenes/BeachCleanupScene.js";
-import { PlaygroundPowerwashScene } from "./scenes/PlaygroundPowerwashScene.js";
-import { FishingScene } from "./scenes/FishingScene.js";
-import { VillageGrocerScene } from "./scenes/VillageGrocerScene.js";
-import { PawsWondersScene } from "./scenes/PawsWondersScene.js";
-import { HarbourGeneralScene } from "./scenes/HarbourGeneralScene.js";
+import { SpriteAiLabelPlugin } from "./plugins/SpriteAiLabelPlugin.js";
+import { installSpriteAiDomLabels, spriteAiInventory } from "./assets/spriteAiLabels.js";
 import { bootstrapState } from "./state/bootstrapState.js";
 import { GAME_STATE_SCHEMA_VERSION } from "./state/constants.js";
 import { EconomyService } from "./systems/EconomyService.js";
@@ -71,6 +57,8 @@ import { findSafeFurniturePlacement } from "./data/homeInteriors.js";
 import { getParityCertification } from "./data/parityCertification.js";
 import { getReleaseCandidateCertification } from "./data/releaseCandidate.js";
 
+installSpriteAiDomLabels(document, window);
+
 const stateRuntime = bootstrapState(window.localStorage);
 const worldSimulation = new WorldSimulationService(stateRuntime.gameState, stateRuntime.repository);
 const farming = new FarmingService(stateRuntime.gameState, stateRuntime.repository);
@@ -121,10 +109,15 @@ const config = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene, TownScene, HouseInteriorScene, VillageGrocerScene, PawsWondersScene, HarbourGeneralScene, BakeryScene, CafeScene, MorningMugScene, RiversideKitchenScene, SouthShoreScoopsScene, RiverClearoutScene, HouseRescueScene, WasteCollectionScene, LawnCareScene, BeachCleanupScene, PlaygroundPowerwashScene, FishingScene],
+  plugins: {
+    scene: [{ key: "spriteAiLabels", plugin: SpriteAiLabelPlugin, mapping: "spriteAiLabels" }],
+  },
+  scene: [BootScene, TownScene],
 };
 
 const game = new Phaser.Game(config);
+window.__KINDWORKS_PHASER_GAME__ = game;
+game.registry.set("spriteAiInventory", spriteAiInventory);
 game.registry.set("gameState", stateRuntime.gameState);
 game.registry.set("saveRepository", stateRuntime.repository);
 game.registry.set("worldSimulation", worldSimulation);

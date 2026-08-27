@@ -1,10 +1,12 @@
 import Phaser from "phaser";
 import { speciesFor } from "../data/animals.js";
+import { setSpriteAiLabelHint } from "../plugins/SpriteAiLabelPlugin.js";
 
 export class AnimalCharacter extends Phaser.GameObjects.Container {
   constructor(scene, definition) {
     super(scene, definition.route[0].x, definition.route[0].y);
     this.animalId = definition.id;
+    setSpriteAiLabelHint(this, { id: `character.animal.${definition.id}`, label: `${definition.name} — ${speciesFor(definition).label}`, kind: "animal-sprite" });
     this.definition = definition;
     this.phase = definition.initialTrust * 0.37;
     this.hovered = false;

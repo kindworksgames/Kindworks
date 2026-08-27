@@ -838,3 +838,31 @@ is the existing large Phaser application chunk, which is assigned to the next
 performance milestone. The protected HTML and Desktop source both retain
 SHA-256
 `0b85bd71385b83e7a13676f7593ce376245959fa4ebf1a6b9a0e6765297aa5a5`.
+
+Milestone 45 completes the first release-performance pass and establishes the
+Sprite AI asset-label contract. Only Boot and Town are now eager Phaser scenes;
+the other 16 home, shop and activity scenes load on first entry, including safe
+resume paths for interrupted jobs. Phaser is isolated into a cacheable engine
+chunk, production source maps remain disabled, and a machine-readable build
+gate enforces initial-app, engine, lazy-chunk and total-JavaScript ceilings.
+
+Every Phaser display object is labelled as it enters a scene, including nested
+and dynamically created objects. The player, every named resident, every named
+animal and all 16 directional player frames have stable semantic identities.
+Every fixed or dynamic HTML button, control, canvas, image, icon, portrait,
+panel, card, HUD, banner, toast, stage, floor, counter and fixture receives a
+stable `data-sprite-ai-label` and kind. A live completeness audit and downloadable
+JSON inventory are exposed through `window.KindWorksSpriteAI` so the later
+Sprite AI art-production pass can enumerate every required asset and state.
+
+The detailed contract is recorded in `PERFORMANCE_SPRITE_AI_SYSTEM.md`. The
+production build passes its four explicit budgets: 2,984,883 bytes for the
+initial application, 1,374,829 bytes for the engine, 16 lazy scene chunks from
+11.61 to 19.38 kB, and 4,608,532 bytes of JavaScript in total.
+
+All 444 automated tests pass. Live 1,280×720 desktop, 844×390 landscape and
+390×844 portrait QA found no page overflow or console errors. Town labelled all
+351 DOM candidates and 1,189 Phaser objects with zero omissions; lazy-loaded
+Fishing labelled all 10 Phaser objects and returned safely to town. The
+protected HTML and Desktop source remain byte-for-byte unchanged at SHA-256
+`0b85bd71385b83e7a13676f7593ce376245959fa4ebf1a6b9a0e6765297aa5a5`.

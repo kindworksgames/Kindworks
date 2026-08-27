@@ -128,13 +128,14 @@ test("keeps the release-candidate browser route read-only and production-exclude
 });
 
 test("keeps every player-facing journey owner and mobile safety rule in the shipped interface", async () => {
-  const [main, markup, styles] = await Promise.all([readText("src/main.js"), readText("index.html"), readText("src/style.css")]);
+  const [main, lazyScenes, markup, styles] = await Promise.all([readText("src/main.js"), readText("src/scenes/lazyScenes.js"), readText("index.html"), readText("src/style.css")]);
+  const sceneWiring = `${main}\n${lazyScenes}`;
   for (const required of ["save-status-button", "onboarding-button", "shop-button", "inventory-button", "impact-button", "npc-stories-button", "zoom-in", "zoom-out"]) {
     assert.match(markup, new RegExp(`id=["']${required}["']`), required);
   }
   assert.match(markup, /class=["'][^"']*touch-controls/);
   for (const scene of ["TownScene", "HouseInteriorScene", "VillageGrocerScene", "PawsWondersScene", "HarbourGeneralScene", "FishingScene"]) {
-    assert.match(main, new RegExp(`\\b${scene}\\b`), scene);
+    assert.match(sceneWiring, new RegExp(`\\b${scene}\\b`), scene);
   }
   assert.match(styles, /min-height:\s*44px/);
   assert.ok(!styles.includes('body[data-game-scene="RiverClearoutScene"] .landscape-required'));

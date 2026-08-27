@@ -5,6 +5,7 @@ import {
   houseRescueCoverage,
   houseRescueLevel,
 } from "../data/houseRescue.js";
+import { startLazyScene } from "./lazyScenes.js";
 
 function setText(selector, value) {
   const element = document.querySelector(selector);
@@ -310,7 +311,10 @@ export class HouseRescueScene extends Phaser.Scene {
     this.cameras.main.fadeOut(180, 53, 42, 35);
     this.time.delayedCall(200, () => {
       if (this.entryData.returnScene === "HouseInteriorScene" && this.entryData.returnHouseId) {
-        this.scene.start("HouseInteriorScene", { houseId: this.entryData.returnHouseId, returnPosition, returnFacing, transitionCount: Number(this.entryData.transitionCount || 0) + 1 });
+        startLazyScene(this, "HouseInteriorScene", { houseId: this.entryData.returnHouseId, returnPosition, returnFacing, transitionCount: Number(this.entryData.transitionCount || 0) + 1 }).catch((error) => {
+          console.error("Unable to return to the house interior.", error);
+          this.scene.start("TownScene", { returnPosition, returnFacing, transitionCount: Number(this.entryData.transitionCount || 0) + 1 });
+        });
       } else this.scene.start("TownScene", { returnPosition, returnFacing, transitionCount: Number(this.entryData.transitionCount || 0) + 1 });
     });
     return true;
