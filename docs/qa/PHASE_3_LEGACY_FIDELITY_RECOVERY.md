@@ -41,7 +41,8 @@ Baseline evidence:
 | FID-001 | QA protection | There was no deterministic way to open every migrated activity without modifying the real save. | Added an immutable source contract, all required viewports, representative boundary levels, isolated storage, replay/snapshot APIs, and a browser-operable development-only activity panel. | `tests/fidelity-contract.test.js`; focused tests and production build pass. | VERIFIED |
 | FID-002 | Fishing | The Phaser water canvas only cast. Legacy canvas taps also produced an early miss, reeled a bite, and pulled a settled magnet. Legacy bite/catch haptics were absent. | Restored canvas primary-action semantics, explicit waiting phase, early-miss rule, tap-to-reel/pull, and legacy haptic patterns. No catch table, inventory, aquarium, cast limit, or reward rule changed. | Operated at 1280×720: early tap produced the saved early miss; bite tap produced exactly one catch. Fishing service and mobile UX tests pass. | VERIFIED at 1280×720; phone/tablet evidence pending |
 | FID-003 | Power Washing simulation | Same-cell suppression prevented stationary multi-pass cleaning; pointer gaps were not interpolated; drain varied by event rate; supplies recovered only by switching tools. | Added elapsed-time spray segments, continuous stationary application, pointer-path interpolation, and legacy idle recovery for water and soap. | Level 750 engine tests prove repeated stationary progress, interpolated path coverage, and exact 1-second regeneration. Browser clicks create valid strokes. | VERIFIED functionally |
-| FID-004 | Power Washing approved art | Phaser displayed crude geometric playground approximations and a 2:1 board instead of the approved legacy playground. | Extracted the exact embedded master and transparent dirt reference, verified both hashes, restored the 1536×1024/3:2 canvas, used the exact 1428×706 wash region, and removed the geometric board renderer. | Live browser screenshot: `phase3-evidence/powerwash/powerwash-approved-art-washing-after.jpg`. Asset hashes and build tests pass. | VERIFIED artwork source/composition; pixel-mask recovery still open |
+| FID-004 | Power Washing approved art | Phaser displayed crude geometric playground approximations and a 2:1 board instead of the approved legacy playground. | Extracted the exact embedded master and transparent dirt reference, verified both hashes, restored the 1536×1024/3:2 canvas, used the exact 1428×706 wash region, and removed the geometric board renderer. | Live browser screenshot: `phase3-evidence/powerwash/powerwash-approved-art-washing-after.jpg`. Asset hashes and build tests pass. | VERIFIED artwork source/composition |
+| FID-005 | Power Washing pixel presentation | Phaser clipped dirt through 48×24 rectangles and omitted the legacy wand, radial wash, procedural dirt, resistant-stain layer, foam, wetness, mist, and alpha-sampled completion. | Ported the protected full-resolution layered renderer. Runtime completion now defers the grid engine and is awarded only when the approved pixel mask reaches 97%. The protected progression/reward transaction remains the sole completion writer. | Operated at 1280×720: continuous diagonal wash revealed the clean master without blocks; soap produced clipped foam; water removed the treated resistant stain; the wand followed the pointer; console contained no errors. Evidence: `powerwash-full-resolution-dirty.jpg`, `powerwash-full-resolution-soap.jpg`, `powerwash-full-resolution-rinse.jpg`. Fourteen focused tests and production build pass. | VERIFIED at 1280×720; device matrix and exact interrupted visual checkpoint pending |
 
 ## Power Washing protected asset provenance
 
@@ -58,8 +59,6 @@ Baseline evidence:
 
 | ID | System | Confirmed difference | Required recovery |
 | --- | --- | --- | --- |
-| PWR-PIXEL-01 | Power Washing | Dirt state and completion are still represented by 48×24 cells. Legacy uses continuous dirt, resistant, soap, foam, and wet pixel canvases and alpha-sample completion. | Replace cell-mask rendering and percentage with the protected continuous mask pipeline while retaining save/reward compatibility. |
-| PWR-FEEL-02 | Power Washing | Wand, hose, spray beam, mist, wet fade, foam, and `SOAP FIRST` feedback are simplified. | Port the legacy procedural feedback and pointer-following wand against the restored master. |
 | BAK-MODEL-01 | Little Bakery | Legacy runs three simultaneous trays/customers with independent appliances and scheduled arrivals. Phaser has one sequential order/recipe/step/patience state. | Recover the concurrent three-tray shift model without changing 150-level rewards or unlocks. |
 | HRS-GEOM-01 | House Rescue | Legacy vacuuming uses actual house floor geometry, partitions, furniture, obstacles, reachable floor, and collision-safe movement. Phaser uses normalized grids and rectangular stains. | Port authored floor geometry and collision-safe vacuum coverage. |
 
@@ -67,6 +66,7 @@ Baseline evidence:
 
 | ID | System | Confirmed difference |
 | --- | --- | --- |
+| PWR-SAVE-03 | Power Washing | A reloaded in-progress attempt safely preserves its validated grid/tool/supplies/return state, but the full-resolution visual mask is reconstructed from that grid rather than an exact saved pixel-path checkpoint. |
 | RIV-HINT-01 | River Clear-Out | Progressive Hint 1/2/3 disclosure and 3/2/1-star cap are not wired through the Phaser service/UI. |
 | RIV-UNDO-02 | River Clear-Out | Legacy can Undo the last placement from the result screen and resume the same board. Phaser currently rejects finished-session Undo. |
 | BCH-UNDO-01 | Beach Cleanup | Legacy Undo reverses an entire held/swiped continuous run; Phaser reverses one tile. |
@@ -118,16 +118,16 @@ The in-app browser’s viewport override did not apply during the first batch an
 
 ## Next implementation order
 
-1. Complete the Power Washing continuous pixel-mask, completion-percentage, wand, spray, foam, and wetness recovery against the restored approved artwork.
-2. Recover Little Bakery’s three simultaneous trays/customers.
-3. Recover House Rescue floor geometry and collision-safe vacuuming.
-4. Restore River Hint tiers/star caps and result Undo.
-5. Restore Beach continuous-run Undo.
-6. Restore Lawn dead-end/route feedback, timed movement, weed resistance, and directional stripes.
+1. Recover Little Bakery’s three simultaneous trays/customers.
+2. Recover House Rescue floor geometry and collision-safe vacuuming.
+3. Restore River Hint tiers/star caps and result Undo.
+4. Restore Beach continuous-run Undo.
+5. Restore Lawn dead-end/route feedback, timed movement, weed resistance, and directional stripes.
+6. Recover the exact Power Washing interrupted visual checkpoint without changing its protected save/reward contract.
 7. Recover shared cooking worker/appliance state, then Café, Morning Mug, Riverside Kitchen, and Scoops presentation.
 8. Recover Town/world/NPC/animal/farm/home/shop visual state dictionaries.
 9. Run the complete device, orientation, transition, save, reward, and accessibility matrix before a Phase 3 verdict.
 
 ## Verdict
 
-**PHASE 3: IN PROGRESS.** The protected gameplay data remains intact, the Power Washing approved art is restored, and the first high-confidence interaction/simulation defects are repaired. Phase 3 cannot pass until the remaining P0/P1 gaps and the full runtime matrix are complete.
+**PHASE 3: IN PROGRESS.** The protected gameplay data remains intact, and the Power Washing approved art plus its full-resolution active rendering pipeline are restored. Phase 3 cannot pass until the remaining P0/P1 gaps and the full runtime matrix are complete.

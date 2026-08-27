@@ -26,6 +26,7 @@ import { powerwashDirtyInterval, projectLegacyPlaygroundPowerwash } from "../src
 import { SaveRepository } from "../src/state/SaveRepository.js";
 import { advanceWorldState } from "../src/state/worldState.js";
 import { PlaygroundPowerwashService, calculatePowerwashCampaignReward } from "../src/systems/PlaygroundPowerwashService.js";
+import { LEGACY_POWERWASH_RENDER_REVISION } from "../src/rendering/LegacyPowerwashRenderer.js";
 import { MemoryStorage } from "./helpers/MemoryStorage.js";
 
 function runtime({ state = createFreshGameState({ now: 0 }), repository = new SaveRepository(new MemoryStorage()), now = () => 1000 } = {}) {
@@ -97,6 +98,32 @@ test("continuous spraying interpolates movement and keeps cleaning a stationary 
   const result = path.spraySegment(row, col, row, Math.min(POWERWASH_GRID.columns - 1, col + 5), { deltaMs: 180 });
   assert.ok(result.samples > 2);
   assert.ok((new Map(path.snapshot().normal).get(midpoint) || 0) < 1);
+});
+
+test("full-resolution completion defers the grid tolerance to the approved pixel mask", () => {
+  const engine = new PlaygroundPowerwashEngine(1);
+  const dirty = engine.snapshot().normal[0][0];
+  const row = Math.floor(dirty / POWERWASH_GRID.columns);
+  const col = dirty % POWERWASH_GRID.columns;
+  const deferred = engine.spraySegment(row, col, row, col, { deltaMs: 180, autoComplete: false });
+  assert.equal(deferred.ok, true);
+  assert.equal(engine.snapshot().won, false);
+
+  const { gameState, powerwash } = runtime();
+  const started = powerwash.beginCampaign(1);
+  assert.equal(powerwash.completeVisual(started.session.id, 96).code, "not-clean-enough");
+  assert.equal(powerwash.getActiveSession().id, started.session.id);
+  const completed = powerwash.completeVisual(started.session.id, 97);
+  assert.equal(completed.ok, true);
+  assert.equal(completed.result.rawPercent, 97);
+  assert.equal(completed.result.percent, 100);
+  assert.equal(gameState.getSnapshot().economy.coins, 200);
+});
+
+test("ports the protected layered dirt, radial wash, foam, wetness, mist and wand renderer", async () => {
+  assert.equal(LEGACY_POWERWASH_RENDER_REVISION, "phase-3-full-resolution-layers-v1");
+  const renderer = await readFile(new URL("../src/rendering/LegacyPowerwashRenderer.js", import.meta.url), "utf8");
+  for (const contract of ["restoreFullyDirtyReference", "addBalancedDirtCoverage", "addLevelDirtDetail", "addSoapRequiredStains", "destination-out", "createRadialGradient", "spawnMist", "drawNozzle"]) assert.match(renderer, new RegExp(contract));
 });
 
 test("water and soap recover by elapsed idle time without switching tools", () => {

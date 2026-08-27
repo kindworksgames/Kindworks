@@ -145,12 +145,12 @@ export class PlaygroundPowerwashService {
     });
   }
 
-  sprayPath(sessionId, from, to, deltaMs) {
+  sprayPath(sessionId, from, to, deltaMs, { autoComplete = true } = {}) {
     return this.commit((state) => {
       const session = state.playgroundPowerwash.activeSession;
       if (!session || session.id !== sessionId) return { ok: false, code: "unknown-session", message: "That Power Wash attempt is no longer active." };
       const engine = new PlaygroundPowerwashEngine(session.assignedLevel, session);
-      const sprayed = engine.spraySegment(from.row, from.col, to.row, to.col, { deltaMs });
+      const sprayed = engine.spraySegment(from.row, from.col, to.row, to.col, { deltaMs, autoComplete });
       if (!sprayed.ok) return sprayed;
       Object.assign(session, engineFields(engine));
       if (!engine.won) return { ...sprayed, powerwashState: engine.snapshot() };
@@ -188,6 +188,18 @@ export class PlaygroundPowerwashService {
       if (!session || session.id !== sessionId) return { ok: false, code: "unknown-session", message: "That Power Wash attempt is no longer active." };
       const engine = new PlaygroundPowerwashEngine(session.assignedLevel, session);
       engine.forceClean();
+      return this.applyWin(state, session, engine);
+    });
+  }
+
+  completeVisual(sessionId, rawPercentValue) {
+    const rawPercent = Math.max(0, Math.min(100, Math.round(Number(rawPercentValue) || 0)));
+    if (rawPercent < POWERWASH_MINIMUM_CLEAN_PERCENT) return { ok: false, code: "not-clean-enough", message: `Wash at least ${POWERWASH_MINIMUM_CLEAN_PERCENT}% of the approved dirt mask.` };
+    return this.commit((state) => {
+      const session = state.playgroundPowerwash.activeSession;
+      if (!session || session.id !== sessionId) return { ok: false, code: "unknown-session", message: "That Power Wash attempt is no longer active." };
+      const engine = new PlaygroundPowerwashEngine(session.assignedLevel, session);
+      engine.finish(rawPercent);
       return this.applyWin(state, session, engine);
     });
   }

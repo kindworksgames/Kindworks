@@ -4,9 +4,9 @@ import {
   POWERWASH_GRID,
   POWERWASH_NOZZLES,
   POWERWASH_TOTAL_LEVELS,
-  PlaygroundPowerwashEngine,
   powerwashLevelSummary,
 } from "../data/playgroundPowerwash.js";
+import { LegacyPowerwashRenderer } from "../rendering/LegacyPowerwashRenderer.js";
 import { calculatePowerwashCampaignReward } from "../systems/PlaygroundPowerwashService.js";
 
 const ROOM = Object.freeze({ width: 1280, height: 720 });
@@ -16,7 +16,7 @@ function show(selector, visible) { document.querySelector(selector)?.classList.t
 
 export class PlaygroundPowerwashScene extends Phaser.Scene {
   constructor() { super("PlaygroundPowerwashScene"); this.entryData = {}; }
-  init(data = {}) { this.entryData = data; this.transitioning = false; this.exitArmedUntil = 0; this.lastResultContext = null; this.spraying = false; this.sprayClock = 0; this.recoveryClock = 0; this.lastAppliedCell = null; this.pointerCell = null; }
+  init(data = {}) { this.entryData = data; this.transitioning = false; this.exitArmedUntil = 0; this.lastResultContext = null; this.spraying = false; this.sprayClock = 0; this.recoveryClock = 0; this.visualPercentClock = 0; this.lastAppliedCell = null; this.lastAppliedPoint = null; this.pointerCell = null; this.pointerCanvas = null; this.visualRenderer = null; }
 
   create() {
     this.powerwash = this.registry.get("playgroundPowerwash");
@@ -49,6 +49,7 @@ export class PlaygroundPowerwashScene extends Phaser.Scene {
       this.masterArtwork = master;
       this.referenceDirtArtwork = dirt;
       this.artworkReady = true;
+      this.buildVisualRenderer();
       this.render();
     }).catch((error) => {
       this.artworkError = error.message;
@@ -92,9 +93,9 @@ export class PlaygroundPowerwashScene extends Phaser.Scene {
       standard: () => this.selectTool("water", "standard"),
       wide: () => this.selectTool("water", "wide"),
     };
-    this.onPointerDown = (event) => { this.updatePointerCell(event); this.spraying = true; this.sprayClock = 0; this.lastAppliedCell = this.pointerCell ? { ...this.pointerCell } : null; this.canvas?.setPointerCapture?.(event.pointerId); this.applySpray(55); };
+    this.onPointerDown = (event) => { this.updatePointerCell(event); if (!this.pointerCell) return; this.spraying = true; this.sprayClock = 0; this.lastAppliedCell = { ...this.pointerCell }; this.lastAppliedPoint = { ...this.pointerCanvas }; this.canvas?.setPointerCapture?.(event.pointerId); this.applySpray(55); };
     this.onPointerMove = (event) => { this.updatePointerCell(event); if (!this.spraying) this.drawBoard(); };
-    this.onPointerUp = () => { this.spraying = false; this.sprayClock = 0; this.lastAppliedCell = null; };
+    this.onPointerUp = () => { this.spraying = false; this.sprayClock = 0; this.lastAppliedCell = null; this.lastAppliedPoint = null; this.drawBoard(); };
     this.onKeyDown = (event) => {
       if (event.key === "Escape") return this.requestExit();
       if (event.key === "1") this.selectTool("soap");
@@ -129,6 +130,7 @@ export class PlaygroundPowerwashScene extends Phaser.Scene {
     this.lastResultContext = null; this.pointerCell = null;
     show("#powerwash-picker", false); show("#powerwash-gameplay", true); show("#powerwash-result", false);
     this.setMessage("Drag to wash. Soap dark stains first.", "success");
+    this.buildVisualRenderer(true);
     this.render(); return true;
   }
 
@@ -145,6 +147,8 @@ export class PlaygroundPowerwashScene extends Phaser.Scene {
     const rect = this.canvas.getBoundingClientRect();
     const canvasX = ((event.clientX - rect.left) / Math.max(1, rect.width)) * POWERWASH_CANVAS.width;
     const canvasY = ((event.clientY - rect.top) / Math.max(1, rect.height)) * POWERWASH_CANVAS.height;
+    this.pointerCanvas = { x: canvasX, y: canvasY };
+    if (this.visualRenderer) this.visualRenderer.pointer = { ...this.pointerCanvas };
     const wash = POWERWASH_CANVAS.wash;
     if (canvasX < wash.x || canvasX > wash.x + wash.width || canvasY < wash.y || canvasY > wash.y + wash.height) {
       this.pointerCell = null;
@@ -158,10 +162,13 @@ export class PlaygroundPowerwashScene extends Phaser.Scene {
   }
 
   applySpray(elapsedMs) {
-    const session = this.powerwash.getActiveSession(); const cell = this.pointerCell; if (!session || !cell || this.transitioning) return false;
+    const session = this.powerwash.getActiveSession(); const cell = this.pointerCell; const point = this.pointerCanvas; if (!session || !cell || !point || this.transitioning) return false;
+    const visualState = this.powerwash.getSessionState();
     const from = this.lastAppliedCell || cell;
-    const result = this.powerwash.sprayPath(session.id, from, cell, elapsedMs);
+    const result = this.powerwash.sprayPath(session.id, from, cell, elapsedMs, { autoComplete: false });
+    if (result.ok) this.visualRenderer?.applySegment(this.lastAppliedPoint || point, point, visualState);
     this.lastAppliedCell = { ...cell };
+    this.lastAppliedPoint = { ...point };
     if (!result.ok) this.setMessage(result.message || "The washer is recovering.", "error");
     else if (result.result) this.showResult(result.result, session);
     else {
@@ -174,6 +181,22 @@ export class PlaygroundPowerwashScene extends Phaser.Scene {
   update(_time, delta) {
     const session = this.powerwash?.getActiveSession?.();
     if (!session || this.transitioning || this.lastResultContext) return;
+    const visualState = this.powerwash.getSessionState();
+    this.visualRenderer?.tick(delta);
+    this.visualPercentClock += Math.min(100, Number(delta) || 0);
+    if (this.visualRenderer && this.visualPercentClock >= 200) {
+      this.visualPercentClock = 0;
+      const visualPercent = this.visualRenderer.calculatePercent();
+      setText("#powerwash-clean", `${visualPercent}%`);
+      document.querySelector("#game")?.setAttribute("data-powerwash-clean", String(visualPercent));
+      if (visualPercent >= 97) {
+        const completed = this.powerwash.completeVisual(session.id, visualPercent);
+        if (!completed.ok) this.setMessage(completed.message, "error");
+        else this.showResult(completed.result, session);
+        return;
+      }
+    }
+    this.visualRenderer?.draw(visualState, this.spraying && Boolean(this.pointerCell) && (visualState.toolMode === "soap" ? visualState.soap : visualState.water) > 2);
     if (this.spraying && this.pointerCell) {
       this.recoveryClock = 0;
       this.sprayClock += Math.min(100, Number(delta) || 0);
@@ -196,7 +219,7 @@ export class PlaygroundPowerwashScene extends Phaser.Scene {
   restart() {
     const session = this.powerwash.getActiveSession(); if (!session) return false;
     const result = this.powerwash.restart(session.id); if (!result.ok) { this.setMessage(result.message, "error"); return false; }
-    this.pointerCell = null; this.setMessage("Playground restarted.", "success"); this.render(); return true;
+    this.pointerCell = null; this.pointerCanvas = null; this.buildVisualRenderer(true); this.setMessage("Playground restarted.", "success"); this.render(); return true;
   }
 
   runCertifiedCompletion() {
@@ -216,7 +239,8 @@ export class PlaygroundPowerwashScene extends Phaser.Scene {
     const state = this.powerwash.getSessionState(); const summary = powerwashLevelSummary(session.assignedLevel);
     setText("#powerwash-level-name", session.mode === "town-job" ? `Commons Playground job · Level ${session.assignedLevel}` : `Level ${session.assignedLevel} of ${POWERWASH_TOTAL_LEVELS}`);
     setText("#powerwash-level-band", `${summary.resistantStains} soap stains · ${summary.cleanStrength.toFixed(2)} rinse strength`);
-    setText("#powerwash-clean", `${state.percent}%`); setText("#powerwash-water", `${Math.round(state.water)}%`); setText("#powerwash-soap", `${Math.round(state.soap)}%`); setText("#powerwash-reward", `+${state.projectedReward}`);
+    const displayedPercent = this.visualRenderer?.lastPercent ?? state.percent;
+    setText("#powerwash-clean", `${displayedPercent}%`); setText("#powerwash-water", `${Math.round(state.water)}%`); setText("#powerwash-soap", `${Math.round(state.soap)}%`); setText("#powerwash-reward", `+${state.projectedReward}`);
     const waterFill = document.querySelector("#powerwash-water-fill"); if (waterFill) waterFill.style.width = `${state.water}%`;
     const soapFill = document.querySelector("#powerwash-soap-fill"); if (soapFill) soapFill.style.width = `${state.soap}%`;
     for (const key of ["soap", "precision", "standard", "wide"]) this.buttons[key]?.classList.toggle("active", key === "soap" ? state.toolMode === "soap" : state.toolMode === "water" && state.nozzle === key);
@@ -226,7 +250,7 @@ export class PlaygroundPowerwashScene extends Phaser.Scene {
 
   drawBoard() {
     const state = this.powerwash.getSessionState(); if (!state || !this.context || !this.canvas) return;
-    const context = this.context; const width = this.canvas.width; const height = this.canvas.height; const wash = POWERWASH_CANVAS.wash; const cellWidth = wash.width / POWERWASH_GRID.columns; const cellHeight = wash.height / POWERWASH_GRID.rows;
+    const context = this.context; const width = this.canvas.width; const height = this.canvas.height;
     context.imageSmoothingEnabled = false; context.clearRect(0, 0, width, height);
     if (!this.artworkReady || !this.masterArtwork || !this.referenceDirtArtwork) {
       context.fillStyle = "#07142b"; context.fillRect(0, 0, width, height);
@@ -234,27 +258,19 @@ export class PlaygroundPowerwashScene extends Phaser.Scene {
       context.fillText(this.artworkError ? "ARTWORK LOAD ERROR" : "LOADING APPROVED PLAYGROUND…", width / 2, height / 2);
       return;
     }
-    context.drawImage(this.masterArtwork, 0, 0, width, height);
-    const normal = new Map(state.normal); const resistant = new Set(state.resistant); const soaped = new Set(state.soaped);
-    for (let row = 0; row < POWERWASH_GRID.rows; row += 1) for (let col = 0; col < POWERWASH_GRID.columns; col += 1) {
-      const index = row * POWERWASH_GRID.columns + col; const x = wash.x + col * cellWidth; const y = wash.y + row * cellHeight;
-      if (normal.has(index) || resistant.has(index)) {
-        context.save();
-        context.globalAlpha = normal.has(index) ? Math.max(0.32, Math.min(1, normal.get(index))) : 1;
-        context.drawImage(this.referenceDirtArtwork, x, y, cellWidth + 1, cellHeight + 1, x, y, cellWidth + 1, cellHeight + 1);
-        context.restore();
-      }
-      if (resistant.has(index)) {
-        context.fillStyle = soaped.has(index) ? "rgba(205,250,220,.62)" : "rgba(35,70,42,.32)";
-        context.fillRect(x, y, Math.ceil(cellWidth) + 1, Math.ceil(cellHeight) + 1);
-        if (soaped.has(index)) { context.fillStyle = "rgba(255,255,255,.85)"; context.fillRect(x + cellWidth * 0.2, y + cellHeight * 0.2, 5, 5); context.fillRect(x + cellWidth * 0.62, y + cellHeight * 0.56, 4, 4); }
-      }
-    }
-    if (this.pointerCell) {
-      const engine = new PlaygroundPowerwashEngine(state.level, state); const cells = engine.affectedCells(this.pointerCell.row, this.pointerCell.col); context.fillStyle = state.toolMode === "soap" ? "rgba(174,246,210,.28)" : "rgba(104,218,250,.3)";
-      for (const index of cells) { const row = Math.floor(index / POWERWASH_GRID.columns); const col = index % POWERWASH_GRID.columns; context.fillRect(wash.x + col * cellWidth, wash.y + row * cellHeight, Math.ceil(cellWidth) + 1, Math.ceil(cellHeight) + 1); }
-    }
-    this.canvas.setAttribute("aria-label", `Approved legacy playground artwork, Power Wash Level ${state.level}, ${state.percent}% clean, ${state.resistantRemaining} soap-required samples remain`);
+    if (!this.visualRenderer || this.visualRenderer.level !== state.level) this.buildVisualRenderer(true);
+    this.visualRenderer?.draw(state, this.spraying && Boolean(this.pointerCell));
+    const displayedPercent = this.visualRenderer?.lastPercent ?? state.percent;
+    this.canvas.setAttribute("aria-label", `Approved legacy playground artwork, Power Wash Level ${state.level}, ${displayedPercent}% clean, ${state.resistantRemaining} soap-required samples remain`);
+  }
+
+  buildVisualRenderer(force = false) {
+    const state = this.powerwash?.getSessionState?.();
+    if (!state || !this.canvas || !this.artworkReady || !this.masterArtwork || !this.referenceDirtArtwork) return null;
+    if (!force && this.visualRenderer?.level === state.level) return this.visualRenderer;
+    this.visualRenderer = new LegacyPowerwashRenderer({ canvas: this.canvas, masterArtwork: this.masterArtwork, referenceDirtArtwork: this.referenceDirtArtwork, level: state.level, state });
+    if (this.pointerCanvas) this.visualRenderer.pointer = { ...this.pointerCanvas };
+    return this.visualRenderer;
   }
 
   showResult(result, session) {
@@ -270,7 +286,7 @@ export class PlaygroundPowerwashScene extends Phaser.Scene {
   }
 
   setMessage(message, status = "neutral") { const element = document.querySelector("#powerwash-status"); if (element) { element.textContent = message || "Continue power washing."; element.dataset.status = status; } }
-  updateDomState() { const game = document.querySelector("#game"); if (!game) return; const session = this.powerwash.getActiveSession(); const state = this.powerwash.getSessionState(); const diagnostics = this.powerwash.getDiagnostics(); game.dataset.scene = this.scene.key; game.dataset.powerwashLevel = String(session?.assignedLevel || diagnostics.nextLevel); game.dataset.powerwashMode = session?.mode || this.lastResultContext?.mode || "picker"; game.dataset.powerwashPhase = this.lastResultContext ? "result" : session?.status || "picker"; game.dataset.powerwashClean = String(state?.percent || 0); game.dataset.powerwashTool = state?.toolMode || "none"; game.dataset.powerwashNozzle = state?.nozzle || "none"; game.dataset.powerwashCompleted = String(diagnostics.completed); game.dataset.powerwashCatalogue = String(diagnostics.totalLevels); game.dataset.powerwashCatalogueValid = String(diagnostics.catalogueValid); }
+  updateDomState() { const game = document.querySelector("#game"); if (!game) return; const session = this.powerwash.getActiveSession(); const state = this.powerwash.getSessionState(); const diagnostics = this.powerwash.getDiagnostics(); game.dataset.scene = this.scene.key; game.dataset.powerwashLevel = String(session?.assignedLevel || diagnostics.nextLevel); game.dataset.powerwashMode = session?.mode || this.lastResultContext?.mode || "picker"; game.dataset.powerwashPhase = this.lastResultContext ? "result" : session?.status || "picker"; game.dataset.powerwashClean = String(this.visualRenderer?.lastPercent ?? state?.percent ?? 0); game.dataset.powerwashTool = state?.toolMode || "none"; game.dataset.powerwashNozzle = state?.nozzle || "none"; game.dataset.powerwashCompleted = String(diagnostics.completed); game.dataset.powerwashCatalogue = String(diagnostics.totalLevels); game.dataset.powerwashCatalogueValid = String(diagnostics.catalogueValid); }
 
   requestExit() { const session = this.powerwash.getActiveSession(); if (session && Date.now() > this.exitArmedUntil) { this.exitArmedUntil = Date.now() + 3000; if (this.buttons.exit) this.buttons.exit.textContent = "Confirm Exit"; this.setMessage("Tap Confirm Exit to leave this attempt.", "error"); return false; } return this.returnToTown(false); }
   returnToTown(complete) { if (this.transitioning) return false; this.transitioning = true; const active = this.powerwash.getActiveSession(); const context = active || this.lastResultContext || {}; if (active) this.powerwash.cancel(active.id); const position = context.returnPosition || this.entryData.returnPosition || { x: 1940, y: 1180 }; const facing = context.returnFacing || this.entryData.returnFacing || "up"; this.gameState.updatePlayer({ scene: "TownScene", x: position.x, y: position.y, facing }); document.querySelector("#game")?.setAttribute("data-transition", complete ? "powerwash-complete" : "leaving-powerwash"); this.cameras.main.fadeOut(220, 7, 20, 43); this.time.delayedCall(240, () => this.scene.start("TownScene", { returnPosition: position, returnFacing: facing, transitionCount: Number(this.entryData.transitionCount || 0) + 1 })); return true; }

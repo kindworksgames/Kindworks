@@ -156,7 +156,7 @@ export class PlaygroundPowerwashEngine {
     return cells;
   }
 
-  sprayAt(row, col, { deltaMs = 180 } = {}) {
+  sprayAt(row, col, { deltaMs = 180, autoComplete = true } = {}) {
     if (this.won) return { ok: false, code: "level-complete", message: "This playground is already clean." };
     const supply = this.toolMode === "soap" ? this.soap : this.water;
     if (supply <= 2) return { ok: false, code: "supply-empty", message: `${this.toolMode === "soap" ? "Soap" : "Water pressure"} is recovering.` };
@@ -188,11 +188,11 @@ export class PlaygroundPowerwashEngine {
     if (resisted && !changed) this.soapWarnings += 1;
     this.strokes += 1;
     const rawPercent = this.rawPercent();
-    if (rawPercent >= POWERWASH_MINIMUM_CLEAN_PERCENT) this.finish(rawPercent);
+    if (autoComplete && rawPercent >= POWERWASH_MINIMUM_CLEAN_PERCENT) this.finish(rawPercent);
     return { ok: true, code: this.won ? "level-cleared" : resisted && !changed ? "soap-first" : changed ? "sprayed" : "already-clean", changed, resisted, state: this.snapshot() };
   }
 
-  spraySegment(fromRow, fromCol, toRow, toCol, { deltaMs = 180 } = {}) {
+  spraySegment(fromRow, fromCol, toRow, toCol, { deltaMs = 180, autoComplete = true } = {}) {
     const start = { row: clamp(Number(fromRow), 0, POWERWASH_GRID.rows - 1), col: clamp(Number(fromCol), 0, POWERWASH_GRID.columns - 1) };
     const end = { row: clamp(Number(toRow), 0, POWERWASH_GRID.rows - 1), col: clamp(Number(toCol), 0, POWERWASH_GRID.columns - 1) };
     const steps = Math.max(1, Math.ceil(Math.hypot(end.row - start.row, end.col - start.col) / 0.72));
@@ -204,7 +204,7 @@ export class PlaygroundPowerwashEngine {
       const progress = index / steps;
       const row = start.row + (end.row - start.row) * progress;
       const col = start.col + (end.col - start.col) * progress;
-      const result = this.sprayAt(row, col, { deltaMs: Math.max(1, Number(deltaMs) / (steps + 1)) });
+      const result = this.sprayAt(row, col, { deltaMs: Math.max(1, Number(deltaMs) / (steps + 1)), autoComplete });
       if (!result.ok) {
         if (index === 0) return result;
         break;
