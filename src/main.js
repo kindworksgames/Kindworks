@@ -61,10 +61,15 @@ import { findSafeFurniturePlacement } from "./data/homeInteriors.js";
 import { getParityCertification } from "./data/parityCertification.js";
 import { getDifferentialParityCertification } from "./data/differentialParityAudit.js";
 import { getReleaseCandidateCertification } from "./data/releaseCandidate.js";
+import { createFidelityStorage, getFidelityContract } from "./qa/fidelityContract.js";
+import { FidelityQaHarness } from "./qa/FidelityQaHarness.js";
 
 installSpriteAiDomLabels(document, window);
 
-const stateRuntime = bootstrapState(window.localStorage);
+const qaMode = new URLSearchParams(window.location.search).get("qa");
+const fidelityQa = import.meta.env.DEV && qaMode === "fidelity";
+const runtimeStorage = fidelityQa ? createFidelityStorage(window.localStorage) : window.localStorage;
+const stateRuntime = bootstrapState(runtimeStorage);
 const worldSimulation = new WorldSimulationService(stateRuntime.gameState, stateRuntime.repository);
 const farming = new FarmingService(stateRuntime.gameState, stateRuntime.repository);
 const livingEnvironment = new LivingEnvironmentService(stateRuntime.gameState, stateRuntime.repository);
@@ -164,9 +169,8 @@ game.registry.set("homeownerGifts", homeownerGifts);
 game.registry.set("impactProjects", impactProjects);
 const economy = new EconomyService(stateRuntime.gameState, stateRuntime.repository);
 game.registry.set("economy", economy);
-const qaMode = new URLSearchParams(window.location.search).get("qa");
 const commerceQa = import.meta.env.DEV && ["commerce", "commerce-disabled"].includes(qaMode);
-const readOnlyQa = import.meta.env.DEV && ["parity", "differential-parity", "release-candidate"].includes(qaMode);
+const readOnlyQa = import.meta.env.DEV && ["parity", "differential-parity", "release-candidate", "fidelity"].includes(qaMode);
 const developmentCommerce = import.meta.env.DEV && qaMode === "commerce";
 const billingBridge = developmentCommerce
   ? createDevelopmentBillingBridge(stateRuntime.gameState)
@@ -211,6 +215,15 @@ if (import.meta.env.DEV && qaMode === "release-candidate") {
   document.body.dataset.releaseCandidateCheckpoints = String(releaseCandidate.activityCheckpointCount);
   document.body.dataset.releaseCandidateSchema = String(releaseCandidate.schemaVersion);
   document.body.dataset.releaseCandidateSource = releaseCandidate.sourceSha256;
+}
+if (fidelityQa) {
+  const fidelityContract = getFidelityContract();
+  document.body.dataset.fidelityQa = "true";
+  document.body.dataset.fidelityContract = String(fidelityContract.version);
+  document.body.dataset.fidelityActivities = String(fidelityContract.activities.length);
+  document.body.dataset.fidelityViewports = String(fidelityContract.viewports.length);
+  document.body.dataset.fidelitySource = fidelityContract.source.sha256;
+  document.body.dataset.fidelityStorageIsolated = "true";
 }
 if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "paws") {
   restorationMilestones.unlockForQa("highstreet", { revealed: true });
@@ -378,6 +391,18 @@ const economyHud = new EconomyHudController(stateRuntime, {
     return activeTownScene()?.beginTownPlacement?.(item?.id) || { ok: false, message: "Return to Willowmere town to place this item." };
   },
 });
+
+const fidelityHarness = fidelityQa ? new FidelityQaHarness({
+  game,
+  gameState: stateRuntime.gameState,
+  repository: stateRuntime.repository,
+  storage: runtimeStorage,
+  fishing,
+}) : null;
+if (fidelityHarness) {
+  game.registry.set("fidelityHarness", fidelityHarness);
+  fidelityHarness.mountPanel();
+}
 const commerceController = new CommerceController(commerce);
 game.registry.set("commerceController", commerceController);
 if (commerceQa) setTimeout(() => economyHud.open("commerce"), 420);
@@ -479,6 +504,26 @@ window.__KINDWORKS_PHASER__ = {
   getParityCertification,
   getDifferentialParityCertification,
   getReleaseCandidateCertification,
+  getFidelityContract,
+  getFidelitySnapshot(label = "checkpoint") {
+    return fidelityHarness?.capture(label) || { ok: false, code: "fidelity-qa-disabled" };
+  },
+  qaOpenFidelityActivity(activityId, level = 1) {
+    if (!fidelityHarness) return { ok: false, code: "fidelity-qa-disabled", message: "Open the development build with ?qa=fidelity." };
+    return fidelityHarness.openActivity(activityId, level);
+  },
+  qaBeginFidelityReplay(name, metadata = {}) {
+    return fidelityHarness?.beginReplay(name, metadata) || { ok: false, code: "fidelity-qa-disabled" };
+  },
+  qaRecordFidelityAction(type, payload = {}) {
+    return fidelityHarness?.recordAction(type, payload) || { ok: false, code: "fidelity-qa-disabled" };
+  },
+  qaExportFidelityReplay() {
+    return fidelityHarness?.exportReplay() || null;
+  },
+  qaResetFidelitySandbox() {
+    return fidelityHarness?.resetSandbox() || { ok: false, code: "fidelity-qa-disabled" };
+  },
   getMilestoneState() {
     const activeScene = game.scene.getScenes(true)[0];
     return typeof activeScene?.getMilestoneState === "function"
