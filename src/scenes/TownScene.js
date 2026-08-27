@@ -150,9 +150,10 @@ export class TownScene extends Phaser.Scene {
     this.municipalCollectionVisual = createMunicipalCollectionVehicle(this);
     this.refreshMunicipalCollectionPresentation();
 
-    const qaTarget = import.meta.env.DEV
-      ? new URLSearchParams(window.location.search).get("qa")
-      : null;
+    const qaParams = import.meta.env.DEV ? new URLSearchParams(window.location.search) : null;
+    const qaTarget = qaParams?.get("qa") || null;
+    const qaHouseNumber = Math.max(1, Math.min(HOUSES.length, Math.floor(Number(qaParams?.get("house") || 1))));
+    const qaHouse = HOUSES[qaHouseNumber - 1];
     const animalQaPresentation = qaTarget === "animals"
       ? this.animals?.getWorldPresentations?.().find((entry) => entry.visible && !entry.definition.rare)
       : null;
@@ -174,7 +175,7 @@ export class TownScene extends Phaser.Scene {
       : qaTarget === "beach"
       ? BEACH_CLEANUP.approach
       : qaTarget === "house-rescue"
-        ? { x: HOUSES[0].x + HOUSES[0].width / 2, y: HOUSES[0].y + HOUSES[0].height + 54 }
+        ? { x: qaHouse.x + qaHouse.width / 2, y: qaHouse.y + qaHouse.height + 54 }
       : qaTarget === "river"
       ? RIVER_CLEAROUT.approach
       : qaTarget === "cafe"

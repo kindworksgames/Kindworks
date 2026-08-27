@@ -253,6 +253,10 @@ export class HouseInteriorScene extends Phaser.Scene {
   }
 
   renderInterface(interior) {
+    const activeRescue = this.houseRescue?.getActiveSession?.();
+    const rescueWaitingElsewhere = Boolean(activeRescue && activeRescue.houseId !== this.houseId);
+    const waitingHome = rescueWaitingElsewhere ? this.homeInteriors.getInterior(activeRescue.houseId) : null;
+    const waitingName = waitingHome?.ok ? waitingHome.name : activeRescue?.houseId?.replace("house-", "Cottage ");
     const bedCount = Math.max(1, Math.min(3, interior.residents.length || 1));
     text("#home-interior-title", interior.name);
     text("#home-interior-subtitle", `${interior.area} · ${interior.layout.theme.name}`);
@@ -269,8 +273,8 @@ export class HouseInteriorScene extends Phaser.Scene {
     ].filter(Boolean).map((label) => `<span>${label}</span>`).join("");
     if (!this.selectedId) {
       const names = [...interior.occupants, ...interior.animalOccupants].map((entry) => entry.name);
-      text("#home-interior-readout-title", interior.dirty ? "This home needs a helping hand" : names.length ? `${names.join(" & ")} ${names.length === 1 ? "is" : "are"} home` : "Nobody is home right now");
-      text("#home-interior-readout-detail", interior.dirty ? "Start or resume House Rescue to sort the rubbish and vacuum the floor." : names.length ? "The household is spending time safely indoors." : "You can still look around and inspect the furniture.");
+      text("#home-interior-readout-title", rescueWaitingElsewhere ? "A rescue is already in progress" : interior.dirty ? "This home needs a helping hand" : names.length ? `${names.join(" & ")} ${names.length === 1 ? "is" : "are"} home` : "Nobody is home right now");
+      text("#home-interior-readout-detail", rescueWaitingElsewhere ? `Resume at ${waitingName} first.` : interior.dirty ? "Sort the rubbish, then clean 95% of the floor." : names.length ? "The household is spending time safely indoors." : "You can still look around and inspect the furniture.");
     }
     const personal = interior.layout.personal;
     const active = interior.furniture?.activePlacement;
@@ -279,6 +283,10 @@ export class HouseInteriorScene extends Phaser.Scene {
     this.moveButton?.classList.toggle("hidden", !selectedCustom || Boolean(active));
     this.storeButton?.classList.toggle("hidden", !selectedCustom || Boolean(active));
     this.cleanButton?.classList.toggle("hidden", !interior.dirty || Boolean(active));
+    if (this.cleanButton) {
+      this.cleanButton.disabled = rescueWaitingElsewhere;
+      this.cleanButton.textContent = rescueWaitingElsewhere ? "Rescue saved elsewhere" : activeRescue?.houseId === this.houseId ? "Resume House Rescue" : "Start House Rescue";
+    }
     document.querySelector("#home-furniture-placement")?.classList.toggle("hidden", !active);
     if (this.confirmButton) this.confirmButton.disabled = !this.lastValidation?.ok;
     text("#home-furniture-placement-hint", !active ? "" : !this.lastValidation ? `Tap a clear place for ${ITEM_CATALOG[active.itemId].name}.` : this.lastValidation.ok ? `${ITEM_CATALOG[active.itemId].name} fits here — confirm or rotate it.` : `Can't place here: ${this.lastValidation.reason}`);
@@ -397,6 +405,13 @@ export class HouseInteriorScene extends Phaser.Scene {
   startHouseRescue() {
     const interior = this.interior();
     if (!interior.dirty || this.transitioning) return false;
+    const activeRescue = this.houseRescue?.getActiveSession?.();
+    if (activeRescue && activeRescue.houseId !== this.houseId) {
+      const waitingHome = this.homeInteriors.getInterior(activeRescue.houseId);
+      const waitingName = waitingHome?.ok ? waitingHome.name : activeRescue.houseId.replace("house-", "Cottage ");
+      this.setStatus(`Resume at ${waitingName} first.`, "error");
+      return false;
+    }
     this.transitioning = true;
     this.homeInteriors.cancelPlacement();
     this.cameras.main.fadeOut(180, 53, 42, 35);

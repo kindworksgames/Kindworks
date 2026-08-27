@@ -2163,9 +2163,9 @@ body:not([data-game-scene="TownScene"]) .first-session-checklist {
 .house-rescue-hud-header h2 { margin: 3px 0; font: 900 20px/1.05 system-ui, sans-serif; }
 .house-rescue-hud-header small { overflow: hidden; color: #ddd0b5; font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
 .house-rescue-hud-header > span { padding: 6px 8px; border: 2px solid #8e7c61; border-radius: 999px; color: #ffe77f; font-weight: 900; white-space: nowrap; }
-.house-rescue-hud button, .house-rescue-hud select { min-height: 39px; border: 3px solid #3b3028; border-radius: 7px; color: #3b3028; background: #fffaf0; font: 900 10px/1 ui-monospace, monospace; box-shadow: 3px 3px 0 rgb(59 48 40 / 30%); touch-action: manipulation; }
+.house-rescue-hud button, .house-rescue-hud select { min-height: var(--kw-touch-min); border: 3px solid #3b3028; border-radius: 7px; color: #3b3028; background: #fffaf0; font: 900 10px/1 ui-monospace, monospace; box-shadow: 3px 3px 0 rgb(59 48 40 / 30%); touch-action: manipulation; }
 .house-rescue-hud button:disabled { opacity: .42; box-shadow: none; }
-.house-rescue-hud-header button { min-height: 34px; padding: 5px 8px; border-color: #e6d5ae; box-shadow: none; }
+.house-rescue-hud-header button { min-width: var(--kw-touch-min); min-height: var(--kw-touch-min); padding: 5px 8px; border-color: #e6d5ae; box-shadow: none; }
 .house-rescue-picker { display: grid; grid-template-columns: minmax(0, 1fr) 180px 130px; align-items: end; gap: 9px; padding: 13px; }
 .house-rescue-picker strong, .house-rescue-picker small { display: block; }
 .house-rescue-picker small { margin-top: 5px; color: #746653; font: 700 9px/1.35 system-ui, sans-serif; }
@@ -2219,7 +2219,7 @@ body:not([data-game-scene="TownScene"]) .first-session-checklist {
 .house-rescue-result-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 11px 0; }
 .house-rescue-result-stats span { display: grid; gap: 3px; padding: 7px; border: 2px solid #b9a57d; border-radius: 7px; background: #fffaf0; color: #756754; font-size: 7px; }
 .house-rescue-result-stats strong { color: #3b3028; font-size: 13px; }
-.house-rescue-result-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.house-rescue-result-actions { display: grid; grid-template-columns: minmax(0, 280px); justify-content: center; gap: 7px; }
 .house-rescue-result-actions #house-rescue-return { color: #fff; background: #4d934f; }
 body[data-game-scene="HouseRescueScene"] .touch-controls,
 body[data-game-scene="HouseRescueScene"] .zoom-controls,
@@ -2249,6 +2249,45 @@ body[data-game-scene="HouseRescueScene"] .control-hint { display: none; }
   .house-rescue-item { width: 60px; min-height: 44px !important; }
   .house-rescue-bins button { min-height: 73px; }
   .house-rescue-stage-meta { min-height: 20px; }
+}
+
+/* Phase 2 — House Rescue mobile-first landscape shell */
+@media (orientation: landscape) {
+  .house-rescue-hud { position: fixed; inset: max(4px, env(safe-area-inset-top)) max(4px, env(safe-area-inset-right)) max(4px, env(safe-area-inset-bottom)) max(4px, env(safe-area-inset-left)); display: grid; grid-template-rows: auto minmax(0, 1fr) auto; width: auto; max-height: none; overflow: hidden; transform: none; }
+  .house-rescue-hud-header { grid-template-columns: minmax(0, 1fr) auto auto auto; padding: 5px 7px; }
+  .house-rescue-hud-header h2 { font-size: 16px; }
+  .house-rescue-hud-header > span { padding: 4px 7px; }
+  .house-rescue-picker, .house-rescue-result { align-self: center; width: min(760px, calc(100% - 18px)); justify-self: center; }
+  .house-rescue-gameplay { display: grid; grid-template-rows: auto auto minmax(0, 1fr); min-height: 0; overflow: hidden; gap: 4px; padding: 5px; }
+  .house-rescue-game-heading > span { min-width: 54px; padding: 3px; }
+  .house-rescue-stages { gap: 4px; }
+  .house-rescue-stages span { padding: 4px; }
+  .house-rescue-sort-panel, .house-rescue-vacuum-panel { display: grid; grid-template-rows: auto minmax(0, 1fr); min-height: 0; overflow: hidden; }
+  .house-rescue-stage-meta { min-height: 20px; gap: 8px; }
+  .house-rescue-sort-layout { grid-template-columns: minmax(0, 1fr) 136px; min-height: 0; height: 100%; gap: 5px; }
+  .house-rescue-sort-floor, .house-rescue-vacuum-floor { width: 100%; height: 100%; min-height: 0; }
+  .house-rescue-bins { min-height: 0; gap: 4px; }
+  .house-rescue-bins button { grid-template-columns: 32px 1fr; grid-template-rows: 1fr; min-height: var(--kw-touch-min); padding: 3px; }
+  .house-rescue-bins button span { grid-row: 1; font-size: 23px; }
+  .house-rescue-bins button small { display: none; }
+  .house-rescue-item { width: 58px; min-height: var(--kw-touch-min) !important; }
+  .house-rescue-item span { font-size: 20px; }
+  .house-rescue-status { min-height: 30px; max-height: 36px; padding: 5px 8px; overflow: hidden; }
+  #house-rescue-qa-complete { color: #fff; background: #765a91; }
+}
+
+@media (max-height: 430px) and (orientation: landscape) {
+  .house-rescue-hud-header p, .house-rescue-hud-header small { display: none; }
+  .house-rescue-hud-header h2 { margin: 0; font-size: 14px; }
+  .house-rescue-hud-header button { min-height: var(--kw-touch-min); }
+  .house-rescue-game-heading div > strong { display: none; }
+  .house-rescue-game-heading > span { min-width: 46px; padding: 0 2px; font-size: 6px; }
+  .house-rescue-game-heading span strong { font-size: 10px; }
+  .house-rescue-stages span { padding: 1px 3px; }
+  .house-rescue-stage-meta small { font-size: 7px; }
+  .house-rescue-sort-layout { grid-template-columns: minmax(0, 1fr) 128px; }
+  .house-rescue-bins { gap: 2px; }
+  .house-rescue-item { width: 54px; }
 }
 
 @media (max-width: 720px) and (orientation: portrait) {
@@ -3244,6 +3283,10 @@ body[data-orientation-blocked="true"] .landscape-required {
     #f7f4ea;
   text-align: center;
   isolation: isolate;
+  transform: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 body[data-orientation-blocked="true"] .game-shell > :not(.landscape-required) {

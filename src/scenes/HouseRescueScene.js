@@ -34,6 +34,7 @@ export class HouseRescueScene extends Phaser.Scene {
     this.bindInterface();
     this.setSceneInterface();
     this.render();
+    if (this.houseRescue.getActiveSession()) this.setMessage("Rescue resumed.", "success");
     this.cameras.main.fadeIn(220, 53, 42, 35);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.shutdownScene());
   }
@@ -64,13 +65,11 @@ export class HouseRescueScene extends Phaser.Scene {
     this.qaButton = document.querySelector("#house-rescue-qa-complete");
     this.resultButtons = {
       return: document.querySelector("#house-rescue-return"),
-      next: document.querySelector("#house-rescue-next-home"),
     };
     this.onStart = () => this.startLevel(Number(this.levelSelect?.value || 1));
     this.onExit = () => this.returnToTown();
     this.onQa = () => this.completeQa();
     this.onReturn = () => this.returnToTown();
-    this.onNextHome = () => this.returnToTown();
     this.onBinClick = (event) => {
       const button = event.target.closest("[data-house-rescue-bin]");
       if (!button || !this.selectedItemId) return;
@@ -88,6 +87,8 @@ export class HouseRescueScene extends Phaser.Scene {
       const item = event.target.closest("[data-house-rescue-item]");
       if (!item) return;
       this.selectedItemId = item.dataset.houseRescueItem;
+      const sessionItem = this.houseRescue.getActiveSession()?.items.find((entry) => entry.id === this.selectedItemId);
+      this.setMessage(`${sessionItem?.label || "Item"} selected. Choose a bin.`, "neutral");
       this.render();
     };
     this.onSortDragStart = (event) => {
@@ -124,7 +125,6 @@ export class HouseRescueScene extends Phaser.Scene {
     this.exitButton?.addEventListener("click", this.onExit);
     this.qaButton?.addEventListener("click", this.onQa);
     this.resultButtons.return?.addEventListener("click", this.onReturn);
-    this.resultButtons.next?.addEventListener("click", this.onNextHome);
     this.bins?.addEventListener("click", this.onBinClick);
     this.bins?.addEventListener("dragover", this.onBinDragOver);
     this.bins?.addEventListener("drop", this.onBinDrop);
@@ -158,7 +158,7 @@ export class HouseRescueScene extends Phaser.Scene {
     document.querySelector("#house-rescue-gameplay")?.classList.remove("hidden");
     document.querySelector("#house-rescue-result")?.classList.add("hidden");
     this.selectedItemId = null;
-    this.setMessage(result.code === "house-rescue-resumed" ? "Your saved House Rescue has resumed safely." : "Sort each item into its matching bin. Correct sorts earn +2; mistakes cost 1 point.", "success");
+    this.setMessage(result.code === "house-rescue-resumed" ? "Rescue resumed." : "Sort each item into its matching bin.", "success");
     this.render();
     return true;
   }
@@ -169,8 +169,8 @@ export class HouseRescueScene extends Phaser.Scene {
     if (!result.ok) { this.setMessage(result.message, "error"); return false; }
     if (result.correct) {
       this.selectedItemId = null;
-      this.setMessage(result.session.phase === "vacuum" ? "Sorting complete! Sweep the vacuum over at least 95% of all stain layers." : "+2 · Correctly sorted.", "success");
-    } else this.setMessage("−1 · That item belongs in a different bin.", "error");
+      this.setMessage(result.session.phase === "vacuum" ? "Sorting complete. Clean 95% of the floor." : "Correct! +2.", "success");
+    } else this.setMessage("Wrong bin. −1. Try another.", "error");
     this.render();
     return true;
   }
@@ -280,9 +280,9 @@ export class HouseRescueScene extends Phaser.Scene {
     document.querySelector("#house-rescue-picker")?.classList.add("hidden");
     document.querySelector("#house-rescue-gameplay")?.classList.add("hidden");
     document.querySelector("#house-rescue-result")?.classList.remove("hidden");
-    setText("#house-rescue-result-title", `Level ${result.level} complete · the cottage is sparkling!`);
+    setText("#house-rescue-result-title", `Level ${result.level} · Cottage restored!`);
     setText("#house-rescue-result-stars", `${"★".repeat(result.stars)}${"☆".repeat(3 - result.stars)}`);
-    setText("#house-rescue-result-message", `All rubbish was sorted and ${Math.round(result.completionCoverage * 100)}% of the floor's stain layers were removed.`);
+    setText("#house-rescue-result-message", `${Math.round(result.completionCoverage * 100)}% clean.`);
     setText("#house-rescue-result-score", result.score);
     setText("#house-rescue-result-accuracy", `${Math.round(result.accuracy * 100)}%`);
     setText("#house-rescue-result-coins", `+${result.coins}`);
@@ -294,7 +294,7 @@ export class HouseRescueScene extends Phaser.Scene {
       game.dataset.houseRescuePhase = "result";
       game.dataset.houseRescueCoverage = String(Math.round(result.completionCoverage * 100));
     }
-    this.setMessage("House rescued, reward committed, and progress saved safely.", "success");
+    this.setMessage("House saved. Reward added.", "success");
   }
 
   setMessage(message, status = "neutral") {
@@ -328,7 +328,6 @@ export class HouseRescueScene extends Phaser.Scene {
     this.exitButton?.removeEventListener("click", this.onExit);
     this.qaButton?.removeEventListener("click", this.onQa);
     this.resultButtons.return?.removeEventListener("click", this.onReturn);
-    this.resultButtons.next?.removeEventListener("click", this.onNextHome);
     this.bins?.removeEventListener("click", this.onBinClick);
     this.bins?.removeEventListener("dragover", this.onBinDragOver);
     this.bins?.removeEventListener("drop", this.onBinDrop);
