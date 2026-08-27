@@ -54,6 +54,12 @@ Baseline evidence:
 
 `scripts/extract-powerwash-assets.mjs` regenerates these files only from the protected embedded payload and fails if either hash changes.
 
+## Restaurant visual fidelity review
+
+Direct operation of all five restaurant games at 1280×720 confirmed that their current Phaser rooms do not reproduce the protected HTML presentation. The comparison evidence, venue-specific gaps, protected rules, asset-label requirements, and staged recovery order are recorded in `docs/qa/PHASE_3_RESTAURANT_VISUAL_FIDELITY_REVIEW.md`.
+
+Restaurant visual fidelity is currently **FAIL** and remains required Phase 3 work. The compact Phase 2 mobile control hierarchy may remain, but the authored rooms, customers, worker movement, carried food, appliances, products, animations, and in-world state feedback must be recovered.
+
 ## Confirmed remaining fidelity ledger
 
 ### P0 — must be recovered before Phase 3 can pass
