@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { RIVER_LEVELS, RIVER_TOTAL_LEVELS, getRiverRubbish } from "../data/riverClearout.js";
+import { riverGestureAction } from "../input/mobileGestures.js";
 
 const ROOM = Object.freeze({ width: 1280, height: 720 });
 
@@ -17,6 +18,7 @@ export class RiverClearoutScene extends Phaser.Scene {
     this.exitArmedUntil = 0;
     this.renderElapsed = 0;
     this.solving = false;
+    this.pointerGesture = null;
   }
 
   create() {
@@ -94,11 +96,60 @@ export class RiverClearoutScene extends Phaser.Scene {
       const action = event.key === "ArrowLeft" ? this.onLeft : event.key === "ArrowRight" ? this.onRight : event.key === "ArrowDown" ? this.onDown : event.key === "ArrowUp" ? this.onRotate : event.code === "Space" ? this.onDrop : event.key.toLowerCase() === "z" ? this.onUndo : event.key.toLowerCase() === "h" ? this.onHint : null;
       if (action) { event.preventDefault(); action(); }
     };
+    this.onBoardPointerDown = (event) => {
+      const session = this.river.getActiveSession();
+      if (!session || session.finished || this.solving) return;
+      event.preventDefault();
+      this.boardElement?.setPointerCapture?.(event.pointerId);
+      this.pointerGesture = {
+        pointerId: event.pointerId,
+        x: event.clientX,
+        y: event.clientY,
+        lastX: event.clientX,
+        dragX: 0,
+        startedAt: performance.now(),
+        movedHorizontal: false,
+      };
+    };
+    this.onBoardPointerMove = (event) => {
+      const gesture = this.pointerGesture;
+      if (!gesture || gesture.pointerId !== event.pointerId) return;
+      event.preventDefault();
+      const step = Math.max(18, (this.boardElement?.clientWidth || 0) / 13);
+      gesture.dragX += event.clientX - gesture.lastX;
+      gesture.lastX = event.clientX;
+      while (Math.abs(gesture.dragX) >= step) {
+        const moved = gesture.dragX < 0 ? this.onLeft() : this.onRight();
+        gesture.movedHorizontal = true;
+        gesture.dragX += gesture.dragX < 0 ? step : -step;
+        if (!moved || this.river.getActiveSession()?.finished) break;
+      }
+    };
+    this.onBoardPointerUp = (event) => {
+      const gesture = this.pointerGesture;
+      if (!gesture || gesture.pointerId !== event.pointerId) return;
+      event.preventDefault();
+      this.pointerGesture = null;
+      const action = riverGestureAction({
+        dx: event.clientX - gesture.x,
+        dy: event.clientY - gesture.y,
+        elapsed: performance.now() - gesture.startedAt,
+        movedHorizontal: gesture.movedHorizontal,
+      });
+      ({ left: this.onLeft, right: this.onRight, down: this.onDown, rotate: this.onRotate, drop: this.onDrop })[action]?.();
+    };
+    this.onBoardPointerCancel = (event) => {
+      if (!this.pointerGesture || (event?.pointerId !== undefined && this.pointerGesture.pointerId !== event.pointerId)) return;
+      this.pointerGesture = null;
+    };
     this.startButton?.addEventListener("click", this.onStart); this.levelSelect?.addEventListener("change", this.onLevelChange); this.exitButton?.addEventListener("click", this.onExit);
     this.buttons.left?.addEventListener("click", this.onLeft); this.buttons.right?.addEventListener("click", this.onRight); this.buttons.rotate?.addEventListener("click", this.onRotate);
     this.buttons.down?.addEventListener("click", this.onDown); this.buttons.drop?.addEventListener("click", this.onDrop); this.buttons.undo?.addEventListener("click", this.onUndo);
     this.buttons.hint?.addEventListener("click", this.onHint); this.buttons.qa?.addEventListener("click", this.onQa); this.buttons.replay?.addEventListener("click", this.onReplay);
-    this.buttons.next?.addEventListener("click", this.onNext); this.buttons.return?.addEventListener("click", this.onReturn); window.addEventListener("keydown", this.onKeyDown);
+    this.buttons.next?.addEventListener("click", this.onNext); this.buttons.return?.addEventListener("click", this.onReturn);
+    this.boardElement?.addEventListener("pointerdown", this.onBoardPointerDown); this.boardElement?.addEventListener("pointermove", this.onBoardPointerMove);
+    this.boardElement?.addEventListener("pointerup", this.onBoardPointerUp); this.boardElement?.addEventListener("pointercancel", this.onBoardPointerCancel);
+    this.boardElement?.addEventListener("lostpointercapture", this.onBoardPointerCancel); window.addEventListener("keydown", this.onKeyDown);
     this.hud?.classList.remove("hidden");
   }
 
@@ -106,7 +157,7 @@ export class RiverClearoutScene extends Phaser.Scene {
     document.body.dataset.gameScene = this.scene.key;
     const badge = document.querySelector(".milestone-badge"); if (badge) badge.textContent = "RIVER CLEAR-OUT · MILESTONE 15";
     setText("#location-status", "River Clear-Out");
-    setText("#control-hint", "Arrow keys move · Up rotates · Space drops · Z undoes · H hints · portrait supported");
+    setText("#control-hint", "Swipe left/right/down · tap or swipe up to rotate · long down drops · portrait play");
   }
 
   startLevel(level) {
@@ -274,9 +325,13 @@ export class RiverClearoutScene extends Phaser.Scene {
     this.buttons.left?.removeEventListener("click", this.onLeft); this.buttons.right?.removeEventListener("click", this.onRight); this.buttons.rotate?.removeEventListener("click", this.onRotate);
     this.buttons.down?.removeEventListener("click", this.onDown); this.buttons.drop?.removeEventListener("click", this.onDrop); this.buttons.undo?.removeEventListener("click", this.onUndo);
     this.buttons.hint?.removeEventListener("click", this.onHint); this.buttons.qa?.removeEventListener("click", this.onQa); this.buttons.replay?.removeEventListener("click", this.onReplay);
-    this.buttons.next?.removeEventListener("click", this.onNext); this.buttons.return?.removeEventListener("click", this.onReturn); window.removeEventListener("keydown", this.onKeyDown);
+    this.buttons.next?.removeEventListener("click", this.onNext); this.buttons.return?.removeEventListener("click", this.onReturn);
+    this.boardElement?.removeEventListener("pointerdown", this.onBoardPointerDown); this.boardElement?.removeEventListener("pointermove", this.onBoardPointerMove);
+    this.boardElement?.removeEventListener("pointerup", this.onBoardPointerUp); this.boardElement?.removeEventListener("pointercancel", this.onBoardPointerCancel);
+    this.boardElement?.removeEventListener("lostpointercapture", this.onBoardPointerCancel); window.removeEventListener("keydown", this.onKeyDown);
+    this.pointerGesture = null;
     this.hud?.classList.add("hidden"); this.river?.cancel?.(); this.worldSimulation?.setPaused("activity", false); this.npcTownLife?.setPaused("activity", false);
   }
 
-  getMilestoneState() { return { scene: this.scene.key, gameplayConnected: true, portraitSupported: true, ...this.river.getDiagnostics(), session: this.river.getActiveSession(), legacySaveUntouched: true }; }
+  getMilestoneState() { return { scene: this.scene.key, gameplayConnected: true, portraitSupported: true, touchSwipeControls: true, tapToRotate: true, ...this.river.getDiagnostics(), session: this.river.getActiveSession(), legacySaveUntouched: true }; }
 }

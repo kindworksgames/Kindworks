@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { BEACH_TILE, BEACH_TOTAL_LEVELS, BeachCleanupEngine, beachLevelSummary, generateBeachLevel } from "../data/beachCleanup.js";
+import { cardinalDirection } from "../input/mobileGestures.js";
 
 const ROOM = Object.freeze({ width: 1280, height: 720 });
 const KEYS = Object.freeze({ U: "up", D: "down", L: "left", R: "right" });
@@ -11,7 +12,7 @@ function show(selector, visible) { document.querySelector(selector)?.classList.t
 
 export class BeachCleanupScene extends Phaser.Scene {
   constructor() { super("BeachCleanupScene"); this.entryData = {}; }
-  init(data = {}) { this.entryData = data; this.transitioning = false; this.exitArmedUntil = 0; this.lastResultContext = null; this.pointerStart = null; this.hintDirection = null; }
+  init(data = {}) { this.entryData = data; this.transitioning = false; this.exitArmedUntil = 0; this.lastResultContext = null; this.pointerStart = null; this.pointerDirection = null; this.pointerHoldTimer = null; this.hintDirection = null; }
 
   create() {
     this.beachCleanup = this.registry.get("beachCleanup");
@@ -56,12 +57,47 @@ export class BeachCleanupScene extends Phaser.Scene {
       const direction = event.key === "ArrowUp" || key === "w" ? "U" : event.key === "ArrowDown" || key === "s" ? "D" : event.key === "ArrowLeft" || key === "a" ? "L" : event.key === "ArrowRight" || key === "d" ? "R" : null;
       if (direction) { event.preventDefault(); this.walk(direction); } else if (key === "z") { event.preventDefault(); this.onUndo(); } else if (key === "h") { event.preventDefault(); this.onHint(); } else if (key === "r") { event.preventDefault(); this.onRetry(); }
     };
-    this.onPointerDown = (event) => { this.pointerStart = { x: event.clientX, y: event.clientY, id: event.pointerId }; };
-    this.onPointerUp = (event) => { if (!this.pointerStart || this.pointerStart.id !== event.pointerId) return; const dx = event.clientX - this.pointerStart.x; const dy = event.clientY - this.pointerStart.y; this.pointerStart = null; if (Math.max(Math.abs(dx), Math.abs(dy)) >= 24) this.walk(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "R" : "L") : (dy > 0 ? "D" : "U")); };
+    this.stopPointerHold = () => { this.pointerHoldTimer?.remove?.(false); this.pointerHoldTimer = null; };
+    this.startPointerHold = (direction) => {
+      this.stopPointerHold();
+      if (!direction || this.beachCleanup.getSessionState()?.won) return;
+      this.pointerHoldTimer = this.time.addEvent({ delay: 140, loop: true, callback: () => {
+        if (!this.pointerStart || this.pointerDirection !== direction || !this.walk(direction) || this.beachCleanup.getSessionState()?.won) this.stopPointerHold();
+      } });
+    };
+    this.onPointerDown = (event) => {
+      if (!this.beachCleanup.getActiveSession() || this.transitioning) return;
+      event.preventDefault();
+      this.board?.setPointerCapture?.(event.pointerId);
+      this.stopPointerHold();
+      this.pointerDirection = null;
+      this.pointerStart = { x: event.clientX, y: event.clientY, id: event.pointerId };
+    };
+    this.onPointerMove = (event) => {
+      if (!this.pointerStart || this.pointerStart.id !== event.pointerId) return;
+      event.preventDefault();
+      const direction = cardinalDirection(event.clientX - this.pointerStart.x, event.clientY - this.pointerStart.y, 18);
+      if (!direction || direction === this.pointerDirection) return;
+      this.pointerStart.x = event.clientX; this.pointerStart.y = event.clientY; this.pointerDirection = direction;
+      if (this.walk(direction)) this.startPointerHold(direction); else this.stopPointerHold();
+    };
+    this.onPointerUp = (event) => {
+      if (!this.pointerStart || this.pointerStart.id !== event.pointerId) return;
+      event.preventDefault();
+      const direction = this.pointerDirection || cardinalDirection(event.clientX - this.pointerStart.x, event.clientY - this.pointerStart.y, 18);
+      const alreadyMoved = Boolean(this.pointerDirection);
+      this.stopPointerHold(); this.pointerStart = null; this.pointerDirection = null;
+      if (!alreadyMoved && direction) this.walk(direction);
+    };
+    this.onPointerCancel = (event) => {
+      if (!this.pointerStart || (event?.pointerId !== undefined && this.pointerStart.id !== event.pointerId)) return;
+      this.stopPointerHold(); this.pointerStart = null; this.pointerDirection = null;
+    };
     this.buttons.start?.addEventListener("click", this.onStart); this.levelSelect?.addEventListener("change", this.onLevelChange); this.buttons.exit?.addEventListener("click", this.onExit);
     for (const direction of Object.keys(KEYS)) this.buttons[direction]?.addEventListener("click", this.directionHandlers[direction]);
     this.buttons.undo?.addEventListener("click", this.onUndo); this.buttons.hint?.addEventListener("click", this.onHint); this.buttons.retry?.addEventListener("click", this.onRetry); this.buttons.qa?.addEventListener("click", this.onQa); this.buttons.replay?.addEventListener("click", this.onReplay); this.buttons.next?.addEventListener("click", this.onNext); this.buttons.return?.addEventListener("click", this.onReturn);
-    this.board?.addEventListener("pointerdown", this.onPointerDown); this.board?.addEventListener("pointerup", this.onPointerUp); window.addEventListener("keydown", this.onKeyDown);
+    this.board?.addEventListener("pointerdown", this.onPointerDown); this.board?.addEventListener("pointermove", this.onPointerMove); this.board?.addEventListener("pointerup", this.onPointerUp);
+    this.board?.addEventListener("pointercancel", this.onPointerCancel); this.board?.addEventListener("lostpointercapture", this.onPointerCancel); window.addEventListener("blur", this.onPointerCancel); window.addEventListener("keydown", this.onKeyDown);
     this.buttons.qa?.classList.toggle("hidden", !this.qaMode); this.hud?.classList.remove("hidden");
     if (this.buttons.exit) this.buttons.exit.textContent = "Exit";
     const session = this.beachCleanup.getActiveSession(); show("#beach-picker", !session); show("#beach-gameplay", Boolean(session)); show("#beach-result", false);
@@ -150,6 +186,6 @@ export class BeachCleanupScene extends Phaser.Scene {
 
   requestExit() { const session = this.beachCleanup.getActiveSession(); if (session && Date.now() > this.exitArmedUntil) { this.exitArmedUntil = Date.now() + 3000; if (this.buttons.exit) this.buttons.exit.textContent = "Confirm Exit"; this.setMessage("Tap Confirm Exit to leave this attempt.", "error"); return false; } return this.returnToTown(false); }
   returnToTown(complete) { if (this.transitioning) return false; this.transitioning = true; const active = this.beachCleanup.getActiveSession(); const context = active || this.lastResultContext || {}; if (active) this.beachCleanup.cancel(active.id); const position = context.returnPosition || this.entryData.returnPosition || { x: 3220, y: 2320 }; const facing = context.returnFacing || this.entryData.returnFacing || "down"; this.gameState.updatePlayer({ scene: "TownScene", x: position.x, y: position.y, facing }); document.querySelector("#game")?.setAttribute("data-transition", complete ? "beach-cleanup-complete" : "leaving-beach-cleanup"); this.cameras.main.fadeOut(220, 20, 49, 70); this.time.delayedCall(240, () => this.scene.start("TownScene", { returnPosition: position, returnFacing: facing, transitionCount: Number(this.entryData.transitionCount || 0) + 1 })); return true; }
-  shutdownScene() { this.buttons.start?.removeEventListener("click", this.onStart); this.levelSelect?.removeEventListener("change", this.onLevelChange); this.buttons.exit?.removeEventListener("click", this.onExit); for (const direction of Object.keys(KEYS)) this.buttons[direction]?.removeEventListener("click", this.directionHandlers[direction]); for (const button of document.querySelectorAll("[data-beach-challenge]")) button.removeEventListener("click", this.challengeHandlers[button.dataset.beachChallenge]); this.buttons.undo?.removeEventListener("click", this.onUndo); this.buttons.hint?.removeEventListener("click", this.onHint); this.buttons.retry?.removeEventListener("click", this.onRetry); this.buttons.qa?.removeEventListener("click", this.onQa); this.buttons.replay?.removeEventListener("click", this.onReplay); this.buttons.next?.removeEventListener("click", this.onNext); this.buttons.return?.removeEventListener("click", this.onReturn); this.board?.removeEventListener("pointerdown", this.onPointerDown); this.board?.removeEventListener("pointerup", this.onPointerUp); window.removeEventListener("keydown", this.onKeyDown); this.hud?.classList.add("hidden"); this.worldSimulation?.setPaused("activity", false); this.npcTownLife?.setPaused("activity", false); }
-  getMilestoneState() { return { scene: this.scene.key, gameplayConnected: true, landscapeRequired: true, keyboardControls: true, touchSwipeControls: true, ...this.beachCleanup.getDiagnostics(), session: this.beachCleanup.getActiveSession(), legacySaveUntouched: true }; }
+  shutdownScene() { this.stopPointerHold?.(); this.buttons.start?.removeEventListener("click", this.onStart); this.levelSelect?.removeEventListener("change", this.onLevelChange); this.buttons.exit?.removeEventListener("click", this.onExit); for (const direction of Object.keys(KEYS)) this.buttons[direction]?.removeEventListener("click", this.directionHandlers[direction]); for (const button of document.querySelectorAll("[data-beach-challenge]")) button.removeEventListener("click", this.challengeHandlers[button.dataset.beachChallenge]); this.buttons.undo?.removeEventListener("click", this.onUndo); this.buttons.hint?.removeEventListener("click", this.onHint); this.buttons.retry?.removeEventListener("click", this.onRetry); this.buttons.qa?.removeEventListener("click", this.onQa); this.buttons.replay?.removeEventListener("click", this.onReplay); this.buttons.next?.removeEventListener("click", this.onNext); this.buttons.return?.removeEventListener("click", this.onReturn); this.board?.removeEventListener("pointerdown", this.onPointerDown); this.board?.removeEventListener("pointermove", this.onPointerMove); this.board?.removeEventListener("pointerup", this.onPointerUp); this.board?.removeEventListener("pointercancel", this.onPointerCancel); this.board?.removeEventListener("lostpointercapture", this.onPointerCancel); window.removeEventListener("blur", this.onPointerCancel); window.removeEventListener("keydown", this.onKeyDown); this.pointerStart = null; this.pointerDirection = null; this.hud?.classList.add("hidden"); this.worldSimulation?.setPaused("activity", false); this.npcTownLife?.setPaused("activity", false); }
+  getMilestoneState() { return { scene: this.scene.key, gameplayConnected: true, landscapeRequired: true, keyboardControls: true, touchSwipeControls: true, continuousHeldSwipe: true, ...this.beachCleanup.getDiagnostics(), session: this.beachCleanup.getActiveSession(), legacySaveUntouched: true }; }
 }
