@@ -51,6 +51,78 @@ button.kw-control:focus-visible {
   button.kw-control { transition: none; }
 }
 
+.kw-loading-state,
+.kw-global-toast {
+  position: fixed;
+  z-index: 900;
+  color: var(--kw-ink);
+  font-family: Nunito, system-ui, sans-serif;
+  user-select: none;
+}
+
+.kw-loading-state.hidden,
+.kw-global-toast.hidden { display: none; }
+
+.kw-loading-state {
+  inset: 0;
+  display: grid;
+  place-content: center;
+  place-items: center;
+  gap: 12px;
+  background: rgb(20 37 28 / 52%);
+  pointer-events: auto;
+}
+
+.kw-loading-state p {
+  margin: 0;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--kw-cloud);
+  box-shadow: 0 5px 0 rgb(41 65 75 / 20%);
+  font-weight: 900;
+}
+
+.kw-loading-spinner {
+  width: 42px;
+  height: 42px;
+  border: 6px solid var(--kw-cream);
+  border-top-color: var(--kw-sunflower);
+  border-radius: 50%;
+  animation: kw-loading-spin 700ms linear infinite;
+}
+
+.kw-global-toast {
+  right: max(12px, env(safe-area-inset-right));
+  bottom: max(12px, env(safe-area-inset-bottom));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px;
+  align-items: center;
+  gap: 10px;
+  width: min(360px, calc(100vw - 24px));
+  min-height: 56px;
+  padding: 8px 8px 8px 15px;
+  border: 2px solid var(--kw-ink);
+  border-radius: 16px;
+  background: var(--kw-cloud);
+  box-shadow: 0 6px 0 rgb(41 65 75 / 22%);
+}
+
+.kw-global-toast[data-tone="success"] { border-color: var(--kw-willow); }
+.kw-global-toast[data-tone="error"] { border-color: var(--kw-terracotta); }
+.kw-global-toast p { margin: 0; font-size: 14px; font-weight: 850; line-height: 1.25; }
+.kw-toast-dismiss { width: 44px; min-height: 44px; border: 0; border-radius: 12px; background: var(--kw-cream); color: var(--kw-ink); font-weight: 900; }
+
+@keyframes kw-loading-spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .kw-loading-spinner { animation: none; border-top-color: var(--kw-willow); }
+}
+
+@media (max-height: 420px) and (orientation: landscape) {
+  .kw-global-toast { bottom: max(8px, env(safe-area-inset-bottom)); min-height: 48px; }
+  .kw-global-toast p { font-size: 12px; }
+}
+
 html,
 body,
 #game,

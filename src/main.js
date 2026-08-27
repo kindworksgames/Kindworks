@@ -54,6 +54,7 @@ import { OnboardingController } from "./ui/OnboardingController.js";
 import { CommerceController } from "./ui/CommerceController.js";
 import { ResponsiveShellController } from "./ui/ResponsiveShellController.js";
 import { InteractionFeedbackController } from "./ui/InteractionFeedbackController.js";
+import { SharedOverlayController } from "./ui/SharedOverlayController.js";
 import { ITEM_IDS } from "./data/items.js";
 import { findSafeFurniturePlacement } from "./data/homeInteriors.js";
 import { getParityCertification } from "./data/parityCertification.js";
@@ -128,6 +129,8 @@ const responsiveShell = new ResponsiveShellController(game, {
 game.registry.set("responsiveShell", responsiveShell);
 const interactionFeedback = new InteractionFeedbackController().start();
 game.registry.set("interactionFeedback", interactionFeedback);
+const sharedOverlay = new SharedOverlayController().start();
+game.registry.set("sharedOverlay", sharedOverlay);
 game.registry.set("spriteAiInventory", spriteAiInventory);
 game.registry.set("gameState", stateRuntime.gameState);
 game.registry.set("saveRepository", stateRuntime.repository);

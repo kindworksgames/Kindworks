@@ -32,12 +32,18 @@ export async function ensureLazyScene(scene, key) {
 
 export async function startLazyScene(scene, key, data) {
   const gameHost = globalThis.document?.querySelector?.("#game");
+  const sharedOverlay = scene?.registry?.get?.("sharedOverlay");
   gameHost?.setAttribute("data-loading-scene", key);
+  sharedOverlay?.showLoading?.(key);
   try {
     await ensureLazyScene(scene, key);
     scene.scene.start(key, data);
     return true;
+  } catch (error) {
+    sharedOverlay?.showLoadError?.();
+    throw error;
   } finally {
     gameHost?.removeAttribute("data-loading-scene");
+    sharedOverlay?.hideLoading?.();
   }
 }

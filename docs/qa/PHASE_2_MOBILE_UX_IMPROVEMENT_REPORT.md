@@ -7,7 +7,7 @@
 - Starting branch: `main` (matched `origin/main`)
 - Phase 1 contract: `docs/qa/PHASE_1_MIGRATION_PARITY_AUDIT.md`
 - Baseline automated tests: 450 passed, 0 failed
-- Current automated tests: 456 passed, 0 failed after the first Wave 2 batch
+- Current automated tests: 458 passed, 0 failed after the second Wave 2 batch
 - Baseline build: existing production `dist`, Phaser 4.2.1
 - Baseline input: mouse and keyboard through the local browser preview
 - Available visual reference: `KindWorks_Visual_Style_Bible_v3.0.pdf`
@@ -39,6 +39,7 @@ Baseline evidence is stored outside the repository under `phase2-evidence/baseli
 | Wave 0 baseline | No protected Phase 2 branch, tracking report or full viewport baseline | Created branch, captured all required baseline sizes and established the functional contract | All required sizes plus 390×844 portrait | 450/450 tests passed before changes | `phase2-evidence/baseline/` | N/A | `593b456` |
 | Global landscape shell | Portrait displayed active, overlapping town gameplay and did not pause its systems | Added one global orientation controller, a single-sentence safe rotate state, exact game-loop freeze/wake, service pause reasons and River portrait exemption | 568×320, 667×375, 736×414, 812×375, 844×390, 1024×768, 1180×820, 1280×720, 1366×768, 390×844 | Production build and performance budget pass; 454 full tests pass; movement, wallet open/close, rotate/resume and saved town state pass | `phase2-evidence/baseline/town-390x844-before.png` | `phase2-evidence/wave1/town-390x844-after.png` plus full Wave 1 matrix | `1469a93` |
 | Shared control states | Controls used unrelated pressed, disabled, selected and focus treatments; dynamically rendered controls had no shared state contract | Added reusable tokens and one delegated controller for normal, pressed, disabled and selected states across fixed and dynamic buttons | All required landscape sizes plus 390×844 portrait; wallet inspected at 844×390 | 206/206 live controls enhanced on the saved test game; wallet tab switch and close pass; no overflow; no runtime warning/error logs; production build and performance budget pass; 456/456 tests pass | `phase2-evidence/wave2/wallet-844x390-before.png` | `phase2-evidence/wave2/wallet-844x390-after.png` | `1d8cb7e` |
+| Shared loading and error feedback | Lazy activity imports changed an invisible attribute and failures were console-only, leaving players without a clear transition or recovery message | Added one shared `Loading…` state and one dismissible “That area couldn’t open. Try again.” notification, wired into every lazy scene transition | 568×320, 844×390, 1024×768, 1280×720 and 390×844 portrait in Waste Collection | Entered through the normal town action, loading cleared, portrait paused, safe exit returned to the same position, Sprite AI coverage stayed complete, runtime logs clean, build/performance pass and 458/458 tests pass | No visible loading/error component existed | `phase2-evidence/wave2/waste-844x390-loading-cleared.png` | Pending |
 
 ## Change register
 
@@ -47,6 +48,7 @@ Baseline evidence is stored outside the repository under `phase2-evidence/baseli
 | KW-P2-000 | Baseline protection | Prevent Phase 2 work from changing validated behaviour invisibly | Phase 1 report; this report | No | None | Existing 450-test suite rerun | Verified |
 | KW-P2-001 | Global responsive shell | Prevent broken portrait gameplay and protect exact running state during rotation | `index.html`; `src/main.js`; `src/style.css`; `src/ui/ResponsiveShellController.js`; responsive shell tests; this report | Yes: non-River portrait now pauses; River remains portrait-supported | No schema or durable-state change; current state is persisted before sleep and resumed without offline advancement | 4 responsive shell tests, including all required landscape sizes and exact pause/wake calls | Verified |
 | KW-P2-002 | Shared UI interaction foundation | Make every fixed and dynamically rendered button communicate input and availability consistently | `src/main.js`; `src/style.css`; `src/ui/InteractionFeedbackController.js`; interaction feedback tests; this report | No gameplay rule change; presentation state follows existing button state | None | 2 focused state/token tests; full 456-test suite | Verified |
+| KW-P2-003 | Shared loading and error states | Explain scene imports and recover visibly when a lazy activity cannot open | `src/main.js`; `src/scenes/lazyScenes.js`; `src/style.css`; `src/ui/SharedOverlayController.js`; shared overlay tests; this report | No gameplay rule change; scene loading now has visible transient feedback | None | 2 focused copy/wiring tests; full 458-test suite | Verified |
 
 ### KW-P2-001 protected rule record
 
@@ -105,6 +107,7 @@ These are not implementation requirements until supported by evidence or the mis
 - Repricing, reward rebalancing or level-curve changes
 - Removing legacy import/reconciliation code
 - Adding a broad music system that does not exist in the validated baseline
+- Waste Collection currently leaves the first-session objective card visible behind its job HUD, causing two overlapping primary panels at 844×390. Fix with the town/mini-game HUD consolidation; do not alter Waste gameplay rules in the shared-overlay batch.
 
 ## Verification rules
 
