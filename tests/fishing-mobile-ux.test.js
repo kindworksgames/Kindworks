@@ -24,13 +24,20 @@ test("uses contextual actions, short prompts and a guarded in-progress exit", as
     "Tap water to cast.",
     "Tap water to place the magnet.",
     "Watch for a bite.",
+    "Float settled. Wait for a bite.",
     "Riverbed contact! Pull now.",
     "Bite! Reel now.",
+    "Too early. Wait for a bite next time.",
     "Leave this cast? Tap Confirm Exit.",
   ]) assert.ok(scene.includes(copy), copy);
   assert.match(scene, /this\.castButton\.classList\.toggle\("hidden", !\["idle", "success", "miss"\]\.includes\(this\.phase\)\)/);
   assert.match(scene, /this\.reelButton\.classList\.toggle\("hidden", !\["bite", "ready"\]\.includes\(this\.phase\)\)/);
-  assert.match(scene, /const castInProgress = \["casting", "bite", "ready", "reeling"\]\.includes\(this\.phase\)/);
+  assert.match(scene, /this\.input\.on\("pointerdown", \(pointer\) => this\.handlePrimaryAction\(pointer\)\)/);
+  assert.match(scene, /if \(\["bite", "ready"\]\.includes\(this\.phase\)\) return this\.reel\(\)/);
+  assert.match(scene, /if \(this\.phase === "waiting" && this\.mode === "fish"\) return this\.reelEarly\(\)/);
+  assert.match(scene, /this\.fishing\.miss\("early"\)/);
+  assert.match(scene, /this\.vibrate\(\[45, 35, 70\]\)/);
+  assert.match(scene, /const castInProgress = \["casting", "waiting", "bite", "ready", "reeling"\]\.includes\(this\.phase\)/);
   assert.match(scene, /this\.exitButton\.textContent = "Confirm Exit"/);
   assert.match(scene, /landscapeMessage\.textContent = "Turn your device sideways to play\."/);
 });

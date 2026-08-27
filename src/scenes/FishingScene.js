@@ -77,11 +77,7 @@ export class FishingScene extends Phaser.Scene {
     this.aimInner = this.add.circle(this.target.x, this.target.y, 5, 0xfff0a0, 1).setDepth(21);
     this.line = this.add.graphics().setDepth(25);
     this.resultIcon = this.add.text(this.target.x, this.target.y - 20, magnet ? "🧲" : "🎣", { fontSize: "45px" }).setOrigin(0.5).setVisible(false).setDepth(30);
-    this.input.on("pointerdown", (pointer) => {
-      if (this.transitioning || !pointInWater(pointer)) return;
-      this.setTarget(pointer.x, pointer.y);
-      if (["idle", "success", "miss"].includes(this.phase)) this.cast();
-    });
+    this.input.on("pointerdown", (pointer) => this.handlePrimaryAction(pointer));
   }
 
   drawFishingBank(art, reedbank, harbour) {
@@ -119,6 +115,22 @@ export class FishingScene extends Phaser.Scene {
     return true;
   }
 
+  handlePrimaryAction(pointer = null) {
+    if (this.transitioning) return false;
+    if (["bite", "ready"].includes(this.phase)) return this.reel();
+    if (this.phase === "waiting" && this.mode === "fish") return this.reelEarly();
+    if (["casting", "reeling"].includes(this.phase)) {
+      this.refreshInterface("Wait for the cast to finish.", "error");
+      return false;
+    }
+    if (!pointer || !pointInWater(pointer)) {
+      this.refreshInterface(this.mode === "magnet" ? "Tap inside the river." : "Tap inside the water.", "error");
+      return false;
+    }
+    this.setTarget(pointer.x, pointer.y);
+    return this.cast();
+  }
+
   cast() {
     if (!this.session || !["idle", "success", "miss"].includes(this.phase)) return false;
     this.clearExitConfirmation();
@@ -139,12 +151,19 @@ export class FishingScene extends Phaser.Scene {
       : FISHING_CONFIG.castAnimationMs + (result.potentialCatch
         ? this.randomDelay(FISHING_CONFIG.biteDelayMinMs, FISHING_CONFIG.biteDelayMaxMs)
         : this.randomDelay(TARGETING_CONFIG.emptyWaitMinMs, TARGETING_CONFIG.emptyWaitMaxMs));
+    if (this.mode === "fish") {
+      this.later(FISHING_CONFIG.castAnimationMs, () => {
+        if (this.transitioning || this.phase !== "casting") return;
+        this.phase = "waiting";
+        this.refreshInterface("Float settled. Wait for a bite.");
+      });
+    }
     this.later(wait, () => this.readyCast());
     return true;
   }
 
   readyCast() {
-    if (this.transitioning || this.phase !== "casting") return;
+    if (this.transitioning || !["casting", "waiting"].includes(this.phase)) return;
     const result = this.fishing.signalReady();
     if (this.mode === "magnet" && result.ok) {
       this.phase = "ready";
@@ -157,6 +176,7 @@ export class FishingScene extends Phaser.Scene {
       this.biteStartedAt = performance.now();
       this.resultIcon.setText("❗").setPosition(this.target.x, this.target.y - 24);
       this.refreshInterface("Bite! Reel now.", "bite");
+      this.vibrate([45, 35, 70]);
       this.later(FISHING_CONFIG.biteWindowMs, () => {
         if (this.phase !== "bite") return;
         const missed = this.fishing.miss("late");
@@ -169,6 +189,19 @@ export class FishingScene extends Phaser.Scene {
       this.showResult("💦");
       this.refreshInterface("Quiet water. Try another spot.", "error");
     }
+  }
+
+  reelEarly() {
+    if (this.mode !== "fish" || this.phase !== "waiting") return false;
+    const missed = this.fishing.miss("early");
+    if (!missed.ok) {
+      this.refreshInterface(missed.message || "Wait for a bite.", "error");
+      return false;
+    }
+    this.phase = "miss";
+    this.showResult("💦");
+    this.refreshInterface("Too early. Wait for a bite next time.", "error");
+    return true;
   }
 
   reel() {
@@ -198,6 +231,7 @@ export class FishingScene extends Phaser.Scene {
       } else if (this.mode === "magnet") {
         this.showResult(result.recovery.icon);
         this.refreshInterface(`${result.recovery.name} · +${result.rewardCoins} coins!`, "success", result);
+        this.vibrate([28, 34, 52]);
       } else {
         this.showResult(result.item.icon);
         const message = result.disposition === "aquarium"
@@ -208,6 +242,7 @@ export class FishingScene extends Phaser.Scene {
               ? `${result.item.name} released. That tank section is full.`
               : `${result.item.name} added to your inventory.`;
         this.refreshInterface(message, "success", result);
+        this.vibrate(result.disposition.startsWith("released") ? [24, 35, 24] : [28, 34, 52]);
       }
     });
     return true;
@@ -235,6 +270,16 @@ export class FishingScene extends Phaser.Scene {
     return Phaser.Math.Between(minimum, maximum);
   }
 
+  vibrate(pattern) {
+    try {
+      return typeof navigator !== "undefined" && typeof navigator.vibrate === "function"
+        ? navigator.vibrate(pattern)
+        : false;
+    } catch {
+      return false;
+    }
+  }
+
   later(milliseconds, callback) {
     const timer = this.time.delayedCall(this.duration(milliseconds), callback);
     this.pendingTimers.push(timer);
@@ -258,7 +303,8 @@ export class FishingScene extends Phaser.Scene {
       if (event.key === "Escape") { event.preventDefault(); this.requestExit(); return; }
       if (["Enter", " "].includes(event.key)) {
         event.preventDefault();
-        if (["bite", "ready"].includes(this.phase)) this.reel();
+        if (this.phase === "waiting" && this.mode === "fish") this.reelEarly();
+        else if (["bite", "ready"].includes(this.phase)) this.reel();
         else if (["idle", "success", "miss"].includes(this.phase)) this.cast();
         return;
       }
@@ -343,7 +389,7 @@ export class FishingScene extends Phaser.Scene {
 
   requestExit() {
     if (this.transitioning) return false;
-    const castInProgress = ["casting", "bite", "ready", "reeling"].includes(this.phase);
+    const castInProgress = ["casting", "waiting", "bite", "ready", "reeling"].includes(this.phase);
     if (!castInProgress || this.confirmingExit) return this.returnToTown();
     this.confirmingExit = true;
     if (this.exitButton) {
