@@ -52,6 +52,7 @@ import { ImpactController } from "./ui/ImpactController.js";
 import { NpcNarrativeController } from "./ui/NpcNarrativeController.js";
 import { OnboardingController } from "./ui/OnboardingController.js";
 import { CommerceController } from "./ui/CommerceController.js";
+import { ResponsiveShellController } from "./ui/ResponsiveShellController.js";
 import { ITEM_IDS } from "./data/items.js";
 import { findSafeFurniturePlacement } from "./data/homeInteriors.js";
 import { getParityCertification } from "./data/parityCertification.js";
@@ -118,6 +119,12 @@ const config = {
 
 const game = new Phaser.Game(config);
 window.__KINDWORKS_PHASER_GAME__ = game;
+const responsiveShell = new ResponsiveShellController(game, {
+  worldSimulation,
+  npcTownLife,
+  municipalCollection,
+}).start();
+game.registry.set("responsiveShell", responsiveShell);
 game.registry.set("spriteAiInventory", spriteAiInventory);
 game.registry.set("gameState", stateRuntime.gameState);
 game.registry.set("saveRepository", stateRuntime.repository);
@@ -436,6 +443,7 @@ function handleVisibilityChange() {
 }
 document.addEventListener("visibilitychange", handleVisibilityChange);
 window.addEventListener("pagehide", () => {
+  responsiveShell.update();
   customResident.persistLocation();
   farming.refresh({ persist: true });
   livingEnvironment.refresh({ persist: true });

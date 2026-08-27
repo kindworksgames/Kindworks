@@ -7,6 +7,7 @@
 - Starting branch: `main` (matched `origin/main`)
 - Phase 1 contract: `docs/qa/PHASE_1_MIGRATION_PARITY_AUDIT.md`
 - Baseline automated tests: 450 passed, 0 failed
+- Current automated tests: 454 passed, 0 failed after Wave 1
 - Baseline build: existing production `dist`, Phaser 4.2.1
 - Baseline input: mouse and keyboard through the local browser preview
 - Available visual reference: `KindWorks_Visual_Style_Bible_v3.0.pdf`
@@ -18,16 +19,16 @@ The v3 reference is used provisionally for established KindWorks tokens only: wa
 
 | Device class | Viewport | Baseline captured | Current observation |
 | ------------ | -------: | ----------------- | ------------------- |
-| Small phone | 568×320 | Yes | Objective card covers the play area; top HUD is clipped and crowded |
-| Phone | 667×375 | Yes | Play area remains secondary to persistent HUD and objective surfaces |
-| Phone | 736×414 | Yes | Usable but crowded; secondary actions stay permanently visible |
-| Wider phone | 812×375 | Yes | Breakpoint does not yet create a deliberate compact control rail |
-| Modern phone | 844×390 | Yes | Persistent HUD consumes too much horizontal attention |
-| Tablet | 1024×768 | Yes | Fits, but top actions remain equally prominent and objective panel is oversized |
-| Large tablet | 1180×820 | Yes | Fits; hierarchy remains desktop-first rather than play-first |
-| Original reference | 1280×720 | Yes | All controls fit, but 10 top actions compete with the play area |
-| Desktop QA | 1366×768 | Yes | Fits; persistent optional commerce label and secondary actions add noise |
-| Portrait safety | 390×844 | Yes | Full town remains active instead of showing the required rotate-device screen |
+| Small phone | 568×320 | Yes | Wave 1 shell passes with no crop/overflow; town objective and HUD crowding remains for Wave 3 |
+| Phone | 667×375 | Yes | Wave 1 shell passes; town hierarchy remains queued for Wave 3 |
+| Phone | 736×414 | Yes | Wave 1 shell passes; secondary town actions remain queued for Wave 3 |
+| Wider phone | 812×375 | Yes | Wave 1 shell passes; bottom/side rail decision remains queued per game |
+| Modern phone | 844×390 | Yes | Wave 1 shell passes with exact viewport dimensions and no overflow |
+| Tablet | 1024×768 | Yes | Wave 1 shell passes with exact viewport dimensions and no overflow |
+| Large tablet | 1180×820 | Yes | Wave 1 shell passes with exact viewport dimensions and no overflow |
+| Original reference | 1280×720 | Yes | Wave 1 shell passes with exact viewport dimensions and no overflow |
+| Desktop QA | 1366×768 | Yes | Wave 1 shell passes with exact viewport dimensions and no overflow |
+| Portrait safety | 390×844 | Yes | Town pauses behind one rotate icon and “Turn your device sideways to play.” |
 
 Baseline evidence is stored outside the repository under `phase2-evidence/baseline/` in the Codex task workspace.
 
@@ -35,13 +36,24 @@ Baseline evidence is stored outside the repository under `phase2-evidence/baseli
 
 | Screen | Original problem | Change made | Viewports tested | Gameplay regression result | Before evidence | After evidence | Commit |
 | ------ | ---------------- | ----------- | ---------------- | -------------------------- | --------------- | -------------- | ------ |
-| Wave 0 baseline | No protected Phase 2 branch, tracking report or full viewport baseline | Created branch, captured all required baseline sizes and established the functional contract | All required sizes plus 390×844 portrait | 450/450 tests passed before changes | `phase2-evidence/baseline/` | N/A | Pending |
+| Wave 0 baseline | No protected Phase 2 branch, tracking report or full viewport baseline | Created branch, captured all required baseline sizes and established the functional contract | All required sizes plus 390×844 portrait | 450/450 tests passed before changes | `phase2-evidence/baseline/` | N/A | `593b456` |
+| Global landscape shell | Portrait displayed active, overlapping town gameplay and did not pause its systems | Added one global orientation controller, a single-sentence safe rotate state, exact game-loop freeze/wake, service pause reasons and River portrait exemption | 568×320, 667×375, 736×414, 812×375, 844×390, 1024×768, 1180×820, 1280×720, 1366×768, 390×844 | Production build and performance budget pass; 454 full tests pass; movement, wallet open/close, rotate/resume and saved town state pass | `phase2-evidence/baseline/town-390x844-before.png` | `phase2-evidence/wave1/town-390x844-after.png` plus full Wave 1 matrix | Pending |
 
 ## Change register
 
 | Change ID | System | UX reason | Files changed | Behaviour changed? | Save impact | Tests added | Status |
 | --------- | ------ | --------- | ------------- | ------------------ | ----------- | ----------- | ------ |
 | KW-P2-000 | Baseline protection | Prevent Phase 2 work from changing validated behaviour invisibly | Phase 1 report; this report | No | None | Existing 450-test suite rerun | Verified |
+| KW-P2-001 | Global responsive shell | Prevent broken portrait gameplay and protect exact running state during rotation | `index.html`; `src/main.js`; `src/style.css`; `src/ui/ResponsiveShellController.js`; responsive shell tests; this report | Yes: non-River portrait now pauses; River remains portrait-supported | No schema or durable-state change; current state is persisted before sleep and resumed without offline advancement | 4 responsive shell tests, including all required landscape sizes and exact pause/wake calls | Verified |
+
+### KW-P2-001 protected rule record
+
+- Original rule: individual mini-games displayed separate portrait barriers at narrow widths; Town had no barrier and the shared Phaser loop and world systems continued running.
+- Demonstrated problem: 390×844 rendered the complete town with a tall, overlapping HUD and active controls. Rotation could allow world time, NPCs and timed gameplay to continue while the player could not safely see or operate it.
+- Smallest effective change: a shared controller detects the active scene and viewport, freezes the Phaser loop, adds an `orientation` pause reason to the world, NPC and municipal systems, and displays one global overlay. It wakes only after landscape returns. `RiverClearoutScene` is explicitly exempt.
+- New rule: all active game scenes require landscape except River Clear-Out. Portrait pauses without completing, restarting, rewarding or mutating a level. Returning to landscape wakes the same scene and refreshes scale.
+- Save compatibility: the save schema and payload are unchanged. The orientation reason is runtime-only; the current validated state is persisted before the game loop sleeps.
+- Runtime proof: at 390×844 the body reported `orientationBlocked=true`, `rotate-device`, and the fixed sentence. After returning to 844×390 it reported `orientationBlocked=false`, the same `TownScene`, same location and same coin balance. Touch movement and wallet open/close then worked normally.
 
 ## Baseline interaction inventory
 
@@ -99,4 +111,3 @@ Every implementation entry must include:
 5. Full automated regression suite before commit.
 6. Save/reload and scene-return checks where state is involved.
 7. A commit hash recorded in both registers.
-

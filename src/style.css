@@ -2950,6 +2950,56 @@ body[data-game-scene="SouthShoreScoopsScene"] .control-hint { display: none; }
 
 /* Milestone 13 — Little Bakery vertical slice */
 .landscape-required { display: none; }
+
+/* Phase 2 Wave 1 — one safe orientation shell for town and every landscape activity. */
+body[data-orientation-blocked="true"] .landscape-required {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: grid !important;
+  grid-template-rows: auto auto;
+  place-content: center;
+  place-items: center;
+  gap: 18px;
+  box-sizing: border-box;
+  padding:
+    max(24px, env(safe-area-inset-top))
+    max(24px, env(safe-area-inset-right))
+    max(24px, env(safe-area-inset-bottom))
+    max(24px, env(safe-area-inset-left));
+  overflow: hidden;
+  color: #29414b;
+  background:
+    radial-gradient(circle at 50% 42%, rgb(242 200 91 / 28%) 0 22%, transparent 23%),
+    #f7f4ea;
+  text-align: center;
+  isolation: isolate;
+}
+
+body[data-orientation-blocked="true"] .game-shell > :not(.landscape-required) {
+  pointer-events: none !important;
+  user-select: none;
+}
+
+.rotate-device-icon {
+  display: grid;
+  place-items: center;
+  width: 92px;
+  height: 58px;
+  border: 5px solid #29414b;
+  border-radius: 16px;
+  background: #f6e7c9;
+  box-shadow: 0 7px 0 rgb(41 65 75 / 18%);
+  color: #5e8f62;
+  font: 900 38px/1 system-ui, sans-serif;
+  transform: rotate(-8deg);
+}
+
+.landscape-required p {
+  max-width: 30ch;
+  margin: 0;
+  font: 800 clamp(17px, 5vw, 24px) / 1.25 Nunito, system-ui, sans-serif;
+}
 .bakery-hud {
   position: absolute;
   z-index: 48;
