@@ -29,6 +29,7 @@ export class FishingScene extends Phaser.Scene {
     this.spot = this.mode === "magnet" ? MAGNET_FISHING_SPOT : FISHING_SPOT_BY_ID[this.session.spotId];
     this.phase = "idle";
     this.transitioning = false;
+    this.confirmingExit = false;
     this.biteStartedAt = 0;
     this.pendingTimers = [];
     this.qaMode = import.meta.env.DEV ? new URLSearchParams(window.location.search).get("qa") : null;
@@ -43,7 +44,7 @@ export class FishingScene extends Phaser.Scene {
     this.drawScene();
     this.bindInterface();
     this.setSceneInterface();
-    this.refreshInterface(this.mode === "magnet" ? "Choose a river point for the recovery magnet." : "Choose an exact water point for your cast.");
+    this.refreshInterface(this.mode === "magnet" ? "Tap water to place the magnet." : "Tap water to cast.");
     this.cameras.main.fadeIn(220, 12, 35, 42);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.shutdownScene());
   }
@@ -120,6 +121,7 @@ export class FishingScene extends Phaser.Scene {
 
   cast() {
     if (!this.session || !["idle", "success", "miss"].includes(this.phase)) return false;
+    this.clearExitConfirmation();
     const result = this.fishing.cast(this.target);
     if (!result.ok) {
       this.refreshInterface(result.message || "That cast is not available.", "error");
@@ -131,7 +133,7 @@ export class FishingScene extends Phaser.Scene {
     this.aimInner.setVisible(false);
     this.drawLine(250, 540, this.target.x, this.target.y);
     this.tweens.add({ targets: this.resultIcon, x: this.target.x, y: this.target.y, duration: this.duration(this.mode === "magnet" ? MAGNET_FISHING_CONFIG.castAnimationMs : FISHING_CONFIG.castAnimationMs), ease: "Sine.easeInOut" });
-    this.refreshInterface(this.mode === "magnet" ? "Magnet away—letting it settle on the riverbed…" : "Float away—watch the water for a bite.");
+    this.refreshInterface(this.mode === "magnet" ? "Waiting for the riverbed…" : "Watch for a bite.");
     const wait = this.mode === "magnet"
       ? MAGNET_FISHING_CONFIG.castAnimationMs + MAGNET_FISHING_CONFIG.sinkAnimationMs + MAGNET_FISHING_CONFIG.settleAnimationMs
       : FISHING_CONFIG.castAnimationMs + (result.potentialCatch
@@ -147,36 +149,37 @@ export class FishingScene extends Phaser.Scene {
     if (this.mode === "magnet" && result.ok) {
       this.phase = "ready";
       this.resultIcon.setText("🧲").setPosition(this.target.x, this.target.y + 18);
-      this.refreshInterface("Riverbed contact! Retrieve the magnet now.", "bite");
+      this.refreshInterface("Riverbed contact! Pull now.", "bite");
       return;
     }
     if (result.code === "fish-bite") {
       this.phase = "bite";
       this.biteStartedAt = performance.now();
       this.resultIcon.setText("❗").setPosition(this.target.x, this.target.y - 24);
-      this.refreshInterface("BITE! Reel in before the fish escapes!", "bite");
+      this.refreshInterface("Bite! Reel now.", "bite");
       this.later(FISHING_CONFIG.biteWindowMs, () => {
         if (this.phase !== "bite") return;
         const missed = this.fishing.miss("late");
         this.phase = "miss";
         this.showResult("💦");
-        this.refreshInterface(missed.ok ? "The fish escaped. Choose another point and cast again." : missed.message, "error");
+        this.refreshInterface(missed.ok ? "The fish escaped. Cast again." : missed.message, "error");
       });
     } else {
       this.phase = "miss";
       this.showResult("💦");
-      this.refreshInterface("Quiet water—there was no catch at that point. Try somewhere else.", "error");
+      this.refreshInterface("Quiet water. Try another spot.", "error");
     }
   }
 
   reel() {
     if (this.phase !== "bite" && this.phase !== "ready") {
-      this.refreshInterface(this.mode === "magnet" ? "Let the magnet settle first." : "Wait for BITE before reeling in.", "error");
+      this.refreshInterface(this.mode === "magnet" ? "Wait for the magnet to settle." : "Wait for a bite.", "error");
       return false;
     }
+    this.clearExitConfirmation();
     const quality = this.phase === "bite" ? Math.max(0, 1 - (performance.now() - this.biteStartedAt) / this.duration(FISHING_CONFIG.biteWindowMs)) : 1;
     this.phase = "reeling";
-    this.refreshInterface(this.mode === "magnet" ? "Pulling the recovery magnet back to Mill Bridge…" : "Fish on the line—bringing it safely ashore…", "bite");
+    this.refreshInterface(this.mode === "magnet" ? "Pulling it in…" : "Reeling it in…", "bite");
     this.tweens.add({ targets: this.resultIcon, x: this.mode === "magnet" ? 225 : 390, y: 560, duration: this.duration(this.mode === "magnet" ? MAGNET_FISHING_CONFIG.reelAnimationMs : FISHING_CONFIG.reelAnimationMs), ease: "Sine.easeInOut" });
     this.later(this.mode === "magnet" ? MAGNET_FISHING_CONFIG.reelAnimationMs : FISHING_CONFIG.reelAnimationMs, () => {
       if (this.transitioning || this.phase !== "reeling") return;
@@ -191,18 +194,18 @@ export class FishingScene extends Phaser.Scene {
       this.phase = result.empty ? "miss" : "success";
       if (result.empty) {
         this.showResult("🧲");
-        this.refreshInterface("Nothing on the magnet. Try a different part of the river.", "error");
+        this.refreshInterface("Nothing here. Try another spot.", "error");
       } else if (this.mode === "magnet") {
         this.showResult(result.recovery.icon);
-        this.refreshInterface(`${result.recovery.rarity.toUpperCase()} FIND · ${result.recovery.name} · +${result.rewardCoins} coins!`, "success", result);
+        this.refreshInterface(`${result.recovery.name} · +${result.rewardCoins} coins!`, "success", result);
       } else {
         this.showResult(result.item.icon);
         const message = result.disposition === "aquarium"
-          ? `${result.item.name} safely joined your home aquarium · ${result.aquarium.totalFish} fish across ${result.aquarium.species.length} species.`
+          ? `${result.item.name} joined your aquarium.`
           : result.disposition === "released-no-tank"
-            ? `${result.item.name} was safely returned to Reedbank. Buy and place a home fish tank to keep future ornamental catches.`
+            ? `${result.item.name} released. Place a tank to keep one.`
             : result.disposition === "released-full"
-              ? `${result.item.name} was safely returned because that species section of the tank is full.`
+              ? `${result.item.name} released. That tank section is full.`
               : `${result.item.name} added to your inventory.`;
         this.refreshInterface(message, "success", result);
       }
@@ -243,15 +246,16 @@ export class FishingScene extends Phaser.Scene {
     this.status = document.querySelector("#fishing-status");
     this.castButton = document.querySelector("#fishing-cast");
     this.reelButton = document.querySelector("#fishing-reel");
+    this.actions = document.querySelector(".fishing-actions");
     this.exitButton = document.querySelector("#fishing-exit");
     this.onCast = () => this.cast();
     this.onReel = () => this.reel();
-    this.onExit = () => this.returnToTown();
+    this.onExit = () => this.requestExit();
     this.castButton?.addEventListener("click", this.onCast);
     this.reelButton?.addEventListener("click", this.onReel);
     this.exitButton?.addEventListener("click", this.onExit);
     this.onKeyDown = (event) => {
-      if (event.key === "Escape") { event.preventDefault(); this.returnToTown(); return; }
+      if (event.key === "Escape") { event.preventDefault(); this.requestExit(); return; }
       if (["Enter", " "].includes(event.key)) {
         event.preventDefault();
         if (["bite", "ready"].includes(this.phase)) this.reel();
@@ -277,9 +281,15 @@ export class FishingScene extends Phaser.Scene {
     if (location) location.textContent = this.spot.title;
     if (hint) hint.textContent = "Tap water or use arrows to aim · Enter/Space casts or reels · Escape exits safely";
     const landscapeMessage = document.querySelector("#landscape-required-message");
-    if (landscapeMessage) landscapeMessage.textContent = `${this.mode === "magnet" ? "Magnet Fishing" : "Fishing"} is designed for landscape play. Turn your phone sideways to continue.`;
+    if (landscapeMessage) landscapeMessage.textContent = "Turn your device sideways to play.";
     document.querySelector("#fishing-mode-label").textContent = this.mode === "magnet" ? "MAGNET FISHING" : "FISHING";
     document.querySelector("#fishing-title").textContent = `${this.spot.icon} ${this.spot.shortTitle}`;
+    if (this.exitButton) {
+      this.exitButton.textContent = "Exit";
+      this.exitButton.setAttribute("aria-label", `Exit ${this.mode === "magnet" ? "Magnet Fishing" : "Fishing"} safely`);
+    }
+    const lastResult = document.querySelector("#fishing-last-result");
+    if (lastResult) { lastResult.textContent = ""; lastResult.classList.add("hidden"); }
     const aquarium = this.fishing.getSnapshot().aquarium;
     const aquariumHelp = this.spot.id !== "fishing-reedbank" ? "" : aquarium.placed
       ? ` ${aquarium.totalFish} ornamental fish currently live in your placed home tank.`
@@ -301,17 +311,47 @@ export class FishingScene extends Phaser.Scene {
       : this.spot.catchTable.map((entry) => fishingItem(entry.itemId)?.name).filter(Boolean).join(" · ");
     if (this.castButton) {
       this.castButton.disabled = !["idle", "success", "miss"].includes(this.phase) || castsLeft < 1;
-      this.castButton.textContent = castsLeft < 1 ? "More casts tomorrow" : `${this.mode === "magnet" ? "🧲" : "🎣"} Cast here`;
+      this.castButton.classList.toggle("hidden", !["idle", "success", "miss"].includes(this.phase));
+      this.castButton.textContent = castsLeft < 1 ? "Done today" : `${this.mode === "magnet" ? "🧲" : "🎣"} Cast`;
     }
     if (this.reelButton) {
       this.reelButton.disabled = !["bite", "ready"].includes(this.phase);
+      this.reelButton.classList.toggle("hidden", !["bite", "ready"].includes(this.phase));
       this.reelButton.classList.toggle("bite", ["bite", "ready"].includes(this.phase));
-      this.reelButton.textContent = this.mode === "magnet" ? "🪢 Retrieve magnet" : "⚡ Reel in";
+      this.reelButton.textContent = this.mode === "magnet" ? "🪢 Pull" : "⚡ Reel";
     }
-    if (result) document.querySelector("#fishing-last-result").textContent = this.mode === "magnet"
-      ? `${result.recovery.icon} ${result.recovery.name} · +${result.rewardCoins} coins`
-      : `${result.item.icon} ${result.item.name} · ${result.disposition === "inventory" ? "inventory" : result.disposition === "aquarium" ? `home aquarium · ${result.aquarium.totalFish} fish` : "safely released"}`;
+    this.actions?.classList.toggle("hidden", !["idle", "success", "miss", "bite", "ready"].includes(this.phase));
+    if (result) {
+      const lastResult = document.querySelector("#fishing-last-result");
+      if (lastResult) {
+        lastResult.textContent = this.mode === "magnet"
+          ? `${result.recovery.icon} ${result.recovery.name} · +${result.rewardCoins}`
+          : `${result.item.icon} ${result.item.name} · ${result.disposition === "inventory" ? "Inventory" : result.disposition === "aquarium" ? "Aquarium" : "Released"}`;
+        lastResult.classList.remove("hidden");
+      }
+    }
     this.updateDomState();
+  }
+
+  clearExitConfirmation() {
+    this.confirmingExit = false;
+    if (this.exitButton) {
+      this.exitButton.textContent = "Exit";
+      this.exitButton.dataset.confirming = "false";
+    }
+  }
+
+  requestExit() {
+    if (this.transitioning) return false;
+    const castInProgress = ["casting", "bite", "ready", "reeling"].includes(this.phase);
+    if (!castInProgress || this.confirmingExit) return this.returnToTown();
+    this.confirmingExit = true;
+    if (this.exitButton) {
+      this.exitButton.textContent = "Confirm Exit";
+      this.exitButton.dataset.confirming = "true";
+    }
+    this.refreshInterface("Leave this cast? Tap Confirm Exit.", "error");
+    return false;
   }
 
   updateDomState() {

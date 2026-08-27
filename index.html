@@ -757,20 +757,20 @@
             <h2 id="fishing-title">🎣 Commons Pond</h2>
             <small id="fishing-description">Choose an exact point on the water.</small>
           </div>
-          <button id="fishing-exit" type="button">Exit safely</button>
+          <button id="fishing-exit" type="button" aria-label="Exit Fishing safely">Exit</button>
         </header>
         <div class="fishing-stats" aria-label="Fishing progress">
-          <span>Casts left<strong id="fishing-casts">5 / 5</strong></span>
-          <span>Total finds<strong id="fishing-total">0</strong></span>
+          <span>Casts<strong id="fishing-casts">5 / 5</strong></span>
+          <span>Finds<strong id="fishing-total">0</strong></span>
           <span>Streak<strong id="fishing-streak">0</strong></span>
         </div>
         <p id="fishing-status" class="fishing-status" data-status="neutral" role="status" aria-live="assertive">Choose a water point.</p>
         <div class="fishing-actions">
-          <button id="fishing-cast" type="button">🎣 Cast here</button>
-          <button id="fishing-reel" type="button" disabled>⚡ Reel in</button>
+          <button id="fishing-cast" type="button">🎣 Cast</button>
+          <button id="fishing-reel" class="hidden" type="button" disabled>⚡ Reel</button>
         </div>
         <p id="fishing-catch-list" class="fishing-catch-list">River Minnows · River Trout</p>
-        <p id="fishing-last-result" class="fishing-last-result">No catch recorded this session yet.</p>
+        <p id="fishing-last-result" class="fishing-last-result hidden" aria-live="polite"></p>
       </section>
       <section id="waste-campaign-hud" class="waste-campaign-hud hidden" aria-labelledby="waste-campaign-title">
         <header class="waste-campaign-header">
