@@ -703,10 +703,10 @@
         <header class="scoops-hud-header">
           <div><p>MILESTONE 23 · 750-LEVEL BEACH COUNTER</p><h2 id="south-shore-scoops-hud-title">🍦 South Shore Scoops</h2><small id="south-shore-scoops-progress-summary">0 cleared · 0 stars · restoration tier 0</small></div>
           <span id="south-shore-scoops-balance">🪙 100</span>
-          <button id="south-shore-scoops-exit" type="button">Save &amp; exit</button>
+          <button id="south-shore-scoops-exit" type="button" aria-label="Save the South Shore Scoops shift and exit">Save &amp; Exit</button>
         </header>
         <section id="south-shore-scoops-picker" class="scoops-picker" aria-label="Choose a South Shore Scoops level">
-          <div><strong>750 original picture-order shifts</strong><small>Serve one customer at a time. Two more customers remain visible in line, and 60% accurate service passes a shift.</small></div>
+          <div><strong>750 picture-order shifts</strong><small>Match 60% of orders to unlock the next shift.</small></div>
           <label for="south-shore-scoops-level-select">Available shift<select id="south-shore-scoops-level-select"><option value="1">Level 1</option></select></label>
           <button id="south-shore-scoops-start" type="button">Open for Level 1</button>
         </section>
@@ -715,7 +715,7 @@
           <div id="south-shore-scoops-customers" class="scoops-customers" aria-label="Current customer and next two customers"></div>
           <div class="scoops-current"><div><small id="south-shore-scoops-order-number">ORDER 1</small><h3 id="south-shore-scoops-customer-name">Customer</h3></div><div id="south-shore-scoops-patience" class="scoops-patience"><span></span></div><div id="south-shore-scoops-order-pictures" class="scoops-order-pictures" aria-label="Picture order"></div></div>
           <div class="scoops-preparation"><div><small>BUILD BOARD</small><div id="south-shore-scoops-build" class="scoops-product-board">Start with the first picture</div></div><div><small>TRAY</small><div id="south-shore-scoops-tray" class="scoops-product-board">No item ready</div></div></div>
-          <div><p class="scoops-worktop-label">Tap parts in the exact picture order. Early shifts highlight the next part.</p><div id="south-shore-scoops-parts" class="scoops-part-list"></div></div>
+          <div class="south-shore-scoops-worktop"><p class="scoops-worktop-label">Build the highlighted picture from left to right</p><div id="south-shore-scoops-parts" class="scoops-part-list"></div></div>
           <div class="scoops-controls"><button id="south-shore-scoops-undo" type="button" disabled>↶ Undo</button><button id="south-shore-scoops-discard" type="button" disabled>🗑 Discard</button><button id="south-shore-scoops-add-tray" type="button" disabled>＋ Add first item</button><button id="south-shore-scoops-serve" class="primary" type="button" disabled>Serve customer</button></div>
         </section>
         <p id="south-shore-scoops-status" class="scoops-status" data-status="neutral" role="status" aria-live="assertive">Choose an available South Shore Scoops level to begin.</p>

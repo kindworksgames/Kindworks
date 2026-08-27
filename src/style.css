@@ -2251,6 +2251,60 @@ body[data-game-scene="HouseRescueScene"] .control-hint { display: none; }
   .house-rescue-stage-meta { min-height: 20px; }
 }
 
+/* Phase 2 Wave 5 — South Shore Scoops picture-order mobile counter. */
+#south-shore-scoops-hud button, #south-shore-scoops-hud select { min-height: var(--kw-touch-min, 44px); }
+#south-shore-scoops-hud .scoops-hud-header button { min-height: var(--kw-touch-min, 44px); }
+#south-shore-scoops-hud .scoops-controls.hidden,
+#south-shore-scoops-hud .scoops-controls button.hidden,
+#south-shore-scoops-hud .scoops-result-actions button.hidden { display: none; }
+
+@media (max-width: 900px) and (max-height: 650px) and (orientation: landscape) {
+  #south-shore-scoops-hud[data-scoops-view="shift"] {
+    position: fixed; inset: max(4px, env(safe-area-inset-top)) max(4px, env(safe-area-inset-right)) max(4px, env(safe-area-inset-bottom)) max(4px, env(safe-area-inset-left));
+    width: auto; max-height: none; overflow: visible; pointer-events: none; border: 0; border-radius: 0; background: transparent; box-shadow: none;
+  }
+  #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-hud-header {
+    position: absolute; inset: 0 0 auto; min-height: 58px; padding: 6px; pointer-events: auto; border: 3px solid #292238; border-radius: 12px;
+  }
+  #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-hud-header p,
+  #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-hud-header small { display: none; }
+  #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-shift { display: contents; }
+  #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-shift-heading {
+    position: absolute; top: 62px; left: 0; width: 158px; min-height: 48px; padding: 4px; pointer-events: auto; border: 3px solid #292238; border-radius: 10px; background: #fff1c9;
+  }
+  #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-shift-heading > div { display: none; }
+  #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-shift-heading > span { min-width: 0; min-height: 38px; padding: 3px; }
+  #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-customers { position: absolute; top: 62px; right: 0; left: 162px; height: 48px; pointer-events: auto; }
+  #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-customer { min-height: 48px; height: 48px; padding: 3px; overflow: hidden; }
+  #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-customer small { display: none; }
+  #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-customer strong { font-size: 7px; }
+  #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-customer .scoops-mini-products { margin-top: 2px; font-size: 11px; }
+  #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-current { position: absolute; top: 114px; left: 0; grid-template-columns: 70px 42px minmax(0, 1fr); width: 210px; height: 48px; padding: 4px; overflow: hidden; pointer-events: auto; }
+  #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-current h3 { overflow: hidden; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+  #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-order-pictures { max-height: 38px; overflow: hidden; }
+  #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-product-picture { padding: 2px; }
+  #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-preparation { position: absolute; top: 114px; right: 0; left: 214px; height: 48px; pointer-events: auto; }
+  #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-preparation small { display: none; }
+  #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-product-board { min-height: 48px; height: 48px; margin: 0; padding: 3px; overflow: hidden; }
+  #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-controls { position: absolute; top: 166px; right: 0; left: 0; display: flex; justify-content: flex-end; gap: 5px; height: 44px; pointer-events: auto; }
+  #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-controls button { flex: 1 1 88px; max-width: 150px; min-height: 44px; }
+  #south-shore-scoops-hud[data-scoops-view="shift"] .south-shore-scoops-worktop { position: absolute; right: 0; bottom: 48px; left: 0; height: 58px; overflow: hidden; pointer-events: auto; }
+  #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-worktop-label { display: none; }
+  #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-part-list { display: flex; gap: 5px; height: 58px; max-height: 58px; overflow-x: auto; overflow-y: hidden; padding: 3px; scrollbar-width: thin; }
+  #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-part-list button { flex: 1 0 72px; min-height: 52px; height: 52px; padding: 2px; }
+  #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-part-list button > span { font-size: 14px; }
+  #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-part-list button strong { font-size: 6px; }
+  #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-part-list button small { font-size: 5px; }
+  #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-status { position: absolute; right: 0; bottom: 0; left: 0; display: flex; align-items: center; min-height: 44px; max-height: 44px; overflow: hidden; pointer-events: auto; border: 3px solid #292238; border-radius: 8px; }
+  #south-shore-scoops-hud[data-scoops-view="picker"], #south-shore-scoops-hud[data-scoops-view="result"] { position: fixed; top: 50%; right: 50%; bottom: auto; left: auto; width: min(560px, calc(100vw - 12px)); max-height: calc(100dvh - 12px); transform: translate(50%, -50%); }
+  #south-shore-scoops-hud[data-scoops-view="picker"] .scoops-picker { grid-template-columns: minmax(0, 1fr) 115px; padding: 8px; }
+  #south-shore-scoops-hud[data-scoops-view="picker"] .scoops-picker > div { grid-column: 1 / -1; }
+  #south-shore-scoops-hud[data-scoops-view="result"] .scoops-result { padding: 8px; }
+  #south-shore-scoops-hud[data-scoops-view="result"] #south-shore-scoops-result-stars { margin: 3px 0; font-size: 23px; }
+  #south-shore-scoops-hud[data-scoops-view="result"] .scoops-result-stats { margin: 6px 0; }
+  #south-shore-scoops-hud[data-scoops-view="result"] .scoops-result-actions button { min-height: 44px; }
+}
+
 /* Phase 2 — House Rescue mobile-first landscape shell */
 @media (orientation: landscape) {
   .house-rescue-hud { position: fixed; inset: max(4px, env(safe-area-inset-top)) max(4px, env(safe-area-inset-right)) max(4px, env(safe-area-inset-bottom)) max(4px, env(safe-area-inset-left)); display: grid; grid-template-rows: auto minmax(0, 1fr) auto; width: auto; max-height: none; overflow: hidden; transform: none; }

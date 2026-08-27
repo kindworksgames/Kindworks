@@ -48,7 +48,8 @@ export class SouthShoreScoopsScene extends Phaser.Scene {
     if (resumed.ok) {
       document.querySelector("#south-shore-scoops-picker")?.classList.add("hidden");
       document.querySelector("#south-shore-scoops-shift")?.classList.remove("hidden");
-      this.setMessage(`Level ${resumed.session.level.level} resumed from the exact saved order.`, "success");
+      if (this.hud) this.hud.dataset.scoopsView = "shift";
+      this.setMessage(`Level ${resumed.session.level.level} resumed.`, "success");
     }
     this.render();
     this.cameras.main.fadeIn(220, 40, 91, 103);
@@ -93,16 +94,19 @@ export class SouthShoreScoopsScene extends Phaser.Scene {
     this.replayButton = document.querySelector("#south-shore-scoops-replay");
     this.returnButton = document.querySelector("#south-shore-scoops-return");
     this.partList = document.querySelector("#south-shore-scoops-parts");
+    this.worktop = document.querySelector("#south-shore-scoops-shift .south-shore-scoops-worktop");
+    this.controls = document.querySelector("#south-shore-scoops-shift .scoops-controls");
     document.querySelector("#south-shore-scoops-picker")?.classList.remove("hidden");
     document.querySelector("#south-shore-scoops-shift")?.classList.add("hidden");
     document.querySelector("#south-shore-scoops-result")?.classList.add("hidden");
-    this.setMessage("Choose an available South Shore Scoops level to begin.", "neutral");
+    if (this.hud) this.hud.dataset.scoopsView = "picker";
+    this.setMessage("Choose a beach-counter shift.", "neutral");
     this.onStart = () => this.startLevel(Number(this.levelSelect?.value || 1));
     this.onLevelChange = () => { if (this.startButton) this.startButton.textContent = `Open for Level ${Number(this.levelSelect?.value || 1)}`; };
     this.onExit = () => this.returnToTown(false);
     this.onUndo = () => { const result = this.scoops.undoPart(); this.setMessage(result.ok ? `${result.part.name} removed.` : result.message, result.ok ? "neutral" : "error"); this.render(); };
-    this.onDiscard = () => { const result = this.scoops.discardPreparation(); this.setMessage(result.ok ? "Preparation cleared. The customer is still waiting." : result.message, result.ok ? "error" : "neutral"); this.render(); };
-    this.onAddTray = () => { const result = this.scoops.addCurrentToTray(); this.setMessage(result.ok ? "First item is on the tray. Build the second picture." : result.message, result.ok ? "success" : "error"); this.render(); };
+    this.onDiscard = () => { const result = this.scoops.discardPreparation(); this.setMessage(result.ok ? "Order cleared. Start again." : result.message, result.ok ? "error" : "neutral"); this.render(); };
+    this.onAddTray = () => { const result = this.scoops.addCurrentToTray(); this.setMessage(result.ok ? "First item ready. Build the second." : result.message, result.ok ? "success" : "error"); this.render(); };
     this.onServe = () => this.serveCurrent();
     this.onNext = () => this.startLevel(Math.min(SOUTH_SHORE_SCOOPS_CONFIG.levelCount, (this.scoops.getActiveSession()?.level.level || 1) + 1));
     this.onReplay = () => this.startLevel(this.scoops.getActiveSession()?.level.level || 1);
@@ -123,7 +127,7 @@ export class SouthShoreScoopsScene extends Phaser.Scene {
     const status = document.querySelector("#location-status"); if (status) status.textContent = "Inside South Shore Scoops";
     const hint = document.querySelector("#control-hint"); if (hint) hint.textContent = "Match each picture · One customer served at a time · Save & exit preserves every part";
     const landscapeMessage = document.querySelector("#landscape-required-message");
-    if (landscapeMessage) landscapeMessage.textContent = "South Shore Scoops is designed for landscape play. Turn your phone sideways to continue this shift.";
+    if (landscapeMessage) landscapeMessage.textContent = "Turn your device sideways to play.";
   }
 
   startLevel(level) {
@@ -133,7 +137,8 @@ export class SouthShoreScoopsScene extends Phaser.Scene {
     document.querySelector("#south-shore-scoops-picker")?.classList.add("hidden");
     document.querySelector("#south-shore-scoops-shift")?.classList.remove("hidden");
     document.querySelector("#south-shore-scoops-result")?.classList.add("hidden");
-    this.setMessage("Match the current picture in order, then serve. A 60% accurate shift passes.", "success");
+    if (this.hud) this.hud.dataset.scoopsView = "shift";
+    this.setMessage("Match the picture, then serve.", "success");
     this.render();
     return true;
   }
@@ -141,7 +146,7 @@ export class SouthShoreScoopsScene extends Phaser.Scene {
   addPart(id) {
     const result = this.scoops.addPart(id);
     if (!result.ok) this.setMessage(result.message, "error");
-    else this.setMessage(`${result.part.icon} ${result.part.name} added${result.expectedPart ? ` · next ${southShoreScoopsPart(result.expectedPart).name}` : ""}.`, "neutral");
+    else this.setMessage(`${result.part.name} added${result.expectedPart ? ` · next ${southShoreScoopsPart(result.expectedPart).name}` : ""}.`, "neutral");
     this.render();
   }
 
@@ -149,7 +154,7 @@ export class SouthShoreScoopsScene extends Phaser.Scene {
     const result = this.scoops.serveCurrent();
     if (!result.ok) { this.setMessage(result.message, "error"); this.render(); return false; }
     if (result.result) { this.showResult(result.result); return true; }
-    this.setMessage(`${result.customerName} loved the order. ${result.nextCustomer} is now at the counter.`, "success");
+    this.setMessage(`${result.customerName} served. Next: ${result.nextCustomer}.`, "success");
     this.render();
     return true;
   }
@@ -157,15 +162,19 @@ export class SouthShoreScoopsScene extends Phaser.Scene {
   showResult(result) {
     document.querySelector("#south-shore-scoops-shift")?.classList.add("hidden");
     document.querySelector("#south-shore-scoops-result")?.classList.remove("hidden");
+    if (this.hud) this.hud.dataset.scoopsView = "result";
     document.querySelector("#south-shore-scoops-result-title").textContent = result.won ? "Beach-counter shift complete!" : "Try the shift again";
     document.querySelector("#south-shore-scoops-result-stars").textContent = `${"★".repeat(result.stars)}${"☆".repeat(3 - result.stars)}`;
-    document.querySelector("#south-shore-scoops-result-message").textContent = result.won ? result.firstClear ? `The next shift is unlocked. South Shore restoration is now tier ${result.restorationTier}.` : "Best score saved. Replay coins are first-clear only." : "Serve at least 60% accurately to unlock the next shift.";
+    document.querySelector("#south-shore-scoops-result-message").textContent = result.won ? result.firstClear ? `Next shift unlocked · shore tier ${result.restorationTier}.` : "Best score saved. Replay pays no coins." : "Match at least 60% of orders. Try again.";
     document.querySelector("#south-shore-scoops-result-accuracy").textContent = `${result.accuracy}%`;
     document.querySelector("#south-shore-scoops-result-happiness").textContent = `${result.happiness}%`;
     document.querySelector("#south-shore-scoops-result-waste").textContent = String(result.waste);
     document.querySelector("#south-shore-scoops-result-coins").textContent = `+${result.coins}`;
-    if (this.nextButton) this.nextButton.disabled = !result.won || this.scoops.getActiveSession().level.level >= SOUTH_SHORE_SCOOPS_CONFIG.levelCount;
-    this.setMessage(result.won ? "South Shore Scoops shift complete." : "The shift did not reach 60% accuracy.", result.won ? "success" : "error");
+    if (this.nextButton) {
+      this.nextButton.disabled = !result.won || this.scoops.getActiveSession().level.level >= SOUTH_SHORE_SCOOPS_CONFIG.levelCount;
+      this.nextButton.classList.toggle("hidden", !result.won);
+    }
+    this.setMessage(result.won ? `Shift complete. +${result.coins} coins.` : "Below 60%. Try again.", result.won ? "success" : "error");
     this.render();
   }
 
@@ -204,13 +213,22 @@ export class SouthShoreScoopsScene extends Phaser.Scene {
     document.querySelector("#south-shore-scoops-build").innerHTML = work.build.length ? work.build.map(partPicture).join("") : "Start with the first picture";
     document.querySelector("#south-shore-scoops-tray").innerHTML = work.tray.length ? work.tray.map((parts) => parts.map(partPicture).join("")).join(" + ") : "No item ready";
     const expectedPart = this.scoops.nextExpectedPart();
-    const available = southShoreScoopsAvailableParts(session.level.level).sort((left, right) => PART_ORDER.indexOf(left) - PART_ORDER.indexOf(right));
-    if (this.partList) this.partList.innerHTML = available.map((id) => { const part = southShoreScoopsPart(id); const guide = session.level.level <= 10 && id === expectedPart; return `<button type="button" data-scoops-part="${id}" class="${part.category} ${guide ? "next" : ""}" aria-label="Add ${part.name}">${part.color ? `<i style="background:${part.color}"></i>` : `<span>${part.icon}</span>`}<strong>${part.name}</strong><small>${part.category}</small></button>`; }).join("");
-    if (this.undoButton) this.undoButton.disabled = !work.build.length;
-    if (this.discardButton) this.discardButton.disabled = !work.build.length && !work.tray.length;
+    const guided = session.level.level <= 10;
+    const available = southShoreScoopsAvailableParts(session.level.level).sort((left, right) => guided && left === expectedPart ? -1 : guided && right === expectedPart ? 1 : PART_ORDER.indexOf(left) - PART_ORDER.indexOf(right));
+    if (this.partList) {
+      this.partList.innerHTML = available.map((id) => { const part = southShoreScoopsPart(id); const guide = guided && id === expectedPart; return `<button type="button" data-scoops-part="${id}" class="${part.category} ${guide ? "next" : ""}" aria-label="Add ${part.name}">${part.color ? `<i style="background:${part.color}"></i>` : `<span>${part.icon}</span>`}<strong>${part.name}</strong><small>${part.category}</small></button>`; }).join("");
+      if (guided) this.partList.scrollLeft = 0;
+    }
+    const canUndo = Boolean(work.build.length);
+    const canDiscard = Boolean(work.build.length || work.tray.length);
+    if (this.undoButton) { this.undoButton.disabled = !canUndo; this.undoButton.classList.toggle("hidden", !canUndo); }
+    if (this.discardButton) { this.discardButton.disabled = !canDiscard; this.discardButton.classList.toggle("hidden", !canDiscard); }
     const hasMoreAfter = Boolean(order && work.tray.length < order.items.length - 1);
-    if (this.addTrayButton) { this.addTrayButton.disabled = !work.build.length || !hasMoreAfter; this.addTrayButton.classList.toggle("hidden", !hasMoreAfter); }
-    if (this.serveButton) this.serveButton.disabled = !work.build.length || hasMoreAfter;
+    const canAddTray = Boolean(work.build.length && hasMoreAfter);
+    const canServe = Boolean(work.build.length && !hasMoreAfter);
+    if (this.addTrayButton) { this.addTrayButton.disabled = !canAddTray; this.addTrayButton.classList.toggle("hidden", !canAddTray); }
+    if (this.serveButton) { this.serveButton.disabled = !canServe; this.serveButton.classList.toggle("hidden", !canServe); this.serveButton.textContent = "Serve"; }
+    this.controls?.classList.toggle("hidden", !canUndo && !canDiscard && !canAddTray && !canServe);
     this.queueVisual.setText(queue.length ? queue.map((_, index) => index === 0 ? "🙂" : "🧑").join("  →  ") : "😊  ✓");
     this.buildVisual.setText(expectedItem ? expectedItem.parts.map((id) => SOUTH_SHORE_SCOOPS_PARTS[id].icon).join("  ") : "✨");
     this.updateDomState();
@@ -251,7 +269,7 @@ export class SouthShoreScoopsScene extends Phaser.Scene {
       else if (!result?.ok && result?.code === "persistence-failed") this.setMessage(result.message, "error");
       else {
         this.renderElapsed += delta;
-        if (result?.missedCustomer) { this.renderElapsed = 0; this.setMessage(`${result.missedCustomer} left. Start the next picture order quickly.`, "error"); this.render(); }
+        if (result?.missedCustomer) { this.renderElapsed = 0; this.setMessage(`${result.missedCustomer} left. Start the next order.`, "error"); this.render(); }
         else if (this.renderElapsed >= 100) { this.renderElapsed = 0; this.renderLiveMetrics(); }
       }
     }
