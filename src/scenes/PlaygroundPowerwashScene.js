@@ -84,8 +84,9 @@ export class PlaygroundPowerwashScene extends Phaser.Scene {
     this.buttons.retry?.addEventListener("click", this.onRetry); this.buttons.qa?.addEventListener("click", this.onQa); this.buttons.replay?.addEventListener("click", this.onReplay); this.buttons.next?.addEventListener("click", this.onNext); this.buttons.return?.addEventListener("click", this.onReturn);
     this.canvas?.addEventListener("pointerdown", this.onPointerDown); this.canvas?.addEventListener("pointermove", this.onPointerMove); this.canvas?.addEventListener("pointerup", this.onPointerUp); this.canvas?.addEventListener("pointercancel", this.onPointerUp); this.canvas?.addEventListener("pointerleave", this.onPointerUp); window.addEventListener("keydown", this.onKeyDown);
     this.buttons.qa?.classList.toggle("hidden", !this.qaMode); this.hud?.classList.remove("hidden");
+    if (this.buttons.exit) this.buttons.exit.textContent = "Exit";
     const session = this.powerwash.getActiveSession(); show("#powerwash-picker", !session); show("#powerwash-gameplay", Boolean(session)); show("#powerwash-result", false);
-    this.setMessage(session?.mode === "town-job" ? "Power wash at least 97% of the Commons Playground." : session ? "Hold or drag across the grime. Dark stains need soap before water." : "Choose any of the 750 original Playground Power Wash levels.", session ? "success" : "neutral");
+    this.setMessage(session?.mode === "town-job" ? "Wash at least 97% clean." : session ? "Drag to wash. Soap dark stains first." : "Choose a level.", session ? "success" : "neutral");
   }
 
   setSceneInterface() {
@@ -103,7 +104,7 @@ export class PlaygroundPowerwashScene extends Phaser.Scene {
     if (!result.ok) { this.setMessage(result.message, "error"); return false; }
     this.lastResultContext = null; this.pointerCell = null;
     show("#powerwash-picker", false); show("#powerwash-gameplay", true); show("#powerwash-result", false);
-    this.setMessage("Hold or drag to spray. Apply soap to dark green stains, then rinse them with water.", "success");
+    this.setMessage("Drag to wash. Soap dark stains first.", "success");
     this.render(); return true;
   }
 
@@ -111,7 +112,7 @@ export class PlaygroundPowerwashScene extends Phaser.Scene {
     const session = this.powerwash.getActiveSession(); if (!session) return false;
     const result = this.powerwash.selectTool(session.id, tool, nozzle);
     if (!result.ok) { this.setMessage(result.message, "error"); return false; }
-    this.setMessage(tool === "soap" ? "Soap selected. Cover dark green stains before rinsing." : `${POWERWASH_NOZZLES[nozzle].label} nozzle selected. Hold or drag to spray.`, "hint");
+    this.setMessage(tool === "soap" ? "Soap selected. Cover dark stains." : `${POWERWASH_NOZZLES[nozzle].label} nozzle selected.`, "hint");
     this.render(); return true;
   }
 
@@ -143,7 +144,7 @@ export class PlaygroundPowerwashScene extends Phaser.Scene {
   restart() {
     const session = this.powerwash.getActiveSession(); if (!session) return false;
     const result = this.powerwash.restart(session.id); if (!result.ok) { this.setMessage(result.message, "error"); return false; }
-    this.pointerCell = null; this.setMessage("This playground has been reset. Saved campaign progress is safe.", "success"); this.render(); return true;
+    this.pointerCell = null; this.setMessage("Playground restarted.", "success"); this.render(); return true;
   }
 
   runCertifiedCompletion() {
@@ -167,7 +168,7 @@ export class PlaygroundPowerwashScene extends Phaser.Scene {
     const waterFill = document.querySelector("#powerwash-water-fill"); if (waterFill) waterFill.style.width = `${state.water}%`;
     const soapFill = document.querySelector("#powerwash-soap-fill"); if (soapFill) soapFill.style.width = `${state.soap}%`;
     for (const key of ["soap", "precision", "standard", "wide"]) this.buttons[key]?.classList.toggle("active", key === "soap" ? state.toolMode === "soap" : state.toolMode === "water" && state.nozzle === key);
-    if (this.buttons.retry) this.buttons.retry.disabled = state.strokes === 0;
+    if (this.buttons.retry) { this.buttons.retry.disabled = state.strokes === 0; this.buttons.retry.classList.toggle("hidden", state.strokes === 0); }
     this.drawBoard(); this.updateDomState();
   }
 
@@ -198,17 +199,18 @@ export class PlaygroundPowerwashScene extends Phaser.Scene {
     this.spraying = false;
     this.lastResultContext = { level: result.level, mode: session.mode, returnPosition: session.returnPosition, returnFacing: session.returnFacing };
     show("#powerwash-gameplay", false); show("#powerwash-result", true);
+    document.querySelector(".powerwash-result-actions")?.classList.toggle("town-job", session.mode === "town-job");
     setText("#powerwash-result-title", session.mode === "town-job" ? "Commons Playground restored!" : "Playground restored!");
     setText("#powerwash-result-message", session.mode === "town-job" ? "The grime is gone and the playground will stay clean for two or three game days." : result.firstClear ? "The first clear is saved and its KindlyCoins were awarded once." : "Your best result remains saved. Campaign replays do not pay again.");
     setText("#powerwash-result-clean", "100%"); setText("#powerwash-result-tolerance", `${result.rawPercent}%`); setText("#powerwash-result-strokes", result.strokes); setText("#powerwash-result-coins", `+${result.rewardCoins}`);
     show("#powerwash-replay", session.mode !== "town-job"); show("#powerwash-next", session.mode !== "town-job");
-    this.setMessage("Playground Power Wash result saved safely.", "success"); this.render();
+    this.setMessage("Playground saved.", "success"); this.render();
   }
 
   setMessage(message, status = "neutral") { const element = document.querySelector("#powerwash-status"); if (element) { element.textContent = message || "Continue power washing."; element.dataset.status = status; } }
   updateDomState() { const game = document.querySelector("#game"); if (!game) return; const session = this.powerwash.getActiveSession(); const state = this.powerwash.getSessionState(); const diagnostics = this.powerwash.getDiagnostics(); game.dataset.scene = this.scene.key; game.dataset.powerwashLevel = String(session?.assignedLevel || diagnostics.nextLevel); game.dataset.powerwashMode = session?.mode || this.lastResultContext?.mode || "picker"; game.dataset.powerwashPhase = this.lastResultContext ? "result" : session?.status || "picker"; game.dataset.powerwashClean = String(state?.percent || 0); game.dataset.powerwashTool = state?.toolMode || "none"; game.dataset.powerwashNozzle = state?.nozzle || "none"; game.dataset.powerwashCompleted = String(diagnostics.completed); game.dataset.powerwashCatalogue = String(diagnostics.totalLevels); game.dataset.powerwashCatalogueValid = String(diagnostics.catalogueValid); }
 
-  requestExit() { const session = this.powerwash.getActiveSession(); if (session && Date.now() > this.exitArmedUntil) { this.exitArmedUntil = Date.now() + 3000; if (this.buttons.exit) this.buttons.exit.textContent = "Confirm exit level"; this.setMessage("Press Confirm exit level within three seconds to abandon only this attempt.", "error"); return false; } return this.returnToTown(false); }
+  requestExit() { const session = this.powerwash.getActiveSession(); if (session && Date.now() > this.exitArmedUntil) { this.exitArmedUntil = Date.now() + 3000; if (this.buttons.exit) this.buttons.exit.textContent = "Confirm Exit"; this.setMessage("Tap Confirm Exit to leave this attempt.", "error"); return false; } return this.returnToTown(false); }
   returnToTown(complete) { if (this.transitioning) return false; this.transitioning = true; const active = this.powerwash.getActiveSession(); const context = active || this.lastResultContext || {}; if (active) this.powerwash.cancel(active.id); const position = context.returnPosition || this.entryData.returnPosition || { x: 1940, y: 1180 }; const facing = context.returnFacing || this.entryData.returnFacing || "up"; this.gameState.updatePlayer({ scene: "TownScene", x: position.x, y: position.y, facing }); document.querySelector("#game")?.setAttribute("data-transition", complete ? "powerwash-complete" : "leaving-powerwash"); this.cameras.main.fadeOut(220, 7, 20, 43); this.time.delayedCall(240, () => this.scene.start("TownScene", { returnPosition: position, returnFacing: facing, transitionCount: Number(this.entryData.transitionCount || 0) + 1 })); return true; }
 
   shutdownScene() {
