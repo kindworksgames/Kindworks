@@ -4341,9 +4341,9 @@ body[data-game-scene="HarbourGeneralScene"] .weather-effects { display: none; }
 .lawn-care-header h2 { margin: 3px 0; font: 900 20px/1.05 system-ui, sans-serif; }
 .lawn-care-header small { overflow: hidden; color: #d4e9bd; font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
 .lawn-care-header > span { padding: 6px 8px; color: #fff09c; border: 2px solid #8ebd61; border-radius: 999px; font-weight: 900; white-space: nowrap; }
-.lawn-care-hud button, .lawn-care-hud select { min-height: 38px; border: 3px solid #244f32; border-radius: 7px; color: #244f32; background: #fbfff2; font: 900 10px/1 ui-monospace, monospace; box-shadow: 3px 3px 0 rgb(36 79 50 / 28%); touch-action: manipulation; }
+.lawn-care-hud button, .lawn-care-hud select { min-height: var(--kw-touch-min); border: 3px solid #244f32; border-radius: 7px; color: #244f32; background: #fbfff2; font: 900 10px/1 ui-monospace, monospace; box-shadow: 3px 3px 0 rgb(36 79 50 / 28%); touch-action: manipulation; }
 .lawn-care-hud button:disabled { opacity: .42; box-shadow: none; }
-.lawn-care-header button { min-height: 34px; padding: 5px 8px; border-color: #bde58c; box-shadow: none; }
+.lawn-care-header button { min-height: var(--kw-touch-min); padding: 5px 8px; border-color: #bde58c; box-shadow: none; }
 .lawn-care-picker { display: grid; grid-template-columns: minmax(0, 1fr) 170px 120px; align-items: end; gap: 9px; padding: 13px; }
 .lawn-care-picker strong, .lawn-care-picker small { display: block; }
 .lawn-care-picker small { margin-top: 5px; color: #58705d; font: 700 9px/1.4 system-ui, sans-serif; }
@@ -4380,11 +4380,11 @@ body[data-game-scene="HarbourGeneralScene"] .weather-effects { display: none; }
 .lawn-care-side article span { color: #657865; font: 700 8px/1.35 system-ui, sans-serif; }
 .lawn-care-legend { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; color: #4c684f; font: 700 8px/1.2 system-ui, sans-serif; }
 .lawn-care-legend span { padding: 4px; border-radius: 5px; background: #dcebbe; }
-.lawn-care-side button { min-height: 36px; }
+.lawn-care-side button { min-height: var(--kw-touch-min); }
 .lawn-care-side button.hinted, .lawn-care-controls button.hinted { color: #614c0d; border-color: #d19d23; background: #ffea84; animation: lawn-hint-pulse 700ms ease-in-out infinite alternate; }
 #lawn-qa-complete { color: #fff; background: #76528c; }
 .lawn-care-controls { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; }
-.lawn-care-controls button { min-height: 42px; font-size: 14px; }
+.lawn-care-controls button { min-height: var(--kw-touch-min); font-size: 14px; }
 .lawn-care-status { min-height: 34px; margin: 0; padding: 8px 10px; color: #315a3b; border-top: 2px solid #9fc477; background: #eff8d9; font: 800 9px/1.35 system-ui, sans-serif; }
 .lawn-care-status[data-status="success"] { color: #21633d; background: #dff3c8; }
 .lawn-care-status[data-status="error"] { color: #8e3f37; background: #f6c6bc; }
@@ -4407,18 +4407,47 @@ body[data-game-scene="LawnCareScene"] .town-hud { display: none; }
 @keyframes lawn-hint-pulse { to { transform: translateY(-2px); box-shadow: 4px 5px 0 rgb(122 91 17 / 30%); } }
 
 @media (max-height: 650px) and (orientation: landscape) {
-  .lawn-care-hud { top: 3px; right: 3px; width: min(760px, calc(100vw - 6px)); max-height: calc(100dvh - 6px); border-width: 3px; }
+  .lawn-care-hud {
+    inset: max(3px, env(safe-area-inset-top)) max(3px, env(safe-area-inset-right)) max(3px, env(safe-area-inset-bottom)) max(3px, env(safe-area-inset-left));
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    width: auto;
+    max-height: none;
+    overflow: hidden;
+    border-width: 3px;
+  }
   .lawn-care-header { padding: 5px 7px; }
   .lawn-care-header p, .lawn-care-header small { display: none; }
   .lawn-care-header h2 { font-size: 15px; }
-  .lawn-care-header button { min-height: 30px; }
-  .lawn-care-gameplay { gap: 4px; padding: 5px; }
-  .lawn-care-play-area { grid-template-columns: minmax(250px, 1fr) 145px; }
-  .lawn-board { width: min(100%, 360px); max-height: 58dvh; }
+  .lawn-care-header button { min-height: var(--kw-touch-min); padding: 5px 12px; }
+  .lawn-care-gameplay { position: relative; grid-template-rows: auto minmax(0, 1fr); gap: 4px; min-height: 0; padding: 4px; overflow: hidden; }
+  .lawn-care-game-heading { gap: 4px; }
+  .lawn-care-game-heading > span { min-width: 52px; padding: 3px; }
+  .lawn-care-play-area { grid-template-columns: minmax(0, 1fr) 112px; gap: 4px; min-height: 0; overflow: hidden; }
+  .lawn-board-viewport { min-height: 0; padding: 3px 3px 3px 144px; }
+  .lawn-board { width: auto; height: 100%; max-width: 100%; max-height: 100%; }
   .lawn-care-side { gap: 4px; }
-  .lawn-care-side article span, .lawn-care-legend { display: none; }
-  .lawn-care-controls button { min-height: 34px; }
-  .lawn-care-status { min-height: 27px; padding: 5px 8px; }
+  .lawn-care-side article, .lawn-care-legend { display: none; }
+  .lawn-live-stars { padding: 3px; font-size: 18px; }
+  .lawn-care-side button, .lawn-care-controls button { min-height: var(--kw-touch-min); }
+  .lawn-care-side button { padding: 5px 3px; font-size: 9px; }
+  .lawn-care-controls {
+    position: absolute;
+    z-index: 2;
+    left: 8px;
+    bottom: 8px;
+    grid-template: repeat(2, 44px) / repeat(3, 44px);
+    grid-template-areas: "undo up ." "left down right";
+    gap: 4px;
+    width: 140px;
+  }
+  #lawn-up { grid-area: up; }
+  #lawn-left { grid-area: left; }
+  #lawn-down { grid-area: down; }
+  #lawn-right { grid-area: right; }
+  #lawn-undo { grid-area: undo; }
+  .lawn-care-controls button { font-size: 16px; }
+  .lawn-care-status { min-height: 30px; max-height: 30px; padding: 7px 9px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 }
 
 @media (max-width: 720px) and (orientation: portrait) {

@@ -133,9 +133,9 @@ export class LawnCareScene extends Phaser.Scene {
     show("#lawn-care-result", false);
     this.setMessage(session
       ? session.mode === "town-job"
-        ? "Restore this neighbourhood lawn. Its exact cut percentage will be applied back in Willowmere."
-        : "Swipe in a direction: the mower keeps going until a hedge stops it. Cut at least 50% before moves run out."
-      : "Choose any of the 750 original Lawn Care levels to begin.", session ? "success" : "neutral");
+        ? "Mow this lawn. Your result updates the town."
+        : "Swipe to mow. Cut at least 50%."
+      : "Choose a lawn to begin.", session ? "success" : "neutral");
   }
 
   setSceneInterface() {
@@ -159,7 +159,7 @@ export class LawnCareScene extends Phaser.Scene {
     show("#lawn-care-picker", false);
     show("#lawn-care-gameplay", true);
     show("#lawn-care-result", false);
-    this.setMessage("Swipe in a direction: the mower keeps going until a hedge stops it. Cut at least 50% before moves run out.", "success");
+    this.setMessage("Swipe to mow. Cut at least 50%.", "success");
     this.render();
     return true;
   }
@@ -197,7 +197,7 @@ export class LawnCareScene extends Phaser.Scene {
     if (!result.ok) { this.setMessage(result.message, "error"); return false; }
     show("#lawn-care-result", false);
     show("#lawn-care-gameplay", true);
-    this.setMessage("The lawn has been reset. Your campaign progress is safe.", "success");
+    this.setMessage("Lawn reset. Progress is safe.", "success");
     this.render();
     return true;
   }
@@ -296,7 +296,7 @@ export class LawnCareScene extends Phaser.Scene {
     show("#lawn-replay", session?.mode !== "town-job");
     show("#lawn-next", won && session?.mode !== "town-job");
     if (this.buttons.return) this.buttons.return.textContent = "Return to Willowmere";
-    this.setMessage(won ? "Lawn Care result saved safely." : "No campaign progress was lost. Restart this lawn to continue.", won ? "success" : "error");
+    this.setMessage(won ? "Result saved." : "Restart to try again.", won ? "success" : "error");
     this.render();
   }
 
@@ -327,7 +327,7 @@ export class LawnCareScene extends Phaser.Scene {
     if (session && Date.now() > this.exitArmedUntil) {
       this.exitArmedUntil = Date.now() + 3000;
       if (this.exitButton) this.exitButton.textContent = "Confirm exit level";
-      this.setMessage("Press Confirm exit level within three seconds to abandon only this attempt. Completed levels stay saved.", "error");
+      this.setMessage("Tap Confirm exit to leave this attempt.", "error");
       return false;
     }
     return this.returnToTown(false);
