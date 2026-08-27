@@ -1959,19 +1959,6 @@ export class TownScene extends Phaser.Scene {
     return { ok: true, targetScene: "LawnCareScene", session: result.session };
   }
 
-  focusOnboardingJob(gameKey) {
-    let focus = null;
-    if (gameKey === "waste") focus = { x: COMMONS_RUBBISH_JOB.world.x, y: COMMONS_RUBBISH_JOB.world.y };
-    if (gameKey === "river") focus = { x: RIVER_CLEAROUT.marker.x, y: RIVER_CLEAROUT.marker.y };
-    if (gameKey === "lawn") {
-      const plot = LAWN_PLOTS[0];
-      if (plot) focus = { x: plot.x, y: plot.y };
-    }
-    if (!focus) return { ok: false, reason: "That first job could not be located." };
-    this.cameras.main.pan(focus.x, focus.y, 520, "Sine.easeInOut", true);
-    return { ok: true, gameKey, focus };
-  }
-
   startOnboardingJob(gameKey) {
     if (gameKey === "resident") {
       const active = this.activePosition();
