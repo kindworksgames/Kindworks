@@ -651,10 +651,10 @@
         <header class="cafe-hud-header">
           <div><p>MILESTONE 21 · 150-LEVEL COFFEE CAMPAIGN</p><h2 id="morning-mug-hud-title">☕ Morning Mug Coffee</h2><small id="morning-mug-progress-summary">0 cleared · 0 stars · 0 served</small></div>
           <span id="morning-mug-balance">🪙 100</span>
-          <button id="morning-mug-exit" type="button">Save &amp; exit</button>
+          <button id="morning-mug-exit" type="button" aria-label="Save the Morning Mug shift and exit">Save &amp; Exit</button>
         </header>
         <section id="morning-mug-picker" class="cafe-picker" aria-label="Choose a Morning Mug level">
-          <div><strong>150 specialist coffee shifts</strong><small>Grind, pour, steam and finish every drink. First clears award coins once.</small></div>
+          <div><strong>150 coffee shifts</strong><small>First clears unlock the next shift and pay once.</small></div>
           <label for="morning-mug-level-select">Available shift<select id="morning-mug-level-select"><option value="1">Level 1</option></select></label>
           <button id="morning-mug-start" type="button">Open for Level 1</button>
         </section>
@@ -663,7 +663,7 @@
           <div id="morning-mug-orders" class="cafe-orders" aria-label="Customer drink orders"></div>
           <div id="morning-mug-trays" class="cafe-trays" aria-label="Drink preparation trays"></div>
           <div class="cafe-current"><small>CURRENT DRINK</small><h3 id="morning-mug-order-name">☕ Small espresso</h3><div id="morning-mug-recipe-sequence" class="cafe-recipe-sequence"></div></div>
-          <div><p class="cafe-worktop-label">Tap the highlighted next ingredient or barista station</p><div id="morning-mug-step-list" class="cafe-step-list"></div></div>
+          <div class="morning-mug-worktop"><p class="cafe-worktop-label">Choose the highlighted step</p><div id="morning-mug-step-list" class="cafe-step-list"></div></div>
           <div class="cafe-controls"><button id="morning-mug-undo" type="button" disabled>↶ Undo</button><button id="morning-mug-discard" type="button" disabled>🗑 Discard</button><button id="morning-mug-serve" class="primary" type="button" disabled>Serve customer</button></div>
         </section>
         <p id="morning-mug-status" class="cafe-status" data-status="neutral" role="status" aria-live="assertive">Choose an available Morning Mug level to begin.</p>

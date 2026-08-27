@@ -35,7 +35,8 @@ export class MorningMugScene extends Phaser.Scene {
     if (resumed.ok) {
       document.querySelector("#morning-mug-picker")?.classList.add("hidden");
       document.querySelector("#morning-mug-shift")?.classList.remove("hidden");
-      this.setMessage(`Level ${resumed.session.level.level} resumed from its last safe checkpoint.`, "success");
+      if (this.hud) this.hud.dataset.morningMugView = "shift";
+      this.setMessage(`Level ${resumed.session.level.level} resumed.`, "success");
     }
     this.render();
     this.cameras.main.fadeIn(220, 30, 52, 53);
@@ -83,21 +84,24 @@ export class MorningMugScene extends Phaser.Scene {
     this.stepList = document.querySelector("#morning-mug-step-list");
     this.orderList = document.querySelector("#morning-mug-orders");
     this.trayList = document.querySelector("#morning-mug-trays");
+    this.worktop = document.querySelector("#morning-mug-shift .morning-mug-worktop");
+    this.controls = document.querySelector("#morning-mug-shift .cafe-controls");
     document.querySelector("#morning-mug-picker")?.classList.remove("hidden");
     document.querySelector("#morning-mug-shift")?.classList.add("hidden");
     document.querySelector("#morning-mug-result")?.classList.add("hidden");
-    this.setMessage("Choose an available Morning Mug level to begin.", "neutral");
+    if (this.hud) this.hud.dataset.morningMugView = "picker";
+    this.setMessage("Choose a coffee shift.", "neutral");
     this.onStart = () => this.startLevel(Number(this.levelSelect?.value || 1));
     this.onLevelChange = () => { if (this.startButton) this.startButton.textContent = `Open for Level ${Number(this.levelSelect?.value || 1)}`; };
     this.onExit = () => this.returnToTown(false);
     this.onUndo = () => { const result = this.morningMug.undoStep(); this.setMessage(result.ok ? `${morningMugStep(result.removed).name} removed.` : result.message, result.ok ? "neutral" : "error"); this.render(); };
-    this.onDiscard = () => { const result = this.morningMug.discardTray(); this.setMessage(result.ok ? "This drink tray was cleared. The customer is still waiting." : result.message, result.ok ? "error" : "neutral"); this.render(); };
+    this.onDiscard = () => { const result = this.morningMug.discardTray(); this.setMessage(result.ok ? "Drink cleared. Start again." : result.message, result.ok ? "error" : "neutral"); this.render(); };
     this.onServe = () => this.serveActive();
     this.onNext = () => this.startLevel(Math.min(MORNING_MUG_CONFIG.levelCount, (this.morningMug.getActiveSession()?.level.level || 1) + 1));
     this.onReplay = () => this.startLevel(this.morningMug.getActiveSession()?.level.level || 1);
     this.onReturn = () => this.returnToTown(true);
     this.onSteps = (event) => { const button = event.target.closest?.("[data-morning-mug-step]"); if (button) this.useStep(button.dataset.morningMugStep); };
-    this.onTrays = (event) => { const button = event.target.closest?.("[data-morning-mug-tray]"); if (button && !this.station) { const result = this.morningMug.selectTray(Number(button.dataset.morningMugTray)); this.setMessage(result.ok ? `Drink tray ${Number(button.dataset.morningMugTray) + 1} selected for ${result.order.customerName}.` : result.message, result.ok ? "neutral" : "error"); this.render(); } };
+    this.onTrays = (event) => { const button = event.target.closest?.("[data-morning-mug-tray]"); if (button && !this.station) { const result = this.morningMug.selectTray(Number(button.dataset.morningMugTray)); this.setMessage(result.ok ? `${result.order.customerName}'s drink selected.` : result.message, result.ok ? "neutral" : "error"); this.render(); } };
     this.onOrders = (event) => { const button = event.target.closest?.("[data-morning-mug-order-tray]"); if (button && !this.station) { this.morningMug.selectTray(Number(button.dataset.morningMugOrderTray)); this.render(); } };
     this.onKeyDown = (event) => { if (event.key === "Escape") this.returnToTown(false); };
     this.onPageHide = () => this.morningMug.persistActiveSession();
@@ -115,7 +119,7 @@ export class MorningMugScene extends Phaser.Scene {
     const status = document.querySelector("#location-status"); if (status) status.textContent = "Inside Morning Mug Coffee";
     const hint = document.querySelector("#control-hint"); if (hint) hint.textContent = "Choose a drink tray · Follow highlighted steps · Save & exit preserves the shift";
     const landscapeMessage = document.querySelector("#landscape-required-message");
-    if (landscapeMessage) landscapeMessage.textContent = "Morning Mug Coffee is designed for landscape play. Turn your phone sideways to continue this shift.";
+    if (landscapeMessage) landscapeMessage.textContent = "Turn your device sideways to play.";
   }
 
   startLevel(level) {
@@ -125,7 +129,8 @@ export class MorningMugScene extends Phaser.Scene {
     document.querySelector("#morning-mug-picker")?.classList.add("hidden");
     document.querySelector("#morning-mug-shift")?.classList.remove("hidden");
     document.querySelector("#morning-mug-result")?.classList.add("hidden");
-    this.setMessage("Choose a drink tray, then grind, pour, steam and finish in the highlighted order.", "success");
+    if (this.hud) this.hud.dataset.morningMugView = "shift";
+    this.setMessage("Choose a drink. Follow the highlight.", "success");
     this.render();
     return true;
   }
@@ -146,13 +151,13 @@ export class MorningMugScene extends Phaser.Scene {
       if (this.station) return false;
       this.station = { id: stepId, status: "working" };
       this.baristaVisual.setText("🧑‍🍳💨");
-      this.setMessage(`${definition.name} working… wait for Ready, then tap it again.`, "working");
+      this.setMessage(`${definition.name} working…`, "working");
       this.render();
       this.time.delayedCall(Math.max(90, definition.seconds * 1000 * this.timingScale), () => {
         if (this.transitioning || !this.station || this.station.id !== stepId) return;
         this.station.status = "ready";
         this.baristaVisual.setText("🧑‍🍳✨");
-        this.setMessage(`${definition.name} is ready—tap it again to return the drink to its tray.`, "success");
+        this.setMessage(`${definition.name} ready. Tap it again.`, "success");
         this.render();
       });
       return true;
@@ -163,8 +168,8 @@ export class MorningMugScene extends Phaser.Scene {
   finishStep(stepId) {
     const result = this.morningMug.applyStep(stepId);
     if (!result.ok) this.setMessage(result.message, "error");
-    else if (result.complete) this.setMessage(`${result.recipe.name} is ready—finish the drink.`, "success");
-    else this.setMessage(`${result.step.name} added. Next: ${morningMugStep(result.expectedStep).name}.`, "neutral");
+    else if (result.complete) this.setMessage(`${result.recipe.name} is ready. Finish it.`, "success");
+    else this.setMessage(`Added ${result.step.name}. Next: ${morningMugStep(result.expectedStep).name}.`, "neutral");
     this.render();
     return result.ok;
   }
@@ -174,21 +179,25 @@ export class MorningMugScene extends Phaser.Scene {
     const result = this.morningMug.serveActive();
     if (!result.ok) { this.setMessage(result.message, "error"); this.render(); return false; }
     if (result.result) { this.showResult(result.result); return true; }
-    if (result.code === "drink-added") this.setMessage(`${result.message} Now prepare ${result.nextRecipe.name}.`, "success");
-    else this.setMessage(`${result.customerName} loved the order! The next occupied tray is ready.`, "success");
+    if (result.code === "drink-added") this.setMessage(`Drink ready. Next: ${result.nextRecipe.name}.`, "success");
+    else this.setMessage(`${result.customerName} served. Choose the next drink.`, "success");
     this.render();
     return true;
   }
 
   showResult(result) {
     document.querySelector("#morning-mug-shift")?.classList.add("hidden"); document.querySelector("#morning-mug-result")?.classList.remove("hidden");
+    if (this.hud) this.hud.dataset.morningMugView = "result";
     document.querySelector("#morning-mug-result-title").textContent = result.won ? "Coffee shift complete!" : "Shift needs another try";
     document.querySelector("#morning-mug-result-stars").textContent = `${"★".repeat(result.stars)}${"☆".repeat(3 - result.stars)}`;
-    document.querySelector("#morning-mug-result-message").textContent = result.won ? result.firstClear ? "Every customer was served. The next Morning Mug level is unlocked." : "Best score saved. Replay coins are first-clear only." : result.failureReason || "A customer left before their drink was ready.";
+    document.querySelector("#morning-mug-result-message").textContent = result.won ? result.firstClear ? "All served. Next shift unlocked." : "Best score saved. Replay pays no coins." : result.failureReason || "A customer left. Try again.";
     document.querySelector("#morning-mug-result-accuracy").textContent = `${result.accuracy}%`; document.querySelector("#morning-mug-result-happiness").textContent = `${result.happiness}%`;
     document.querySelector("#morning-mug-result-waste").textContent = String(result.waste); document.querySelector("#morning-mug-result-coins").textContent = `+${result.coins}`;
-    if (this.nextButton) this.nextButton.disabled = !result.won || this.morningMug.getActiveSession().level.level >= MORNING_MUG_CONFIG.levelCount;
-    this.setMessage(result.won ? "Morning Mug shift complete." : result.failureReason, result.won ? "success" : "error");
+    if (this.nextButton) {
+      this.nextButton.disabled = !result.won || this.morningMug.getActiveSession().level.level >= MORNING_MUG_CONFIG.levelCount;
+      this.nextButton.classList.toggle("hidden", !result.won);
+    }
+    this.setMessage(result.won ? `Shift complete. +${result.coins} coins.` : result.failureReason, result.won ? "success" : "error");
     this.render();
   }
 
@@ -214,16 +223,24 @@ export class MorningMugScene extends Phaser.Scene {
     document.querySelector("#morning-mug-served").textContent = `${session.served} / ${session.level.target}`;
     const remaining = Math.max(0, session.level.duration - session.elapsed); document.querySelector("#morning-mug-timer").textContent = `${Math.floor(remaining / 60)}:${String(Math.ceil(remaining % 60)).padStart(2, "0")}`;
     if (this.orderList) this.orderList.innerHTML = session.activeOrderIds.map((id) => { const customer = session.orders.find((candidate) => candidate.id === id); const trayIndex = session.trays.findIndex((candidate) => candidate.orderId === id); const ratio = Math.max(0, Math.round(customer.patience / customer.maxPatience * 100)); return `<button type="button" data-morning-mug-order-tray="${trayIndex}" class="${trayIndex === session.activeTray ? "active" : ""}"><strong>${customer.customerName}</strong><small>${customer.recipes.map((recipeId) => MORNING_MUG_RECIPES[recipeId].icon).join(" ")} · ${ratio}% patience</small></button>`; }).join("");
-    if (this.trayList) this.trayList.innerHTML = session.trays.map((candidate) => { const customer = candidate.orderId ? session.orders.find((entry) => entry.id === candidate.orderId) : null; const item = customer ? MORNING_MUG_RECIPES[customer.recipes[candidate.recipeIndex]] : null; return `<button type="button" data-morning-mug-tray="${candidate.index}" class="${candidate.index === session.activeTray ? "active" : ""}" ${customer ? "" : "disabled"}><small>DRINK ${candidate.index + 1}</small><strong>${customer?.customerName || "Free tray"}</strong><span>${item ? `${item.icon} ${item.name}` : "Waiting…"}</span></button>`; }).join("");
+    if (this.trayList) this.trayList.innerHTML = session.trays.map((candidate) => { const customer = candidate.orderId ? session.orders.find((entry) => entry.id === candidate.orderId) : null; const item = customer ? MORNING_MUG_RECIPES[customer.recipes[candidate.recipeIndex]] : null; const patience = customer ? Math.max(0, Math.round(customer.patience / customer.maxPatience * 100)) : 0; return `<button type="button" data-morning-mug-tray="${candidate.index}" class="${candidate.index === session.activeTray ? "active" : ""}" ${customer ? "" : "disabled"}><small>DRINK ${candidate.index + 1}</small><strong>${customer?.customerName || "Free tray"}</strong><span>${item ? `${item.icon} ${item.name} · ${patience}%` : "Waiting…"}</span></button>`; }).join("");
     document.querySelector("#morning-mug-order-name").textContent = recipe ? `${recipe.icon} ${recipe.name}` : "Waiting for an order";
     const sequence = document.querySelector("#morning-mug-recipe-sequence");
     if (sequence) sequence.innerHTML = recipe ? recipe.steps.map((step, index) => `<span class="${index < tray.stepIndex ? "done" : index === tray.stepIndex ? "next" : ""}">${morningMugStep(step).icon}<small>${morningMugStep(step).name}</small></span>`).join("") : "";
     const availableIds = [...new Set(session.level.menu.flatMap((id) => MORNING_MUG_RECIPES[id].steps))];
     availableIds.sort((a, b) => a === expected ? -1 : b === expected ? 1 : (MORNING_MUG_APPLIANCES[a] ? 1 : 0) - (MORNING_MUG_APPLIANCES[b] ? 1 : 0));
     if (this.stepList) this.stepList.innerHTML = availableIds.map((id) => { const item = morningMugStep(id); const station = Boolean(MORNING_MUG_APPLIANCES[id]); const stationState = this.station?.id === id ? this.station.status : ""; return `<button type="button" data-morning-mug-step="${id}" class="${id === expected ? "next" : ""} ${station ? "station" : "ingredient"} ${stationState}" ${this.station && this.station.id !== id ? "disabled" : ""}><span>${item.icon}</span><strong>${item.name}</strong><small>${stationState === "working" ? "Working…" : stationState === "ready" ? "Ready · tap" : station ? "Station" : "Ingredient"}</small></button>`; }).join("");
-    if (this.undoButton) this.undoButton.disabled = Boolean(this.station) || !tray?.orderId || tray.stepIndex < 1;
-    if (this.discardButton) this.discardButton.disabled = Boolean(this.station) || !tray?.orderId || (tray.stepIndex < 1 && tray.completedRecipes.length < 1);
-    if (this.serveButton) { this.serveButton.disabled = Boolean(this.station) || !recipe || Boolean(expected); this.serveButton.textContent = tray?.recipeIndex < (customerOrder?.recipes.length || 0) - 1 ? "Finish drink" : "Serve customer"; }
+    const canRevise = !this.station && Boolean(tray?.orderId) && Boolean(expected) && (tray.stepIndex > 0 || tray.completedRecipes.length > 0);
+    if (this.undoButton) { this.undoButton.disabled = !canRevise || tray.stepIndex < 1; this.undoButton.classList.toggle("hidden", !canRevise || tray.stepIndex < 1); }
+    if (this.discardButton) { this.discardButton.disabled = !canRevise; this.discardButton.classList.toggle("hidden", !canRevise); }
+    if (this.serveButton) {
+      const canServe = !this.station && Boolean(recipe) && !expected;
+      this.serveButton.disabled = !canServe;
+      this.serveButton.classList.toggle("hidden", !canServe);
+      this.serveButton.textContent = tray?.recipeIndex < (customerOrder?.recipes.length || 0) - 1 ? "Finish drink" : "Serve";
+    }
+    this.worktop?.classList.toggle("hidden", !expected);
+    this.controls?.classList.toggle("hidden", !canRevise && Boolean(expected));
     this.customerVisual.setText(session.activeOrderIds.length ? `🧑 × ${session.activeOrderIds.length}  →  ☕` : "😊  ✓");
     this.prepVisual.setText(recipe ? expected ? morningMugStep(expected).icon : recipe.icon : "✨");
     this.updateDomState();
@@ -252,6 +269,15 @@ export class MorningMugScene extends Phaser.Scene {
       if (!customerOrder || !summary) return;
       const ratio = Math.max(0, Math.round(customerOrder.patience / customerOrder.maxPatience * 100));
       summary.textContent = `${customerOrder.recipes.map((recipeId) => MORNING_MUG_RECIPES[recipeId].icon).join(" ")} · ${ratio}% patience`;
+    });
+    const trayButtons = this.trayList?.querySelectorAll("[data-morning-mug-tray]") || [];
+    session.trays.forEach((tray, index) => {
+      const customerOrder = tray.orderId ? session.orders.find((candidate) => candidate.id === tray.orderId) : null;
+      const item = customerOrder ? MORNING_MUG_RECIPES[customerOrder.recipes[tray.recipeIndex]] : null;
+      const summary = trayButtons[index]?.querySelector("span");
+      if (!customerOrder || !item || !summary) return;
+      const ratio = Math.max(0, Math.round(customerOrder.patience / customerOrder.maxPatience * 100));
+      summary.textContent = `${item.icon} ${item.name} · ${ratio}%`;
     });
     this.updateDomState();
   }
