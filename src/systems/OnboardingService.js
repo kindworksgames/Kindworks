@@ -4,6 +4,7 @@ import {
   ONBOARDING_TRACKED_GAME_KEYS,
   localLoginDayKey,
   loginDayOrdinal,
+  normalizeOnboardingJourneyState,
   onboardingChecklistComplete,
   validateTownName,
 } from "../state/onboardingState.js";
@@ -36,6 +37,7 @@ export class OnboardingService {
     onboarding.residentCreated = Boolean(state.customResident?.profile);
     onboarding.homeSelected = Boolean(state.customResident?.profile && state.customResident?.home?.houseId);
     onboarding.complete = onboarding.townNamed && onboarding.residentCreated && onboarding.homeSelected;
+    onboarding.journey = normalizeOnboardingJourneyState(onboarding.journey, { state, onboarding });
     onboarding.checklistComplete = onboardingChecklistComplete(onboarding);
     onboarding.nextJob = ONBOARDING_GAME_KEYS.find((key) => !onboarding.tried[key]) || null;
     onboarding.firstRestorationGiftGranted = Boolean(state.restorationMilestones?.firstRestorationGift?.granted);
@@ -89,6 +91,41 @@ export class OnboardingService {
       state.onboarding.tried[gameKey] = true;
       return { ok: true, code: "tutorial-recorded", gameKey };
     }, "The tutorial marker could not be saved. You can still play safely.");
+  }
+
+  recordJourneyStep(step) {
+    if (!["moved", "metResident"].includes(step)) return { ok: false, code: "unknown-journey-step", message: "That first-session step is not tracked." };
+    const current = this.getSnapshot();
+    if (current.journey[step]) return { ok: true, code: "journey-step-already-recorded", duplicate: true, state: current };
+    return this.commit((state) => {
+      state.onboarding.journey = normalizeOnboardingJourneyState(state.onboarding.journey, { state, onboarding: state.onboarding });
+      state.onboarding.journey[step] = true;
+      return { ok: true, code: "journey-step-recorded", step };
+    }, "Your first-session progress could not be saved. You can keep playing safely.");
+  }
+
+  recordJobCompleted(gameKey) {
+    if (!ONBOARDING_GAME_KEYS.includes(gameKey)) return { ok: false, code: "unknown-first-job", message: "That job is not part of the first-session journey." };
+    const current = this.getSnapshot();
+    if (current.journey.completed[gameKey]) return { ok: true, code: "first-job-already-completed", duplicate: true, state: current };
+    return this.commit((state) => {
+      state.onboarding.journey = normalizeOnboardingJourneyState(state.onboarding.journey, { state, onboarding: state.onboarding });
+      state.onboarding.tutorialSeen[gameKey] = true;
+      state.onboarding.tried[gameKey] = true;
+      state.onboarding.journey.completed[gameKey] = true;
+      return { ok: true, code: "first-job-completed", gameKey };
+    }, "Your completed first job could not be added to the guide. The game reward remains safe.");
+  }
+
+  finishFirstSession() {
+    const current = this.getSnapshot();
+    if (!ONBOARDING_GAME_KEYS.every((key) => current.journey.completed[key])) return { ok: false, code: "first-session-incomplete", message: "Complete the three first jobs before entering free play." };
+    if (current.journey.freePlay) return { ok: true, code: "free-play-already-open", duplicate: true, state: current };
+    return this.commit((state) => {
+      state.onboarding.journey = normalizeOnboardingJourneyState(state.onboarding.journey, { state, onboarding: state.onboarding });
+      state.onboarding.journey.freePlay = true;
+      return { ok: true, code: "free-play-open" };
+    }, "Free-play progress could not be saved. Your completed jobs remain safe.");
   }
 
   processLoginRewards(unixMs = this.now(), { trusted = false, receiptId = null } = {}) {

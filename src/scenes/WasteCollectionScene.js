@@ -29,6 +29,7 @@ export class WasteCollectionScene extends Phaser.Scene {
 
   create() {
     this.cleanup = this.registry.get("cleanupService");
+    this.onboarding = this.registry.get("onboarding");
     this.gameState = this.registry.get("gameState");
     this.worldSimulation = this.registry.get("worldSimulation");
     this.npcTownLife = this.registry.get("npcTownLife");
@@ -257,6 +258,7 @@ export class WasteCollectionScene extends Phaser.Scene {
   }
 
   showCampaignResult(result) {
+    this.onboarding?.recordJobCompleted?.("waste");
     document.querySelector("#waste-campaign-gameplay")?.classList.add("hidden");
     document.querySelector("#waste-campaign-result")?.classList.remove("hidden");
     setText("#waste-result-title", "Park restored!"); setText("#waste-result-stars", "★★★");
@@ -324,6 +326,7 @@ export class WasteCollectionScene extends Phaser.Scene {
     if (this.collected.size !== this.job.items.length) return false;
     const result = this.cleanup.complete(this.session.id, { collectedItemIds: [...this.collected] });
     if (!result.ok) { setText("#cleanup-status", result.message); return false; }
+    this.onboarding?.recordJobCompleted?.("waste");
     setText("#cleanup-result-coins", `+${result.rewardCoins}`); setText("#cleanup-result-balance", result.balance);
     const panel = document.querySelector("#cleanup-result"); panel?.classList.remove("hidden"); panel?.setAttribute("aria-hidden", "false");
     return true;

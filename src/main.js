@@ -351,6 +351,9 @@ const npcNarrativeController = new NpcNarrativeController(npcNarratives, {
   onModalChange(open) {
     setModalOpen("npc-stories", open);
   },
+  onConversation(result) {
+    if (result?.ok) onboarding.recordJourneyStep("metResident");
+  },
 });
 game.registry.set("npcNarrativeController", npcNarrativeController);
 if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "narrative") setTimeout(() => npcNarrativeController.open("npc-01"), 420);
@@ -441,7 +444,7 @@ const onboardingController = new OnboardingController(onboarding, {
     return customResidentController.open();
   },
   onFindJob(gameKey) {
-    return activeTownScene()?.focusOnboardingJob?.(gameKey) || { ok: false, message: "Return to town to find this job." };
+    return activeTownScene()?.startOnboardingJob?.(gameKey) || { ok: false, message: "Return to town to start this job." };
   },
 });
 game.registry.set("onboardingController", onboardingController);

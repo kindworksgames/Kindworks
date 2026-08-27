@@ -3,9 +3,10 @@ function escapeHtml(value) {
 }
 
 export class NpcNarrativeController {
-  constructor(service, { onModalChange = () => {} } = {}) {
+  constructor(service, { onModalChange = () => {}, onConversation = () => {} } = {}) {
     this.service = service;
     this.onModalChange = onModalChange;
+    this.onConversation = onConversation;
     this.panel = document.querySelector("#npc-story-panel");
     this.selectedId = service.getAllStories()[0]?.id || null;
     this.bind();
@@ -33,7 +34,10 @@ export class NpcNarrativeController {
     this.panel?.classList.remove("hidden");
     this.panel?.setAttribute("aria-hidden", "false");
     this.onModalChange(true);
-    if (selectThought) this.service.selectThought(this.selectedId, { source: "town-conversation" });
+    if (selectThought) {
+      const result = this.service.selectThought(this.selectedId, { source: "town-conversation" });
+      this.onConversation(result);
+    }
     this.render();
     document.querySelector("#npc-story-close")?.focus({ preventScroll: true });
     return { ok: true, residentId: this.selectedId };
@@ -49,6 +53,7 @@ export class NpcNarrativeController {
 
   selectThought() {
     const result = this.service.selectThought(this.selectedId, { source: "story-panel" });
+    this.onConversation(result);
     const status = document.querySelector("#npc-story-status");
     if (status) {
       status.textContent = result.ok

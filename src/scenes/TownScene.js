@@ -221,6 +221,8 @@ export class TownScene extends Phaser.Scene {
     const direction = this.entryData.returnFacing || (qaTarget ? "up" : "down");
     this.shadow = this.add.ellipse(spawn.x, spawn.y + 18, 31, 12, 0x24442f, 0.28).setDepth(190);
     this.player = new PlayerCharacter(this, spawn.x, spawn.y, { direction }).setDepth(200);
+    this.onboardingJourneyOrigin = { x: spawn.x, y: spawn.y };
+    this.onboardingMovementRecorded = Boolean(this.onboarding?.getSnapshot?.().journey?.moved);
     this.npcCharacters = new Map();
     for (const resident of this.npcTownLife?.getResidents?.() || []) {
       this.npcCharacters.set(resident.id, new NpcCharacter(this, resident));
@@ -1970,6 +1972,20 @@ export class TownScene extends Phaser.Scene {
     return { ok: true, gameKey, focus };
   }
 
+  startOnboardingJob(gameKey) {
+    if (gameKey === "resident") {
+      const active = this.activePosition();
+      const resident = (this.npcTownLife?.getResidents?.() || [])
+        .filter((entry) => entry.visible)
+        .sort((left, right) => Math.hypot(left.x - active.x, left.y - active.y) - Math.hypot(right.x - active.x, right.y - active.y))[0];
+      return resident ? this.npcNarrativeController?.open?.(resident.id, { selectThought: true }) : { ok: false, reason: "No neighbour is nearby yet." };
+    }
+    if (gameKey === "lawn") return this.startLawnCare({ mode: "campaign" });
+    if (gameKey === "waste") return this.startWasteCollection();
+    if (gameKey === "river") return this.enterRiverClearout();
+    return { ok: false, reason: "That first job is not available." };
+  }
+
   startBeachCleanup() {
     if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
     if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before starting Beach Cleanup." };
@@ -2065,7 +2081,15 @@ export class TownScene extends Phaser.Scene {
 
     if (!this.isBlocked(nextX, actor.y)) actor.x = nextX;
     if (!this.isBlocked(actor.x, nextY)) actor.y = nextY;
-    return Math.hypot(actor.x - startX, actor.y - startY) > 0.01;
+    const moved = Math.hypot(actor.x - startX, actor.y - startY) > 0.01;
+    if (moved && !this.onboardingMovementRecorded && this.onboardingJourneyOrigin) {
+      const journeyDistance = Math.hypot(actor.x - this.onboardingJourneyOrigin.x, actor.y - this.onboardingJourneyOrigin.y);
+      if (journeyDistance >= 32 && this.onboarding?.getSnapshot?.().complete) {
+        const recorded = this.onboarding.recordJourneyStep?.("moved");
+        this.onboardingMovementRecorded = Boolean(recorded?.ok);
+      }
+    }
+    return moved;
   }
 
   updateStatus() {

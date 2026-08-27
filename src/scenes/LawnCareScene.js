@@ -35,6 +35,7 @@ export class LawnCareScene extends Phaser.Scene {
 
   create() {
     this.lawnCare = this.registry.get("lawnCare");
+    this.onboarding = this.registry.get("onboarding");
     this.gameState = this.registry.get("gameState");
     this.worldSimulation = this.registry.get("worldSimulation");
     this.npcTownLife = this.registry.get("npcTownLife");
@@ -286,6 +287,7 @@ export class LawnCareScene extends Phaser.Scene {
     show("#lawn-care-gameplay", false);
     show("#lawn-care-result", true);
     const won = !failed && result.stars >= 1;
+    if (won) this.onboarding?.recordJobCompleted?.("lawn");
     setText("#lawn-result-title", won ? session?.mode === "town-job" ? "Neighbourhood lawn restored!" : "Lawn challenge complete!" : "This lawn needs another pass");
     setText("#lawn-result-stars", `${"★".repeat(result.stars)}${"☆".repeat(3 - result.stars)}`);
     setText("#lawn-result-message", won ? result.firstClear ? "Progress saved and the first-clear coins were added." : session?.mode === "town-job" ? "The lawn has been improved and your job coins were added." : "Your best result is saved. Replays do not award the first-clear coins again." : "Cut at least half of the grass before the move limit. Restart to try a new route.");

@@ -21,6 +21,7 @@ export class RiverClearoutScene extends Phaser.Scene {
 
   create() {
     this.river = this.registry.get("river");
+    this.onboarding = this.registry.get("onboarding");
     this.gameState = this.registry.get("gameState");
     this.worldSimulation = this.registry.get("worldSimulation");
     this.npcTownLife = this.registry.get("npcTownLife");
@@ -210,6 +211,7 @@ export class RiverClearoutScene extends Phaser.Scene {
   }
 
   showResult(result) {
+    if (result.won) this.onboarding?.recordJobCompleted?.("river");
     document.querySelector("#river-gameplay")?.classList.add("hidden");
     document.querySelector("#river-result")?.classList.remove("hidden");
     setText("#river-result-title", result.won ? "River stretch restored!" : "River stretch needs another try");

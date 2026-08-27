@@ -1,6 +1,7 @@
 export const ONBOARDING_STATE_SCHEMA_VERSION = 1;
 export const ONBOARDING_GAME_KEYS = Object.freeze(["lawn", "waste", "river"]);
 export const ONBOARDING_TRACKED_GAME_KEYS = Object.freeze([...ONBOARDING_GAME_KEYS, "beach", "playground"]);
+export const ONBOARDING_JOURNEY_STEPS = Object.freeze(["moved", "metResident", "freePlay"]);
 export const LOGIN_REWARD_CONFIG = Object.freeze({
   schemaVersion: 1,
   starterCoins: 100,
@@ -87,6 +88,29 @@ function blankTracking() {
   return Object.fromEntries(ONBOARDING_TRACKED_GAME_KEYS.map((key) => [key, false]));
 }
 
+function blankCompletedJobs() {
+  return Object.fromEntries(ONBOARDING_GAME_KEYS.map((key) => [key, false]));
+}
+
+export function normalizeOnboardingJourneyState(value, { state = null, onboarding = null } = {}) {
+  const raw = value && typeof value === "object" && !Array.isArray(value) ? value : null;
+  const progressed = ONBOARDING_GAME_KEYS.some((key) => Boolean(onboarding?.tried?.[key]));
+  const completed = blankCompletedJobs();
+  const derived = {
+    lawn: Number(state?.lawnCare?.progress?.completed || 0) > 0,
+    waste: Number(state?.progress?.cleanup?.progress?.waste?.completed || 0) > 0,
+    river: Number(state?.river?.progress?.completed || 0) > 0,
+  };
+  for (const key of ONBOARDING_GAME_KEYS) completed[key] = Boolean(raw?.completed?.[key] || derived[key]);
+  const allCompleted = ONBOARDING_GAME_KEYS.every((key) => completed[key]);
+  return {
+    moved: raw ? Boolean(raw.moved) : progressed,
+    metResident: raw ? Boolean(raw.metResident) : progressed,
+    completed,
+    freePlay: Boolean(raw?.freePlay || (!raw && allCompleted)),
+  };
+}
+
 export function createFreshOnboardingState({ now = Date.now() } = {}) {
   return {
     schemaVersion: ONBOARDING_STATE_SCHEMA_VERSION,
@@ -94,6 +118,7 @@ export function createFreshOnboardingState({ now = Date.now() } = {}) {
     complete: false,
     tutorialSeen: blankTracking(),
     tried: blankTracking(),
+    journey: normalizeOnboardingJourneyState(null),
     starterGrantClaimed: true,
     loginRewards: createFreshLoginRewardState({ now }),
     firstRestorationGiftGranted: false,
@@ -113,6 +138,7 @@ export function normalizeOnboardingState(value, { state = null, now = Date.now()
     fresh.tutorialSeen[key] = Boolean(raw.tutorialSeen?.[key]);
     fresh.tried[key] = Boolean(raw.tried?.[key]) || fresh.tutorialSeen[key];
   }
+  fresh.journey = normalizeOnboardingJourneyState(raw.journey, { state, onboarding: fresh });
   fresh.starterGrantClaimed = raw.starterGrantClaimed === undefined
     ? Boolean(state?.economy?.ledger?.some((entry) => entry.kind === "starter-grant"))
     : Boolean(raw.starterGrantClaimed);
@@ -138,6 +164,7 @@ export function projectLegacyOnboarding(legacy, state, { now = Date.now() } = {}
     const completed = Number((legacy?.miniGames?.progress || legacy?.miniGameProgress)?.[key]?.completed) > 0;
     if (completed) projected.tutorialSeen[key] = projected.tried[key] = true;
   }
+  projected.journey = normalizeOnboardingJourneyState(null, { state, onboarding: projected });
   return projected;
 }
 
@@ -156,6 +183,14 @@ export function validateOnboardingState(value, state = null) {
     if (typeof value.tutorialSeen?.[key] !== "boolean" || typeof value.tried?.[key] !== "boolean") errors.push(`Onboarding tracking for ${key} is invalid.`);
     if (value.tutorialSeen?.[key] && !value.tried?.[key]) errors.push(`Onboarding tutorial ${key} must also be marked tried.`);
   }
+  const journey = normalizeOnboardingJourneyState(value.journey, { state, onboarding: value });
+  for (const step of ONBOARDING_JOURNEY_STEPS) {
+    if (value.journey && typeof value.journey[step] !== "boolean") errors.push(`Onboarding journey step ${step} is invalid.`);
+  }
+  for (const key of ONBOARDING_GAME_KEYS) {
+    if (value.journey?.completed && typeof value.journey.completed[key] !== "boolean") errors.push(`Onboarding completed-job marker ${key} is invalid.`);
+  }
+  if (journey.freePlay && !ONBOARDING_GAME_KEYS.every((key) => journey.completed[key])) errors.push("Free play requires all three first jobs to be completed.");
   const login = value.loginRewards;
   if (!login || login.schemaVersion !== LOGIN_REWARD_CONFIG.schemaVersion) errors.push("Login reward state is invalid.");
   else {

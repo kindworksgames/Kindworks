@@ -1702,7 +1702,7 @@ body[data-game-scene="BakeryScene"] .zoom-controls {
 }
 
 .onboarding-card {
-  width: min(780px, 100%);
+  width: min(560px, 100%);
   max-height: 100%;
   overflow: auto;
   border: 2px solid #f3d792;
@@ -1727,8 +1727,7 @@ body[data-game-scene="BakeryScene"] .zoom-controls {
 .onboarding-header h2,
 .onboarding-header span,
 .onboarding-rewards p,
-.onboarding-rewards h3,
-.onboarding-setup h3 {
+.onboarding-setup-progress {
   margin: 0;
 }
 
@@ -1739,26 +1738,25 @@ body[data-game-scene="BakeryScene"] .zoom-controls {
 .onboarding-header button { width: 44px; height: 44px; border: 1px solid rgb(255 255 255 / 32%); border-radius: 12px; background: rgb(20 49 31 / 42%); color: white; font-weight: 900; cursor: pointer; }
 .onboarding-header button.hidden { visibility: hidden; pointer-events: none; }
 
-.onboarding-layout { display: grid; grid-template-columns: 1.2fr .8fr; gap: 16px; padding: 18px; }
+.onboarding-layout { display: grid; grid-template-columns: 1fr; gap: 10px; padding: 16px; }
 .onboarding-setup, .onboarding-rewards { border: 1px solid #cbd9bc; border-radius: 17px; padding: 17px; background: rgb(255 255 255 / 72%); }
 .onboarding-setup { display: grid; align-content: start; gap: 13px; }
-.onboarding-setup ol, .first-session-checklist ol { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
-.onboarding-setup li, .first-session-checklist li { display: flex; align-items: center; gap: 8px; color: #627362; font: 800 12px/1.25 system-ui, sans-serif; }
-.onboarding-setup li span, .first-session-checklist li span { display: grid; place-items: center; width: 21px; height: 21px; border-radius: 50%; background: #e8ecdf; }
-.onboarding-setup li.done, .first-session-checklist li.done { color: #286840; }
-.onboarding-setup li.done span, .first-session-checklist li.done span { background: #bce1af; color: #18582f; }
+.onboarding-setup-progress { color: #55715d; font: 900 10px/1.2 ui-monospace, monospace; letter-spacing: .07em; }
 .onboarding-setup form { display: grid; gap: 7px; padding-top: 4px; }
 .onboarding-setup label { font: 900 13px/1.2 system-ui, sans-serif; }
 .onboarding-setup input { min-height: 47px; border: 2px solid #aabe9a; border-radius: 12px; padding: 9px 12px; background: #fff; color: #244634; font: 800 18px/1 system-ui, sans-serif; }
 .onboarding-setup input[aria-invalid="true"] { border-color: #bd4d49; }
 .onboarding-setup small, .onboarding-rewards small { color: #667467; font: 650 11px/1.4 system-ui, sans-serif; }
 .onboarding-error { color: #a33835; font: 800 11px/1.35 system-ui, sans-serif; }
-.onboarding-primary, .first-session-checklist button { min-height: 43px; border: 0; border-radius: 12px; padding: 10px 14px; background: #39734b; color: #fffdf0; box-shadow: 0 5px 0 #245534; font: 900 13px/1 system-ui, sans-serif; cursor: pointer; }
+.onboarding-primary, .first-session-checklist button { min-height: var(--kw-touch-min); border: 0; border-radius: 12px; padding: 10px 14px; background: #39734b; color: #fffdf0; box-shadow: 0 5px 0 #245534; font: 900 13px/1 system-ui, sans-serif; cursor: pointer; }
 .onboarding-primary.hidden,
-.onboarding-setup form.hidden { display: none; }
-.onboarding-rewards { display: grid; align-content: start; gap: 10px; background: linear-gradient(145deg, #fff5cf, #f8e9b7); border-color: #dec882; }
-.onboarding-reward-icon { font-size: 40px; }
-.onboarding-rewards > p { color: #5e542c; font: 800 13px/1.5 system-ui, sans-serif; }
+.onboarding-setup form.hidden,
+.first-session-checklist button.hidden { display: none; }
+.onboarding-rewards { padding: 0; background: linear-gradient(145deg, #fff5cf, #f8e9b7); border-color: #dec882; }
+.onboarding-rewards summary { min-height: var(--kw-touch-min); display: flex; align-items: center; gap: 8px; padding: 10px 13px; color: #5e542c; font: 900 12px/1.2 system-ui, sans-serif; cursor: pointer; }
+.onboarding-rewards summary::marker { color: #8a7631; }
+.onboarding-rewards > div { display: grid; gap: 7px; padding: 0 13px 12px; }
+.onboarding-rewards > div > p { color: #5e542c; font: 800 12px/1.4 system-ui, sans-serif; }
 .onboarding-rewards .onboarding-safety { padding-top: 9px; border-top: 1px dashed #c9b873; color: #73683f; font-size: 11px; }
 
 .first-session-checklist {
@@ -1766,10 +1764,10 @@ body[data-game-scene="BakeryScene"] .zoom-controls {
   z-index: 14;
   left: max(14px, env(safe-area-inset-left));
   top: 112px;
-  width: min(250px, calc(100vw - 28px));
+  width: min(330px, calc(100vw - 28px));
   display: grid;
-  gap: 10px;
-  padding: 13px;
+  gap: 7px;
+  padding: 11px;
   border: 1px solid rgb(255 255 255 / 35%);
   border-radius: 16px;
   background: rgb(246 251 237 / 94%);
@@ -1777,9 +1775,12 @@ body[data-game-scene="BakeryScene"] .zoom-controls {
   box-shadow: 0 11px 32px rgb(10 29 20 / 28%);
   backdrop-filter: blur(9px);
 }
-.first-session-checklist > div { display: grid; gap: 2px; }
-.first-session-checklist > div small { color: #647765; font: 700 10px/1.25 system-ui, sans-serif; }
-.first-session-checklist button { min-height: 37px; box-shadow: 0 3px 0 #245534; }
+.first-session-checklist > span { color: #66806b; font: 900 9px/1 ui-monospace, monospace; letter-spacing: .08em; }
+.first-session-checklist > div { display: grid; grid-template-columns: 30px 1fr; gap: 2px 8px; align-items: center; }
+.first-session-checklist > div b { grid-row: 1 / 3; font-size: 24px; text-align: center; }
+.first-session-checklist > div strong { font: 900 14px/1.15 system-ui, sans-serif; }
+.first-session-checklist > div small { color: #647765; font: 700 11px/1.25 system-ui, sans-serif; }
+.first-session-checklist button { box-shadow: 0 3px 0 #245534; }
 
 body:not([data-game-scene="TownScene"]) .town-menu-panel,
 body:not([data-game-scene="TownScene"]) .first-session-checklist {
@@ -1895,11 +1896,11 @@ body:not([data-game-scene="TownScene"]) .first-session-checklist {
   .onboarding-icon { width: 43px; height: 43px; font-size: 24px; }
   .onboarding-layout { grid-template-columns: 1fr; gap: 8px; padding: 9px; }
   .onboarding-setup, .onboarding-rewards { padding: 12px; }
-  .first-session-checklist { top: max(82px, calc(env(safe-area-inset-top) + 74px)); bottom: auto; left: max(8px, env(safe-area-inset-left)); grid-template-columns: 1fr; gap: 6px; width: min(236px, calc(100vw - 16px)); padding: 8px; transform: none; }
-  .first-session-checklist > div small { display: none; }
-  .first-session-checklist ol { display: none; }
-  .first-session-checklist li { display: grid; grid-template-columns: 16px 1fr; gap: 3px; font-size: 9px; line-height: 1.05; }
-  .first-session-checklist li span { width: 16px; height: 16px; }
+  .first-session-checklist { top: max(62px, calc(env(safe-area-inset-top) + 56px)); bottom: auto; left: max(8px, env(safe-area-inset-left)); grid-template-columns: 1fr; gap: 5px; width: min(224px, calc(100vw - 16px)); padding: 8px; transform: none; }
+  .first-session-checklist > div { grid-template-columns: 25px 1fr; gap: 1px 6px; }
+  .first-session-checklist > div b { font-size: 20px; }
+  .first-session-checklist > div strong { font-size: 12px; }
+  .first-session-checklist > div small { font-size: 9px; }
   .first-session-checklist button { min-height: var(--kw-touch-min); padding: 8px; }
   .interaction-prompt #interaction-detail { display: none; }
   .town-menu-panel { top: max(56px, calc(env(safe-area-inset-top) + 50px)); right: max(6px, env(safe-area-inset-right)); width: min(310px, calc(100vw - 12px)); max-height: calc(100dvh - 62px); }
@@ -1919,7 +1920,6 @@ body:not([data-game-scene="TownScene"]) .first-session-checklist {
   }
 
   .first-session-checklist > div small,
-  .first-session-checklist ol,
   .interaction-prompt #interaction-detail { display: none; }
   .first-session-checklist button { min-height: var(--kw-touch-min); padding: 8px; }
 }

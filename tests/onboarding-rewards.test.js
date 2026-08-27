@@ -87,6 +87,38 @@ test("the Lawn, Waste, and River tutorials are tracked once and form the first-j
   assert.equal(onboarding.recordTutorial("unknown").code, "unknown-tutorial");
 });
 
+test("the first-session journey saves movement, conversation, completed jobs and free play without changing rewards", () => {
+  const { gameState, onboarding, repository } = runtime();
+  const balance = gameState.getSnapshot().economy.coins;
+  assert.equal(onboarding.recordJourneyStep("moved").code, "journey-step-recorded");
+  assert.equal(onboarding.recordJourneyStep("moved").duplicate, true);
+  assert.equal(onboarding.recordJourneyStep("metResident").ok, true);
+  assert.equal(onboarding.finishFirstSession().code, "first-session-incomplete");
+  for (const gameKey of ["lawn", "waste", "river"]) {
+    assert.equal(onboarding.recordJobCompleted(gameKey).code, "first-job-completed");
+    assert.equal(onboarding.recordJobCompleted(gameKey).duplicate, true);
+  }
+  assert.equal(onboarding.finishFirstSession().code, "free-play-open");
+  assert.equal(onboarding.getSnapshot().journey.freePlay, true);
+  assert.equal(gameState.getSnapshot().economy.coins, balance);
+  assert.equal(repository.load().state.onboarding.journey.freePlay, true);
+});
+
+test("existing saves without the additive journey markers remain valid and infer completed first jobs", () => {
+  const state = createFreshGameState({ now: START });
+  delete state.onboarding.journey;
+  state.onboarding.tried.lawn = true;
+  state.onboarding.tutorialSeen.lawn = true;
+  state.lawnCare.progress.best["1"] = { stars: 1, percent: 50 };
+  state.lawnCare.progress.completed = 1;
+  assert.equal(validateGameState(state).ok, true);
+  const { onboarding } = runtime({ repository: new SaveRepository(new MemoryStorage()) });
+  onboarding.gameState.replace(state);
+  assert.equal(onboarding.getSnapshot().journey.moved, true);
+  assert.equal(onboarding.getSnapshot().journey.metResident, true);
+  assert.equal(onboarding.getSnapshot().journey.completed.lawn, true);
+});
+
 test("same-day launches never duplicate the daily reward", () => {
   const { gameState, onboarding } = runtime();
   const first = onboarding.processLoginRewards(START + 60_000);

@@ -1,6 +1,16 @@
-import { LOGIN_REWARD_CONFIG, ONBOARDING_GAME_KEYS } from "../state/onboardingState.js";
+import { LOGIN_REWARD_CONFIG } from "../state/onboardingState.js";
 
-const JOB_LABELS = Object.freeze({ lawn: "Lawn Care", waste: "Waste Collection", river: "River Clear-Out" });
+const JOB_LABELS = Object.freeze({ resident: "a neighbour", lawn: "Lawn Care", waste: "Waste Collection", river: "River Clear-Out" });
+
+export function firstSessionStep(state) {
+  if (!state?.complete || state.journey?.freePlay) return null;
+  if (!state.journey?.moved) return { id: "move", number: 1, icon: "🧭", title: "Move around town", detail: "Use the arrows to take a few steps.", action: null };
+  if (!state.journey?.metResident) return { id: "resident", number: 2, icon: "💬", title: "Meet a neighbour", detail: "Say hello and hear their story.", action: "resident" };
+  if (!state.journey?.completed?.lawn) return { id: "lawn", number: 3, icon: "🌱", title: state.tried?.lawn ? "Finish Lawn Care" : "Restore a lawn", detail: "Cut at least half of the grass.", action: "lawn" };
+  if (!state.journey?.completed?.waste) return { id: "waste", number: 4, icon: "🪙", title: state.tried?.waste ? "Finish Waste Collection" : "Try another activity", detail: "Rewards buy useful town items.", action: "waste" };
+  if (!state.journey?.completed?.river) return { id: "river", number: 5, icon: "🌊", title: state.tried?.river ? "Finish River Clear-Out" : "Restore the river", detail: "This job plays in portrait.", action: "river" };
+  return { id: "free-play", number: 6, icon: "✨", title: "Free play unlocked", detail: "Explore, shop or choose any job.", action: "free-play" };
+}
 
 export class OnboardingController {
   constructor(service, {
@@ -22,12 +32,15 @@ export class OnboardingController {
     this.error = document.querySelector("#onboarding-town-error");
     this.title = document.querySelector("#onboarding-title");
     this.description = document.querySelector("#onboarding-description");
-    this.setupSteps = document.querySelector("#onboarding-setup-steps");
+    this.setupProgress = document.querySelector("#onboarding-setup-progress");
     this.residentButton = document.querySelector("#onboarding-create-resident");
     this.rewardSummary = document.querySelector("#onboarding-reward-summary");
     this.rewardHistory = document.querySelector("#onboarding-reward-history");
     this.checklist = document.querySelector("#first-session-checklist");
-    this.checklistItems = document.querySelector("#first-session-items");
+    this.guideStep = document.querySelector("#first-session-step");
+    this.guideIcon = document.querySelector("#first-session-icon");
+    this.guideTitle = document.querySelector("#first-session-title");
+    this.guideDetail = document.querySelector("#first-session-detail");
     this.findButton = document.querySelector("#first-session-find");
     this.toast = document.querySelector("#login-reward-toast");
     this.toastText = document.querySelector("#login-reward-toast-text");
@@ -114,10 +127,14 @@ export class OnboardingController {
   }
 
   findNextJob() {
-    const key = this.service.getSnapshot().nextJob;
-    if (!key) return { ok: true, code: "checklist-complete" };
-    const result = this.onFindJob(key);
-    if (result?.ok) this.findButton.textContent = `${JOB_LABELS[key]} highlighted`;
+    const step = firstSessionStep(this.service.getSnapshot());
+    if (!step?.action) return { ok: false, code: "guide-action-unavailable" };
+    if (step.action === "free-play") return this.service.finishFirstSession();
+    const result = this.onFindJob(step.action);
+    if (result?.ok && this.findButton) {
+      this.findButton.disabled = true;
+      this.findButton.textContent = "Opening…";
+    }
     return result;
   }
 
@@ -173,25 +190,27 @@ export class OnboardingController {
     this.closeButton?.classList.toggle("hidden", !state.townNamed);
     if (this.title) this.title.textContent = !state.townNamed ? "Name your town" : !state.residentCreated ? `Welcome to ${state.townName}` : `${state.townName} is yours`;
     if (this.description) this.description.textContent = !state.townNamed
-      ? "Choose the name that will appear throughout your living town."
+      ? "Choose the name shown around your town."
       : !state.residentCreated
-        ? "Now create one resident and choose their included starter cottage."
-        : "Your resident and home are ready. Restore the town through your first three jobs.";
-    if (this.setupSteps) this.setupSteps.innerHTML = [
-      [state.townNamed, "Town named"],
-      [state.residentCreated, "Resident created"],
-      [state.homeSelected, "Starter home selected"],
-    ].map(([done, label]) => `<li class="${done ? "done" : ""}"><span>${done ? "✓" : "○"}</span>${label}</li>`).join("");
+        ? "Create your resident and starter home."
+        : "Your resident and home are ready.";
+    if (this.setupProgress) this.setupProgress.textContent = state.townNamed ? "STEP 2 OF 2 · CREATE YOUR RESIDENT" : "STEP 1 OF 2 · NAME YOUR TOWN";
     if (this.rewardSummary) this.rewardSummary.textContent = `Starter gift: +${LOGIN_REWARD_CONFIG.starterCoins} coins · Daily: +${LOGIN_REWARD_CONFIG.dailyCoins} · Return after ${LOGIN_REWARD_CONFIG.returnAfterDays} days: +${LOGIN_REWARD_CONFIG.returnBonusCoins}`;
     if (this.rewardHistory) this.rewardHistory.textContent = `${state.loginRewards.loginDays} login day${state.loginRewards.loginDays === 1 ? "" : "s"} · ${state.loginRewards.dailyClaims} daily reward${state.loginRewards.dailyClaims === 1 ? "" : "s"} · ${state.loginRewards.returnBonuses} return bonus${state.loginRewards.returnBonuses === 1 ? "" : "es"}`;
 
-    const showChecklist = state.complete && !state.checklistComplete;
+    const step = firstSessionStep(state);
+    const showChecklist = Boolean(step);
     this.checklist?.classList.toggle("hidden", !showChecklist);
     this.checklist?.setAttribute("aria-hidden", showChecklist ? "false" : "true");
-    if (this.checklistItems) this.checklistItems.innerHTML = ONBOARDING_GAME_KEYS.map((key) => `<li class="${state.tried[key] ? "done" : ""}"><span>${state.tried[key] ? "✓" : "○"}</span>${JOB_LABELS[key]}</li>`).join("");
+    if (this.checklist) this.checklist.setAttribute("aria-label", step ? `First session, step ${step.number} of 6: ${step.title}` : "First session complete");
+    if (this.guideStep) this.guideStep.textContent = step ? `STEP ${step.number} OF 6` : "COMPLETE";
+    if (this.guideIcon) this.guideIcon.textContent = step?.icon || "✨";
+    if (this.guideTitle) this.guideTitle.textContent = step?.title || "First session complete";
+    if (this.guideDetail) this.guideDetail.textContent = step?.detail || "Explore freely.";
     if (this.findButton) {
-      this.findButton.disabled = !state.nextJob;
-      this.findButton.textContent = state.nextJob ? `Find ${JOB_LABELS[state.nextJob]}` : "All three tried";
+      this.findButton.classList.toggle("hidden", !step?.action);
+      this.findButton.disabled = !step?.action;
+      this.findButton.textContent = step?.action === "free-play" ? "Start free play" : step?.action === "resident" ? "Meet a neighbour" : step?.action ? `${state.tried?.[step.action] ? "Continue" : "Start"} ${JOB_LABELS[step.action]}` : "";
     }
     this.applyTownIdentity(state.townName);
   }
