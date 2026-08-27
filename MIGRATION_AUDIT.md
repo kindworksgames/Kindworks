@@ -802,3 +802,39 @@ complete contract is recorded in `PARITY_CERTIFICATION.md`.
 All 430 automated tests and the production build pass. The protected HTML and
 Desktop source both retain SHA-256
 `0b85bd71385b83e7a13676f7593ce376245959fa4ebf1a6b9a0e6765297aa5a5`.
+
+Milestone 44 establishes the first Phaser web release candidate. A new
+machine-readable gate covers 12 player journeys: first-run setup, town
+exploration, all restoration work, all food venues, fishing and collections,
+community and homes, economy and ownership, permanent restoration, save and
+continue, protected-HTML import, responsive input and production safety. The
+activity smoke matrix contains 35 checkpoints: first, middle and final levels
+for all 11 campaigns plus Fishing and Magnet Fishing.
+
+Cross-system tests now complete a fresh town/resident/home setup and first-job
+checklist through the production services, reload the verified schema-37 save,
+copy and reconcile the dense protected version-82 HTML fixture into the separate
+Phaser namespace, reload it with its critical balances and durable records, and
+recover the last verified backup after a deliberately damaged in-memory current
+envelope. The protected source is never written or removed.
+
+The Vite-only `?qa=release-candidate` route publishes the read-only release
+result without running onboarding or login rewards. Live 1,280×720 browser QA
+reported 12 journeys, 35 checkpoints, schema 37, TownScene, the exact protected
+HTML checksum, no page overflow and a clean console. The actual Save, Shop,
+Inventory, Welcome, Animal Friends, Resident Stories and KindWorks Impact
+interfaces all opened and returned safely. A separate first-run playtest named
+Release Willow, created Meadow with the included starter home and reached the
+complete three-step welcome state and first-job checklist.
+
+Desktop, 844×390 landscape and 390×844 portrait remain mandatory release gates
+with 44-pixel mobile controls and River Clear-Out as the only portrait-supported
+activity. This milestone certifies the Phaser web release candidate; real
+iPhone, iPad and Android testing follows Capacitor packaging and is not claimed
+here. The full contract is recorded in `RELEASE_CANDIDATE_TESTING.md`.
+
+All 438 automated tests and the production build pass. The only build advisory
+is the existing large Phaser application chunk, which is assigned to the next
+performance milestone. The protected HTML and Desktop source both retain
+SHA-256
+`0b85bd71385b83e7a13676f7593ce376245959fa4ebf1a6b9a0e6765297aa5a5`.

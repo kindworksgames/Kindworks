@@ -69,6 +69,7 @@ import { CommerceController } from "./ui/CommerceController.js";
 import { ITEM_IDS } from "./data/items.js";
 import { findSafeFurniturePlacement } from "./data/homeInteriors.js";
 import { getParityCertification } from "./data/parityCertification.js";
+import { getReleaseCandidateCertification } from "./data/releaseCandidate.js";
 
 const stateRuntime = bootstrapState(window.localStorage);
 const worldSimulation = new WorldSimulationService(stateRuntime.gameState, stateRuntime.repository);
@@ -157,6 +158,7 @@ const economy = new EconomyService(stateRuntime.gameState, stateRuntime.reposito
 game.registry.set("economy", economy);
 const qaMode = new URLSearchParams(window.location.search).get("qa");
 const commerceQa = import.meta.env.DEV && ["commerce", "commerce-disabled"].includes(qaMode);
+const readOnlyQa = import.meta.env.DEV && ["parity", "release-candidate"].includes(qaMode);
 const developmentCommerce = import.meta.env.DEV && qaMode === "commerce";
 const billingBridge = developmentCommerce
   ? createDevelopmentBillingBridge(stateRuntime.gameState)
@@ -183,6 +185,15 @@ if (import.meta.env.DEV && qaMode === "parity") {
   document.body.dataset.parityCampaignLevels = String(parityCertification.counts.campaignLevels);
   document.body.dataset.parityActivities = String(parityCertification.activities.length);
   document.body.dataset.paritySource = parityCertification.source.sha256;
+}
+if (import.meta.env.DEV && qaMode === "release-candidate") {
+  const releaseCandidate = getReleaseCandidateCertification();
+  document.body.dataset.releaseCandidateQa = "true";
+  document.body.dataset.releaseCandidateReady = String(releaseCandidate.ok);
+  document.body.dataset.releaseCandidateJourneys = String(releaseCandidate.journeyCount);
+  document.body.dataset.releaseCandidateCheckpoints = String(releaseCandidate.activityCheckpointCount);
+  document.body.dataset.releaseCandidateSchema = String(releaseCandidate.schemaVersion);
+  document.body.dataset.releaseCandidateSource = releaseCandidate.sourceSha256;
 }
 if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "paws") {
   restorationMilestones.unlockForQa("highstreet", { revealed: true });
@@ -408,8 +419,8 @@ const onboardingController = new OnboardingController(onboarding, {
   },
 });
 game.registry.set("onboardingController", onboardingController);
-if (!commerceQa && qaMode !== "parity") setTimeout(() => onboardingController.startFirstRun(), 260);
-if (qaMode !== "parity") onboardingController.processLogin();
+if (!commerceQa && !readOnlyQa) setTimeout(() => onboardingController.startFirstRun(), 260);
+if (!readOnlyQa) onboardingController.processLogin();
 
 function handleVisibilityChange() {
   npcTownLife.setPaused("background", document.hidden);
@@ -436,6 +447,7 @@ window.addEventListener("pagehide", () => {
 window.__KINDWORKS_PHASER__ = {
   game,
   getParityCertification,
+  getReleaseCandidateCertification,
   getMilestoneState() {
     const activeScene = game.scene.getScenes(true)[0];
     return typeof activeScene?.getMilestoneState === "function"

@@ -71,7 +71,8 @@ test("provides a non-destructive in-game parity QA route", async () => {
   assert.match(main, /qaMode === "parity"/);
   assert.match(main, /dataset\.parityCertified/);
   assert.match(main, /dataset\.parityCampaignLevels/);
-  assert.match(main, /qaMode !== "parity"\) onboardingController\.processLogin/);
+  assert.match(main, /const readOnlyQa = import\.meta\.env\.DEV/);
+  assert.match(main, /if \(!readOnlyQa\) onboardingController\.processLogin/);
   const parityBlock = main.match(/if \(import\.meta\.env\.DEV && qaMode === "parity"\) \{([\s\S]*?)\n\}/)?.[1] || "";
   assert.doesNotMatch(parityBlock, /save|update|create|grant|processLogin/i);
 });
