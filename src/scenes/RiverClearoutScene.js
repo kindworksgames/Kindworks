@@ -70,8 +70,8 @@ export class RiverClearoutScene extends Phaser.Scene {
     document.querySelector("#river-gameplay")?.classList.add("hidden");
     document.querySelector("#river-result")?.classList.add("hidden");
     this.buttons.qa?.classList.toggle("hidden", !this.qaMode);
-    if (this.exitButton) this.exitButton.textContent = "Exit river";
-    this.setMessage(this.entryData.environmentTargetId ? "Choose a river challenge to remove the selected persistent debris when you succeed." : "Choose any of the 750 river levels to begin.", "neutral");
+    if (this.exitButton) this.exitButton.textContent = "Exit";
+    this.setMessage(this.entryData.environmentTargetId ? "Choose a level to clear this debris." : "Choose a river level.", "neutral");
 
     this.onStart = () => this.startLevel(Number(this.levelSelect?.value || 1));
     this.onLevelChange = () => { if (this.startButton) this.startButton.textContent = `Start Level ${Number(this.levelSelect?.value || 1)}`; };
@@ -115,7 +115,7 @@ export class RiverClearoutScene extends Phaser.Scene {
     document.querySelector("#river-picker")?.classList.add("hidden");
     document.querySelector("#river-gameplay")?.classList.remove("hidden");
     document.querySelector("#river-result")?.classList.add("hidden");
-    this.setMessage("Clear rows to recover at least half of the original rubbish. Full clear within par earns three stars.", "success");
+    this.setMessage("Clear rows. Recover at least 50%.", "success");
     this.render();
     return true;
   }
@@ -217,7 +217,7 @@ export class RiverClearoutScene extends Phaser.Scene {
     setText("#river-result-message", result.won ? result.firstClear ? "Progress saved. This first clear also earned town coins." : "Your best result was saved. Replay coins are first-clear only." : "Restore at least 50% of the original rubbish to complete this level.");
     setText("#river-result-percent", `${result.percent}%`); setText("#river-result-pieces", result.pieces); setText("#river-result-rows", result.rows); setText("#river-result-coins", `+${result.coins}`);
     if (this.buttons.next) this.buttons.next.disabled = !result.won;
-    this.setMessage(result.won ? "River level complete and safely saved." : "Try a different placement plan; no progress was lost.", result.won ? "success" : "error");
+    this.setMessage(result.won ? "River saved." : "Try another placement.", result.won ? "success" : "error");
     this.render();
   }
 
@@ -247,8 +247,8 @@ export class RiverClearoutScene extends Phaser.Scene {
     const session = this.river.getActiveSession();
     if (session && !session.finished && Date.now() > this.exitArmedUntil) {
       this.exitArmedUntil = Date.now() + 3000;
-      if (this.exitButton) this.exitButton.textContent = "Confirm exit level";
-      this.setMessage("Press Confirm exit level within three seconds to abandon only this attempt.", "error");
+      if (this.exitButton) this.exitButton.textContent = "Confirm Exit";
+      this.setMessage("Tap Confirm exit to leave this attempt.", "error");
       return false;
     }
     return this.returnToTown(false);

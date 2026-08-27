@@ -1,12 +1,17 @@
 export const LANDSCAPE_MESSAGE = "Turn your device sideways to play.";
-export const PORTRAIT_SUPPORTED_SCENES = new Set(["RiverClearoutScene"]);
+export const PORTRAIT_MESSAGE = "Turn your device upright to play.";
+export const PORTRAIT_ONLY_SCENES = new Set(["RiverClearoutScene"]);
+export const PORTRAIT_SUPPORTED_SCENES = PORTRAIT_ONLY_SCENES;
 
-export function shouldPauseForPortrait({ width, height, sceneKey } = {}) {
+export function shouldPauseForOrientation({ width, height, sceneKey } = {}) {
   const measuredWidth = Number(width) || 0;
   const measuredHeight = Number(height) || 0;
-  if (!sceneKey || sceneKey === "BootScene" || PORTRAIT_SUPPORTED_SCENES.has(sceneKey)) return false;
+  if (!sceneKey || sceneKey === "BootScene") return false;
+  if (PORTRAIT_ONLY_SCENES.has(sceneKey)) return measuredWidth > measuredHeight;
   return measuredHeight > measuredWidth;
 }
+
+export const shouldPauseForPortrait = shouldPauseForOrientation;
 
 function viewportSize(windowObject, documentObject) {
   const root = documentObject?.documentElement;
@@ -68,12 +73,14 @@ export class ResponsiveShellController {
   update() {
     const sceneKey = this.activeSceneKey();
     const size = viewportSize(this.window, this.document);
-    const blocked = shouldPauseForPortrait({ ...size, sceneKey });
+    const blocked = shouldPauseForOrientation({ ...size, sceneKey });
+    const portraitOnly = PORTRAIT_ONLY_SCENES.has(sceneKey);
     const message = this.document?.querySelector?.("#landscape-required-message");
-    if (message) message.textContent = LANDSCAPE_MESSAGE;
+    if (message) message.textContent = portraitOnly ? PORTRAIT_MESSAGE : LANDSCAPE_MESSAGE;
     if (this.document?.body) {
       this.document.body.dataset.orientationMode = blocked ? "rotate-device" : "play";
       this.document.body.dataset.orientationScene = sceneKey || "loading";
+      this.document.body.dataset.orientationExpected = portraitOnly ? "portrait" : "landscape";
     }
     if (blocked !== this.blocked) this.applyBlocked(blocked);
     return { blocked, sceneKey, ...size };

@@ -594,11 +594,11 @@
         <header class="river-hud-header">
           <div><p>MILESTONE 15 · 750-LEVEL CAMPAIGN</p><h2 id="river-hud-title">🌊 River Clear-Out</h2><small id="river-progress-summary">0 cleared · 0 stars · 0 restoration points</small></div>
           <span id="river-balance">🪙 100</span>
-          <button id="river-exit" type="button">Exit river</button>
+          <button id="river-exit" type="button" aria-label="Exit River Clear-Out safely">Exit</button>
         </header>
         <section id="river-picker" class="river-picker" aria-label="Choose a River Clear-Out level">
-          <div><strong>Restore all 750 stretches of river</strong><small>Guide each falling recovery shape to clear the original rubbish. Every level is available; first clears award coins once.</small></div>
-          <label for="river-level-select">River challenge<select id="river-level-select"><option value="1">Level 1</option></select></label>
+          <div><strong>Restore 750 river stretches</strong><small>Place recovery shapes to clear rubbish. First clears earn coins.</small></div>
+          <label for="river-level-select">Level<select id="river-level-select"><option value="1">Level 1</option></select></label>
           <button id="river-start" type="button">Start Level 1</button>
         </section>
         <section id="river-gameplay" class="river-gameplay hidden" aria-label="Active River Clear-Out level">
@@ -613,7 +613,7 @@
               <button id="river-qa-solve" class="hidden" type="button">✓ Certified QA clear</button>
             </div>
           </div>
-          <div class="river-controls" aria-label="River piece controls"><button id="river-left" type="button" aria-label="Move left">◀</button><button id="river-rotate" type="button" aria-label="Rotate clockwise">↻</button><button id="river-down" type="button" aria-label="Move down">▼</button><button id="river-right" type="button" aria-label="Move right">▶</button><button id="river-drop" class="primary" type="button">Drop</button><button id="river-undo" type="button">↶ Undo</button></div>
+          <div class="river-controls" aria-label="River piece controls"><button id="river-left" type="button" aria-label="Move left">◀</button><button id="river-rotate" type="button" aria-label="Rotate clockwise">↻</button><button id="river-down" type="button" aria-label="Move down">▼</button><button id="river-right" type="button" aria-label="Move right">▶</button><button id="river-drop" class="primary" type="button">Drop</button><button id="river-undo" type="button" aria-label="Undo last river move">↶</button></div>
         </section>
         <p id="river-status" class="river-status" data-status="neutral" role="status" aria-live="assertive">Choose any river level to begin.</p>
         <section id="river-result" class="river-result hidden" aria-labelledby="river-result-title">
