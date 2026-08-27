@@ -625,10 +625,10 @@
         <header class="cafe-hud-header">
           <div><p>MILESTONE 14 · CAFÉ VERTICAL SLICE</p><h2 id="cafe-hud-title">☕ Corner Café</h2><small id="cafe-progress-summary">0 cleared · 0 stars · 0 served</small></div>
           <span id="cafe-balance">🪙 100</span>
-          <button id="cafe-exit" type="button">Exit café</button>
+          <button id="cafe-exit" type="button" aria-label="Exit Corner Café safely">Exit</button>
         </header>
         <section id="cafe-picker" class="cafe-picker" aria-label="Choose a café level">
-          <div><strong>150-shift café campaign</strong><small>Serve every customer with three preparation trays. First clears award coins once.</small></div>
+          <div><strong>150 café shifts</strong><small>First clears unlock the next shift and pay once.</small></div>
           <label for="cafe-level-select">Available shift<select id="cafe-level-select"><option value="1">Level 1</option></select></label>
           <button id="cafe-start" type="button">Open for Level 1</button>
         </section>
@@ -637,7 +637,7 @@
           <div id="cafe-orders" class="cafe-orders" aria-label="Customer orders"></div>
           <div id="cafe-trays" class="cafe-trays" aria-label="Preparation trays"></div>
           <div class="cafe-current"><small>CURRENT DISH</small><h3 id="cafe-order-name">🫖 Tea</h3><div id="cafe-recipe-sequence" class="cafe-recipe-sequence"></div></div>
-          <div><p class="cafe-worktop-label">Tap the highlighted next ingredient or station</p><div id="cafe-step-list" class="cafe-step-list"></div></div>
+          <div class="cafe-worktop"><p class="cafe-worktop-label">Choose the highlighted step</p><div id="cafe-step-list" class="cafe-step-list"></div></div>
           <div class="cafe-controls"><button id="cafe-undo" type="button" disabled>↶ Undo</button><button id="cafe-discard" type="button" disabled>🗑 Discard</button><button id="cafe-serve" class="primary" type="button" disabled>Serve customer</button></div>
         </section>
         <p id="cafe-status" class="cafe-status" data-status="neutral" role="status" aria-live="assertive">Choose an available café level to begin.</p>

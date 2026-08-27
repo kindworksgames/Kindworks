@@ -72,22 +72,25 @@ export class CafeScene extends Phaser.Scene {
     this.stepList = document.querySelector("#cafe-step-list");
     this.orderList = document.querySelector("#cafe-orders");
     this.trayList = document.querySelector("#cafe-trays");
+    this.worktop = document.querySelector("#cafe-shift .cafe-worktop");
+    this.controls = document.querySelector("#cafe-shift .cafe-controls");
     document.querySelector("#cafe-picker")?.classList.remove("hidden");
     document.querySelector("#cafe-shift")?.classList.add("hidden");
     document.querySelector("#cafe-result")?.classList.add("hidden");
-    if (this.exitButton) this.exitButton.textContent = "Exit café";
-    this.setMessage("Choose an available café level to begin.", "neutral");
+    if (this.hud) this.hud.dataset.cafeView = "picker";
+    if (this.exitButton) this.exitButton.textContent = "Exit";
+    this.setMessage("Choose a café shift.", "neutral");
     this.onStart = () => this.startLevel(Number(this.levelSelect?.value || 1));
     this.onLevelChange = () => { if (this.startButton) this.startButton.textContent = `Open for Level ${Number(this.levelSelect?.value || 1)}`; };
     this.onExit = () => this.requestExit();
     this.onUndo = () => { const result = this.cafe.undoStep(); this.setMessage(result.ok ? `${cafeStep(result.removed).name} removed.` : result.message, result.ok ? "neutral" : "error"); this.render(); };
-    this.onDiscard = () => { const result = this.cafe.discardTray(); this.setMessage(result.ok ? "This tray was cleared. The customer is still waiting." : result.message, result.ok ? "error" : "neutral"); this.render(); };
+    this.onDiscard = () => { const result = this.cafe.discardTray(); this.setMessage(result.ok ? "Tray cleared. Start again." : result.message, result.ok ? "error" : "neutral"); this.render(); };
     this.onServe = () => this.serveActive();
     this.onNext = () => this.startLevel(Math.min(150, (this.cafe.getActiveSession()?.level.level || 1) + 1));
     this.onReplay = () => this.startLevel(this.cafe.getActiveSession()?.level.level || 1);
     this.onReturn = () => this.returnToTown(true);
     this.onSteps = (event) => { const button = event.target.closest?.("[data-cafe-step]"); if (button) this.useStep(button.dataset.cafeStep); };
-    this.onTrays = (event) => { const button = event.target.closest?.("[data-cafe-tray]"); if (button && !this.station) { const result = this.cafe.selectTray(Number(button.dataset.cafeTray)); this.setMessage(result.ok ? `Prep ${Number(button.dataset.cafeTray) + 1} selected for ${result.order.customerName}.` : result.message, result.ok ? "neutral" : "error"); this.render(); } };
+    this.onTrays = (event) => { const button = event.target.closest?.("[data-cafe-tray]"); if (button && !this.station) { const result = this.cafe.selectTray(Number(button.dataset.cafeTray)); this.setMessage(result.ok ? `${result.order.customerName}'s tray selected.` : result.message, result.ok ? "neutral" : "error"); this.render(); } };
     this.onOrders = (event) => { const button = event.target.closest?.("[data-cafe-order-tray]"); if (button && !this.station) { this.cafe.selectTray(Number(button.dataset.cafeOrderTray)); this.render(); } };
     this.startButton?.addEventListener("click", this.onStart); this.levelSelect?.addEventListener("change", this.onLevelChange); this.exitButton?.addEventListener("click", this.onExit);
     this.undoButton?.addEventListener("click", this.onUndo); this.discardButton?.addEventListener("click", this.onDiscard);
@@ -106,7 +109,7 @@ export class CafeScene extends Phaser.Scene {
     const status = document.querySelector("#location-status"); if (status) status.textContent = "Inside Corner Café";
     const hint = document.querySelector("#control-hint"); if (hint) hint.textContent = "Choose a prep tray · Follow highlighted steps · Escape exits safely";
     const landscapeMessage = document.querySelector("#landscape-required-message");
-    if (landscapeMessage) landscapeMessage.textContent = "Corner Café is designed for landscape play. Turn your phone sideways to continue this shift.";
+    if (landscapeMessage) landscapeMessage.textContent = "Turn your device sideways to play.";
   }
 
   startLevel(level) {
@@ -117,7 +120,9 @@ export class CafeScene extends Phaser.Scene {
     document.querySelector("#cafe-picker")?.classList.add("hidden");
     document.querySelector("#cafe-shift")?.classList.remove("hidden");
     document.querySelector("#cafe-result")?.classList.add("hidden");
-    this.setMessage("Choose a preparation tray, then follow the highlighted recipe sequence.", "success");
+    if (this.hud) this.hud.dataset.cafeView = "shift";
+    if (this.exitButton) this.exitButton.textContent = "Exit";
+    this.setMessage("Choose a tray. Follow the highlight.", "success");
     this.render();
     return true;
   }
@@ -138,13 +143,13 @@ export class CafeScene extends Phaser.Scene {
       if (this.station) return false;
       this.station = { id: stepId, status: "working" };
       this.chefVisual.setText("🧑‍🍳💨");
-      this.setMessage(`${definition.name} working… wait for Ready, then tap it again.`, "working");
+      this.setMessage(`${definition.name} working…`, "working");
       this.render();
       this.time.delayedCall(Math.max(90, definition.seconds * 1000 * this.timingScale), () => {
         if (this.transitioning || !this.station || this.station.id !== stepId) return;
         this.station.status = "ready";
         this.chefVisual.setText("🧑‍🍳✨");
-        this.setMessage(`${definition.name} is ready—tap it again to return the preparation to its tray.`, "success");
+        this.setMessage(`${definition.name} ready. Tap it again.`, "success");
         this.render();
       });
       return true;
@@ -155,8 +160,8 @@ export class CafeScene extends Phaser.Scene {
   finishStep(stepId) {
     const result = this.cafe.applyStep(stepId);
     if (!result.ok) this.setMessage(result.message, "error");
-    else if (result.complete) this.setMessage(`${result.recipe.name} is ready—finish the dish.`, "success");
-    else this.setMessage(`${result.step.name} added. Next: ${cafeStep(result.expectedStep).name}.`, "neutral");
+    else if (result.complete) this.setMessage(`${result.recipe.name} is ready. Finish it.`, "success");
+    else this.setMessage(`Added ${result.step.name}. Next: ${cafeStep(result.expectedStep).name}.`, "neutral");
     this.render();
     return result.ok;
   }
@@ -166,21 +171,25 @@ export class CafeScene extends Phaser.Scene {
     const result = this.cafe.serveActive();
     if (!result.ok) { this.setMessage(result.message, "error"); this.render(); return false; }
     if (result.result) { this.showResult(result.result); return true; }
-    if (result.code === "dish-added") this.setMessage(`${result.message} Now prepare ${result.nextRecipe.name}.`, "success");
-    else this.setMessage(`${result.customerName} loved the order! The next occupied tray is ready.`, "success");
+    if (result.code === "dish-added") this.setMessage(`Dish ready. Next: ${result.nextRecipe.name}.`, "success");
+    else this.setMessage(`${result.customerName} served. Choose the next tray.`, "success");
     this.render();
     return true;
   }
 
   showResult(result) {
     document.querySelector("#cafe-shift")?.classList.add("hidden"); document.querySelector("#cafe-result")?.classList.remove("hidden");
+    if (this.hud) this.hud.dataset.cafeView = "result";
     document.querySelector("#cafe-result-title").textContent = result.won ? "Shift complete!" : "Shift needs another try";
     document.querySelector("#cafe-result-stars").textContent = `${"★".repeat(result.stars)}${"☆".repeat(3 - result.stars)}`;
-    document.querySelector("#cafe-result-message").textContent = result.won ? result.firstClear ? "Every customer was served. The next café level is unlocked." : "Best score saved. Replay coins are first-clear only." : result.failureReason || "A customer left before their order was ready.";
+    document.querySelector("#cafe-result-message").textContent = result.won ? result.firstClear ? "All served. Next shift unlocked." : "Best score saved. Replay pays no coins." : result.failureReason || "A customer left. Try again.";
     document.querySelector("#cafe-result-accuracy").textContent = `${result.accuracy}%`; document.querySelector("#cafe-result-happiness").textContent = `${result.happiness}%`;
     document.querySelector("#cafe-result-waste").textContent = String(result.waste); document.querySelector("#cafe-result-coins").textContent = `+${result.coins}`;
-    if (this.nextButton) this.nextButton.disabled = !result.won || this.cafe.getActiveSession().level.level >= 150;
-    this.setMessage(result.won ? "Café shift complete." : result.failureReason, result.won ? "success" : "error");
+    if (this.nextButton) {
+      this.nextButton.disabled = !result.won || this.cafe.getActiveSession().level.level >= 150;
+      this.nextButton.classList.toggle("hidden", !result.won);
+    }
+    this.setMessage(result.won ? `Shift complete. +${result.coins} coins.` : result.failureReason, result.won ? "success" : "error");
     this.render();
   }
 
@@ -206,16 +215,24 @@ export class CafeScene extends Phaser.Scene {
     document.querySelector("#cafe-served").textContent = `${session.served} / ${session.level.target}`;
     const remaining = Math.max(0, session.level.duration - session.elapsed); document.querySelector("#cafe-timer").textContent = `${Math.floor(remaining / 60)}:${String(Math.ceil(remaining % 60)).padStart(2, "0")}`;
     if (this.orderList) this.orderList.innerHTML = session.activeOrderIds.map((id) => { const customer = session.orders.find((candidate) => candidate.id === id); const trayIndex = session.trays.findIndex((candidate) => candidate.orderId === id); const ratio = Math.max(0, Math.round(customer.patience / customer.maxPatience * 100)); return `<button type="button" data-cafe-order-tray="${trayIndex}" class="${trayIndex === session.activeTray ? "active" : ""}"><strong>${customer.customerName}</strong><small>${customer.recipes.map((recipeId) => CAFE_RECIPES[recipeId].icon).join(" ")} · ${ratio}% patience</small></button>`; }).join("");
-    if (this.trayList) this.trayList.innerHTML = session.trays.map((candidate) => { const customer = candidate.orderId ? session.orders.find((entry) => entry.id === candidate.orderId) : null; const item = customer ? CAFE_RECIPES[customer.recipes[candidate.recipeIndex]] : null; return `<button type="button" data-cafe-tray="${candidate.index}" class="${candidate.index === session.activeTray ? "active" : ""}" ${customer ? "" : "disabled"}><small>PREP ${candidate.index + 1}</small><strong>${customer?.customerName || "Free tray"}</strong><span>${item ? `${item.icon} ${item.name}` : "Waiting…"}</span></button>`; }).join("");
+    if (this.trayList) this.trayList.innerHTML = session.trays.map((candidate) => { const customer = candidate.orderId ? session.orders.find((entry) => entry.id === candidate.orderId) : null; const item = customer ? CAFE_RECIPES[customer.recipes[candidate.recipeIndex]] : null; const patience = customer ? Math.max(0, Math.round(customer.patience / customer.maxPatience * 100)) : 0; return `<button type="button" data-cafe-tray="${candidate.index}" class="${candidate.index === session.activeTray ? "active" : ""}" ${customer ? "" : "disabled"}><small>PREP ${candidate.index + 1}</small><strong>${customer?.customerName || "Free tray"}</strong><span>${item ? `${item.icon} ${item.name} · ${patience}%` : "Waiting…"}</span></button>`; }).join("");
     document.querySelector("#cafe-order-name").textContent = recipe ? `${recipe.icon} ${recipe.name}` : "Waiting for an order";
     const sequence = document.querySelector("#cafe-recipe-sequence");
     if (sequence) sequence.innerHTML = recipe ? recipe.steps.map((step, index) => `<span class="${index < tray.stepIndex ? "done" : index === tray.stepIndex ? "next" : ""}">${cafeStep(step).icon}<small>${cafeStep(step).name}</small></span>`).join("") : "";
     const availableIds = [...new Set(session.level.menu.flatMap((id) => CAFE_RECIPES[id].steps))];
     availableIds.sort((a, b) => a === expected ? -1 : b === expected ? 1 : (CAFE_APPLIANCES[a] ? 1 : 0) - (CAFE_APPLIANCES[b] ? 1 : 0));
     if (this.stepList) this.stepList.innerHTML = availableIds.map((id) => { const item = cafeStep(id); const station = Boolean(CAFE_APPLIANCES[id]); const stationState = this.station?.id === id ? this.station.status : ""; return `<button type="button" data-cafe-step="${id}" class="${id === expected ? "next" : ""} ${station ? "station" : "ingredient"} ${stationState}" ${this.station && this.station.id !== id ? "disabled" : ""}><span>${item.icon}</span><strong>${item.name}</strong><small>${stationState === "working" ? "Working…" : stationState === "ready" ? "Ready · tap" : station ? "Station" : "Ingredient"}</small></button>`; }).join("");
-    if (this.undoButton) this.undoButton.disabled = Boolean(this.station) || !tray?.orderId || tray.stepIndex < 1;
-    if (this.discardButton) this.discardButton.disabled = Boolean(this.station) || !tray?.orderId || (tray.stepIndex < 1 && tray.completedRecipes.length < 1);
-    if (this.serveButton) { this.serveButton.disabled = Boolean(this.station) || !recipe || Boolean(expected); this.serveButton.textContent = tray?.recipeIndex < (order?.recipes.length || 0) - 1 ? "Finish dish" : "Serve customer"; }
+    const canRevise = !this.station && Boolean(tray?.orderId) && Boolean(expected) && (tray.stepIndex > 0 || tray.completedRecipes.length > 0);
+    if (this.undoButton) { this.undoButton.disabled = !canRevise || tray.stepIndex < 1; this.undoButton.classList.toggle("hidden", !canRevise || tray.stepIndex < 1); }
+    if (this.discardButton) { this.discardButton.disabled = !canRevise; this.discardButton.classList.toggle("hidden", !canRevise); }
+    if (this.serveButton) {
+      const canServe = !this.station && Boolean(recipe) && !expected;
+      this.serveButton.disabled = !canServe;
+      this.serveButton.classList.toggle("hidden", !canServe);
+      this.serveButton.textContent = tray?.recipeIndex < (order?.recipes.length || 0) - 1 ? "Finish dish" : "Serve";
+    }
+    this.worktop?.classList.toggle("hidden", !expected);
+    this.controls?.classList.toggle("hidden", !canRevise && Boolean(expected));
     this.customerVisual.setText(session.activeOrderIds.length ? `🧑 × ${session.activeOrderIds.length}  →  ☕` : "😊  ✓");
     this.prepVisual.setText(recipe ? expected ? cafeStep(expected).icon : recipe.icon : "✨");
     this.updateDomState();
@@ -244,6 +261,15 @@ export class CafeScene extends Phaser.Scene {
       const ratio = Math.max(0, Math.round(order.patience / order.maxPatience * 100));
       summary.textContent = `${order.recipes.map((recipeId) => CAFE_RECIPES[recipeId].icon).join(" ")} · ${ratio}% patience`;
     });
+    const trayButtons = this.trayList?.querySelectorAll("[data-cafe-tray]") || [];
+    session.trays.forEach((tray, index) => {
+      const order = tray.orderId ? session.orders.find((candidate) => candidate.id === tray.orderId) : null;
+      const item = order ? CAFE_RECIPES[order.recipes[tray.recipeIndex]] : null;
+      const summary = trayButtons[index]?.querySelector("span");
+      if (!order || !item || !summary) return;
+      const ratio = Math.max(0, Math.round(order.patience / order.maxPatience * 100));
+      summary.textContent = `${item.icon} ${item.name} · ${ratio}%`;
+    });
     this.updateDomState();
   }
 
@@ -263,8 +289,8 @@ export class CafeScene extends Phaser.Scene {
   requestExit() {
     const session = this.cafe.getActiveSession();
     if (session && !session.finished && Date.now() > this.exitArmedUntil) {
-      this.exitArmedUntil = Date.now() + 3000; if (this.exitButton) this.exitButton.textContent = "Confirm exit shift";
-      this.setMessage("Press Confirm exit shift within three seconds to abandon only this attempt.", "error"); return false;
+      this.exitArmedUntil = Date.now() + 3000; if (this.exitButton) this.exitButton.textContent = "Confirm Exit";
+      this.setMessage("Leave this shift? Tap Confirm Exit.", "error"); return false;
     }
     return this.returnToTown(false);
   }
