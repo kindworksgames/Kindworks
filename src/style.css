@@ -3674,6 +3674,15 @@ body[data-orientation-blocked="true"] .game-shell > :not(.landscape-required) {
 .bakery-customer-progress { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; }
 .bakery-customer-progress progress { width: 100%; height: 11px; accent-color: #66aa55; }
 .bakery-customer-progress strong { font-size: 9px; }
+.bakery-orders, .bakery-trays { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
+.bakery-orders button, .bakery-trays button { display: grid; min-width: 0; gap: 2px; min-height: var(--kw-touch-min, 44px); padding: 5px; text-align: left; box-shadow: 2px 2px 0 rgb(41 34 56 / 24%); }
+.bakery-orders button strong, .bakery-orders button small, .bakery-trays button strong, .bakery-trays button span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bakery-orders button strong, .bakery-trays button strong { font-size: 9px; }
+.bakery-orders button small, .bakery-trays button small { color: #746655; font-size: 7px; }
+.bakery-trays button span { color: #665b4d; font-size: 8px; }
+.bakery-orders button.active { border-color: #d1684e; background: #ffe074; }
+.bakery-trays button.active { border-color: #292238; background: #b9ced0; outline: 2px solid #d1684e; }
+.bakery-trays button.busy::after { content: "Working…"; color: #8a5719; font-size: 7px; }
 .bakery-order { padding: 9px; border: 3px solid #292238; border-radius: 8px; background: #fffaf0; }
 .bakery-order > small { color: #9b6349; font-size: 8px; font-weight: 900; letter-spacing: 1px; }
 .bakery-order h3 { margin: 4px 0 8px; font-size: 16px; }
@@ -3867,6 +3876,18 @@ body[data-game-scene="BakeryScene"] .control-hint { display: none; }
     border-radius: 8px;
     background: rgba(255, 250, 240, .88);
   }
+  .bakery-hud[data-bakery-view="shift"] .bakery-orders,
+  .bakery-hud[data-bakery-view="shift"] .bakery-trays {
+    position: absolute;
+    top: 132px;
+    z-index: 2;
+    width: calc(50% - 3px);
+    pointer-events: auto;
+  }
+  .bakery-hud[data-bakery-view="shift"] .bakery-orders { left: 0; }
+  .bakery-hud[data-bakery-view="shift"] .bakery-trays { right: 0; }
+  .bakery-hud[data-bakery-view="shift"] .bakery-orders button,
+  .bakery-hud[data-bakery-view="shift"] .bakery-trays button { min-height: 44px; padding: 3px; }
   .bakery-hud[data-bakery-view="shift"] .bakery-customer-progress progress { height: 8px; }
   .bakery-hud[data-bakery-view="shift"] .bakery-customer-progress strong { font-size: 8px; }
   .bakery-hud[data-bakery-view="shift"] .bakery-worktop {

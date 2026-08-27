@@ -9,6 +9,8 @@ test("keeps the Little Bakery workbench and feedback inside short landscape phon
   const [markup, styles] = await Promise.all([readText("index.html"), readText("src/style.css")]);
   assert.match(markup, /id="bakery-exit"[^>]*aria-label="Exit Little Bakery safely"[^>]*>Exit<\/button>/);
   assert.match(markup, /class="bakery-worktop"/);
+  assert.match(markup, /id="bakery-orders"/);
+  assert.match(markup, /id="bakery-trays"/);
   assert.match(styles, /\.bakery-hud button, \.bakery-hud select \{ min-height: var\(--kw-touch-min, 44px\)/);
   assert.match(styles, /@media \(max-width: 900px\) and \(max-height: 650px\) and \(orientation: landscape\)/);
   assert.match(styles, /\.bakery-hud\[data-bakery-view="shift"\] \{[\s\S]*?position: fixed;[\s\S]*?pointer-events: none;[\s\S]*?background: transparent;/);
@@ -21,7 +23,7 @@ test("uses contextual Bakery actions and short action-led prompts", async () => 
   for (const copy of [
     "Choose a bakery shift.",
     "Follow the highlight.",
-    "Preparation cleared. Start again.",
+    "This tray was cleared.",
     "Leave this shift? Tap Confirm Exit.",
     "Turn your device sideways to play.",
   ]) assert.ok(scene.includes(copy), copy);
@@ -30,6 +32,9 @@ test("uses contextual Bakery actions and short action-led prompts", async () => 
   assert.match(scene, /this\.undoButton\.classList\.toggle\("hidden", !canRevise\)/);
   assert.match(scene, /this\.discardButton\.classList\.toggle\("hidden", !canRevise\)/);
   assert.match(scene, /this\.serveButton\.classList\.toggle\("hidden", !canServe\)/);
+  assert.match(scene, /this\.bakery\.selectTray/);
+  assert.match(scene, /session\.trays\.map/);
+  assert.match(scene, /instantOrders: this\.fidelityQa/);
 });
 
 test("retains the protected 150-shift Bakery campaign and first-clear reward engine", async () => {

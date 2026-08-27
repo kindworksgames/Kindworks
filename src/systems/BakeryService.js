@@ -10,7 +10,13 @@ import {
 } from "../data/bakery.js";
 import { NPC_RESIDENTS } from "../data/npcTownLife.js";
 import { COIN_LEDGER_LIMIT } from "../state/economyState.js";
-import { applyRecipeStep, recipeOrderScore, resetRecipePreparation, undoRecipeStep } from "./RecipeOrderService.js";
+import {
+  applyRecipeStep,
+  recipeForOrder,
+  recipeOrderScore,
+  resetRecipePreparation,
+  undoRecipeStep,
+} from "./RecipeOrderService.js";
 
 function appendLedger(state, now, details) {
   const id = `coin-${String(state.economy.nextTransactionId).padStart(6, "0")}`;
@@ -19,6 +25,10 @@ function appendLedger(state, now, details) {
   state.economy.ledger.push(entry);
   state.economy.ledger = state.economy.ledger.slice(-COIN_LEDGER_LIMIT);
   return entry;
+}
+
+function emptyTray(index) {
+  return { index, orderId: null, recipeIndex: 0, stepIndex: 0, completedSteps: [], completedRecipes: [] };
 }
 
 export class BakeryService {
@@ -42,26 +52,8 @@ export class BakeryService {
     for (const listener of this.listeners) listener(snapshot, result);
   }
 
-  getSnapshot() {
-    return structuredClone(this.gameState.getSnapshot().bakery);
-  }
-
-  getActiveSession() {
-    return this.activeSession ? structuredClone(this.activeSession) : null;
-  }
-
-  currentOrder(session = this.activeSession) {
-    return session?.orders?.[session.orderIndex] || null;
-  }
-
-  currentRecipe(session = this.activeSession) {
-    const order = this.currentOrder(session);
-    return order ? BAKERY_RECIPES[order.recipes[session.recipeIndex]] || null : null;
-  }
-
-  expectedStep(session = this.activeSession) {
-    return this.currentRecipe(session)?.steps?.[session.stepIndex] || null;
-  }
+  getSnapshot() { return structuredClone(this.gameState.getSnapshot().bakery); }
+  getActiveSession() { return this.activeSession ? structuredClone(this.activeSession) : null; }
 
   commit(mutator) {
     const checkpoint = this.gameState.getSnapshot();
@@ -81,29 +73,30 @@ export class BakeryService {
     return result;
   }
 
-  startLevel(number = 1, { returnPosition, returnFacing = "down" } = {}) {
+  startLevel(number = 1, { returnPosition, returnFacing = "down", instantOrders = false } = {}) {
     if (this.activeSession && !this.activeSession.finished) return { ok: false, code: "shift-active", message: "Finish or safely exit the current bakery shift first." };
     const level = bakeryLevel(number);
     const progress = this.getSnapshot();
     if (level.level > progress.unlockedLevel) return { ok: false, code: "level-locked", message: "Complete the previous bakery shift first." };
     const names = NPC_RESIDENTS.map((resident) => resident.name);
     const orders = level.orders.map((order, index) => ({
+      id: `bakery-order-${index + 1}`,
+      at: instantOrders ? 0 : order.at,
       recipes: [...order.recipes],
       customerName: names[(level.level + (index + 1) * 3) % names.length] || `Customer ${index + 1}`,
       maxPatience: level.patience + Math.max(0, order.recipes.length - 1) * 12,
+      patience: level.patience + Math.max(0, order.recipes.length - 1) * 12,
+      status: "waiting",
     }));
-    const id = `bakery-shift-${String(this.nextSessionId).padStart(4, "0")}`;
-    this.nextSessionId += 1;
     this.activeSession = {
-      id,
+      id: `bakery-shift-${String(this.nextSessionId).padStart(4, "0")}`,
       level,
       orders,
-      orderIndex: 0,
-      recipeIndex: 0,
-      stepIndex: 0,
-      completedSteps: [],
+      spawnIndex: 0,
+      activeOrderIds: [],
+      trays: Array.from({ length: BAKERY_CONFIG.trayCount }, (_, index) => emptyTray(index)),
+      activeTray: 0,
       elapsed: 0,
-      currentPatience: orders[0].maxPatience,
       served: 0,
       missed: 0,
       mistakes: 0,
@@ -113,111 +106,155 @@ export class BakeryService {
       happiness: [],
       finished: false,
       result: null,
-      returnPosition: { x: Number(returnPosition?.x) || 805, y: Number(returnPosition?.y) || 1180 },
+      failureReason: null,
+      returnPosition: returnPosition ? { x: Number(returnPosition.x), y: Number(returnPosition.y) } : null,
       returnFacing,
     };
+    this.nextSessionId += 1;
+    this.spawnOrders();
     return { ok: true, code: "bakery-shift-started", session: this.getActiveSession(), expectedStep: this.expectedStep() };
   }
 
-  recordMistake(message) {
+  spawnOrders() {
+    const session = this.activeSession;
+    if (!session || session.finished) return 0;
+    let spawned = 0;
+    while (session.spawnIndex < session.orders.length && session.orders[session.spawnIndex].at <= session.elapsed && session.activeOrderIds.length < BAKERY_CONFIG.maxCustomers) {
+      const order = session.orders[session.spawnIndex];
+      order.status = "active";
+      session.activeOrderIds.push(order.id);
+      session.spawnIndex += 1;
+      spawned += 1;
+    }
+    for (const id of session.activeOrderIds) {
+      if (session.trays.some((tray) => tray.orderId === id)) continue;
+      const tray = session.trays.find((candidate) => !candidate.orderId);
+      if (!tray) break;
+      tray.orderId = id;
+    }
+    const firstOccupied = session.trays.find((tray) => tray.orderId);
+    if (!session.trays[session.activeTray]?.orderId && firstOccupied) session.activeTray = firstOccupied.index;
+    return spawned;
+  }
+
+  orderById(id) { return this.activeSession?.orders.find((order) => order.id === id) || null; }
+  activeOrders() { return (this.activeSession?.activeOrderIds || []).map((id) => this.orderById(id)).filter(Boolean); }
+  tray(index = this.activeSession?.activeTray) { return this.activeSession?.trays?.[index] || null; }
+  orderForTray(tray = this.tray()) { return tray?.orderId ? this.orderById(tray.orderId) : null; }
+  currentOrder() { return this.orderForTray(this.tray()); }
+  currentRecipe(tray = this.tray()) { return recipeForOrder(this.orderForTray(tray), tray?.recipeIndex || 0, BAKERY_RECIPES); }
+  expectedStep(tray = this.tray()) { return this.currentRecipe(tray)?.steps?.[tray?.stepIndex || 0] || null; }
+
+  selectTray(index) {
+    const session = this.activeSession;
+    const tray = session?.trays?.[Number(index)];
+    if (!session || session.finished || !tray?.orderId) return { ok: false, code: "tray-unavailable", message: "Choose an occupied preparation tray." };
+    session.activeTray = tray.index;
+    return { ok: true, code: "tray-selected", tray: structuredClone(tray), order: structuredClone(this.orderForTray(tray)), expectedStep: this.expectedStep(tray) };
+  }
+
+  recordMistake(message, tray = this.tray()) {
     const session = this.activeSession;
     if (!session || session.finished) return { ok: false, code: "no-active-shift", message: "Start a bakery shift first." };
     session.mistakes += 1;
-    session.currentPatience = Math.max(-BAKERY_CONFIG.graceSeconds, session.currentPatience - 1.5);
-    return { ok: false, code: "wrong-step", message, expectedStep: this.expectedStep(), mistakes: session.mistakes };
+    const order = this.orderForTray(tray);
+    if (order) order.patience = Math.max(-BAKERY_CONFIG.graceSeconds, order.patience - 1.5);
+    return { ok: false, code: "wrong-step", message, expectedStep: this.expectedStep(tray), mistakes: session.mistakes };
   }
 
-  applyStep(stepId) {
+  applyStep(stepId, trayIndex = this.activeSession?.activeTray) {
     const session = this.activeSession;
-    if (!session || session.finished) return { ok: false, code: "no-active-shift", message: "Start a bakery shift first." };
-    const recipe = this.currentRecipe();
-    const result = applyRecipeStep(session, recipe, stepId, bakeryStep);
-    if (!result.ok && result.code === "unknown-step") return this.recordMistake("Choose a valid ingredient or bakery station.");
-    if (!result.ok && result.code === "wrong-step") return this.recordMistake(`That order needs ${bakeryStep(result.expectedStep).name} next.`);
+    const tray = this.tray(trayIndex);
+    if (!session || session.finished || !tray?.orderId) return { ok: false, code: "no-active-preparation", message: "Choose an active customer tray first." };
+    session.activeTray = tray.index;
+    const recipe = this.currentRecipe(tray);
+    const result = applyRecipeStep(tray, recipe, stepId, bakeryStep);
+    if (!result.ok && result.code === "unknown-step") return this.recordMistake("Choose a valid bakery ingredient or kitchen station.", tray);
+    if (!result.ok && result.code === "wrong-step") return this.recordMistake(`That dish needs ${bakeryStep(result.expectedStep).name} next.`, tray);
     if (!result.ok) return result;
-    return {
-      ...result,
-      recipeId: this.currentOrder().recipes[session.recipeIndex],
-      recipe,
-      expectedStep: this.expectedStep(),
-      session: this.getActiveSession(),
-    };
+    return { ...result, recipe, recipeId: this.orderForTray(tray).recipes[tray.recipeIndex], tray: structuredClone(tray), session: this.getActiveSession() };
   }
 
-  undoStep() {
-    const session = this.activeSession;
-    if (!session || session.finished) return { ok: false, code: "no-active-shift", message: "Start a bakery shift first." };
-    const result = undoRecipeStep(session);
-    return result.ok ? { ...result, expectedStep: this.expectedStep() } : result;
+  undoStep(trayIndex = this.activeSession?.activeTray) {
+    const tray = this.tray(trayIndex);
+    if (!tray?.orderId) return { ok: false, code: "no-active-preparation", message: "Choose an active customer tray first." };
+    const result = undoRecipeStep(tray);
+    return result.ok ? { ...result, expectedStep: this.expectedStep(tray), tray: structuredClone(tray) } : result;
   }
 
-  discardRecipe() {
+  discardTray(trayIndex = this.activeSession?.activeTray) {
     const session = this.activeSession;
-    if (!session || session.finished) return { ok: false, code: "no-active-shift", message: "Start a bakery shift first." };
-    if (!resetRecipePreparation(session)) return { ok: false, code: "nothing-to-discard", message: "The preparation is already empty." };
+    const tray = this.tray(trayIndex);
+    if (!session || session.finished || !tray?.orderId) return { ok: false, code: "no-active-preparation", message: "Choose an active customer tray first." };
+    if (!resetRecipePreparation(tray) && tray.completedRecipes.length === 0) return { ok: false, code: "nothing-to-discard", message: "The tray is already empty." };
+    tray.recipeIndex = 0;
+    tray.completedRecipes = [];
     session.waste += 1;
     session.mistakes += 1;
-    return { ok: true, code: "recipe-discarded", waste: session.waste, expectedStep: this.expectedStep() };
+    return { ok: true, code: "tray-discarded", waste: session.waste, expectedStep: this.expectedStep(tray) };
   }
 
-  serveRecipe() {
+  discardRecipe(trayIndex = this.activeSession?.activeTray) { return this.discardTray(trayIndex); }
+
+  serveActive(trayIndex = this.activeSession?.activeTray) {
     const session = this.activeSession;
-    const recipe = this.currentRecipe();
-    if (!session || session.finished || !recipe) return { ok: false, code: "no-active-shift", message: "Start a bakery shift first." };
-    if (session.stepIndex !== recipe.steps.length) return this.recordMistake(`${recipe.name} still needs ${bakeryStep(this.expectedStep()).name}.`);
-    const checkpoint = {
-      recipeIndex: session.recipeIndex,
-      stepIndex: session.stepIndex,
-      completedSteps: [...session.completedSteps],
-      happiness: [...session.happiness],
-      served: session.served,
-      streak: session.streak,
-      bestStreak: session.bestStreak,
-      orderIndex: session.orderIndex,
-      currentPatience: session.currentPatience,
-    };
-    const order = this.currentOrder();
-    session.recipeIndex += 1;
-    session.stepIndex = 0;
-    session.completedSteps = [];
-    if (session.recipeIndex < order.recipes.length) {
-      return { ok: true, code: "dish-added", message: `${recipe.name} added to the order.`, nextRecipe: this.currentRecipe(), expectedStep: this.expectedStep() };
+    const tray = this.tray(trayIndex);
+    const order = this.orderForTray(tray);
+    const recipe = this.currentRecipe(tray);
+    if (!session || session.finished || !tray || !order || !recipe) return { ok: false, code: "no-active-preparation", message: "Choose an active customer tray first." };
+    session.activeTray = tray.index;
+    if (tray.stepIndex !== recipe.steps.length) return this.recordMistake(`${recipe.name} still needs ${bakeryStep(this.expectedStep(tray)).name}.`, tray);
+    const checkpoint = structuredClone(session);
+    tray.completedRecipes.push(order.recipes[tray.recipeIndex]);
+    tray.recipeIndex += 1;
+    resetRecipePreparation(tray);
+    if (tray.recipeIndex < order.recipes.length) {
+      return { ok: true, code: "dish-added", message: `${recipe.name} added to the order.`, nextRecipe: this.currentRecipe(tray), tray: structuredClone(tray) };
     }
-    const happiness = Math.max(0, Math.min(1, session.currentPatience / order.maxPatience));
+    const happiness = Math.max(0, Math.min(1, order.patience / order.maxPatience));
     session.happiness.push(happiness);
     session.served += 1;
     session.streak += 1;
     session.bestStreak = Math.max(session.bestStreak, session.streak);
-    const customerName = order.customerName;
-    session.orderIndex += 1;
-    session.recipeIndex = 0;
-    if (session.orderIndex >= session.orders.length) {
+    order.status = "served";
+    session.activeOrderIds = session.activeOrderIds.filter((id) => id !== order.id);
+    Object.assign(tray, emptyTray(tray.index));
+    this.spawnOrders();
+    const nextTray = session.trays.find((candidate) => candidate.orderId);
+    if (nextTray) session.activeTray = nextTray.index;
+    if (session.served >= session.level.target && session.spawnIndex >= session.orders.length && session.activeOrderIds.length === 0) {
       const finished = this.finishSession();
-      if (finished.ok) return { ...finished, code: "bakery-shift-complete", customerName, customerOutcome: "loved" };
-      Object.assign(session, checkpoint);
+      if (finished.ok) return { ...finished, code: "bakery-shift-complete", customerName: order.customerName, customerOutcome: "loved" };
+      this.activeSession = checkpoint;
       return finished;
     }
-    session.currentPatience = this.currentOrder().maxPatience;
-    return { ok: true, code: "customer-served", customerName, customerOutcome: "loved", served: session.served, nextCustomer: this.currentOrder().customerName, expectedStep: this.expectedStep() };
+    return { ok: true, code: "customer-served", customerName: order.customerName, customerOutcome: "loved", served: session.served, nextCustomer: this.orderForTray(this.tray())?.customerName || null, session: this.getActiveSession() };
   }
+
+  serveRecipe(trayIndex = this.activeSession?.activeTray) { return this.serveActive(trayIndex); }
 
   tick(seconds) {
     const session = this.activeSession;
     if (!session || session.finished) return { ok: false, code: "no-active-shift" };
     const delta = Math.max(0, Math.min(1, Number(seconds) || 0));
     session.elapsed = Math.min(session.level.duration, session.elapsed + delta);
-    session.currentPatience -= delta;
-    if (session.currentPatience <= -BAKERY_CONFIG.graceSeconds) {
-      session.missed += 1;
-      session.streak = 0;
-      return this.finishSession({ failureReason: `${this.currentOrder().customerName} left before the order was ready.` });
+    const spawned = this.spawnOrders();
+    for (const order of this.activeOrders()) {
+      order.patience -= delta;
+      if (order.patience <= -BAKERY_CONFIG.graceSeconds) {
+        session.missed += 1;
+        session.streak = 0;
+        session.failureReason = `${order.customerName} left before the order was ready.`;
+        return this.finishSession({ failureReason: session.failureReason });
+      }
     }
     if (session.elapsed >= session.level.duration) {
       session.missed += session.level.target - session.served;
       session.streak = 0;
-      return this.finishSession({ failureReason: "The bakery shift timer ended." });
+      session.failureReason = "The bakery shift timer ended.";
+      return this.finishSession({ failureReason: session.failureReason });
     }
-    return { ok: true, code: "bakery-tick", remaining: session.level.duration - session.elapsed, patience: session.currentPatience };
+    return { ok: true, code: "bakery-tick", remaining: session.level.duration - session.elapsed, spawned, activeOrders: session.activeOrderIds.length };
   }
 
   finishSession({ failureReason = null } = {}) {
@@ -242,7 +279,7 @@ export class BakeryService {
           state.economy.coins += coins;
           state.economy.lifetimeCoinsEarned += coins;
           progress.lifetimeCoins += coins;
-          ledger = appendLedger(state, this.now(), { amount: coins, kind: "little-bakery-first-clear", reason: `Little Bakery Level ${level} first clear`, level, score: result.score, stars: result.stars, served: result.served });
+          ledger = appendLedger(state, this.now(), { amount: coins, kind: "little-bakery-first-clear", reason: `Little Bakery Level ${level} first clear`, level, score: result.score, stars: result.stars, served: result.served, venue: "bakery" });
         }
       }
       progress.shifts += 1;
@@ -255,7 +292,7 @@ export class BakeryService {
     if (!transaction.ok) return transaction;
     session.finished = true;
     session.result = transaction.result;
-    return { ...transaction, session: this.getActiveSession() };
+    return transaction;
   }
 
   cancel() {
@@ -272,17 +309,13 @@ export class BakeryService {
       recipes: Object.keys(BAKERY_RECIPES).length,
       ingredients: Object.keys(BAKERY_INGREDIENTS).length,
       appliances: Object.keys(BAKERY_APPLIANCES).length,
+      trays: BAKERY_CONFIG.trayCount,
       unlockedLevel: state.unlockedLevel,
       completedLevels: Object.keys(state.completed).length,
       totalStars: state.totalStars,
       lifetimeServed: state.lifetimeServed,
-      lifetimeCoins: state.lifetimeCoins,
-      activeLevel: this.activeSession?.level.level || null,
-      activeCustomer: this.currentOrder()?.customerName || null,
-      activeExpectedStep: this.expectedStep(),
-      firstClearRewards: true,
-      customerOutcomes: true,
-      fullCampaignCatalogue: true,
+      activeSession: Boolean(this.activeSession && !this.activeSession.finished),
+      activeOrders: this.activeSession?.activeOrderIds.length || 0,
     };
   }
 }

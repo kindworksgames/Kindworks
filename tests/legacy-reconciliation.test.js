@@ -17,11 +17,14 @@ import { MemoryStorage } from "./helpers/MemoryStorage.js";
 const report = (version = 82) => ({ ok: true, sourceKey: `legacy-v${version}`, warnings: [] });
 
 function completeBakeryShift(service, level = 1) {
-  assert.equal(service.startLevel(level).ok, true);
+  assert.equal(service.startLevel(level, { instantOrders: true }).ok, true);
   let result;
   while (!service.getActiveSession().finished) {
-    for (const step of service.currentRecipe().steps) assert.equal(service.applyStep(step).ok, true);
-    result = service.serveRecipe();
+    const tray = service.getActiveSession().trays.find((candidate) => candidate.orderId);
+    assert.ok(tray);
+    assert.equal(service.selectTray(tray.index).ok, true);
+    for (const step of service.currentRecipe().steps) assert.equal(service.applyStep(step, tray.index).ok, true);
+    result = service.serveRecipe(tray.index);
     assert.equal(result.ok, true);
   }
   return result;

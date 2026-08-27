@@ -11,6 +11,7 @@ export class BakeryScene extends Phaser.Scene {
     this.transitioning = false;
     this.exitArmedUntil = 0;
     this.stationBusy = false;
+    this.busyTrays = new Set();
     this.lastTickResult = null;
     this.renderElapsed = 0;
   }
@@ -20,7 +21,9 @@ export class BakeryScene extends Phaser.Scene {
     this.gameState = this.registry.get("gameState");
     this.worldSimulation = this.registry.get("worldSimulation");
     this.npcTownLife = this.registry.get("npcTownLife");
-    this.qaMode = import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "bakery";
+    const qaRoute = new URLSearchParams(window.location.search).get("qa");
+    this.qaMode = import.meta.env.DEV && ["bakery", "fidelity"].includes(qaRoute);
+    this.fidelityQa = import.meta.env.DEV && qaRoute === "fidelity";
     this.timingScale = this.qaMode ? 0.12 : 1;
     this.worldSimulation?.setPaused("activity", true);
     this.npcTownLife?.setPaused("activity", true);
@@ -71,6 +74,8 @@ export class BakeryScene extends Phaser.Scene {
     this.replayButton = document.querySelector("#bakery-replay");
     this.returnButton = document.querySelector("#bakery-return");
     this.stepList = document.querySelector("#bakery-step-list");
+    this.ordersElement = document.querySelector("#bakery-orders");
+    this.traysElement = document.querySelector("#bakery-trays");
     this.worktop = document.querySelector(".bakery-worktop");
     this.controls = document.querySelector(".bakery-controls");
     document.querySelector("#bakery-picker")?.classList.remove("hidden");
@@ -81,13 +86,14 @@ export class BakeryScene extends Phaser.Scene {
     this.setMessage("Choose a bakery shift.", "neutral");
     this.onStart = () => this.startLevel(Number(this.levelSelect?.value || 1));
     this.onExit = () => this.requestExit();
-    this.onUndo = () => { const result = this.bakery.undoStep(); this.setMessage(result.ok ? `${bakeryStep(result.removed).name} removed.` : result.message, result.ok ? "neutral" : "error"); this.render(); };
-    this.onDiscard = () => { const result = this.bakery.discardRecipe(); this.setMessage(result.ok ? "Preparation cleared. Start again." : result.message, result.ok ? "error" : "neutral"); this.render(); };
+    this.onUndo = () => { const result = this.bakery.undoStep(); this.setMessage(result.ok ? `${bakeryStep(result.removed).name} removed from this tray.` : result.message, result.ok ? "neutral" : "error"); this.render(); };
+    this.onDiscard = () => { const result = this.bakery.discardRecipe(); this.setMessage(result.ok ? "This tray was cleared." : result.message, result.ok ? "error" : "neutral"); this.render(); };
     this.onServe = () => this.serveCurrentRecipe();
     this.onNext = () => this.startLevel(Math.min(150, (this.bakery.getActiveSession()?.level.level || 1) + 1));
     this.onReplay = () => this.startLevel(this.bakery.getActiveSession()?.level.level || 1);
     this.onReturn = () => this.returnToTown(true);
     this.onSteps = (event) => { const button = event.target.closest?.("[data-bakery-step]"); if (button) this.useStep(button.dataset.bakeryStep); };
+    this.onTraySelect = (event) => { const button = event.target.closest?.("[data-bakery-tray]"); if (!button) return; const result = this.bakery.selectTray(Number(button.dataset.bakeryTray)); this.setMessage(result.ok ? `${result.order.customerName}'s tray selected.` : result.message, result.ok ? "neutral" : "error"); this.render(); };
     this.startButton?.addEventListener("click", this.onStart);
     this.exitButton?.addEventListener("click", this.onExit);
     this.undoButton?.addEventListener("click", this.onUndo);
@@ -97,6 +103,8 @@ export class BakeryScene extends Phaser.Scene {
     this.replayButton?.addEventListener("click", this.onReplay);
     this.returnButton?.addEventListener("click", this.onReturn);
     this.stepList?.addEventListener("click", this.onSteps);
+    this.ordersElement?.addEventListener("click", this.onTraySelect);
+    this.traysElement?.addEventListener("click", this.onTraySelect);
     this.onKeyDown = (event) => { if (event.key === "Escape") this.requestExit(); };
     window.addEventListener("keydown", this.onKeyDown);
     this.hud?.classList.remove("hidden");
@@ -119,7 +127,12 @@ export class BakeryScene extends Phaser.Scene {
     this.lastTickResult = null;
     this.renderElapsed = 0;
     this.stationBusy = false;
-    const result = this.bakery.startLevel(level, { returnPosition: this.entryData.returnPosition, returnFacing: this.entryData.returnFacing || "down" });
+    this.busyTrays.clear();
+    const result = this.bakery.startLevel(level, {
+      returnPosition: this.entryData.returnPosition,
+      returnFacing: this.entryData.returnFacing || "down",
+      instantOrders: this.fidelityQa,
+    });
     if (!result.ok) { this.setMessage(result.message, "error"); return false; }
     document.querySelector("#bakery-picker")?.classList.add("hidden");
     document.querySelector("#bakery-shift")?.classList.remove("hidden");
@@ -132,7 +145,8 @@ export class BakeryScene extends Phaser.Scene {
   }
 
   useStep(stepId) {
-    if (this.stationBusy) return false;
+    const trayIndex = this.bakery.getActiveSession()?.activeTray;
+    if (!Number.isInteger(trayIndex) || this.busyTrays.has(trayIndex)) return false;
     const definition = bakeryStep(stepId);
     if (!definition) return false;
     if (BAKERY_APPLIANCES[stepId]) {
@@ -144,22 +158,24 @@ export class BakeryScene extends Phaser.Scene {
         return false;
       }
       this.stationBusy = true;
+      this.busyTrays.add(trayIndex);
       this.bakerVisual.setText("🧑‍🍳💨");
       this.setMessage(`${definition.name} working…`, "working");
       this.render();
       this.time.delayedCall(Math.max(90, definition.seconds * 1000 * this.timingScale), () => {
         if (this.transitioning) return;
-        this.stationBusy = false;
-        this.bakerVisual.setText("🧑‍🍳");
-        this.finishStep(stepId);
+        this.busyTrays.delete(trayIndex);
+        this.stationBusy = this.busyTrays.size > 0;
+        this.bakerVisual.setText(this.stationBusy ? "🧑‍🍳💨" : "🧑‍🍳");
+        this.finishStep(stepId, trayIndex);
       });
       return true;
     }
-    return this.finishStep(stepId);
+    return this.finishStep(stepId, trayIndex);
   }
 
-  finishStep(stepId) {
-    const result = this.bakery.applyStep(stepId);
+  finishStep(stepId, trayIndex = this.bakery.getActiveSession()?.activeTray) {
+    const result = this.bakery.applyStep(stepId, trayIndex);
     if (!result.ok) this.setMessage(result.message, "error");
     else if (result.complete) this.setMessage(`${result.recipe.name} is ready. Finish it.`, "success");
     else this.setMessage(`Added ${result.step.name}. Next: ${bakeryStep(result.expectedStep).name}.`, "neutral");
@@ -168,7 +184,8 @@ export class BakeryScene extends Phaser.Scene {
   }
 
   serveCurrentRecipe() {
-    if (this.stationBusy) return false;
+    const activeTray = this.bakery.getActiveSession()?.activeTray;
+    if (this.busyTrays.has(activeTray)) return false;
     const result = this.bakery.serveRecipe();
     if (!result.ok) { this.setMessage(result.message, "error"); this.render(); return false; }
     if (result.result) { this.showResult(result.result); return true; }
@@ -211,6 +228,7 @@ export class BakeryScene extends Phaser.Scene {
     document.querySelector("#bakery-balance").textContent = `🪙 ${this.gameState.getSnapshot().economy.coins}`;
     if (!session) { this.updateDomState(); return; }
     const order = this.bakery.currentOrder();
+    const tray = this.bakery.tray();
     const recipe = this.bakery.currentRecipe();
     const expected = this.bakery.expectedStep();
     document.querySelector("#bakery-level-name").textContent = `Level ${session.level.level} · ${session.level.name}`;
@@ -219,26 +237,29 @@ export class BakeryScene extends Phaser.Scene {
     document.querySelector("#bakery-served").textContent = `${session.served} / ${session.level.target}`;
     const remaining = Math.max(0, session.level.duration - session.elapsed);
     document.querySelector("#bakery-timer").textContent = `${Math.floor(remaining / 60)}:${String(Math.ceil(remaining % 60)).padStart(2, "0")}`;
-    const patience = order ? Math.max(0, Math.round(session.currentPatience / order.maxPatience * 100)) : 100;
+    const patience = order ? Math.max(0, Math.round(order.patience / order.maxPatience * 100)) : 100;
     const meter = document.querySelector("#bakery-patience"); if (meter) meter.value = patience;
     document.querySelector("#bakery-patience-label").textContent = `${patience}% patience`;
     const sequence = document.querySelector("#bakery-recipe-sequence");
-    if (sequence && recipe) sequence.innerHTML = recipe.steps.map((step, index) => `<span class="${index < session.stepIndex ? "done" : index === session.stepIndex ? "next" : ""}">${bakeryStep(step).icon}<small>${bakeryStep(step).name}</small></span>`).join("");
+    if (sequence) sequence.innerHTML = recipe ? recipe.steps.map((step, index) => `<span class="${index < tray.stepIndex ? "done" : index === tray.stepIndex ? "next" : ""}">${bakeryStep(step).icon}<small>${bakeryStep(step).name}</small></span>`).join("") : "";
+    if (this.ordersElement) this.ordersElement.innerHTML = session.trays.map((candidate) => { const candidateOrder = this.bakery.orderForTray(candidate); if (!candidateOrder) return `<button type="button" disabled><strong>Next order</strong><small>Waiting…</small></button>`; const ratio = Math.max(0, Math.round(candidateOrder.patience / candidateOrder.maxPatience * 100)); return `<button type="button" data-bakery-tray="${candidate.index}" class="${candidate.index === session.activeTray ? "active" : ""}" aria-label="Select ${candidateOrder.customerName}'s order"><strong>${candidateOrder.customerName}</strong><small>${candidateOrder.recipes.map((id) => BAKERY_RECIPES[id].icon).join(" ")} · ${ratio}%</small></button>`; }).join("");
+    if (this.traysElement) this.traysElement.innerHTML = session.trays.map((candidate) => { const candidateOrder = this.bakery.orderForTray(candidate); const candidateRecipe = this.bakery.currentRecipe(candidate); const busy = this.busyTrays.has(candidate.index); return `<button type="button" data-bakery-tray="${candidate.index}" class="${candidate.index === session.activeTray ? "active" : ""} ${busy ? "busy" : ""}" ${candidateOrder ? "" : "disabled"}><small>PREP ${candidate.index + 1}</small><strong>${candidateRecipe ? `${candidateRecipe.icon} ${candidateRecipe.name}` : "Available"}</strong><span>${candidate.completedRecipes.length} finished · ${candidate.stepIndex} steps</span></button>`; }).join("");
     const availableIds = [...new Set(session.level.menu.flatMap((id) => BAKERY_RECIPES[id].steps))];
     availableIds.sort((a, b) => a === expected ? -1 : b === expected ? 1 : (BAKERY_APPLIANCES[a] ? 1 : 0) - (BAKERY_APPLIANCES[b] ? 1 : 0));
-    if (this.stepList) this.stepList.innerHTML = availableIds.map((id) => { const item = bakeryStep(id); const station = Boolean(BAKERY_APPLIANCES[id]); return `<button type="button" data-bakery-step="${id}" class="${id === expected ? "next" : ""} ${station ? "station" : "ingredient"}" ${this.stationBusy ? "disabled" : ""}><span>${item.icon}</span><strong>${item.name}</strong><small>${station ? "Station" : "Ingredient"}</small></button>`; }).join("");
-    const canRevise = !this.stationBusy && session.stepIndex > 0 && Boolean(expected);
+    const activeBusy = this.busyTrays.has(session.activeTray);
+    if (this.stepList) this.stepList.innerHTML = availableIds.map((id) => { const item = bakeryStep(id); const station = Boolean(BAKERY_APPLIANCES[id]); return `<button type="button" data-bakery-step="${id}" class="${id === expected ? "next" : ""} ${station ? "station" : "ingredient"}" ${activeBusy ? "disabled" : ""}><span>${item.icon}</span><strong>${item.name}</strong><small>${station ? "Station" : "Ingredient"}</small></button>`; }).join("");
+    const canRevise = !activeBusy && Boolean(tray) && tray.stepIndex > 0 && Boolean(expected);
     if (this.undoButton) { this.undoButton.disabled = !canRevise; this.undoButton.classList.toggle("hidden", !canRevise); }
     if (this.discardButton) { this.discardButton.disabled = !canRevise; this.discardButton.classList.toggle("hidden", !canRevise); }
     if (this.serveButton) {
-      const canServe = !this.stationBusy && !expected;
+      const canServe = !activeBusy && !expected && Boolean(recipe);
       this.serveButton.disabled = !canServe;
       this.serveButton.classList.toggle("hidden", !canServe);
-      this.serveButton.textContent = session.recipeIndex < (order?.recipes.length || 0) - 1 ? "Finish dish" : "Serve";
+      this.serveButton.textContent = (tray?.recipeIndex || 0) < (order?.recipes.length || 0) - 1 ? "Finish dish" : "Serve";
     }
     this.worktop?.classList.toggle("hidden", !expected);
     this.controls?.classList.toggle("hidden", !canRevise && Boolean(expected));
-    this.customerVisual.setText(order && recipe ? `🧑  →  ${recipe.icon}` : "😊  ✓");
+    this.customerVisual.setText(session.activeOrderIds.length ? `${session.activeOrderIds.length}× 🧑  →  ${recipe?.icon || "🥐"}` : "😊  ✓");
     this.prepVisual.setText(recipe ? expected ? bakeryStep(expected).icon : recipe.icon : "✨");
     this.updateDomState();
   }
@@ -273,7 +294,7 @@ export class BakeryScene extends Phaser.Scene {
     const session = this.bakery.getActiveSession(); const diagnostics = this.bakery.getDiagnostics();
     game.dataset.scene = this.scene.key;
     game.dataset.bakeryLevel = String(session?.level.level || diagnostics.unlockedLevel);
-    game.dataset.bakeryPhase = session?.finished ? "result" : session ? this.stationBusy ? "working" : "playing" : "picker";
+    game.dataset.bakeryPhase = session?.finished ? "result" : session ? this.busyTrays.size ? "working" : "playing" : "picker";
     game.dataset.bakeryExpectedStep = this.bakery.expectedStep() || "none";
     game.dataset.bakeryServed = String(session?.served || 0);
     game.dataset.bakeryUnlocked = String(diagnostics.unlockedLevel);
@@ -285,10 +306,7 @@ export class BakeryScene extends Phaser.Scene {
     if (session && !session.finished && !this.transitioning) {
       const result = this.bakery.tick(delta / 1000);
       if (result?.result && !this.lastTickResult) { this.lastTickResult = result.result; this.showResult(result.result); }
-      else if (!this.stationBusy) {
-        this.renderElapsed += delta;
-        if (this.renderElapsed >= 100) { this.renderElapsed = 0; this.render(); }
-      }
+      else { this.renderElapsed += delta; if (this.renderElapsed >= 100) { this.renderElapsed = 0; this.render(); } }
     }
   }
 
@@ -298,6 +316,7 @@ export class BakeryScene extends Phaser.Scene {
     this.serveButton?.removeEventListener("click", this.onServe); this.nextButton?.removeEventListener("click", this.onNext);
     this.replayButton?.removeEventListener("click", this.onReplay); this.returnButton?.removeEventListener("click", this.onReturn);
     this.stepList?.removeEventListener("click", this.onSteps); window.removeEventListener("keydown", this.onKeyDown);
+    this.ordersElement?.removeEventListener("click", this.onTraySelect); this.traysElement?.removeEventListener("click", this.onTraySelect);
     this.hud?.classList.add("hidden"); this.bakery?.cancel?.();
     this.worldSimulation?.setPaused("activity", false); this.npcTownLife?.setPaused("activity", false);
   }

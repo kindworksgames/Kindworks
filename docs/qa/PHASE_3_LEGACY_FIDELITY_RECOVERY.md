@@ -43,6 +43,7 @@ Baseline evidence:
 | FID-003 | Power Washing simulation | Same-cell suppression prevented stationary multi-pass cleaning; pointer gaps were not interpolated; drain varied by event rate; supplies recovered only by switching tools. | Added elapsed-time spray segments, continuous stationary application, pointer-path interpolation, and legacy idle recovery for water and soap. | Level 750 engine tests prove repeated stationary progress, interpolated path coverage, and exact 1-second regeneration. Browser clicks create valid strokes. | VERIFIED functionally |
 | FID-004 | Power Washing approved art | Phaser displayed crude geometric playground approximations and a 2:1 board instead of the approved legacy playground. | Extracted the exact embedded master and transparent dirt reference, verified both hashes, restored the 1536×1024/3:2 canvas, used the exact 1428×706 wash region, and removed the geometric board renderer. | Live browser screenshot: `phase3-evidence/powerwash/powerwash-approved-art-washing-after.jpg`. Asset hashes and build tests pass. | VERIFIED artwork source/composition |
 | FID-005 | Power Washing pixel presentation | Phaser clipped dirt through 48×24 rectangles and omitted the legacy wand, radial wash, procedural dirt, resistant-stain layer, foam, wetness, mist, and alpha-sampled completion. | Ported the protected full-resolution layered renderer. Runtime completion now defers the grid engine and is awarded only when the approved pixel mask reaches 97%. The protected progression/reward transaction remains the sole completion writer. | Operated at 1280×720: continuous diagonal wash revealed the clean master without blocks; soap produced clipped foam; water removed the treated resistant stain; the wand followed the pointer; console contained no errors. Evidence: `powerwash-full-resolution-dirty.jpg`, `powerwash-full-resolution-soap.jpg`, `powerwash-full-resolution-rinse.jpg`. Fourteen focused tests and production build pass. | VERIFIED at 1280×720; device matrix and exact interrupted visual checkpoint pending |
+| FID-006 | Little Bakery concurrent shift | Phaser reduced the legacy shift to one sequential customer and one shared preparation state, removing the three simultaneous orders, scheduled arrivals, independent patience, and independent trays. | Recovered the three-customer queue and three preparation trays. Every tray now owns its order, recipe index, completed dishes, step progress, and appliance wait state; arrivals occur at the authored times and every active customer loses patience independently. The 150-level campaign, no-miss completion rule, first-clear rewards, saves, unlocks, and return flow are unchanged. | Eighteen focused tests prove scheduled arrivals, three occupied trays, isolated tray progress, concurrent patience, partial service, completion, replay, failure, cancellation, and save rollback. Operated at 1280×720 through the isolated QA route: three customers were visible together and one step on Prep 2 left Prep 1 and Prep 3 untouched. Evidence: `phase3-evidence/bakery/bakery-independent-trays.jpg`. | VERIFIED functionally at 1280×720; authored worker/customer artwork and device matrix pending |
 
 ## Power Washing protected asset provenance
 
@@ -59,7 +60,6 @@ Baseline evidence:
 
 | ID | System | Confirmed difference | Required recovery |
 | --- | --- | --- | --- |
-| BAK-MODEL-01 | Little Bakery | Legacy runs three simultaneous trays/customers with independent appliances and scheduled arrivals. Phaser has one sequential order/recipe/step/patience state. | Recover the concurrent three-tray shift model without changing 150-level rewards or unlocks. |
 | HRS-GEOM-01 | House Rescue | Legacy vacuuming uses actual house floor geometry, partitions, furniture, obstacles, reachable floor, and collision-safe movement. Phaser uses normalized grids and rectangular stains. | Port authored floor geometry and collision-safe vacuum coverage. |
 
 ### P1 — functional or interaction fidelity
@@ -118,16 +118,15 @@ The in-app browser’s viewport override did not apply during the first batch an
 
 ## Next implementation order
 
-1. Recover Little Bakery’s three simultaneous trays/customers.
-2. Recover House Rescue floor geometry and collision-safe vacuuming.
-3. Restore River Hint tiers/star caps and result Undo.
-4. Restore Beach continuous-run Undo.
-5. Restore Lawn dead-end/route feedback, timed movement, weed resistance, and directional stripes.
-6. Recover the exact Power Washing interrupted visual checkpoint without changing its protected save/reward contract.
-7. Recover shared cooking worker/appliance state, then Café, Morning Mug, Riverside Kitchen, and Scoops presentation.
-8. Recover Town/world/NPC/animal/farm/home/shop visual state dictionaries.
-9. Run the complete device, orientation, transition, save, reward, and accessibility matrix before a Phase 3 verdict.
+1. Recover House Rescue floor geometry and collision-safe vacuuming.
+2. Restore River Hint tiers/star caps and result Undo.
+3. Restore Beach continuous-run Undo.
+4. Restore Lawn dead-end/route feedback, timed movement, weed resistance, and directional stripes.
+5. Recover the exact Power Washing interrupted visual checkpoint without changing its protected save/reward contract.
+6. Recover shared cooking worker/appliance state, then Bakery, Café, Morning Mug, Riverside Kitchen, and Scoops authored presentation.
+7. Recover Town/world/NPC/animal/farm/home/shop visual state dictionaries.
+8. Run the complete device, orientation, transition, save, reward, and accessibility matrix before a Phase 3 verdict.
 
 ## Verdict
 
-**PHASE 3: IN PROGRESS.** The protected gameplay data remains intact, and the Power Washing approved art plus its full-resolution active rendering pipeline are restored. Phase 3 cannot pass until the remaining P0/P1 gaps and the full runtime matrix are complete.
+**PHASE 3: IN PROGRESS.** The protected gameplay data remains intact; Power Washing’s approved art and full-resolution active rendering pipeline are restored; and Little Bakery again runs its three simultaneous customer/tray model. Phase 3 cannot pass until the remaining P0/P1 gaps, authored visual recovery, and the full runtime matrix are complete.
