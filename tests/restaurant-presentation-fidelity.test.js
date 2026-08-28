@@ -22,6 +22,7 @@ test("replaces restaurant placeholder rooms with the protected top-down presenta
   assert.match(presentation, /snapshot\.appliances/);
   assert.match(presentation, /APPLIANCE-\$\{String\(appliance\.id\)/);
   assert.match(presentation, /function semanticSlot/);
+  assert.match(presentation, /label\(scene, 140, 23/);
   for (const slot of ["DINING-TABLE-", "ORDER-TICKET-", "PREP-TRAY-", "KITCHEN-STATION-", "KITCHEN-SINK", "KITCHEN-FRIDGE"]) assert.ok(presentation.includes(slot), slot);
   assert.match(presentation, /if \(orders\[index\]\) pixelPerson/);
 });
@@ -109,4 +110,14 @@ test("restaurant visual polish keeps the illustrated fixtures as the interaction
     assert.ok(presentation.includes(`"${fixture}"`), fixture);
   }
   assert.match(presentation, /semanticSlot\(scene, `KW-SCOOPS-\$\{id\}`/);
+});
+
+test("active restaurant shifts are full-screen without served, time or cream edge bars", async () => {
+  const styles = await readText("src/style.css");
+  assert.match(styles, /Restaurant full-screen presentation/);
+  assert.ok(styles.lastIndexOf("Restaurant full-screen presentation — final cascade guard") > styles.lastIndexOf("Final restaurant header placement guard"));
+  assert.match(styles, /Served\/time remain[\s\S]*?no longer persistent visual furniture/);
+  assert.match(styles, /bakery-shift-heading,[\s\S]*?cafe-shift-heading,[\s\S]*?scoops-shift-heading \{[\s\S]*?display: none !important;/);
+  assert.match(styles, /bakery-hud-header, \.cafe-hud-header\) \{[\s\S]*?background: transparent !important;[\s\S]*?box-shadow: none !important;/);
+  assert.match(styles, /scoops-status \{[\s\S]*?width: fit-content !important;[\s\S]*?background: rgb\(41 34 56 \/ 82%\) !important;/);
 });
