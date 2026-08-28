@@ -64,7 +64,7 @@
       </section>
       <section id="first-session-checklist" class="first-session-checklist hidden" aria-label="First session guide" aria-hidden="true">
         <span id="first-session-step">STEP 1 OF 6</span>
-        <div><b id="first-session-icon" aria-hidden="true">🧭</b><strong id="first-session-title">Move around town</strong><small id="first-session-detail">Use the arrows to take a few steps.</small></div>
+        <div><b id="first-session-icon" aria-hidden="true">🧭</b><strong id="first-session-title">Move around town</strong><small id="first-session-detail">Swipe to take a few steps.</small></div>
         <button id="first-session-find" class="hidden" type="button"></button>
       </section>
       <section id="login-reward-toast" class="login-reward-toast hidden" role="status" aria-live="polite" aria-hidden="true">
@@ -159,19 +159,13 @@
         <div><span id="placed-object-icon" aria-hidden="true">✨</span><strong id="placed-object-name">Town item</strong><small id="placed-object-detail">Saved in Willowmere</small></div>
         <div><button id="placed-object-move" type="button">Move</button><button id="placed-object-store" type="button">Store</button><button id="placed-object-close" type="button" aria-label="Close town item controls">✕</button></div>
       </section>
-      <section class="touch-controls" aria-label="Movement controls">
-        <button type="button" class="move-up" data-move="up" aria-label="Walk up">▲</button>
-        <button type="button" class="move-left" data-move="left" aria-label="Walk left">◀</button>
-        <button type="button" class="move-down" data-move="down" aria-label="Walk down">▼</button>
-        <button type="button" class="move-right" data-move="right" aria-label="Walk right">▶</button>
-      </section>
       <section class="zoom-controls" aria-label="Map zoom controls">
         <button id="zoom-in" type="button" aria-label="Zoom in">＋</button>
         <button id="zoom-out" type="button" aria-label="Zoom out">−</button>
       </section>
-      <p id="control-hint" class="control-hint">Arrow keys or WASD to walk · E or Space to interact · Shift to run</p>
+      <p id="control-hint" class="control-hint">Swipe or use arrows/WASD to walk · E or Space to interact</p>
       <section id="resident-control-banner" class="resident-control-banner hidden" aria-hidden="true" aria-live="polite">
-        <div><strong>💚 Walking as <span id="resident-control-name">your resident</span></strong><small>Explore with the same keyboard or touch controls.</small></div>
+        <div><strong>💚 Walking as <span id="resident-control-name">your resident</span></strong><small>Swipe to explore, or use arrows/WASD.</small></div>
         <button id="resident-control-return" type="button">Return to your character</button>
       </section>
       <section id="restoration-milestone-reveal" class="restoration-milestone-reveal hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="restoration-milestone-title" aria-describedby="restoration-milestone-text restoration-milestone-change">
@@ -488,8 +482,7 @@
             <div class="beach-board-frame"><div id="beach-board" class="beach-board" role="grid" aria-label="Beach Cleanup board"></div><div class="beach-water" aria-hidden="true"></div></div>
             <aside class="beach-side">
               <article class="beach-found-card"><small>RUBBISH FOUND</small><div id="beach-found-items" class="beach-found-items"><em>Hidden in the sand…</em></div></article>
-              <div class="beach-controls" aria-label="Beach walking controls"><span aria-hidden="true"></span><button id="beach-up" type="button" aria-label="Walk up">▲</button><button id="beach-undo" class="hidden" type="button" aria-label="Undo last step">↶</button><button id="beach-left" type="button" aria-label="Walk left">◀</button><button id="beach-down" type="button" aria-label="Walk down">▼</button><button id="beach-right" type="button" aria-label="Walk right">▶</button></div>
-              <div class="beach-secondary-actions"><details class="beach-challenges"><summary>Bonus</summary><div><button type="button" data-beach-challenge="noUndo">No Undo · +25</button><button type="button" data-beach-challenge="underMoves">Light Foot · +40</button><button type="button" data-beach-challenge="cleanSweep">Clean Sweep · +35</button></div></details><button id="beach-hint" type="button">Hint</button><button id="beach-retry" class="hidden" type="button">Restart</button><button id="beach-qa-complete" class="hidden" type="button">QA clear</button></div>
+              <div class="beach-secondary-actions"><details class="beach-challenges"><summary>Bonus</summary><div><button type="button" data-beach-challenge="noUndo">No Undo · +25</button><button type="button" data-beach-challenge="underMoves">Light Foot · +40</button><button type="button" data-beach-challenge="cleanSweep">Clean Sweep · +35</button></div></details><button id="beach-hint" type="button">Hint</button><button id="beach-undo" class="hidden" type="button" aria-label="Undo last swipe">↶ Undo</button><button id="beach-retry" class="hidden" type="button">Restart</button><button id="beach-qa-complete" class="hidden" type="button">QA clear</button></div>
             </aside>
           </div>
         </section>
@@ -519,11 +512,11 @@
               <article><small>EQUIPPED MOWER</small><strong id="lawn-mower">Old Green Mower</strong><span>Upgrades speed up weed-cutting animation only. Moves never change.</span></article>
               <div class="lawn-care-legend"><span>🌱 Tall grass</span><span>▧ Hedge</span><span>🌿 Tough weed</span><span>🪵 Woody weed</span></div>
               <button id="lawn-hint" type="button">💡 Show safe route</button>
+              <button id="lawn-undo" type="button" aria-label="Undo last mower swipe">↶ Undo</button>
               <button id="lawn-retry" type="button">↻ Restart lawn</button>
               <button id="lawn-qa-complete" class="hidden" type="button">✓ Certified QA completion</button>
             </aside>
           </div>
-          <div class="lawn-care-controls" aria-label="Mower direction controls"><button id="lawn-up" type="button" aria-label="Mow up">▲</button><button id="lawn-left" type="button" aria-label="Mow left">◀</button><button id="lawn-down" type="button" aria-label="Mow down">▼</button><button id="lawn-right" type="button" aria-label="Mow right">▶</button><button id="lawn-undo" type="button" aria-label="Undo last mower move">↶</button></div>
         </section>
         <p id="lawn-care-status" class="lawn-care-status" data-status="neutral" role="status" aria-live="assertive">Choose a Lawn Care level to begin.</p>
         <section id="lawn-care-result" class="lawn-care-result hidden" aria-labelledby="lawn-result-title">
@@ -608,7 +601,7 @@
               <button id="river-qa-solve" class="hidden" type="button">✓ Certified QA clear</button>
             </div>
           </div>
-          <div class="river-controls" aria-label="River piece controls"><button id="river-left" type="button" aria-label="Move left">◀</button><button id="river-rotate" type="button" aria-label="Rotate clockwise">↻</button><button id="river-down" type="button" aria-label="Move down">▼</button><button id="river-right" type="button" aria-label="Move right">▶</button><button id="river-drop" class="primary" type="button">Drop</button><button id="river-undo" type="button" aria-label="Undo last river move">↶</button></div>
+          <div class="river-secondary-actions"><button id="river-undo" type="button" aria-label="Undo last river gesture">↶ Undo</button></div>
         </section>
         <p id="river-status" class="river-status" data-status="neutral" role="status" aria-live="assertive">Choose any river level to begin.</p>
         <section id="river-result" class="river-result hidden" aria-labelledby="river-result-title">

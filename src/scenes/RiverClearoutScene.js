@@ -62,9 +62,7 @@ export class RiverClearoutScene extends Phaser.Scene {
     this.exitButton = document.querySelector("#river-exit");
     this.boardElement = document.querySelector("#river-board");
     this.buttons = {
-      left: document.querySelector("#river-left"), right: document.querySelector("#river-right"),
-      rotate: document.querySelector("#river-rotate"), down: document.querySelector("#river-down"),
-      drop: document.querySelector("#river-drop"), undo: document.querySelector("#river-undo"),
+      undo: document.querySelector("#river-undo"),
       hint: document.querySelector("#river-hint"), qa: document.querySelector("#river-qa-solve"),
       resultUndo: document.querySelector("#river-result-undo"),
       replay: document.querySelector("#river-replay"), next: document.querySelector("#river-next"),
@@ -153,8 +151,7 @@ export class RiverClearoutScene extends Phaser.Scene {
       this.pointerGesture = null;
     };
     this.startButton?.addEventListener("click", this.onStart); this.levelSelect?.addEventListener("change", this.onLevelChange); this.exitButton?.addEventListener("click", this.onExit);
-    this.buttons.left?.addEventListener("click", this.onLeft); this.buttons.right?.addEventListener("click", this.onRight); this.buttons.rotate?.addEventListener("click", this.onRotate);
-    this.buttons.down?.addEventListener("click", this.onDown); this.buttons.drop?.addEventListener("click", this.onDrop); this.buttons.undo?.addEventListener("click", this.onUndo);
+    this.buttons.undo?.addEventListener("click", this.onUndo);
     this.buttons.hint?.addEventListener("click", this.onHint); this.buttons.qa?.addEventListener("click", this.onQa); this.buttons.replay?.addEventListener("click", this.onReplay);
     this.buttons.resultUndo?.addEventListener("click", this.onResultUndo);
     this.buttons.next?.addEventListener("click", this.onNext); this.buttons.return?.addEventListener("click", this.onReturn);
@@ -276,7 +273,7 @@ export class RiverClearoutScene extends Phaser.Scene {
     if (preview) preview.innerHTML = session.preview.map((piece) => `<span>${piece.type || "—"}<small>${piece.type ? getRiverRubbish(piece.icon).icon : ""}</small></span>`).join("");
     if (this.buttons.undo) this.buttons.undo.disabled = session.finished || session.undosRemaining === session.level.maxUndos;
     if (this.buttons.resultUndo) this.buttons.resultUndo.disabled = !session.finished || !session.canUndo;
-    for (const key of ["left", "right", "rotate", "down", "drop", "hint"]) if (this.buttons[key]) this.buttons[key].disabled = session.finished || this.solving;
+    if (this.buttons.hint) this.buttons.hint.disabled = session.finished || this.solving;
     if (this.buttons.qa) this.buttons.qa.disabled = session.finished || this.solving;
     this.renderBoard(session);
     this.updateDomState();
@@ -344,8 +341,7 @@ export class RiverClearoutScene extends Phaser.Scene {
 
   shutdownScene() {
     this.startButton?.removeEventListener("click", this.onStart); this.levelSelect?.removeEventListener("change", this.onLevelChange); this.exitButton?.removeEventListener("click", this.onExit);
-    this.buttons.left?.removeEventListener("click", this.onLeft); this.buttons.right?.removeEventListener("click", this.onRight); this.buttons.rotate?.removeEventListener("click", this.onRotate);
-    this.buttons.down?.removeEventListener("click", this.onDown); this.buttons.drop?.removeEventListener("click", this.onDrop); this.buttons.undo?.removeEventListener("click", this.onUndo);
+    this.buttons.undo?.removeEventListener("click", this.onUndo);
     this.buttons.hint?.removeEventListener("click", this.onHint); this.buttons.qa?.removeEventListener("click", this.onQa); this.buttons.replay?.removeEventListener("click", this.onReplay);
     this.buttons.resultUndo?.removeEventListener("click", this.onResultUndo);
     this.buttons.next?.removeEventListener("click", this.onNext); this.buttons.return?.removeEventListener("click", this.onReturn);

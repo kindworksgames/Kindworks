@@ -1812,7 +1812,7 @@ export class TownScene extends Phaser.Scene {
     const badge = document.querySelector(".milestone-badge");
     const hint = document.querySelector("#control-hint");
     if (badge) badge.textContent = "OPTIONAL COMMERCE · MILESTONE 41";
-    if (hint) hint.textContent = "Walk with arrows or WASD · Restore the Station to reopen KindWorks Cinema";
+    if (hint) hint.textContent = "Swipe or use arrows/WASD · Restore the Station to reopen KindWorks Cinema";
   }
 
   startActivityScene(key, data) {

@@ -78,8 +78,6 @@ export class LawnCareScene extends Phaser.Scene {
     this.exitButton = document.querySelector("#lawn-care-exit");
     this.boardElement = document.querySelector("#lawn-board");
     this.buttons = {
-      U: document.querySelector("#lawn-up"), D: document.querySelector("#lawn-down"),
-      L: document.querySelector("#lawn-left"), R: document.querySelector("#lawn-right"),
       undo: document.querySelector("#lawn-undo"), hint: document.querySelector("#lawn-hint"),
       retry: document.querySelector("#lawn-retry"), qa: document.querySelector("#lawn-qa-complete"),
       replay: document.querySelector("#lawn-replay"), next: document.querySelector("#lawn-next"),
@@ -95,7 +93,6 @@ export class LawnCareScene extends Phaser.Scene {
     this.onReplay = () => this.startLevel(this.lastResultContext?.level || 1);
     this.onNext = () => this.startLevel(this.lawnCare.getCampaignSnapshot().nextLevel);
     this.onReturn = () => this.returnToTown(true);
-    this.directionHandlers = Object.fromEntries(Object.keys(DIRECTION_KEYS).map((direction) => [direction, () => this.mow(direction)]));
     this.onKeyDown = (event) => {
       if (event.key === "Escape") { this.requestExit(); return; }
       const key = event.key.toLowerCase();
@@ -118,7 +115,6 @@ export class LawnCareScene extends Phaser.Scene {
     this.startButton?.addEventListener("click", this.onStart);
     this.levelSelect?.addEventListener("change", this.onLevelChange);
     this.exitButton?.addEventListener("click", this.onExit);
-    for (const direction of Object.keys(DIRECTION_KEYS)) this.buttons[direction]?.addEventListener("click", this.directionHandlers[direction]);
     this.buttons.undo?.addEventListener("click", this.onUndo);
     this.buttons.hint?.addEventListener("click", this.onHint);
     this.buttons.retry?.addEventListener("click", this.onRetry);
@@ -220,7 +216,7 @@ export class LawnCareScene extends Phaser.Scene {
     for (const button of Object.values(this.buttons)) button?.classList.remove("hinted");
     const result = this.lawnCare.hint(session.id);
     if (!result.ok) { this.setMessage(result.message, "error"); return false; }
-    this.buttons[result.direction]?.classList.add("hinted");
+    this.boardElement?.setAttribute("data-hint-direction", DIRECTION_KEYS[result.direction] || "");
     this.setMessage(result.message, "hint");
     return true;
   }
@@ -303,7 +299,6 @@ export class LawnCareScene extends Phaser.Scene {
     setText("#lawn-optimal", state.moves <= summary.optimalMoves ? summary.optimalMoves : `${summary.optimalMoves} par`);
     setText("#lawn-live-stars", `${"★".repeat(state.stars)}${"☆".repeat(3 - state.stars)}`);
     setText("#lawn-mower", mower.label);
-    for (const direction of Object.keys(DIRECTION_KEYS)) this.buttons[direction].disabled = state.ended;
     this.buttons.undo.disabled = state.ended || session.undoStack.length === 0;
     this.buttons.hint.disabled = state.ended;
     this.buttons.retry.disabled = state.moves === 0 && session.status !== "failed";
@@ -389,7 +384,6 @@ export class LawnCareScene extends Phaser.Scene {
     this.startButton?.removeEventListener("click", this.onStart);
     this.levelSelect?.removeEventListener("change", this.onLevelChange);
     this.exitButton?.removeEventListener("click", this.onExit);
-    for (const direction of Object.keys(DIRECTION_KEYS)) this.buttons[direction]?.removeEventListener("click", this.directionHandlers[direction]);
     this.buttons.undo?.removeEventListener("click", this.onUndo);
     this.buttons.hint?.removeEventListener("click", this.onHint);
     this.buttons.retry?.removeEventListener("click", this.onRetry);

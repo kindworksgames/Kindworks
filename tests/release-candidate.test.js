@@ -128,12 +128,14 @@ test("keeps the release-candidate browser route read-only and production-exclude
 });
 
 test("keeps every player-facing journey owner and mobile safety rule in the shipped interface", async () => {
-  const [main, lazyScenes, markup, styles] = await Promise.all([readText("src/main.js"), readText("src/scenes/lazyScenes.js"), readText("index.html"), readText("src/style.css")]);
+  const [main, lazyScenes, movement, markup, styles] = await Promise.all([readText("src/main.js"), readText("src/scenes/lazyScenes.js"), readText("src/systems/MovementController.js"), readText("index.html"), readText("src/style.css")]);
   const sceneWiring = `${main}\n${lazyScenes}`;
   for (const required of ["save-status-button", "onboarding-button", "shop-button", "inventory-button", "impact-button", "npc-stories-button", "zoom-in", "zoom-out"]) {
     assert.match(markup, new RegExp(`id=["']${required}["']`), required);
   }
-  assert.match(markup, /class=["'][^"']*touch-controls/);
+  assert.doesNotMatch(markup, /class=["'][^"']*touch-controls|data-move=/);
+  assert.match(movement, /bindSwipeControls/);
+  assert.match(movement, /addEventListener\("pointerup", this\.onSwipePointerUp\)/);
   for (const scene of ["TownScene", "HouseInteriorScene", "VillageGrocerScene", "PawsWondersScene", "HarbourGeneralScene", "FishingScene"]) {
     assert.match(sceneWiring, new RegExp(`\\b${scene}\\b`), scene);
   }

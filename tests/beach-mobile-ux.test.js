@@ -6,13 +6,15 @@ import { beachRakeGroovePaths, renderBeachRakeGrooves } from "../src/ui/BeachRak
 const root = new URL("../", import.meta.url);
 const readText = async (path) => readFile(new URL(path, root), "utf8");
 
-test("keeps Beach Cleanup play, walking controls, and feedback inside every landscape shell", async () => {
+test("keeps Beach Cleanup swipe-first with no visible direction pad", async () => {
   const [markup, styles] = await Promise.all([readText("index.html"), readText("src/style.css")]);
-  assert.match(markup, /class="beach-controls"[^>]*>[\s\S]*id="beach-up"[\s\S]*id="beach-undo" class="hidden"[\s\S]*id="beach-right"/);
+  assert.doesNotMatch(markup, /class="beach-controls"|id="beach-(?:up|down|left|right)"/);
+  assert.match(markup, /class="beach-secondary-actions"[\s\S]*id="beach-undo" class="hidden"[^>]*>↶ Undo<\/button>/);
   assert.match(markup, /class="beach-secondary-actions"[\s\S]*<details class="beach-challenges">/);
   assert.match(styles, /\.beach-cleanup-hud \{[^\n]*grid-template-rows: auto minmax\(0, 1fr\) auto/);
   assert.match(styles, /\.beach-play-area \{ grid-template-columns: minmax\(0, 1fr\) 148px/);
-  assert.match(styles, /\.beach-controls \{ display: grid; grid-template-columns: repeat\(3/);
+  assert.doesNotMatch(styles, /\.beach-controls/);
+  assert.match(styles, /\.beach-board \{[^\n]*touch-action: none/);
   assert.match(styles, /\.beach-cleanup-hud button, \.beach-cleanup-hud select, \.beach-challenges summary \{ min-height: var\(--kw-touch-min\)/);
   assert.match(styles, /\.beach-challenges\[open\] > div \{ display: grid; \}/);
 });
