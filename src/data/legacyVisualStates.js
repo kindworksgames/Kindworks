@@ -58,14 +58,18 @@ export function houseArchitectureKit(id) {
 export const FURNITURE_VISUAL_CATALOG = Object.freeze(["bed", "table", "chair", "sofa", "shelf", "hearth", "lamp", "plant", "record-player", "pet-bed", "aquarium", "wardrobe"].map((id) => Object.freeze({ id, assetId: `interior.furniture.${id}` })));
 
 export const SHOP_VISUAL_STATES = Object.freeze({
-  "Corner Café": Object.freeze({ fixture: "café-counter", merchandise: ["☕", "🥪"], assetId: "shop.corner-cafe.exterior" }),
-  "Village Grocer": Object.freeze({ fixture: "produce-crates", merchandise: ["🥕", "🥬", "🍎"], assetId: "shop.village-grocer.exterior" }),
-  "Little Bakery": Object.freeze({ fixture: "bread-window", merchandise: ["🥖", "🥐", "🧁"], assetId: "shop.little-bakery.exterior" }),
-  "Riverside Kitchen": Object.freeze({ fixture: "restaurant-awning", merchandise: ["🍽️", "🥘"], assetId: "shop.riverside-kitchen.exterior" }),
-  "Morning Mug Coffee": Object.freeze({ fixture: "coffee-window", merchandise: ["☕", "🧋"], assetId: "shop.morning-mug.exterior" }),
-  "Harbour General": Object.freeze({ fixture: "general-store-crates", merchandise: ["🧺", "🧴", "📰"], assetId: "shop.harbour-general.exterior" }),
-  "Paws & Wonders": Object.freeze({ fixture: "pet-window", merchandise: ["🐾", "🦴"], assetId: "shop.paws-wonders.exterior" }),
-  "South Shore Café": Object.freeze({ fixture: "shore-counter", merchandise: ["🍦", "🍧"], assetId: "shop.south-shore.exterior" }),
+  "Corner Café": Object.freeze({ kind: "cafe", sign: "CORNER CAFE", wall: 0xe7c994, roof: 0xc97a45, width: 220, height: 92, fixture: "café-window", merchandise: ["☕", "🥪"], assetId: "shop.corner-cafe.exterior" }),
+  "Village Grocer": Object.freeze({ kind: "grocer", sign: "GROCER", wall: 0xd7d49a, roof: 0x6f9258, width: 230, height: 94, fixture: "produce-crates", merchandise: ["🥕", "🍎"], assetId: "shop.village-grocer.exterior" }),
+  "Little Bakery": Object.freeze({ kind: "bakery", sign: "BAKERY", wall: 0xefc7a7, roof: 0xcb715e, width: 210, height: 92, fixture: "bread-window", merchandise: ["🥖", "🥐"], assetId: "shop.little-bakery.exterior" }),
+  "Riverside Kitchen": Object.freeze({ kind: "restaurant", sign: "RIVERSIDE KITCHEN", wall: 0xdec6a0, roof: 0xb75e48, width: 198, height: 88, fixture: "restaurant-terrace", merchandise: ["🍽️", "🥘"], assetId: "shop.riverside-kitchen.exterior" }),
+  "The Willow Arms": Object.freeze({ kind: "pub", sign: "WILLOW ARMS", wall: 0xc6bd92, roof: 0x65704f, width: 190, height: 90, fixture: "hanging-pub-sign", merchandise: ["🍺", "🍲"], assetId: "shop.willow-arms.exterior" }),
+  "Morning Mug Coffee": Object.freeze({ kind: "coffee", sign: "MORNING MUG", wall: 0xc4d8cf, roof: 0x4f9295, width: 190, height: 86, fixture: "coffee-window", merchandise: ["☕", "🧋"], assetId: "shop.morning-mug.exterior" }),
+  "Harbour General": Object.freeze({ kind: "general", sign: "HARBOUR GENERAL", wall: 0xc1ddd7, roof: 0x4f9b91, width: 190, height: 88, fixture: "general-store-display", merchandise: ["🧺", "📰"], assetId: "shop.harbour-general.exterior" }),
+  "Riverstone Restaurant": Object.freeze({ kind: "restaurant", sign: "RIVERSTONE", wall: 0xd0bca7, roof: 0x816554, width: 214, height: 92, fixture: "restaurant-terrace", merchandise: ["🍽️", "🍷"], assetId: "shop.riverstone.exterior" }),
+  "Fresh Market": Object.freeze({ kind: "market", sign: "FRESH MARKET", wall: 0xd9d6a6, roof: 0x628e50, width: 220, height: 90, fixture: "market-crates", merchandise: ["🥕", "🍎"], assetId: "shop.fresh-market.exterior" }),
+  "Paws & Wonders": Object.freeze({ kind: "pet-shop", sign: "PAWS & WONDERS", wall: 0xc7dfc4, roof: 0x52775d, width: 196, height: 86, fixture: "pet-window", merchandise: ["🐾", "🦴"], assetId: "shop.paws-wonders.exterior" }),
+  "South Shore Café": Object.freeze({ kind: "beach-cafe", sign: "SOUTH SHORE CAFE", wall: 0xe8ddbb, roof: 0x4e939a, width: 232, height: 102, fixture: "shore-counter", merchandise: ["🍦", "🍧"], assetId: "shop.south-shore.exterior" }),
+  "KindWorks Cinema": Object.freeze({ kind: "cinema", sign: "KINDWORKS CINEMA", wall: 0x93515e, roof: 0x493852, width: 225, height: 154, fixture: "cinema-marquee", merchandise: ["🎬", "🍿"], assetId: "shop.kindworks-cinema.exterior" }),
 });
 
 export const WORLD_VISUAL_ASSETS = Object.freeze(["mill-walk", "selection-highlight", "pond-duck", "duck-wake", "window-night-glow", "rain-splash", "snow-cap", "ground-stain", "river-pollution", "restoration-sweep", "restoration-check", "coin-flight"].map((id) => Object.freeze({ id, assetId: `world.${id}` })));

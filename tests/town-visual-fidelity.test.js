@@ -67,11 +67,16 @@ test("each recovered exterior kit has a distinct silhouette and controls its NPC
 });
 
 test("shop catalogue provides semantic merchandise for authored legacy venues", () => {
+  assert.equal(Object.keys(SHOP_VISUAL_STATES).length, SHOPS.length);
   for (const [title, visual] of Object.entries(SHOP_VISUAL_STATES)) {
     assert.ok(SHOPS.some((shop) => shop.title === title), `${title} must exist in town data`);
     assert.ok(visual.merchandise.length >= 2);
     assert.match(visual.assetId, /^shop\./);
+    assert.ok(["cafe", "grocer", "bakery", "restaurant", "pub", "coffee", "general", "market", "pet-shop", "beach-cafe", "cinema"].includes(visual.kind));
+    assert.match(visual.sign, /^[A-Z &]+$/);
+    assert.ok(visual.width >= 190 && visual.height >= 86);
   }
+  assert.equal(new Set(Object.values(SHOP_VISUAL_STATES).map(({ wall, roof, width, height }) => `${wall}:${roof}:${width}:${height}`)).size, SHOPS.length);
 });
 
 test("town renders the protected world visual language and semantic Sprite AI labels", async () => {

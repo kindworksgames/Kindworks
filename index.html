@@ -15,7 +15,8 @@
       <div id="world-lighting-overlay" class="world-lighting-overlay" data-phase="day" aria-hidden="true"></div>
       <div id="weather-effects" class="weather-effects" data-weather="clear" aria-hidden="true"></div>
       <section class="town-hud" aria-label="Town information">
-        <div class="town-title"><strong>KINDWORKS · <span id="town-name-label">Willowmere</span></strong><span id="location-status">Willowmere</span></div>
+        <span id="town-name-label" class="sr-only">Willowmere</span>
+        <span id="location-status" class="sr-only" role="status">Willowmere</span>
         <div class="hud-actions">
           <div id="world-clock-status" class="world-status-pill" aria-label="Day 1, 07:00">Day 1 · 07:00</div>
           <div id="weather-status" class="world-status-pill weather-status" data-weather="clear" aria-label="Clear weather"><span aria-hidden="true">☀️</span> Clear <small>20°C</small></div>
@@ -159,14 +160,10 @@
         <div><span id="placed-object-icon" aria-hidden="true">✨</span><strong id="placed-object-name">Town item</strong><small id="placed-object-detail">Saved in Willowmere</small></div>
         <div><button id="placed-object-move" type="button">Move</button><button id="placed-object-store" type="button">Store</button><button id="placed-object-close" type="button" aria-label="Close town item controls">✕</button></div>
       </section>
-      <section class="zoom-controls" aria-label="Map zoom controls">
-        <button id="zoom-in" type="button" aria-label="Zoom in">＋</button>
-        <button id="zoom-out" type="button" aria-label="Zoom out">−</button>
-      </section>
-      <p id="control-hint" class="control-hint">Swipe or use arrows/WASD to walk · E or Space to interact</p>
+      <p id="control-hint" class="control-hint">Drag to explore · Pinch to zoom · Tap a place or resident</p>
       <section id="resident-control-banner" class="resident-control-banner hidden" aria-hidden="true" aria-live="polite">
         <div><strong>💚 Walking as <span id="resident-control-name">your resident</span></strong><small>Swipe to explore, or use arrows/WASD.</small></div>
-        <button id="resident-control-return" type="button">Return to your character</button>
+        <button id="resident-control-return" type="button">Return to map</button>
       </section>
       <section id="restoration-milestone-reveal" class="restoration-milestone-reveal hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="restoration-milestone-title" aria-describedby="restoration-milestone-text restoration-milestone-change">
         <div class="restoration-milestone-card">

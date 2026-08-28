@@ -16,7 +16,7 @@ function state(overrides = {}) {
 }
 
 test("presents one saved first-session action at a time", () => {
-  assert.equal(firstSessionStep(state()).id, "move");
+  assert.deepEqual(firstSessionStep(state()), { id: "move", number: 1, icon: "🧭", title: "Explore the town", detail: "Drag the map to look around.", action: null });
   assert.equal(firstSessionStep(state({ journey: { ...state().journey, moved: true } })).id, "resident");
   assert.equal(firstSessionStep(state({ journey: { ...state().journey, moved: true, metResident: true } })).id, "lawn");
   assert.equal(firstSessionStep(state({ journey: { ...state().journey, moved: true, metResident: true, completed: { lawn: true, waste: false, river: false } } })).id, "waste");
@@ -36,6 +36,7 @@ test("ships a compact progressive welcome and replaces the old three-job checkli
   assert.match(styles, /min-height: var\(--kw-touch-min\)/);
   assert.match(main, /startOnboardingJob/);
   assert.match(main, /recordJourneyStep\("metResident"\)/);
+  assert.match(town, /onBrowseMove/);
   assert.match(town, /journeyDistance >= 32/);
   assert.match(npc, /this\.onConversation\(result\)/);
   for (const source of [lawn, waste, river]) assert.match(source, /recordJobCompleted/);

@@ -18,6 +18,18 @@
   box-sizing: border-box;
 }
 
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
 /* Phase 2 shared control states. Layout and art direction remain owned by each screen. */
 button.kw-control {
   touch-action: manipulation;
@@ -164,6 +176,11 @@ body {
 
 #game canvas {
   display: block;
+}
+
+body[data-game-scene="TownScene"] #game canvas {
+  touch-action: none;
+  cursor: grab;
 }
 
 .town-hud,
@@ -423,6 +440,10 @@ body[data-game-scene="WasteCollectionScene"] .weather-effects {
   align-items: flex-start;
   justify-content: space-between;
   pointer-events: none;
+}
+
+.town-hud .hud-actions {
+  margin-left: auto;
 }
 
 .town-title,

@@ -29,6 +29,7 @@ import { PAWS_WONDERS } from "../data/pawsWonders.js";
 import { HARBOUR_GENERAL } from "../data/harbourGeneral.js";
 import { InteractionSystem } from "../systems/InteractionSystem.js";
 import { MovementController } from "../systems/MovementController.js";
+import { TownCameraController } from "../systems/TownCameraController.js";
 import { NpcCharacter } from "../entities/NpcCharacter.js";
 import { AnimalCharacter } from "../entities/AnimalCharacter.js";
 import {
@@ -65,8 +66,21 @@ import { startLazyScene } from "./lazyScenes.js";
 const PLAYER_RADIUS = 17;
 const WALK_SPEED = 270;
 const SPRINT_SPEED = 390;
-const MIN_ZOOM = 0.56;
+const MIN_ZOOM = 0.28;
 const MAX_ZOOM = 1.3;
+
+const SHOP_INTERACTION_IDS = Object.freeze({
+  "Corner Café": "corner-cafe-door",
+  "Village Grocer": "village-grocer-door",
+  "Little Bakery": "little-bakery-door",
+  "Riverside Kitchen": "riverside-kitchen-door",
+  "Morning Mug Coffee": "morning-mug-door",
+  "Harbour General": "harbour-general-door",
+  "Fresh Market": "fresh-market-door",
+  "Paws & Wonders": "paws-wonders-door",
+  "South Shore Café": "south-shore-scoops-door",
+  "KindWorks Cinema": "kindworks-cinema-door",
+});
 
 function points(values) {
   return values.map(([x, y]) => ({ x, y }));
@@ -135,6 +149,7 @@ export class TownScene extends Phaser.Scene {
     this.interactionHighlight = null;
     this.houseRescueVisuals = [];
     this.lawnVisuals = null;
+    this.townBrowseMode = true;
   }
 
   create() {
@@ -263,6 +278,8 @@ export class TownScene extends Phaser.Scene {
     const direction = this.entryData.returnFacing || (qaTarget ? "up" : "down");
     this.shadow = this.add.ellipse(spawn.x, spawn.y + 18, 31, 12, 0x24442f, 0.28).setDepth(190);
     this.player = new PlayerCharacter(this, spawn.x, spawn.y, { direction }).setDepth(200);
+    this.player.setVisible(false);
+    this.shadow.setVisible(false);
     this.onboardingJourneyOrigin = { x: spawn.x, y: spawn.y };
     this.onboardingMovementRecorded = Boolean(this.onboarding?.getSnapshot?.().journey?.moved);
     this.npcCharacters = new Map();
@@ -276,6 +293,7 @@ export class TownScene extends Phaser.Scene {
     this.movement = new MovementController(this, {
       onTouchStep: (dx, dy) => this.moveActiveCharacter(dx, dy, 38),
     });
+    this.movement.setEnabled(false);
     const interactables = [
         {
           id: RIVER_CLEAROUT.id,
@@ -544,6 +562,22 @@ export class TownScene extends Phaser.Scene {
       interactables: [...this.baseInteractables, ...this.environmentInteractables(), ...this.placementInteractables()],
       onChange: (interaction) => this.renderInteractionPrompt(interaction),
     });
+    this.interactions.setEnabled(false);
+    this.townCamera = new TownCameraController(this, {
+      minimumZoom: MIN_ZOOM,
+      maximumZoom: MAX_ZOOM,
+      isControlMode: () => Boolean(this.customResident?.getSnapshot?.().controlling),
+      isBlocked: () => this.transitioning || this.placementModeActive || Boolean(this.selectedPlacedObjectId) || document.body.dataset.modalOpen === "true",
+      onBrowseTap: (x, y) => this.browseSelectAt(x, y),
+      onBrowseMove: () => {
+        if (this.onboardingMovementRecorded || !this.onboarding?.getSnapshot?.().complete) return;
+        const recorded = this.onboarding.recordJourneyStep?.("moved");
+        this.onboardingMovementRecorded = Boolean(recorded?.ok);
+      },
+      onPinchStart: () => this.movement?.setEnabled(false),
+      onPinchEnd: () => this.movement?.setEnabled(Boolean(this.customResident?.getSnapshot?.().controlling) && document.body.dataset.modalOpen !== "true"),
+      onZoom: (zoom) => document.querySelector("#game")?.setAttribute("data-camera-zoom", Number(zoom).toFixed(2)),
+    });
     this.stateSyncElapsed = 0;
     this.farmingSyncElapsed = 0;
     this.unsubscribeFarming = this.farming?.subscribe?.((snapshot, result) => this.handleFarmingChange(snapshot, result));
@@ -553,12 +587,15 @@ export class TownScene extends Phaser.Scene {
     this.unsubscribeLivingEnvironment = this.livingEnvironment?.subscribe?.(() => this.refreshLivingEnvironment(true));
     this.refreshAnimalPresentations(0);
 
-    const preferredZoom = window.matchMedia("(max-width: 720px)").matches ? 0.72 : 0.88;
-    this.cameras.main.startFollow(this.player, true, 0.12, 0.12);
+    const preferredZoom = window.matchMedia("(max-width: 720px)").matches ? 0.3 : 0.39;
     this.cameras.main.setZoom(preferredZoom);
+    const initialFocus = qaTarget || this.entryData.returnPosition
+      ? spawn
+      : { x: WORLD.width / 2, y: WORLD.height / 2 };
+    this.cameras.main.centerOn(initialFocus.x, initialFocus.y);
 
-    this.input.on("wheel", (_pointer, _objects, _dx, dy) => {
-      this.setZoom(this.cameras.main.zoom * (dy > 0 ? 0.9 : 1.1));
+    this.input.on("wheel", (pointer, _objects, _dx, dy) => {
+      this.townCamera?.setZoomAt(this.cameras.main.zoom * (dy > 0 ? 0.9 : 1.1), pointer.x, pointer.y);
     });
 
     this.bindInterface();
@@ -877,35 +914,147 @@ export class TownScene extends Phaser.Scene {
   }
 
   drawShop(shop) {
-    const visual = SHOP_VISUAL_STATES[shop.title] || { fixture: "shop-window", merchandise: [shop.icon], assetId: `shop.${shop.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.exterior` };
+    const visual = SHOP_VISUAL_STATES[shop.title] || {
+      kind: "shop", sign: shop.title.toUpperCase(), wall: shop.color, roof: shadeColor(shop.color, 0.76),
+      width: Math.min(220, shop.width - 10), height: 90, fixture: "shop-window",
+      merchandise: [shop.icon, shop.icon], assetId: `shop.${shop.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.exterior`,
+    };
     const layer = this.add.graphics().setDepth(70 + shop.y / 100);
-    layer.fillStyle(0x526e48, 0.42);
-    layer.fillRoundedRect(shop.x - 18, shop.y - 16, shop.width + 36, shop.height + 34, 14);
-    layer.fillStyle(shop.color, 1);
-    layer.fillRoundedRect(shop.x, shop.y, shop.width, shop.height, 12);
-    layer.fillStyle(0xf4e6c6, 1);
-    layer.fillRect(shop.x + 10, shop.y + 66, shop.width - 20, shop.height - 76);
-    layer.fillStyle(0x465c53, 1);
-    layer.fillRect(shop.x + shop.width / 2 - 22, shop.y + shop.height - 70, 44, 70);
-    layer.fillStyle(0xa9dae2, 1);
-    layer.fillRect(shop.x + 26, shop.y + 92, 46, 43);
-    layer.fillRect(shop.x + shop.width - 72, shop.y + 92, 46, 43);
-    layer.fillStyle(0xfff0bd, 0.94);
-    layer.fillTriangle(shop.x + 16, shop.y + 85, shop.x + 82, shop.y + 85, shop.x + 49, shop.y + 69);
-    layer.fillTriangle(shop.x + shop.width - 82, shop.y + 85, shop.x + shop.width - 16, shop.y + 85, shop.x + shop.width - 49, shop.y + 69);
-    setSpriteAiLabelHint(layer, { id: visual.assetId, label: `${shop.title} ${visual.fixture} exterior`, kind: "shop-exterior" });
-    const merchandise = this.add.text(shop.x + shop.width / 2, shop.y + 113, visual.merchandise.join("  "), {
-      fontFamily: "Apple Color Emoji, system-ui", fontSize: "19px",
-    }).setOrigin(0.5).setDepth(96 + shop.y / 100);
-    setSpriteAiLabelHint(merchandise, { id: `${visual.assetId}.merchandise`, label: `${shop.title} window merchandise`, kind: "shop-merchandise" });
-    this.add.text(shop.x + shop.width / 2, shop.y + 30, `${shop.icon} ${shop.title}`, {
-      color: "#fff9df",
-      fontFamily: "system-ui, sans-serif",
-      fontSize: "17px",
+    const cx = shop.x + shop.width / 2;
+    const baseY = shop.y + shop.height - 1;
+    const width = visual.width;
+    const height = visual.height;
+    const left = cx - width / 2;
+    const ink = 0x222238;
+    const cream = 0xfff0c8;
+    const blue = 0x57929a;
+    const blueLight = 0xa9dae2;
+    const wood = 0x79513e;
+    const woodDark = 0x5a3d32;
+    const pixel = (x, y, w, h, color, alpha = 1) => {
+      layer.fillStyle(color, alpha);
+      layer.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h));
+    };
+    const window = (x, y, w = 52, h = 33, tint = blue) => {
+      pixel(x - 3, y - 3, w + 6, h + 6, ink);
+      pixel(x, y, w, h, tint);
+      pixel(x + 4, y + 4, Math.max(8, w * 0.32), 6, blueLight);
+      pixel(x + w * 0.52, y + 2, 3, h - 4, ink);
+      pixel(x + 2, y + h * 0.56, w - 4, 3, ink);
+    };
+    const door = (x, y, h = 46, color = wood) => {
+      pixel(x - 3, y - 3, 31, h + 6, ink);
+      pixel(x, y, 25, h, color);
+      pixel(x + 5, y + 5, 15, 13, blueLight);
+      pixel(x + 19, y + h * 0.64, 3, 3, 0xe8c35d);
+    };
+    const crate = (x, y, fruit = false) => {
+      pixel(x - 3, y - 3, 37, 23, ink);
+      pixel(x, y, 31, 17, 0x9a6b42);
+      pixel(x, y + 7, 31, 3, woodDark);
+      for (let index = 0; index < 4; index += 1) {
+        pixel(x + 4 + index * 7, y + 3, fruit ? 6 : 4, fruit ? 6 : 8, fruit ? (index % 2 ? 0xb95746 : 0xe8c35d) : 0xe7833f);
+        if (!fruit) pixel(x + 4 + index * 7, y, 4, 4, 0x52775d);
+      }
+    };
+
+    pixel(left - 8, baseY + 2, width + 16, 11, 0x222238, 0.28);
+    pixel(left, baseY - height, width, height + 5, ink);
+    pixel(left + 6, baseY - height + 5, width - 12, height - 7, visual.wall);
+    pixel(left + 6, baseY - 13, width - 12, 12, shadeColor(visual.wall, 0.76));
+    for (let y = baseY - height + 14, row = 0; y < baseY - 23; y += 13, row += 1) {
+      for (let x = left + 10 + (row % 2 ? 9 : 0); x < left + width - 10; x += 36) pixel(x, y, 18, 3, shadeColor(visual.wall, 0.84));
+    }
+    layer.fillStyle(ink, 1);
+    layer.fillTriangle(left - 5, baseY - height + 1, cx, baseY - height - 43, left + width + 5, baseY - height + 1);
+    layer.fillStyle(visual.roof, 1);
+    layer.fillTriangle(left + 2, baseY - height - 2, cx, baseY - height - 37, left + width - 2, baseY - height - 2);
+
+    pixel(left + 7, baseY - 67, width - 14, 17, ink);
+    for (let index = 0; index < 9; index += 1) {
+      const stripeWidth = (width - 20) / 9;
+      pixel(left + 10 + index * stripeWidth, baseY - 64, stripeWidth + 1, 11, index % 2 ? cream : shadeColor(visual.roof, 1.08));
+    }
+
+    if (visual.kind === "restaurant") {
+      window(left + 14, baseY - 45, 54, 34);
+      window(left + width - 68, baseY - 45, 54, 34);
+      door(cx - 13, baseY - 47, 46);
+      for (const x of [left + 41, left + width - 41]) {
+        pixel(x - 14, baseY - 22, 28, 4, cream);
+        pixel(x - 2, baseY - 20, 4, 12, woodDark);
+        pixel(x - 9, baseY - 25, 18, 3, 0xffffff);
+      }
+    } else if (visual.kind === "pub") {
+      window(left + 16, baseY - 43, 50, 31, 0x668078);
+      door(left + width - 48, baseY - 48, 47, 0x59433a);
+      pixel(left + 9, baseY - height + 31, width - 18, 5, woodDark);
+      pixel(left + width + 8, baseY - 65, 8, 42, ink);
+      pixel(left + width + 14, baseY - 64, 38, 29, ink);
+      pixel(left + width + 18, baseY - 60, 30, 21, 0xd3b477);
+    } else if (visual.kind === "cafe" || visual.kind === "coffee") {
+      window(left + 15, baseY - 45, 72, 34);
+      door(left + width - 50, baseY - 48, 47, 0x6c4c3c);
+      pixel(left + 22, baseY - 21, 58, 5, woodDark);
+      pixel(left + 43, baseY - 34, 18, 4, 0xffffff);
+      pixel(left + 47, baseY - 30, 11, 9, cream);
+    } else if (visual.kind === "grocer") {
+      window(left + 18, baseY - 47, 72, 35, 0x5c8e88);
+      door(left + width - 51, baseY - 49, 48, 0x6b503c);
+      crate(left + 16, baseY - 19);
+      crate(left + 58, baseY - 19, true);
+    } else if (visual.kind === "bakery") {
+      window(left + 18, baseY - 47, 79, 36, 0x628e92);
+      door(left + width - 49, baseY - 49, 48, 0x724a3a);
+      for (const x of [left + 31, left + 56, left + 81]) {
+        pixel(x, baseY - 24, 20, 9, ink);
+        pixel(x + 3, baseY - 22, 14, 5, 0xdeb266);
+        pixel(x + 7, baseY - 24, 7, 3, cream);
+      }
+    } else if (visual.kind === "general") {
+      window(left + 14, baseY - 48, 82, 36, 0x5c9491);
+      door(left + width - 48, baseY - 49, 48, 0x604b42);
+      for (const [x, color] of [[left + 23, 0x5d7596], [left + 43, 0xd4a14b], [left + 63, 0xa95c66]]) {
+        pixel(x, baseY - 28, 14, 13, ink);
+        pixel(x + 3, baseY - 25, 8, 7, color);
+      }
+    } else if (visual.kind === "market") {
+      window(left + 10, baseY - 54, width - 20, 42, 0x6a9790);
+      crate(left + 18, baseY - 18);
+      crate(cx - 18, baseY - 18, true);
+      crate(left + width - 52, baseY - 18);
+    } else if (visual.kind === "pet-shop") {
+      window(left + 15, baseY - 48, 76, 36, 0x79a7a0);
+      door(left + width - 49, baseY - 49, 48, 0x52775d);
+      pixel(left + 102, baseY - 40, 34, 24, 0xe5efd2);
+      for (const [x, y] of [[left + 106, -36], [left + 116, -39], [left + 126, -36], [left + 111, -29], [left + 123, -29]]) pixel(x, baseY + y, 5, 5, 0x6f9b79);
+    } else if (visual.kind === "beach-cafe") {
+      window(left + 16, baseY - 51, 78, 37);
+      window(left + width - 92, baseY - 51, 52, 37);
+      door(cx - 14, baseY - 51, 50);
+    } else if (visual.kind === "cinema") {
+      window(left + 14, baseY - 87, 48, 70, 0x446c7c);
+      window(left + 69, baseY - 87, 48, 70, 0x6f517d);
+      door(left + 130, baseY - 92, 86, 88, 0x3d5870);
+      pixel(left + 122, baseY - 106, 102, 18, ink);
+      pixel(left + 128, baseY - 100, 90, 8, 0xf0c65d);
+    } else {
+      window(left + 12, baseY - 40, 58, 29, 0x668c99);
+      door(left + width - 45, baseY - 43, 42, 0x684b3d);
+    }
+
+    const signWidth = Math.min(width - 18, Math.max(78, visual.sign.length * 7 + 18));
+    const signY = baseY - height - 70;
+    pixel(cx - signWidth / 2 - 3, signY - 3, signWidth + 6, 24, ink);
+    pixel(cx - signWidth / 2, signY, signWidth, 18, cream);
+    const sign = this.add.text(cx, signY + 9, visual.sign, {
+      color: "#222238",
+      fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+      fontSize: visual.sign.length > 16 ? "9px" : "10px",
       fontStyle: "bold",
-      stroke: "#294637",
-      strokeThickness: 4,
     }).setOrigin(0.5).setDepth(95 + shop.y / 100);
+    setSpriteAiLabelHint(layer, { id: visual.assetId, label: `${shop.title} ${visual.fixture} exterior`, kind: "shop-exterior" });
+    setSpriteAiLabelHint(sign, { id: `${visual.assetId}.sign`, label: `${shop.title} exterior sign`, kind: "shop-sign" });
     this.buildingCollisions.push({ x: shop.x - 8, y: shop.y - 8, width: shop.width + 16, height: shop.height + 16 });
   }
 
@@ -1298,7 +1447,6 @@ export class TownScene extends Phaser.Scene {
       .setStrokeStyle(6, 0xfff4a6, 0.95)
       .setDepth(500);
     this.tweens.add({ targets: this.locatorBeacon, scale: 1.75, alpha: 0, duration: 1400, ease: "Cubic.easeOut", onComplete: () => this.locatorBeacon?.destroy() });
-    this.time.delayedCall(1450, () => this.cameras.main.startFollow(this.activeCharacter(), true, 0.12, 0.12));
     const gameElement = document.querySelector("#game");
     if (gameElement) gameElement.dataset.residentLocated = "true";
     return { ...result, cameraRecentred: true };
@@ -1313,6 +1461,9 @@ export class TownScene extends Phaser.Scene {
     this.shadow.setVisible(false);
     this.customResidentCharacter?.setVisible(true);
     this.cameras.main.startFollow(this.customResidentCharacter, true, 0.12, 0.12);
+    this.movement?.setEnabled(true);
+    this.interactions?.setEnabled(true);
+    this.townBrowseMode = false;
     document.body.dataset.residentControl = "true";
     this.updateStatus();
     return { ...result, directControl: true };
@@ -1323,10 +1474,14 @@ export class TownScene extends Phaser.Scene {
     if (!result?.returnPlayer) return result || { ok: false, message: "Resident control is not active." };
     this.player.setPosition(result.returnPlayer.x, result.returnPlayer.y);
     this.player.direction = result.returnPlayer.facing;
-    this.player.setVisible(true);
-    this.shadow.setVisible(true);
+    this.player.setVisible(false);
+    this.shadow.setVisible(false);
     this.customResidentCharacter?.setControlMovement(0, 0, false);
-    this.cameras.main.startFollow(this.player, true, 0.12, 0.12);
+    this.cameras.main.stopFollow();
+    this.cameras.main.centerOn(this.customResidentCharacter?.x || result.returnPlayer.x, this.customResidentCharacter?.y || result.returnPlayer.y);
+    this.movement?.setEnabled(false);
+    this.interactions?.setEnabled(false);
+    this.townBrowseMode = true;
     document.body.dataset.residentControl = "false";
     this.updateStatus();
     return { ...result, playerRestored: true };
@@ -1341,6 +1496,12 @@ export class TownScene extends Phaser.Scene {
   activePosition() {
     const actor = this.activeCharacter();
     return { x: actor.x, y: actor.y };
+  }
+
+  observerPosition() {
+    if (this.customResident?.getSnapshot?.().controlling) return this.activePosition();
+    if (this.customResidentCharacter?.visible) return { x: this.customResidentCharacter.x, y: this.customResidentCharacter.y };
+    return { x: this.player.x, y: this.player.y };
   }
 
   renderTownPlacements() {
@@ -1598,7 +1759,7 @@ export class TownScene extends Phaser.Scene {
   beginTownPlacement(itemId, { existingObjectId = null } = {}) {
     if (this.transitioning) return { ok: false, message: "Wait for the town transition to finish." };
     if (this.farming?.getPlacementSnapshot?.().active) return { ok: false, message: "Finish planting the current apple sapling first." };
-    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, message: "Return to your character before placing town items." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, message: "Return to map view before placing town items." };
     this.closePlacedObjectManager();
     const { x, y } = this.activePosition();
     const facing = this.activeCharacter()?.direction || "down";
@@ -1631,7 +1792,7 @@ export class TownScene extends Phaser.Scene {
   beginAppleTreePlacement() {
     if (this.transitioning) return { ok: false, message: "Wait for the town transition to finish." };
     if (this.townPlacement?.getSnapshot?.().active) return { ok: false, message: "Finish the current town placement first." };
-    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, message: "Return to your character before planting apple trees." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, message: "Return to map view before planting apple trees." };
     this.closePlacedObjectManager();
     const { x, y } = this.activePosition();
     const facing = this.activeCharacter()?.direction || "down";
@@ -1703,8 +1864,6 @@ export class TownScene extends Phaser.Scene {
   }
 
   bindInterface() {
-    this.zoomIn = document.querySelector("#zoom-in");
-    this.zoomOut = document.querySelector("#zoom-out");
     this.interactionButton = document.querySelector("#interaction-action");
     this.placementRotateButton = document.querySelector("#town-placement-rotate");
     this.placementConfirmButton = document.querySelector("#town-placement-confirm");
@@ -1712,8 +1871,6 @@ export class TownScene extends Phaser.Scene {
     this.placedObjectMoveButton = document.querySelector("#placed-object-move");
     this.placedObjectStoreButton = document.querySelector("#placed-object-store");
     this.placedObjectCloseButton = document.querySelector("#placed-object-close");
-    this.onZoomIn = () => this.setZoom(this.cameras.main.zoom * 1.12);
-    this.onZoomOut = () => this.setZoom(this.cameras.main.zoom / 1.12);
     this.onInteraction = () => this.interactions.activateCurrent();
     this.onPlacementRotate = () => this.townPlacement?.getSnapshot?.().active ? this.townPlacement.rotate() : { ok: false };
     this.onPlacementConfirm = () => this.farming?.getPlacementSnapshot?.().active ? this.farming.confirmAppleTreePlacement() : this.townPlacement?.confirm?.();
@@ -1752,8 +1909,6 @@ export class TownScene extends Phaser.Scene {
         event.stopPropagation();
       }
     };
-    this.zoomIn?.addEventListener("click", this.onZoomIn);
-    this.zoomOut?.addEventListener("click", this.onZoomOut);
     this.interactionButton?.addEventListener("click", this.onInteraction);
     this.placementRotateButton?.addEventListener("click", this.onPlacementRotate);
     this.placementConfirmButton?.addEventListener("click", this.onPlacementConfirm);
@@ -1769,6 +1924,7 @@ export class TownScene extends Phaser.Scene {
 
   unbindInterface() {
     this.movement?.destroy();
+    this.townCamera?.destroy();
     this.unsubscribeCustomResident?.();
     this.unsubscribeFarming?.();
     this.unsubscribeHouseRescue?.();
@@ -1777,8 +1933,6 @@ export class TownScene extends Phaser.Scene {
     this.unsubscribeLivingEnvironment?.();
     if (this.townPlacement?.getSnapshot?.().active) this.townPlacement.cancel();
     if (this.farming?.getPlacementSnapshot?.().active) this.farming.cancelAppleTreePlacement();
-    this.zoomIn?.removeEventListener("click", this.onZoomIn);
-    this.zoomOut?.removeEventListener("click", this.onZoomOut);
     this.interactionButton?.removeEventListener("click", this.onInteraction);
     this.placementRotateButton?.removeEventListener("click", this.onPlacementRotate);
     this.placementConfirmButton?.removeEventListener("click", this.onPlacementConfirm);
@@ -1812,7 +1966,7 @@ export class TownScene extends Phaser.Scene {
     const badge = document.querySelector(".milestone-badge");
     const hint = document.querySelector("#control-hint");
     if (badge) badge.textContent = "OPTIONAL COMMERCE · MILESTONE 41";
-    if (hint) hint.textContent = "Swipe or use arrows/WASD · Restore the Station to reopen KindWorks Cinema";
+    if (hint) hint.textContent = "Drag to explore · Pinch to zoom · Tap a place or resident";
   }
 
   startActivityScene(key, data) {
@@ -1820,8 +1974,9 @@ export class TownScene extends Phaser.Scene {
       console.error(`Unable to load ${key}.`, error);
       this.transitioning = false;
       this.gameState?.updatePlayer?.({ scene: "TownScene", x: this.player.x, y: this.player.y, facing: this.player.direction });
-      this.movement?.setEnabled?.(true);
-      this.interactions?.setEnabled?.(true);
+      const controlling = Boolean(this.customResident?.getSnapshot?.().controlling);
+      this.movement?.setEnabled?.(controlling);
+      this.interactions?.setEnabled?.(controlling);
       this.cameras.main.fadeIn(160, 23, 43, 31);
       document.querySelector("#game")?.setAttribute("data-transition", "scene-load-recovered");
       return false;
@@ -1855,7 +2010,7 @@ export class TownScene extends Phaser.Scene {
 
   enterBakery() {
     if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
-    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before entering a building." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to map view before entering a building." };
     this.transitioning = true;
     this.movement.setEnabled(false);
     this.interactions.setEnabled(false);
@@ -1875,7 +2030,7 @@ export class TownScene extends Phaser.Scene {
 
   enterCafe() {
     if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
-    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before entering a building." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to map view before entering a building." };
     this.transitioning = true;
     this.movement.setEnabled(false);
     this.interactions.setEnabled(false);
@@ -1895,7 +2050,7 @@ export class TownScene extends Phaser.Scene {
 
   enterMorningMug() {
     if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
-    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before entering a building." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to map view before entering a building." };
     this.transitioning = true;
     this.movement.setEnabled(false);
     this.interactions.setEnabled(false);
@@ -1915,7 +2070,7 @@ export class TownScene extends Phaser.Scene {
 
   enterRiversideKitchen() {
     if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
-    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before entering a building." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to map view before entering a building." };
     this.transitioning = true;
     this.movement.setEnabled(false);
     this.interactions.setEnabled(false);
@@ -1935,7 +2090,7 @@ export class TownScene extends Phaser.Scene {
 
   enterSouthShoreScoops() {
     if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
-    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before entering a building." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to map view before entering a building." };
     this.transitioning = true;
     this.movement.setEnabled(false);
     this.interactions.setEnabled(false);
@@ -1955,7 +2110,7 @@ export class TownScene extends Phaser.Scene {
 
   enterRiverClearout(environmentTargetId = null) {
     if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
-    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before starting River Clear-Out." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to map view before starting River Clear-Out." };
     this.onboarding?.recordTutorial?.("river");
     this.transitioning = true;
     this.movement.setEnabled(false);
@@ -1977,7 +2132,7 @@ export class TownScene extends Phaser.Scene {
 
   enterHouseRescue(houseId) {
     if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
-    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before starting House Rescue." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to map view before starting House Rescue." };
     const home = this.houseRescue?.getSnapshot?.().homes?.[houseId];
     if (!home?.dirty) return { ok: false, reason: "This home is already clean." };
     const active = this.houseRescue?.getActiveSession?.();
@@ -2003,7 +2158,7 @@ export class TownScene extends Phaser.Scene {
 
   enterHouseInterior(houseId, { focusFurnitureId = null } = {}) {
     if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
-    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before entering a home." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to map view before entering a home." };
     this.houseRescue?.ensureFirstVisit?.(houseId);
     const interior = this.homeInteriors?.getInterior?.(houseId);
     if (!interior?.ok) return interior || { ok: false, reason: "That home could not be opened." };
@@ -2029,14 +2184,14 @@ export class TownScene extends Phaser.Scene {
 
   openShop(shopId) {
     if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
-    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before shopping." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to map view before shopping." };
     if (!this.shopController) return { ok: false, reason: "The shop interface is not ready." };
     return this.shopController.open(shopId);
   }
 
   enterVillageGrocer({ focusItemId = null } = {}) {
     if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
-    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before entering Village Grocer." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to map view before entering Village Grocer." };
     this.transitioning = true;
     this.movement.setEnabled(false);
     this.interactions.setEnabled(false);
@@ -2061,7 +2216,7 @@ export class TownScene extends Phaser.Scene {
 
   enterPawsWonders({ focusItemId = null } = {}) {
     if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
-    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before entering Paws & Wonders." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to map view before entering Paws & Wonders." };
     this.transitioning = true;
     this.movement.setEnabled(false);
     this.interactions.setEnabled(false);
@@ -2077,7 +2232,7 @@ export class TownScene extends Phaser.Scene {
 
   enterHarbourGeneral({ slot = 0, itemId = null } = {}) {
     if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
-    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before entering Harbour General." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to map view before entering Harbour General." };
     let purchasedDeed = false;
     if (!this.harbourGeneral?.getSnapshot?.().owned) {
       const purchased = this.harbourGeneral?.purchaseDeed?.() || { ok: false, message: "Harbour General is not ready." };
@@ -2100,7 +2255,7 @@ export class TownScene extends Phaser.Scene {
 
   openCinema() {
     if (this.transitioning) return { ok: false, code: "transition-active", message: "Wait for the town transition to finish." };
-    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, code: "resident-control-active", message: "Return to your character before entering the cinema." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, code: "resident-control-active", message: "Return to map view before entering the cinema." };
     const access = cinemaAccess(this.restorationMilestones?.getSnapshot?.());
     if (!access.open) return access;
     return this.impactController?.open?.({ mode: "cinema" }) || { ok: false, code: "cinema-interface-unavailable", message: "The cinema programme is not ready." };
@@ -2108,7 +2263,7 @@ export class TownScene extends Phaser.Scene {
 
   openFarming(tab, targetId = null) {
     if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
-    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before starting this activity." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to map view before starting this activity." };
     if (!this.farmingController) return { ok: false, reason: "The farming interface is not ready." };
     return this.farmingController.open(tab, targetId);
   }
@@ -2121,7 +2276,7 @@ export class TownScene extends Phaser.Scene {
 
   startFishing(mode, spotId) {
     if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
-    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before fishing." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to map view before fishing." };
     const result = this.fishing?.begin?.(mode, spotId, { returnPosition: this.activePosition(), returnFacing: this.player.direction });
     if (!result?.ok) return result || { ok: false, reason: "Fishing is not ready." };
     this.transitioning = true;
@@ -2135,7 +2290,7 @@ export class TownScene extends Phaser.Scene {
 
   startWasteCollection(targetId = COMMONS_RUBBISH_JOB.id) {
     if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
-    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before starting a job." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to map view before starting a job." };
     if (!this.cleanupService) return { ok: false, reason: "The cleanup system is not ready." };
     const returnPosition = { x: this.player.x, y: this.player.y };
     const returnFacing = this.player.direction;
@@ -2156,7 +2311,7 @@ export class TownScene extends Phaser.Scene {
 
   startLawnCare({ mode = "campaign", targetId = null } = {}) {
     if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
-    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before starting Lawn Care." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to map view before starting Lawn Care." };
     if (!this.lawnCare) return { ok: false, reason: "The Lawn Care system is not ready." };
     const returnPosition = { x: this.player.x, y: this.player.y };
     const returnFacing = this.player.direction;
@@ -2191,7 +2346,7 @@ export class TownScene extends Phaser.Scene {
 
   startBeachCleanup() {
     if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
-    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before starting Beach Cleanup." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to map view before starting Beach Cleanup." };
     if (!this.beachCleanup) return { ok: false, reason: "The Beach Cleanup system is not ready." };
     const returnPosition = { x: this.player.x, y: this.player.y };
     const returnFacing = this.player.direction;
@@ -2213,7 +2368,7 @@ export class TownScene extends Phaser.Scene {
 
   startPlaygroundPowerwash() {
     if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
-    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before starting Playground Power Wash." };
+    if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to map view before starting Playground Power Wash." };
     if (!this.playgroundPowerwash) return { ok: false, reason: "The Playground Power Wash system is not ready." };
     const returnPosition = { x: this.player.x, y: this.player.y };
     const returnFacing = this.player.direction;
@@ -2236,15 +2391,68 @@ export class TownScene extends Phaser.Scene {
   setOverlayOpen(open) {
     if (this.transitioning) return;
     const townControlsBlocked = this.placementModeActive || Boolean(this.selectedPlacedObjectId);
-    this.movement?.setEnabled(!open && !townControlsBlocked);
-    this.interactions?.setEnabled(!open && !townControlsBlocked);
+    const controlling = Boolean(this.customResident?.getSnapshot?.().controlling);
+    this.movement?.setEnabled(controlling && !open && !townControlsBlocked);
+    this.interactions?.setEnabled(controlling && !open && !townControlsBlocked);
     if (open) {
       this.player?.setMovement(0, 0, false);
       this.customResidentCharacter?.setControlMovement(0, 0, false);
     } else if (this.restorationCameraFocus) {
       this.restorationCameraFocus = false;
-      this.cameras.main.startFollow(this.activeCharacter(), true, 0.12, 0.12);
+      if (controlling) this.cameras.main.startFollow(this.activeCharacter(), true, 0.12, 0.12);
     }
+  }
+
+  browseSelectAt(x, y) {
+    if (this.transitioning || this.placementModeActive || this.selectedPlacedObjectId || this.customResident?.getSnapshot?.().controlling) {
+      return { ok: false, reason: "Town browsing is unavailable right now." };
+    }
+    const zoom = Math.max(MIN_ZOOM, this.cameras.main.zoom);
+    const screenTapRadius = 38 / zoom;
+    const personalResident = this.customResident?.getResident?.();
+    if (personalResident && this.customResidentCharacter?.visible) {
+      const distance = Math.hypot(this.customResidentCharacter.x - x, this.customResidentCharacter.y - y);
+      if (distance <= screenTapRadius) {
+        document.querySelector("#game")?.setAttribute("data-browse-selection", `resident-${personalResident.id || "personal"}`);
+        return this.customResidentController?.open?.() || { ok: false, reason: "The resident profile is unavailable." };
+      }
+    }
+
+    const resident = (this.npcTownLife?.getResidents?.() || [])
+      .filter((entry) => entry.visible)
+      .map((entry) => ({ entry, distance: Math.hypot(entry.x - x, entry.y - y) }))
+      .filter(({ distance }) => distance <= screenTapRadius)
+      .sort((left, right) => left.distance - right.distance)[0]?.entry;
+    if (resident) {
+      document.querySelector("#game")?.setAttribute("data-browse-selection", `resident-${resident.id}`);
+      return this.npcNarrativeController?.open?.(resident.id, { selectThought: true }) || { ok: false, reason: "That resident is unavailable." };
+    }
+
+    const shop = SHOPS.find((entry) => containsWithRadius(entry, x, y, 0));
+    const shopInteractionId = shop && SHOP_INTERACTION_IDS[shop.title];
+    if (shopInteractionId) {
+      const interaction = this.interactions?.interactables?.find((entry) => entry.id === shopInteractionId && entry.enabled !== false);
+      if (interaction?.onActivate) {
+        document.querySelector("#game")?.setAttribute("data-browse-selection", shopInteractionId);
+        return interaction.onActivate(interaction);
+      }
+    }
+
+    const candidate = (this.interactions?.interactables || [])
+      .filter((entry) => entry.enabled !== false && entry.kind !== "npc-story" && typeof entry.onActivate === "function")
+      .map((entry) => {
+        const distance = Math.hypot(entry.x - x, entry.y - y);
+        const radius = Math.max(Number(entry.radius) || 72, screenTapRadius);
+        return { entry, distance, ratio: distance / radius };
+      })
+      .filter(({ ratio }) => ratio <= 1)
+      .sort((left, right) => left.ratio - right.ratio || left.distance - right.distance)[0]?.entry;
+    if (!candidate) {
+      document.querySelector("#game")?.setAttribute("data-browse-selection", "none");
+      return { ok: false, reason: "Nothing selectable is here." };
+    }
+    document.querySelector("#game")?.setAttribute("data-browse-selection", candidate.id);
+    return candidate.onActivate(candidate);
   }
 
   focusRestorationMilestone(focus, id) {
@@ -2298,18 +2506,21 @@ export class TownScene extends Phaser.Scene {
   updateStatus() {
     const status = document.querySelector("#location-status");
     if (!status) return;
-    const position = this.activePosition();
+    const controlling = Boolean(this.customResident?.getSnapshot?.().controlling);
+    const position = controlling
+      ? this.activePosition()
+      : { x: this.cameras.main.midPoint.x, y: this.cameras.main.midPoint.y };
     let label = "Willowmere";
     for (const district of DISTRICTS) {
       if (containsWithRadius(district, position.x, position.y, 0)) label = district.title;
     }
-    const prefix = this.customResident?.getSnapshot?.().controlling ? `${this.customResident.getSnapshot().profile.name} · ` : "";
+    const prefix = controlling ? `${this.customResident.getSnapshot().profile.name} · ` : "";
     status.textContent = `${prefix}${label} · ${Math.round(position.x)}, ${Math.round(position.y)}`;
   }
 
   refreshAnimalPresentations(delta = 0) {
     if (!this.animalCharacters || !this.player) return;
-    const playerPosition = this.activePosition();
+    const playerPosition = this.observerPosition();
     for (const presentation of this.animals?.getWorldPresentations?.() || []) {
       const character = this.animalCharacters.get(presentation.definition.id);
       character?.applyPresentation(presentation, delta, playerPosition);
@@ -2325,9 +2536,10 @@ export class TownScene extends Phaser.Scene {
 
   update(_time, delta) {
     this.worldSimulation?.tick(delta);
+    const controlling = Boolean(this.customResident?.getSnapshot?.().controlling);
     const activePosition = this.activePosition();
     const currentWorld = this.gameState?.getSnapshot().world;
-    this.npcTownLife?.updatePlayerProximity?.(activePosition.x, activePosition.y, currentWorld);
+    if (controlling) this.npcTownLife?.updatePlayerProximity?.(activePosition.x, activePosition.y, currentWorld);
     this.npcTownLife?.update(delta, currentWorld);
     this.municipalCollection?.update?.(delta, currentWorld);
     this.npcTownLife?.refreshPublicBins?.();
@@ -2335,7 +2547,7 @@ export class TownScene extends Phaser.Scene {
     const collectionPresentation = this.refreshMunicipalCollectionPresentation();
     const residents = this.npcTownLife?.getResidents?.() || [];
     for (const resident of residents) {
-      const nearby = Math.hypot(resident.x - activePosition.x, resident.y - activePosition.y) <= 92;
+      const nearby = controlling && Math.hypot(resident.x - activePosition.x, resident.y - activePosition.y) <= 92;
       this.npcCharacters.get(resident.id)?.applyResident(resident, delta, nearby);
       const interaction = this.npcInteractables?.get(resident.id);
       if (interaction) {
@@ -2345,19 +2557,16 @@ export class TownScene extends Phaser.Scene {
         interaction.detail = `${resident.role} · ${resident.activity}`;
       }
     }
-    const { dx, dy, sprinting } = this.movement.getVector();
+    const { dx, dy, sprinting } = controlling ? this.movement.getVector() : { dx: 0, dy: 0, sprinting: false };
     const speed = sprinting ? SPRINT_SPEED : WALK_SPEED;
-    const moving = this.moveActiveCharacter(dx, dy, speed * Math.min(delta, 50) / 1000);
-    const controlling = this.customResident?.getSnapshot?.().controlling;
+    const moving = controlling && this.moveActiveCharacter(dx, dy, speed * Math.min(delta, 50) / 1000);
     if (controlling) {
       const facing = Math.abs(dx) > Math.abs(dy) && dx ? (dx < 0 ? "left" : "right") : dy ? (dy < 0 ? "up" : "down") : this.customResident.getSnapshot().location.facing;
       this.customResidentCharacter?.setControlMovement(dx, dy, moving);
       this.customResident?.setRuntimePosition?.({ x: this.customResidentCharacter.x, y: this.customResidentCharacter.y, facing });
       const personal = this.customResident.getResident();
       if (personal) this.customResidentCharacter?.applyResident(personal, delta, true);
-    } else {
-      this.player.setMovement(dx, dy, moving);
-    }
+    } else this.player.setMovement(0, 0, false);
     this.refreshAnimalPresentations(delta);
     this.stateSyncElapsed += delta;
     this.farmingSyncElapsed += delta;
@@ -2379,18 +2588,12 @@ export class TownScene extends Phaser.Scene {
     if (this.stateSyncElapsed >= 250) {
       this.stateSyncElapsed = 0;
       this.updateWorldObjectLighting(currentWorld);
-      if (!controlling) {
-        this.gameState?.updatePlayer({
-          scene: this.scene.key,
-          x: this.player.x,
-          y: this.player.y,
-          facing: this.player.direction,
-        });
-      }
     }
-    const currentPosition = this.activePosition();
-    this.interactions.update(currentPosition.x, currentPosition.y);
-    if (this.movement.consumeInteractPress()) this.interactions.activateCurrent();
+    if (controlling) {
+      const currentPosition = this.activePosition();
+      this.interactions.update(currentPosition.x, currentPosition.y);
+      if (this.movement.consumeInteractPress()) this.interactions.activateCurrent();
+    }
 
     this.shadow.setPosition(this.player.x, this.player.y + 20);
     this.player.setDepth(200 + this.player.y / 10);
@@ -2402,6 +2605,9 @@ export class TownScene extends Phaser.Scene {
       gameElement.dataset.playerX = Math.round(this.player.x);
       gameElement.dataset.playerY = Math.round(this.player.y);
       gameElement.dataset.cameraZoom = this.cameras.main.zoom.toFixed(2);
+      gameElement.dataset.cameraX = String(Math.round(this.cameras.main.midPoint.x));
+      gameElement.dataset.cameraY = String(Math.round(this.cameras.main.midPoint.y));
+      gameElement.dataset.townMode = controlling ? "resident-control" : "browse";
       gameElement.dataset.animation = this.player.getAnimationState();
       gameElement.dataset.interaction = this.interactions.getState()?.id || "none";
       gameElement.dataset.transitionCount = String(Number(this.entryData.transitionCount || 0));
@@ -2435,8 +2641,9 @@ export class TownScene extends Phaser.Scene {
       gameElement.dataset.customResidentControl = String(Boolean(customDiagnostics?.controlling));
       gameElement.dataset.customResidentName = customDiagnostics?.residentName || "none";
       gameElement.dataset.customResidentHome = customDiagnostics?.homeNodeId || "none";
-      gameElement.dataset.controlledX = Math.round(currentPosition.x);
-      gameElement.dataset.controlledY = Math.round(currentPosition.y);
+      const diagnosticPosition = controlling ? activePosition : this.observerPosition();
+      gameElement.dataset.controlledX = Math.round(diagnosticPosition.x);
+      gameElement.dataset.controlledY = Math.round(diagnosticPosition.y);
       const farming = this.farming?.getDiagnostics?.();
       gameElement.dataset.farmingReadyBeds = String(farming?.readyBeds || 0);
       gameElement.dataset.farmingGrowingBeds = String(farming?.growingBeds || 0);
@@ -2529,8 +2736,8 @@ export class TownScene extends Phaser.Scene {
       scene: this.scene.key,
       world: { ...WORLD },
       player: { x: Math.round(this.player.x), y: Math.round(this.player.y), facing: this.player.direction },
-      camera: { zoom: Number(this.cameras.main.zoom.toFixed(2)), followingPlayer: !this.customResident?.getSnapshot?.().controlling },
-      controls: { keyboard: true, touch: true, wheelZoom: true },
+      camera: { zoom: Number(this.cameras.main.zoom.toFixed(2)), followingResident: Boolean(this.customResident?.getSnapshot?.().controlling) },
+      controls: { keyboardCamera: true, touchDrag: true, pinchZoom: true, wheelZoom: true, explicitResidentControl: true },
       interaction: this.interactions.getState(),
       milestone29Systems: ["seven-day-07:00-service", "gavin-municipal-collector", "street-and-bridge-only-lorry-network", "all-public-and-player-bin-route", "collector-off-road-walking", "individual-dismount-lift-empty-return-animation", "tipped-bin-righting", "exact-bin-transform-return", "mid-route-save-resume", "collection-locked-player-bins", "automatic-next-service-day"],
       milestone30Systems: ["eight-sequential-permanent-restorations", "exact-cleanup-and-placement-gates", "permanent-town-transformations", "resident-and-business-responses", "animated-accessible-reveals", "restoration-chime-and-haptics", "first-town-planter-gift", "atomic-unlock-persistence", "duplicate-event-protection", "legacy-milestone-import", "one-day-festival-celebration", "permanent-festival-memory"],
