@@ -87,6 +87,7 @@ export const FIDELITY_ACTIVITIES = Object.freeze([
   activity("scoops", "South Shore Scoops", "SouthShoreScoopsScene", 750, { legacyAnchors: ["openScoops", "renderScoops"], phaserOwners: ["src/scenes/SouthShoreScoopsScene.js", "src/systems/SouthShoreScoopsService.js"] }),
   activity("house-interior", "House Interiors", "HouseInteriorScene", 0, { legacyAnchors: ["openHouseInterior", "renderHouseInterior"], phaserOwners: ["src/scenes/HouseInteriorScene.js", "src/systems/HomeInteriorService.js"] }),
   activity("village-grocer", "Village Grocer", "VillageGrocerScene", 0, { legacyAnchors: ["openShop", "shop-02"], phaserOwners: ["src/scenes/VillageGrocerScene.js", "src/systems/ShopService.js"] }),
+  activity("fresh-market", "Fresh Market", "TownScene", 0, { legacyAnchors: ["openShop", "shop-10"], phaserOwners: ["src/ui/ShopController.js", "src/systems/ShopService.js"] }),
 ]);
 
 export const FIDELITY_TOWN_SYSTEMS = Object.freeze([

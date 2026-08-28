@@ -17,6 +17,7 @@ const ACTIVITY_DATA = Object.freeze({
   scoops: Object.freeze({ scene: "SouthShoreScoopsScene" }),
   "house-interior": Object.freeze({ scene: "HouseInteriorScene", houseId: "house-20" }),
   "village-grocer": Object.freeze({ scene: "VillageGrocerScene", focusItemId: "carrot-seeds" }),
+  "fresh-market": Object.freeze({ scene: "TownScene", shopId: "fresh-market", itemId: "river-trout" }),
 });
 
 function visible(element) {
@@ -147,7 +148,7 @@ export class FidelityQaHarness {
     }
     const activeScene = this.game.scene.getScenes(true)[0];
     if (!activeScene) return { ok: false, code: "scene-unavailable", message: "No active Phaser scene is available." };
-    await ensureLazyScene(activeScene, route.scene);
+    if (route.scene !== "TownScene") await ensureLazyScene(activeScene, route.scene);
     activeScene.scene.start(route.scene, {
       fidelityQa: true,
       requestedLevel: Number(levelValue) || null,
@@ -156,6 +157,7 @@ export class FidelityQaHarness {
       returnPosition: { x: 640, y: 610 },
       returnFacing: "down",
     });
+    if (route.shopId) setTimeout(() => this.game.registry.get("shopController")?.open(route.shopId, { itemId: route.itemId }), 260);
     return { ...prepared, code: "fidelity-activity-opened" };
   }
 

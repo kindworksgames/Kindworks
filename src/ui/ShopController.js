@@ -25,6 +25,22 @@ const VILLAGE_GROCER_SHELVES = Object.freeze([
 
 const VILLAGE_GROCER_COPY_COUNTS = new Map(VILLAGE_GROCER_DISPLAYS.map((display) => [display.id, display.count]));
 
+const FRESH_MARKET_COUNTERS = Object.freeze([
+  Object.freeze({ id: "fish-on-ice", label: "Fish on Ice", itemIds: Object.freeze(["river-minnows", "fresh-sardines", "river-trout"]) }),
+  Object.freeze({ id: "butcher-counter", label: "Butcher Counter", itemIds: Object.freeze(["chicken-pieces", "beef-strips", "prepared-meat"]) }),
+  Object.freeze({ id: "pond-food", label: "Pond Food", itemIds: Object.freeze(["pond-pellets"]) }),
+]);
+
+const FRESH_MARKET_COPY_COUNTS = Object.freeze({
+  "river-minnows": 12,
+  "fresh-sardines": 9,
+  "river-trout": 7,
+  "chicken-pieces": 10,
+  "beef-strips": 9,
+  "prepared-meat": 12,
+  "pond-pellets": 7,
+});
+
 export class ShopController {
   constructor(shopService, runtime, { onModalChange = () => {}, onPlaceItem = () => ({ ok: false }), defaultShopId = "willowmere-shop" } = {}) {
     this.shopService = shopService;
@@ -189,7 +205,7 @@ export class ShopController {
       if (!this.searchQuery) return true;
       return `${product.item.name} ${product.item.description || ""}`.toLocaleLowerCase().includes(this.searchQuery);
     });
-    if (this.activeShopId === "town-grocer") return filtered;
+    if (["town-grocer", "fresh-market"].includes(this.activeShopId)) return filtered;
     return filtered.sort((left, right) => {
       if (this.sortMode === "price-low") return left.quote.cost - right.quote.cost || left.item.name.localeCompare(right.item.name);
       if (this.sortMode === "price-high") return right.quote.cost - left.quote.cost || left.item.name.localeCompare(right.item.name);
@@ -291,6 +307,70 @@ export class ShopController {
     this.emptyMessage?.classList.toggle("hidden", products.length > 0);
   }
 
+  renderFreshMarket(products) {
+    if (!this.productList) return;
+    this.productList.replaceChildren();
+    const productsById = new Map(products.map((product) => [product.item.id, product]));
+    for (const counterData of FRESH_MARKET_COUNTERS) {
+      const counter = document.createElement("section");
+      counter.className = `fresh-market-counter fresh-market-${counterData.id}`;
+      counter.dataset.marketCounter = counterData.id;
+      counter.dataset.assetLabel = `KW-FRESH-MARKET-${counterData.id.toUpperCase()}`;
+      counter.dataset.spriteAiLabel = `fresh-market.counter.${counterData.id}`;
+      counter.dataset.spriteAiKind = "shop-fixture";
+      const heading = document.createElement("h3");
+      heading.textContent = counterData.label;
+      const stock = document.createElement("div");
+      stock.className = "fresh-market-stock";
+      for (const itemId of counterData.itemIds) {
+        const product = productsById.get(itemId);
+        if (!product) continue;
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "shop-product fresh-market-product";
+        button.dataset.shopItem = product.item.id;
+        button.dataset.affordable = String(product.affordable);
+        button.dataset.locked = String(!product.unlocked);
+        button.dataset.assetLabel = `KW-FRESH-MARKET-PRODUCT-${product.item.id.toUpperCase()}`;
+        button.dataset.spriteAiLabel = `fresh-market.product.${product.item.id}`;
+        button.dataset.spriteAiKind = "interactive-shop-product";
+        button.setAttribute("aria-pressed", String(product.item.id === this.selectedItemId));
+        button.setAttribute("aria-label", `${product.item.name}, ${formatCoins(product.item.price)} coins, ${product.owned} owned`);
+        const copies = document.createElement("span");
+        copies.className = "fresh-market-copies";
+        copies.setAttribute("aria-hidden", "true");
+        for (let index = 0; index < FRESH_MARKET_COPY_COUNTS[itemId]; index += 1) {
+          const copy = document.createElement("span");
+          copy.className = "fresh-market-copy";
+          copy.dataset.assetLabel = `KW-FRESH-MARKET-${product.item.id.toUpperCase()}-${index + 1}`;
+          copy.dataset.spriteAiLabel = `fresh-market.stock.${product.item.id}.${index + 1}`;
+          copy.dataset.spriteAiKind = "market-food-sprite";
+          copy.textContent = product.item.icon;
+          copies.append(copy);
+        }
+        const name = document.createElement("strong");
+        name.className = "sr-only";
+        name.textContent = product.item.name;
+        button.append(copies, name);
+        stock.append(button);
+      }
+      counter.append(heading, stock);
+      this.productList.append(counter);
+    }
+    const roomDetails = document.createElement("div");
+    roomDetails.className = "fresh-market-room-details";
+    roomDetails.setAttribute("aria-hidden", "true");
+    roomDetails.innerHTML = [
+      '<span class="fresh-market-worker worker-fish" data-asset-label="KW-FRESH-MARKET-FISHMONGER" data-sprite-ai-label="fresh-market.character.fishmonger" data-sprite-ai-kind="shop-character">🧑🏻‍🍳</span>',
+      '<span class="fresh-market-worker worker-butcher" data-asset-label="KW-FRESH-MARKET-BUTCHER" data-sprite-ai-label="fresh-market.character.butcher" data-sprite-ai-kind="shop-character">🧑🏽‍🍳</span>',
+      '<span class="fresh-market-customer" data-asset-label="KW-FRESH-MARKET-CUSTOMER" data-sprite-ai-label="fresh-market.character.customer" data-sprite-ai-kind="shop-character">🧑🏾</span>',
+      '<span class="fresh-market-checkout" data-asset-label="KW-FRESH-MARKET-CHECKOUT" data-sprite-ai-label="fresh-market.fixture.checkout" data-sprite-ai-kind="shop-fixture"><i>▦</i></span>',
+      '<span class="fresh-market-entry-mat" data-asset-label="KW-FRESH-MARKET-ENTRY-MAT" data-sprite-ai-label="fresh-market.fixture.entry-mat" data-sprite-ai-kind="shop-fixture">🐟</span>',
+    ].join("");
+    this.productList.append(roomDetails);
+    this.emptyMessage?.classList.toggle("hidden", products.length > 0);
+  }
+
   renderDetail(product) {
     if (!product?.ok) return;
     if (this.detailIcon) this.detailIcon.textContent = product.item.icon;
@@ -356,11 +436,13 @@ export class ShopController {
     if (!catalogue.ok) return catalogue;
     this.activeGroup = catalogue.activeGroup;
     const isVillageGrocer = this.activeShopId === "town-grocer";
-    const allProducts = isVillageGrocer
+    const isFreshMarket = this.activeShopId === "fresh-market";
+    const isReferenceShop = isVillageGrocer || isFreshMarket;
+    const allProducts = isReferenceShop
       ? catalogue.shop.itemIds.map((itemId) => this.shopService.getProduct(this.activeShopId, itemId)).filter((product) => product.ok)
       : catalogue.products;
     if (!allProducts.some((product) => product.item.id === this.selectedItemId)) this.selectedItemId = allProducts[0]?.item.id || null;
-    if (this.title) this.title.textContent = isVillageGrocer ? catalogue.shop.name : `${catalogue.shop.icon} ${catalogue.shop.name}`;
+    if (this.title) this.title.textContent = isReferenceShop ? catalogue.shop.name : `${catalogue.shop.icon} ${catalogue.shop.name}`;
     if (this.description) this.description.textContent = catalogue.shop.description;
     if (this.catalogueTitle) this.catalogueTitle.textContent = catalogue.activeGroup;
     if (this.balance) this.balance.textContent = formatCoins(catalogue.balance);
@@ -370,6 +452,7 @@ export class ShopController {
     const visible = this.visibleProducts({ ...catalogue, products: allProducts });
     if (!visible.some((product) => product.item.id === this.selectedItemId)) this.selectedItemId = visible[0]?.item.id || allProducts[0]?.item.id || null;
     if (isVillageGrocer) this.renderVillageGrocer(visible);
+    else if (isFreshMarket) this.renderFreshMarket(visible);
     else this.renderProducts(visible);
     const product = this.shopService.getProduct(this.activeShopId, this.selectedItemId);
     this.renderDetail(product);

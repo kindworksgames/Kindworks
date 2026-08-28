@@ -23,7 +23,7 @@ test("Phase 3 pins the immutable legacy source and complete viewport matrix", ()
 });
 
 test("Phase 3 requires observable evidence for every migrated activity", () => {
-  assert.equal(FIDELITY_ACTIVITIES.length, 15);
+  assert.equal(FIDELITY_ACTIVITIES.length, 16);
   for (const activity of FIDELITY_ACTIVITIES) {
     assert.ok(activity.legacyAnchors.length >= 2);
     assert.ok(activity.phaserOwners.length >= 2);
