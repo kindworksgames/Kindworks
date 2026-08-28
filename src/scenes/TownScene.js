@@ -579,6 +579,7 @@ export class TownScene extends Phaser.Scene {
       onZoom: (zoom) => document.querySelector("#game")?.setAttribute("data-camera-zoom", Number(zoom).toFixed(2)),
     });
     this.stateSyncElapsed = 0;
+    this.cachedNpcDiagnostics = this.npcTownLife?.getDiagnostics?.() || null;
     this.farmingSyncElapsed = 0;
     this.unsubscribeFarming = this.farming?.subscribe?.((snapshot, result) => this.handleFarmingChange(snapshot, result));
     this.unsubscribeHouseRescue = this.houseRescue?.subscribe?.(() => this.drawHouseRescueMarkers());
@@ -2592,6 +2593,7 @@ export class TownScene extends Phaser.Scene {
     if (this.stateSyncElapsed >= 250) {
       this.stateSyncElapsed = 0;
       this.updateWorldObjectLighting(currentWorld);
+      this.cachedNpcDiagnostics = this.npcTownLife?.getDiagnostics?.() || this.cachedNpcDiagnostics;
     }
     if (controlling) {
       const currentPosition = this.activePosition();
@@ -2616,7 +2618,7 @@ export class TownScene extends Phaser.Scene {
       gameElement.dataset.interaction = this.interactions.getState()?.id || "none";
       gameElement.dataset.transitionCount = String(Number(this.entryData.transitionCount || 0));
       gameElement.dataset.transition = this.transitioning ? "active" : "idle";
-      const diagnostics = this.npcTownLife?.getDiagnostics?.();
+      const diagnostics = this.cachedNpcDiagnostics;
       gameElement.dataset.npcResidents = String(diagnostics?.residentCount || 0);
       gameElement.dataset.npcVisible = String(diagnostics?.visibleCount || 0);
       gameElement.dataset.npcWalking = String(diagnostics?.walkingCount || 0);
