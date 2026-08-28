@@ -67,7 +67,7 @@ import { FidelityQaHarness } from "./qa/FidelityQaHarness.js";
 installSpriteAiDomLabels(document, window);
 
 const qaMode = new URLSearchParams(window.location.search).get("qa");
-const fidelityQa = import.meta.env.DEV && qaMode === "fidelity";
+const fidelityQa = import.meta.env.DEV && ["fidelity", "animal-fidelity"].includes(qaMode);
 const runtimeStorage = fidelityQa ? createFidelityStorage(window.localStorage) : window.localStorage;
 const stateRuntime = bootstrapState(runtimeStorage);
 const worldSimulation = new WorldSimulationService(stateRuntime.gameState, stateRuntime.repository);
@@ -170,7 +170,7 @@ game.registry.set("impactProjects", impactProjects);
 const economy = new EconomyService(stateRuntime.gameState, stateRuntime.repository);
 game.registry.set("economy", economy);
 const commerceQa = import.meta.env.DEV && ["commerce", "commerce-disabled"].includes(qaMode);
-const readOnlyQa = import.meta.env.DEV && ["parity", "differential-parity", "release-candidate", "fidelity"].includes(qaMode);
+const readOnlyQa = import.meta.env.DEV && ["parity", "differential-parity", "release-candidate", "fidelity", "animal-fidelity"].includes(qaMode);
 const developmentCommerce = import.meta.env.DEV && qaMode === "commerce";
 const billingBridge = developmentCommerce
   ? createDevelopmentBillingBridge(stateRuntime.gameState)

@@ -92,6 +92,18 @@ test("derives live occupants from resident schedules and clean/dirty state from 
   assert.equal(personal.occupants.some((resident) => resident.name === "Meadow"), true);
 });
 
+test("the active companion enters the personal home while inactive companions remain in South Meadow", () => {
+  const { gameState, service } = runtime();
+  const state = gameState.getSnapshot();
+  Object.assign(state.animals.residents["animal-rabbit-1"], { adopted: true, active: true, trust: 100 });
+  Object.assign(state.animals.residents["animal-dog-1"], { adopted: true, active: false, trust: 100 });
+  state.animals.activeAnimalId = "animal-rabbit-1";
+  assert.equal(gameState.replace(state).ok, true);
+  const personal = service.getInterior("house-20");
+  assert.deepEqual(personal.animalOccupants.map((animal) => animal.id), ["animal-rabbit-1"]);
+  assert.equal(personal.animalOccupants[0].activity, "At home with your resident");
+});
+
 test("records home entry and inspection interactions through verified persistence", () => {
   const { service, repository } = runtime();
   const entered = service.enter("house-1");

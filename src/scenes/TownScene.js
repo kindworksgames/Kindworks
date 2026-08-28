@@ -140,6 +140,7 @@ export class TownScene extends Phaser.Scene {
     this.farmingController = this.registry.get("farmingController");
     this.animals = this.registry.get("animals");
     this.animalFriendsController = this.registry.get("animalFriendsController");
+    this.sharedOverlay = this.registry.get("sharedOverlay");
     this.fishing = this.registry.get("fishing");
     this.bakery = this.registry.get("bakery");
     this.cafe = this.registry.get("cafe");
@@ -163,15 +164,21 @@ export class TownScene extends Phaser.Scene {
 
     const qaParams = import.meta.env.DEV ? new URLSearchParams(window.location.search) : null;
     const qaTarget = qaParams?.get("qa") || null;
+    const animalQa = ["animals", "animal-fidelity"].includes(qaTarget);
+    const animalQaArea = animalQa ? qaParams?.get("area") : null;
     const qaHouseNumber = Math.max(1, Math.min(HOUSES.length, Math.floor(Number(qaParams?.get("house") || 1))));
     const qaHouse = HOUSES[qaHouseNumber - 1];
-    const animalQaPresentation = qaTarget === "animals"
+    const animalQaPresentation = animalQa
       ? this.animals?.getWorldPresentations?.().find((entry) => entry.visible && !entry.definition.rare)
       : null;
     const environmentQaJob = qaTarget === "environment"
       ? this.livingEnvironment?.getLandJobs?.()[0]
       : null;
-    const qaSpawn = qaTarget === "collection"
+    const qaSpawn = animalQaArea === "paws"
+      ? PAWS_WONDERS.approach
+      : animalQaArea === "home"
+        ? { x: 3875, y: 1880 }
+      : qaTarget === "collection"
       ? { x: 970, y: 1260 }
       : qaTarget === "home" || qaTarget === "interior"
         ? { x: 3875, y: 1880 }
@@ -217,7 +224,7 @@ export class TownScene extends Phaser.Scene {
                 ? ORCHARD_CONFIG.interaction
                 : qaTarget === "lawn"
                 ? { x: LAWN_PLOTS[0].x, y: LAWN_PLOTS[0].y + 85 }
-                : qaTarget === "animals" && animalQaPresentation?.position
+                : animalQa && animalQaPresentation?.position
                   ? { x: animalQaPresentation.position.x, y: animalQaPresentation.position.y + 72 }
                   : qaTarget === "fishing"
                     ? { x: FISHING_SPOTS[0].world.x, y: FISHING_SPOTS[0].world.y + 85 }
@@ -2197,7 +2204,7 @@ export class TownScene extends Phaser.Scene {
       character?.applyPresentation(presentation, delta, playerPosition);
       const interaction = this.animalInteractables?.get(presentation.definition.id);
       if (!interaction || !character) continue;
-      interaction.enabled = presentation.visible && presentation.location !== "following";
+      interaction.enabled = presentation.visible && character.alpha > 0.55 && presentation.location !== "following";
       interaction.x = character.x;
       interaction.y = character.y;
       interaction.label = presentation.state.adopted ? `Visit ${presentation.state.name}` : `Meet ${presentation.state.name}`;
@@ -2247,7 +2254,10 @@ export class TownScene extends Phaser.Scene {
       this.farmingSyncElapsed = 0;
       this.farming?.refresh?.({ persist: true });
       this.livingEnvironment?.refresh?.({ persist: true });
+      const rareVisits = this.animals?.refreshRareVisits?.({ persist: true });
+      for (const notice of rareVisits?.notices || []) this.sharedOverlay?.showToast?.(notice.message, { tone: "success", duration: 5200 });
       this.refreshLivingEnvironment();
+      this.refreshAnimalPresentations(0);
       this.renderNpcPublicBins();
       this.refreshPlacementInteractables();
       this.refreshRestorationPresentation();

@@ -1,4 +1,4 @@
-import { ANIMAL_DEFINITIONS, ANIMAL_STATE_SCHEMA_VERSION, COMPANION_CARE_CONFIG } from "../data/animals.js";
+import { ANIMAL_DEFINITIONS, ANIMAL_STATE_SCHEMA_VERSION, COMPANION_CARE_CONFIG, adoptionRulesFor } from "../data/animals.js";
 import { absoluteWorldMinute } from "../data/farming.js";
 
 function whole(value, minimum = 0, maximum = Number.MAX_SAFE_INTEGER, fallback = minimum) {
@@ -67,7 +67,7 @@ export function normalizeAnimalState(value, world) {
     resident.name = safeName(source.name, definition.name);
     resident.adopted = Boolean(source.adopted);
     resident.trust = whole(source.trust ?? source.friendliness, resident.adopted ? COMPANION_CARE_CONFIG.releaseThreshold : 0, 100, definition.initialTrust);
-    resident.failedRequests = whole(source.failedRequests, 0, 99);
+    resident.failedRequests = whole(source.failedRequests, 0, adoptionRulesFor(definition).guaranteedAfterFailures);
     resident.lastRequestDay = whole(source.lastRequestDay, 0, whole(world?.day, 1));
     resident.lastGreetAbsoluteMinute = nullableMinute(source.lastGreetAbsoluteMinute ?? source.lastGreetAt);
     resident.lastTreatDay = whole(source.lastTreatDay ?? source.lastFedDay, 0, whole(world?.day, 1));
@@ -78,6 +78,7 @@ export function normalizeAnimalState(value, world) {
     resident.rareReplayStartAbsoluteMinute = nullableMinute(source.rareReplayStartAbsoluteMinute ?? source.rareReplayStart);
     resident.lastRareNoticeKey = safeKey(source.lastRareNoticeKey);
     resident.rareVisitCount = whole(source.rareVisitCount);
+    if (definition.shopPet && resident.adopted) resident.trust = 100;
   }
   const requestedActive = typeof value.activeAnimalId === "string" ? value.activeAnimalId : null;
   const fallbackActive = ANIMAL_DEFINITIONS.find(({ id }) => value.residents?.[id]?.active)?.id || null;

@@ -36,8 +36,10 @@ function createResident(gameState) {
 
 function makeAvailable(gameState, animalId, minimumDay = gameState.getSnapshot().world.day) {
   const probe = gameState.getSnapshot();
+  const minimumAbsoluteMinute = probe.world.day * 1440 + probe.world.clockMinutes;
   for (let day = minimumDay; day <= minimumDay + 60; day += 1) {
     for (let clockMinutes = 0; clockMinutes < 1440; clockMinutes += 80) {
+      if (day * 1440 + clockMinutes < minimumAbsoluteMinute) continue;
       probe.world.day = day;
       probe.world.clockMinutes = clockMinutes;
       if (worldAnimalPresentations(probe.animals, probe.world).some((entry) => entry.definition.id === animalId && entry.visible)) {
@@ -89,6 +91,23 @@ test("a favourite treat is consumed exactly once and grants the original wild-an
   assert.equal(repository.load().state.economy.ledger.at(-1).reason, "Fed Clover Allotment Carrot");
 });
 
+test("a cared-for town and clean river restore the original wild-animal trust bonuses", () => {
+  const landState = createFreshGameState({ now: 0 });
+  landState.environment.cleanliness.band = "cared-for";
+  const land = runtime({ state: landState });
+  makeAvailable(land.gameState, RABBIT);
+  assert.equal(land.animals.greet(RABBIT).gainedTrust, 9);
+
+  const waterState = createFreshGameState({ now: 0 });
+  waterState.environment.river.items = [];
+  waterState.inventory.consumables["fresh-greens"] = 1;
+  const water = runtime({ state: waterState });
+  makeAvailable(water.gameState, "animal-duck-1");
+  const fed = water.animals.feed("animal-duck-1", "fresh-greens");
+  assert.equal(fed.favorite, false);
+  assert.equal(fed.gainedTrust, 16);
+});
+
 test("gentle greetings obey the 120-game-minute cooldown", () => {
   const { gameState, animals } = runtime();
   makeAvailable(gameState, DOG);
@@ -114,7 +133,9 @@ test("adoption requires a created resident and common animals are guaranteed on 
   const adopted = animals.requestAdoption(RABBIT, { roll: 1 });
   assert.equal(adopted.code, "animal-adopted");
   assert.equal(adopted.guaranteed, true);
+  assert.equal(gameState.getSnapshot().animals.residents[RABBIT].trust, 100);
   assert.equal(gameState.getSnapshot().animals.activeAnimalId, RABBIT);
+  assert.deepEqual(animals.requestAdoption(RABBIT, { roll: 0 }), { ok: true, code: "already-adopted", unchanged: true, adopted: true, animalId: RABBIT });
 });
 
 test("rare Luna is guaranteed on the sixth valid visit request", () => {
@@ -174,6 +195,23 @@ test("offline care has one grace day and never pushes an adopted companion below
   animals.refresh({ persist: false, offline: true });
   assert.equal(gameState.getSnapshot().animals.residents[DOG].trust, 50);
   assert.equal(gameState.getSnapshot().animals.residents[DOG].adopted, true);
+});
+
+test("Paws & Wonders companions are permanent and remain at 100 trust", () => {
+  const state = createFreshGameState({ now: 0 });
+  const pet = state.animals.residents["pet-dog-labrador"];
+  Object.assign(pet, { adopted: true, trust: 100, purchasedDay: 1, lastCompanionCareDay: 0 });
+  const { gameState, animals } = runtime({ state });
+  setDay(gameState, 30, 420);
+  const result = animals.refresh({ persist: false });
+  assert.equal(result.departures.includes("pet-dog-labrador"), false);
+  assert.equal(gameState.getSnapshot().animals.residents["pet-dog-labrador"].adopted, true);
+  assert.equal(gameState.getSnapshot().animals.residents["pet-dog-labrador"].trust, 100);
+});
+
+test("clearing an empty follower slot is an idempotent success", () => {
+  const { animals } = runtime();
+  assert.deepEqual(animals.clearActive(), { ok: true, code: "companion-roaming", unchanged: true, activeAnimalId: null });
 });
 
 test("animal transactions roll back completely when saving fails", () => {

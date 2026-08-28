@@ -4243,12 +4243,14 @@ body[data-game-scene="FishingScene"] .interaction-prompt { display: none !import
 .animal-list-card { width: 100%; display: grid; grid-template-columns: 42px 1fr auto; align-items: center; gap: 8px; margin-bottom: 7px; padding: 9px; text-align: left; color: #294637; border: 2px solid transparent; border-radius: 14px; background: rgba(255,255,255,.76); }
 .animal-list-card.selected { border-color: #4f8556; background: #fffdf2; box-shadow: 0 5px 16px rgba(47,87,49,.13); }
 .animal-list-card > span { font-size: 28px; text-align: center; }
+.animal-list-card > .animal-reference-thumb { width: 38px; height: 38px; background-repeat: no-repeat; background-size: 600% 800%; image-rendering: pixelated; }
 .animal-list-card div { display: grid; gap: 2px; min-width: 0; }
 .animal-list-card small { overflow: hidden; color: #627565; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
 .animal-list-card em { color: #6c7b55; font-size: 10px; font-style: normal; font-weight: 850; text-transform: uppercase; }
 .animal-detail { overflow: auto; padding: 18px 20px; }
 .animal-detail-heading { display: flex; align-items: center; gap: 14px; }
 .animal-detail-heading > span { display: grid; place-items: center; width: 68px; height: 68px; border-radius: 50%; background: #e6f0cd; font-size: 42px; }
+.animal-detail-heading > .animal-reference-detail { flex: 0 0 auto; background-color: #e6f0cd; background-repeat: no-repeat; background-size: 600% 800%; image-rendering: pixelated; }
 .animal-detail-heading h3 { font-size: 26px; }
 .animal-detail-heading p, .animal-habitat { color: #607264; }
 .animal-trust-row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px; margin: 15px 0 10px; }

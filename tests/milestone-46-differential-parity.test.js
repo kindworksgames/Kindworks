@@ -74,7 +74,7 @@ test("provides a read-only in-game differential-parity QA route", async () => {
   assert.match(main, /dataset\.differentialParityActivities/);
   assert.match(main, /dataset\.differentialParitySharedDomains/);
   assert.match(main, /dataset\.differentialParityRuleProbes/);
-  assert.match(main, /\["parity", "differential-parity", "release-candidate", "fidelity"\]\.includes\(qaMode\)/);
+  assert.match(main, /\["parity", "differential-parity", "release-candidate", "fidelity", "animal-fidelity"\]\.includes\(qaMode\)/);
   const qaBlock = main.match(/if \(import\.meta\.env\.DEV && qaMode === "differential-parity"\) \{([\s\S]*?)\n\}/)?.[1] || "";
   assert.doesNotMatch(qaBlock, /save|update|create|grant|processLogin/i);
 });

@@ -23,7 +23,7 @@ Accepted final classifications are:
 | Check | Result |
 | --- | --- |
 | Starting branch/commit | `phase-3-legacy-fidelity-recovery` from `e441669` |
-| Existing automated suite | 506/506 passing before Phase 3 edits; 542/542 passing at final recovery gate |
+| Existing automated suite | 506/506 passing before Phase 3 edits; 552/552 passing after dedicated Animal Fidelity Recovery |
 | Production build | PASS |
 | Differential parity | PASS: 13 activities, 5,850 levels, 19 shared domains, 85 exact probes |
 | Isolated QA storage | `kindworks:phase-3-fidelity:`; production and legacy keys are not mutated |
@@ -54,6 +54,7 @@ Baseline evidence:
 | FID-014 | Power Washing interrupted visual state | Reload reconstructed the full-resolution mask from the coarse simulation grid instead of the exact player path. | Added an additive bounded visual checkpoint containing exact canvas spray segments. Reload replays the same tool, pressure and point sequence into the full-resolution renderer; restart clears it. Durable grid, supplies, reward and save-envelope rules are unchanged. | Exact full-resolution reload test passes independently of the grid. Level 750 operated at 568×320 and 1024×768 with board and wand inside the viewport and no overflow. | VERIFIED FUNCTIONAL/VISUAL PARITY |
 | FID-015 | Fishing presentation | The repaired interaction still used a simplified straight-line/token presentation. | Restored a visible rod, curved line, red/white float, expanding water ripples and bite marker. Magnet Fishing now visibly casts, sinks, settles and becomes ready before retrieval. No catch table, limits, inventory, aquarium or reward logic changed. | Fishing service and mobile tests pass. Operated at 568×320 and 1024×768 with the water canvas dominant, compact side rail visible and no overflow. | VERIFIED ADAPTED PARITY |
 | FID-016 | Town and living-world visual language | Town omitted Mill Walk, selection emphasis, pond wildlife, house silhouettes, shop merchandise, activity-specific characters, growth stages and localized cleanup effects. | Restored Mill Walk; five house architecture kits; window merchandise and awnings; ten swimming/resting pond ducks and wakes; night/weather window glow; interaction highlight; NPC work/social/eating poses and props; species anatomy overlays; crop/orchard stages; and land stains/river pollution. Every new visual family has a stable semantic Sprite AI label. | New town visual-fidelity tests plus personal-home/interior tests pass. Operated at 844×390 and 1024×768 with zero overflow; 360 labelled DOM candidates were present, and town survived portrait pause/resume without changing scene. | VERIFIED ADAPTED PARITY; final raster replacements remain labelled production art |
+| FID-017 | Animal Fidelity Recovery | Phaser omitted environmental trust bonuses, permanent Paws care protection, 100-trust adoption, exact route waits, dynamic-object avoidance, rare arrival notices, active-follower home occupancy and the protected animal artwork. | Restored the complete care/adoption/appearance/rare/follower contract and extracted the exact 43-cell v44 reference master from the immutable HTML. Town, Paws & Wonders, Animal Friends and the personal home now share that authored artwork. Added an isolated animal QA route. | `docs/qa/PHASE_3_ANIMAL_FIDELITY_RECOVERY.md`; 55 focused tests pass; complete suite 552/552; build/performance pass. Operated at 568×320, 844×390, 1024×768 and 390×844 with safe scene resume. | VERIFIED FUNCTIONAL AND REFERENCE-ART PARITY |
 
 ## Power Washing protected asset provenance
 
@@ -86,8 +87,8 @@ No confirmed P1 gaps remain. The exact Power Washing checkpoint, Beach run Undo,
 | --- | --- |
 | Town | Code-driven composition now restores the protected path, selection, architecture, merchandise, wildlife, cleanup and lighting state language. Final bespoke raster buildings/props remain labelled Sprite AI production work. Per-job reveal currently uses the existing permanent restoration transformation rather than a pixel-identical legacy transition. |
 | NPCs | Activity poses/props, hair and accessories are restored. Weather clothing and expressive portrait frames remain labelled Sprite AI production work. |
-| Animals | Species anatomy, motion families, water/aerial depth and habitat presentation are restored. Bespoke identity portraits remain labelled Sprite AI production work. |
-| Farming/homes | Crop/orchard stages, five architecture kits and night windows are restored. Bespoke furniture, household portraits and animal-occupant art remain labelled Sprite AI production work. |
+| Animals | The exact protected 43-cell v44 reference master now covers every one of the 56 identities in Town, Paws & Wonders, Animal Friends and the personal home. Final per-frame leg, wing, tail and idle nuances from the later code-driven legacy rig remain animation polish. |
+| Farming/homes | Crop/orchard stages, five architecture kits, night windows and active-companion artwork are restored. Bespoke furniture and household portraits remain labelled Sprite AI production work. |
 | Shops | Exterior merchandise state and restaurant composition are restored. Final venue-specific shelves, staff and item raster artwork remain labelled Sprite AI production work. |
 | Lawn | Protected route, timing, strain, directional cuts and mower progression are restored. Final bespoke garden, mower, clipping, audio and haptic assets remain production polish. |
 | River | Authored rubbish silhouettes/preview, held-button repeat, wave/cascade/gravity/final-flush effects, sound/haptics, and grade-specific result flow. |
@@ -110,7 +111,7 @@ No confirmed P1 gaps remain. The exact Power Washing checkpoint, Beach run Undo,
 ## Final verification gate
 
 - Production build: PASS; performance budget: PASS.
-- Automated regression: 542/542 PASS.
+- Automated regression: 552/552 PASS; final focused animal/home/Paws/town suite 55/55 PASS.
 - Differential legacy audit: PASS; protected SHA-256 unchanged; 13 activities, 5,850 levels, 19 shared domains and 85 exact rule probes.
 - Runtime device checks: 568×320, 844×390 and 1024×768 operated in the rebuilt game; the earlier restaurant matrix also covers 667×375, 736×414, 812×375, 1180×820, 1280×720 and 1366×768.
 - Orientation: Town/landscape activities show the one-sentence rotate state at 390×844 and resume the same scene in landscape. River remains the protected portrait-only exception.
