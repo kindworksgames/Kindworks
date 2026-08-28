@@ -450,28 +450,23 @@
         <p id="landscape-required-message">Turn your device sideways to play.</p>
       </aside>
       <section id="powerwash-hud" class="powerwash-hud hidden" aria-labelledby="powerwash-title">
-        <header class="powerwash-header">
-          <div><p>MILESTONE 20 · ORIGINAL 750-LEVEL CAMPAIGN</p><h2 id="powerwash-title">💦 Playground Power Wash</h2><small id="powerwash-summary">0 playgrounds restored · 0 stars · Level 1 next</small></div>
-          <span id="powerwash-balance">🪙 100</span><button id="powerwash-exit" type="button" aria-label="Exit Playground Power Wash safely">Exit</button>
-        </header>
-        <section id="powerwash-picker" class="powerwash-picker" aria-label="Choose a Playground Power Wash level">
-          <div><strong>Restore 750 playgrounds</strong><small>Clean 97%. Soap resistant stains first.</small></div>
-          <label for="powerwash-level-select">Level<select id="powerwash-level-select"><option value="1">Level 1</option></select></label>
-          <button id="powerwash-level-start" type="button">Start Level 1</button>
-        </section>
+        <h2 id="powerwash-title" class="sr-only">Playground Power Wash</h2>
         <section id="powerwash-gameplay" class="powerwash-gameplay hidden" aria-label="Active Playground Power Wash level">
-          <div class="powerwash-heading"><div><small id="powerwash-level-name">Level 1 of 750</small><strong id="powerwash-level-band">5 soap stains</strong></div><span>Clean<strong id="powerwash-clean">0%</strong></span><span>Water<strong id="powerwash-water">100%</strong></span><span>Soap<strong id="powerwash-soap">100%</strong></span><span>Coins<strong id="powerwash-reward">+100</strong></span></div>
-          <div class="powerwash-play-area">
-            <div class="powerwash-board-frame"><canvas id="powerwash-board" class="powerwash-board" width="1536" height="1024" role="img" aria-label="Playground Power Wash board using the approved legacy master artwork"></canvas><span class="powerwash-wand" data-sprite-ai-label="Power Wash — washer wand" data-sprite-ai-kind="gameplay-object" aria-hidden="true"></span></div>
-            <aside class="powerwash-side">
-              <article><small>SUPPLIES</small><label>Water <span class="powerwash-meter"><i id="powerwash-water-fill"></i></span></label><label>Soap <span class="powerwash-meter soap"><i id="powerwash-soap-fill"></i></span></label></article>
-              <article><small>TOOLS · KEYS 1–4</small><button id="powerwash-soap-tool" type="button" aria-label="Soap tool, keyboard 1">Soap</button><button id="powerwash-precision" type="button" aria-label="Precision nozzle, keyboard 2">Precision</button><button id="powerwash-standard" type="button" aria-label="Standard nozzle, keyboard 3">Standard</button><button id="powerwash-wide" type="button" aria-label="Wide nozzle, keyboard 4">Wide</button></article>
-              <button id="powerwash-retry" class="hidden" type="button">↻ Restart</button><button id="powerwash-qa-complete" class="hidden" type="button">✓ QA clear</button>
-            </aside>
+          <div class="powerwash-board-frame">
+            <canvas id="powerwash-board" class="powerwash-board" width="1536" height="1024" role="img" aria-label="Playground Power Wash surface using the approved legacy artwork"></canvas>
+            <div class="powerwash-canvas-controls" aria-label="Pressure washer tools">
+              <button id="powerwash-soap-tool" class="powerwash-integrated-tool soap" type="button" aria-label="Use soap"><span class="sr-only">Soap</span></button>
+              <button id="powerwash-precision" class="powerwash-integrated-tool precision" type="button" aria-label="Use precision nozzle"><span class="sr-only">Precision</span></button>
+              <button id="powerwash-standard" class="powerwash-integrated-tool standard" type="button" aria-label="Use standard nozzle"><span class="sr-only">Standard</span></button>
+              <button id="powerwash-wide" class="powerwash-integrated-tool wide" type="button" aria-label="Use wide nozzle"><span class="sr-only">Wide</span></button>
+              <button id="powerwash-exit" class="powerwash-integrated-exit" type="button" aria-label="Exit Playground Power Wash safely">✕</button>
+              <button id="powerwash-retry" class="powerwash-integrated-retry hidden" type="button" aria-label="Restart playground">↻</button>
+              <button id="powerwash-qa-complete" class="hidden" type="button">QA clear</button>
+            </div>
           </div>
         </section>
-        <p id="powerwash-status" class="powerwash-status" data-status="neutral" role="status" aria-live="assertive">Choose a Playground Power Wash level to begin.</p>
-        <section id="powerwash-result" class="powerwash-result hidden" aria-labelledby="powerwash-result-title"><h3 id="powerwash-result-title">Playground restored!</h3><div class="powerwash-result-sparkle">💦 ✨ 🛝</div><p id="powerwash-result-message">The grime is gone.</p><div class="powerwash-result-stats"><span>Clean<strong id="powerwash-result-clean">100%</strong></span><span>Tolerance<strong id="powerwash-result-tolerance">97%</strong></span><span>Strokes<strong id="powerwash-result-strokes">0</strong></span><span>Coins<strong id="powerwash-result-coins">+100</strong></span></div><div class="powerwash-result-actions"><button id="powerwash-replay" type="button">Replay</button><button id="powerwash-next" type="button">Next playground</button><button id="powerwash-return" type="button">Return to Willowmere</button></div></section>
+        <p id="powerwash-status" class="sr-only" data-status="neutral" role="status" aria-live="assertive">Drag to wash. Soap dark stains first.</p>
+        <section id="powerwash-result" class="powerwash-result hidden" aria-labelledby="powerwash-result-title"><h3 id="powerwash-result-title">Playground restored!</h3><div class="powerwash-result-sparkle">💦 ✨ 🛝</div><p id="powerwash-result-message">The grime is gone.</p><div class="powerwash-result-reward">Reward <strong id="powerwash-result-coins">+100 🪙</strong></div><div class="powerwash-result-actions"><button id="powerwash-return" type="button">Continue</button></div></section>
       </section>
       <section id="beach-cleanup-hud" class="beach-cleanup-hud hidden" aria-labelledby="beach-cleanup-title">
         <header class="beach-header">

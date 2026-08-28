@@ -10,6 +10,21 @@
       "filename": "playground-reference-dirt.png",
       "sha256": "5db4c213d34d1e435f74f03a49590f766e172f01d8ac97703dc090ded7d36736",
       "bytes": 1998003
+    },
+    "POWERWASH_UI_PRECISION_ART": {
+      "filename": "tool-precision.png",
+      "sha256": "d9e75832314fee928b606021986d0d24bf903f51f6d43d6e3beefb083cb16f61",
+      "bytes": 4711
+    },
+    "POWERWASH_UI_STANDARD_ART": {
+      "filename": "tool-standard.png",
+      "sha256": "97f9dca3ecc229ba147cbc9e1bc44049c1a3946efd09812ebe03bec07dbe6290",
+      "bytes": 7461
+    },
+    "POWERWASH_UI_WIDE_ART": {
+      "filename": "tool-wide.png",
+      "sha256": "1e56931d3e0b759317dfcab7612a6abe535f812094ce5e507d684a7d11d87ceb",
+      "bytes": 9269
     }
   }
 }
