@@ -14,6 +14,163 @@
   --kw-control-shift: 2px;
 }
 
+/* Shared restaurant presentation polish.
+   The illustrated kitchen fixtures remain visible and become the interaction
+   surface; compact icon labels float over them instead of forming a second
+   card-based interface. This is deliberately visual-only. */
+@media (orientation: landscape) {
+  body:is([data-game-scene="BakeryScene"], [data-game-scene="CafeScene"], [data-game-scene="MorningMugScene"], [data-game-scene="RiversideKitchenScene"]) :is(
+    #bakery-hud[data-bakery-view="shift"],
+    #cafe-hud[data-cafe-view="shift"],
+    #morning-mug-hud[data-morning-mug-view="shift"],
+    #riverside-kitchen-hud[data-riverside-kitchen-view="shift"]
+  ) :is(.bakery-shift-heading, .cafe-shift-heading) {
+    top: 4px !important;
+    right: auto !important;
+    left: clamp(150px, 22vw, 282px) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    width: min(390px, 35vw) !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  body:is([data-game-scene="BakeryScene"], [data-game-scene="CafeScene"], [data-game-scene="MorningMugScene"], [data-game-scene="RiversideKitchenScene"]) :is(
+    #bakery-hud[data-bakery-view="shift"],
+    #cafe-hud[data-cafe-view="shift"],
+    #morning-mug-hud[data-morning-mug-view="shift"],
+    #riverside-kitchen-hud[data-riverside-kitchen-view="shift"]
+  ) :is(.bakery-shift-heading, .cafe-shift-heading) > div {
+    display: grid !important;
+    place-items: center !important;
+    min-width: 78px !important;
+    height: 36px !important;
+    padding: 0 7px !important;
+    overflow: hidden !important;
+    color: #294637 !important;
+    border: 2px solid #294637 !important;
+    border-radius: 8px !important;
+    background: #dcecbf !important;
+  }
+  body:is([data-game-scene="BakeryScene"], [data-game-scene="CafeScene"], [data-game-scene="MorningMugScene"], [data-game-scene="RiversideKitchenScene"]) :is(
+    #bakery-hud[data-bakery-view="shift"],
+    #cafe-hud[data-cafe-view="shift"],
+    #morning-mug-hud[data-morning-mug-view="shift"],
+    #riverside-kitchen-hud[data-riverside-kitchen-view="shift"]
+  ) :is(.bakery-shift-heading, .cafe-shift-heading) > div small {
+    display: block !important;
+    overflow: hidden !important;
+    font-size: 8px !important;
+    font-weight: 900 !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+  body:is([data-game-scene="BakeryScene"], [data-game-scene="CafeScene"], [data-game-scene="MorningMugScene"], [data-game-scene="RiversideKitchenScene"]) :is(
+    #bakery-hud[data-bakery-view="shift"],
+    #cafe-hud[data-cafe-view="shift"],
+    #morning-mug-hud[data-morning-mug-view="shift"],
+    #riverside-kitchen-hud[data-riverside-kitchen-view="shift"]
+  ) :is(.bakery-shift-heading, .cafe-shift-heading) > div strong { display: none !important; }
+
+  body:is([data-game-scene="BakeryScene"], [data-game-scene="CafeScene"], [data-game-scene="MorningMugScene"], [data-game-scene="RiversideKitchenScene"]) :is(
+    .bakery-worktop,
+    .cafe-worktop,
+    .morning-mug-worktop,
+    .riverside-kitchen-worktop
+  ) { overflow: visible !important; }
+
+  body:is([data-game-scene="BakeryScene"], [data-game-scene="CafeScene"], [data-game-scene="MorningMugScene"], [data-game-scene="RiversideKitchenScene"]) :is(
+    .bakery-step-list,
+    .cafe-step-list
+  ) {
+    grid-template-columns: repeat(5, minmax(42px, 1fr)) !important;
+    gap: 5px !important;
+    overflow: visible !important;
+    padding: 4px !important;
+  }
+
+  body:is([data-game-scene="BakeryScene"], [data-game-scene="CafeScene"], [data-game-scene="MorningMugScene"], [data-game-scene="RiversideKitchenScene"]) :is(
+    .bakery-step-list,
+    .cafe-step-list
+  ) button {
+    display: grid !important;
+    place-items: center !important;
+    gap: 0 !important;
+    min-height: 62px !important;
+    max-height: 66px !important;
+    padding: 2px !important;
+    overflow: visible !important;
+    color: #292238 !important;
+    border: 2px solid transparent !important;
+    border-radius: 9px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    text-shadow: 0 1px #fffaf0 !important;
+  }
+  body:is([data-game-scene="BakeryScene"], [data-game-scene="CafeScene"], [data-game-scene="MorningMugScene"], [data-game-scene="RiversideKitchenScene"]) :is(
+    .bakery-step-list,
+    .cafe-step-list
+  ) button > span { font-size: clamp(17px, 2.2vw, 25px) !important; }
+  body:is([data-game-scene="BakeryScene"], [data-game-scene="CafeScene"], [data-game-scene="MorningMugScene"], [data-game-scene="RiversideKitchenScene"]) :is(
+    .bakery-step-list,
+    .cafe-step-list
+  ) button > strong {
+    display: block !important;
+    max-width: 100% !important;
+    padding: 1px 4px !important;
+    overflow: hidden !important;
+    border-radius: 4px !important;
+    background: rgb(255 250 240 / 88%) !important;
+    font-size: 7px !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+  body:is([data-game-scene="BakeryScene"], [data-game-scene="CafeScene"], [data-game-scene="MorningMugScene"], [data-game-scene="RiversideKitchenScene"]) :is(
+    .bakery-step-list,
+    .cafe-step-list
+  ) button > small { display: none !important; }
+  body:is([data-game-scene="BakeryScene"], [data-game-scene="CafeScene"], [data-game-scene="MorningMugScene"], [data-game-scene="RiversideKitchenScene"]) :is(
+    .bakery-step-list,
+    .cafe-step-list
+  ) button:is(.next, .ready, .working, .cooking, .burnt, :focus-visible, :active) {
+    border-color: #fff3cf !important;
+    outline: 3px solid #d66d4d !important;
+    outline-offset: -1px !important;
+    background: rgb(242 200 91 / 19%) !important;
+  }
+}
+
+@media (orientation: landscape) and (max-width: 700px) {
+  body:is([data-game-scene="BakeryScene"], [data-game-scene="CafeScene"], [data-game-scene="MorningMugScene"], [data-game-scene="RiversideKitchenScene"]) :is(
+    #bakery-hud[data-bakery-view="shift"],
+    #cafe-hud[data-cafe-view="shift"],
+    #morning-mug-hud[data-morning-mug-view="shift"],
+    #riverside-kitchen-hud[data-riverside-kitchen-view="shift"]
+  ) :is(.bakery-shift-heading, .cafe-shift-heading) {
+    left: 29% !important;
+    width: 42% !important;
+  }
+  body:is([data-game-scene="BakeryScene"], [data-game-scene="CafeScene"], [data-game-scene="MorningMugScene"], [data-game-scene="RiversideKitchenScene"]) :is(
+    #bakery-hud[data-bakery-view="shift"],
+    #cafe-hud[data-cafe-view="shift"],
+    #morning-mug-hud[data-morning-mug-view="shift"],
+    #riverside-kitchen-hud[data-riverside-kitchen-view="shift"]
+  ) :is(.bakery-shift-heading, .cafe-shift-heading) > div { display: none !important; }
+  body:is([data-game-scene="BakeryScene"], [data-game-scene="CafeScene"], [data-game-scene="MorningMugScene"], [data-game-scene="RiversideKitchenScene"]) :is(
+    .bakery-step-list,
+    .cafe-step-list
+  ) { grid-template-columns: repeat(4, minmax(38px, 1fr)) !important; gap: 2px !important; }
+  body:is([data-game-scene="BakeryScene"], [data-game-scene="CafeScene"], [data-game-scene="MorningMugScene"], [data-game-scene="RiversideKitchenScene"]) :is(
+    .bakery-step-list,
+    .cafe-step-list
+  ) button { min-height: 48px !important; max-height: 52px !important; }
+}
+
 /* Restaurant reference-layout fidelity recovery.
    Shared venues use the dining / order counter / kitchen composition.
    South Shore Scoops uses its own seaside service-window composition. */
@@ -388,6 +545,30 @@
     background: rgb(255 244 211 / 96%);
     font-size: 9px;
     white-space: nowrap;
+  }
+}
+
+/* Final restaurant header placement guard. */
+@media (orientation: landscape) {
+  body[data-game-scene="BakeryScene"] #bakery-hud[data-bakery-view="shift"] .bakery-shift-heading,
+  body[data-game-scene="CafeScene"] #cafe-hud[data-cafe-view="shift"] .cafe-shift-heading,
+  body[data-game-scene="MorningMugScene"] #morning-mug-hud[data-morning-mug-view="shift"] .cafe-shift-heading,
+  body[data-game-scene="RiversideKitchenScene"] #riverside-kitchen-hud[data-riverside-kitchen-view="shift"] .cafe-shift-heading {
+    top: 4px !important;
+    right: auto !important;
+    left: clamp(190px, 22vw, 282px) !important;
+    width: min(390px, 35vw) !important;
+    height: 36px !important;
+  }
+}
+
+@media (orientation: landscape) and (max-width: 700px) {
+  body[data-game-scene="BakeryScene"] #bakery-hud[data-bakery-view="shift"] .bakery-shift-heading,
+  body[data-game-scene="CafeScene"] #cafe-hud[data-cafe-view="shift"] .cafe-shift-heading,
+  body[data-game-scene="MorningMugScene"] #morning-mug-hud[data-morning-mug-view="shift"] .cafe-shift-heading,
+  body[data-game-scene="RiversideKitchenScene"] #riverside-kitchen-hud[data-riverside-kitchen-view="shift"] .cafe-shift-heading {
+    left: 29% !important;
+    width: 42% !important;
   }
 }
 
@@ -6010,5 +6191,241 @@ body[data-modal-open="true"] .interaction-prompt { visibility: hidden; pointer-e
   body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] {
     top: calc((100dvh - 56.25vw) / 2 + max(4px, env(safe-area-inset-top))) !important;
     bottom: calc((100dvh - 56.25vw) / 2 + max(4px, env(safe-area-inset-bottom))) !important;
+  }
+}
+
+/* South Shore Scoops reference-composition pass.
+   Every landscape size places transparent touch targets directly over the
+   illustrated counter fixtures, so the counter—not a detached button grid—
+   is the interface. */
+@media (orientation: landscape) {
+  body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-hud-header {
+    inset: 0 0 auto !important;
+    height: 48px !important;
+    min-height: 48px !important;
+    padding: 0 !important;
+    pointer-events: none !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] :is(.scoops-hud-header > div, .restaurant-live-stars) {
+    display: none !important;
+  }
+
+  body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] #south-shore-scoops-balance {
+    position: absolute !important;
+    top: 3px !important;
+    right: 3px !important;
+    display: grid !important;
+    place-items: center !important;
+    width: 112px !important;
+    min-height: 42px !important;
+    padding: 0 10px !important;
+    pointer-events: none !important;
+    color: #292238 !important;
+    border: 3px solid #292238 !important;
+    border-radius: 8px !important;
+    background: #fff3cf !important;
+    box-shadow: 2px 3px 0 rgb(41 34 56 / 32%) !important;
+  }
+
+  body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] #south-shore-scoops-exit {
+    position: absolute !important;
+    top: 3px !important;
+    left: 3px !important;
+    display: grid !important;
+    place-items: center !important;
+    width: 44px !important;
+    min-height: 42px !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    pointer-events: auto !important;
+    color: #fff3cf !important;
+    border: 3px solid #fff3cf !important;
+    border-radius: 8px !important;
+    background: #173b6b !important;
+    font-size: 0 !important;
+    box-shadow: 2px 3px 0 rgb(41 34 56 / 32%) !important;
+  }
+  body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] #south-shore-scoops-exit::after { content: "☰"; font-size: 18px; }
+
+  body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] :is(.scoops-shift-heading, .scoops-customers, .scoops-preparation) {
+    display: none !important;
+  }
+
+  body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-current {
+    position: absolute !important;
+    top: 49% !important;
+    right: 2.5% !important;
+    bottom: 16% !important;
+    left: auto !important;
+    display: block !important;
+    width: 20.5% !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-current > * { visibility: hidden !important; }
+
+  body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] .south-shore-scoops-worktop {
+    position: absolute !important;
+    top: 49% !important;
+    right: 24.5% !important;
+    bottom: 17% !important;
+    left: 2% !important;
+    width: auto !important;
+    height: auto !important;
+    max-height: none !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    pointer-events: auto !important;
+    border: 0 !important;
+    background: transparent !important;
+  }
+  body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-worktop-label { display: none !important; }
+  body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-part-list {
+    position: relative !important;
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+  body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-part-list button {
+    position: absolute !important;
+    top: var(--scoops-y, 8%) !important;
+    left: var(--scoops-x, 5%) !important;
+    width: var(--scoops-w, 9.5%) !important;
+    height: var(--scoops-h, 30%) !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    max-height: 66px !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    color: transparent !important;
+    border: 2px solid transparent !important;
+    border-radius: 8px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-part-list button > * { opacity: 0 !important; }
+  body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-part-list button:is(:focus-visible, :active, .next) {
+    border-color: #fff3cf !important;
+    background: rgb(242 200 91 / 18%) !important;
+    outline: 3px solid #d75f63 !important;
+    outline-offset: 1px !important;
+  }
+  body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-part-list button.next::after {
+    position: absolute;
+    right: 1px;
+    bottom: 1px;
+    content: "TAP";
+    padding: 2px 4px;
+    color: #fffaf0;
+    border-radius: 4px;
+    background: #d75f63;
+    font: 900 7px/1 ui-monospace, monospace;
+  }
+
+  body[data-game-scene="SouthShoreScoopsScene"] [data-scoops-part="cone"] { --scoops-x: 3%; --scoops-y: 7%; }
+  body[data-game-scene="SouthShoreScoopsScene"] [data-scoops-part="waffle"] { --scoops-x: 12%; --scoops-y: 7%; }
+  body[data-game-scene="SouthShoreScoopsScene"] [data-scoops-part="shavedCup"] { --scoops-x: 3%; --scoops-y: 55%; }
+  body[data-game-scene="SouthShoreScoopsScene"] [data-scoops-part="sundaeCup"] { --scoops-x: 12%; --scoops-y: 55%; }
+  body[data-game-scene="SouthShoreScoopsScene"] [data-scoops-part="cup"] { --scoops-x: 20%; --scoops-y: 7%; }
+  body[data-game-scene="SouthShoreScoopsScene"] [data-scoops-part="drinkCup"] { --scoops-x: 20%; --scoops-y: 55%; }
+  body[data-game-scene="SouthShoreScoopsScene"] [data-scoops-part="strawberry"] { --scoops-x: 31%; --scoops-y: 7%; --scoops-w: 10.5%; }
+  body[data-game-scene="SouthShoreScoopsScene"] [data-scoops-part="chocolate"] { --scoops-x: 43.5%; --scoops-y: 7%; --scoops-w: 10.5%; }
+  body[data-game-scene="SouthShoreScoopsScene"] [data-scoops-part="vanilla"] { --scoops-x: 56%; --scoops-y: 7%; --scoops-w: 10.5%; }
+  body[data-game-scene="SouthShoreScoopsScene"] [data-scoops-part="mint"] { --scoops-x: 31%; --scoops-y: 53%; --scoops-w: 10.5%; }
+  body[data-game-scene="SouthShoreScoopsScene"] [data-scoops-part="grape"] { --scoops-x: 43.5%; --scoops-y: 53%; --scoops-w: 10.5%; }
+  body[data-game-scene="SouthShoreScoopsScene"] [data-scoops-part="blueberry"] { --scoops-x: 56%; --scoops-y: 53%; --scoops-w: 10.5%; }
+  body[data-game-scene="SouthShoreScoopsScene"] [data-scoops-part="strawberrySauce"] { --scoops-x: 74%; --scoops-y: 5%; --scoops-w: 7%; --scoops-h: 40%; }
+  body[data-game-scene="SouthShoreScoopsScene"] [data-scoops-part="chocolateSauce"] { --scoops-x: 82%; --scoops-y: 5%; --scoops-w: 7%; --scoops-h: 40%; }
+  body[data-game-scene="SouthShoreScoopsScene"] [data-scoops-part="caramelSauce"] { --scoops-x: 90%; --scoops-y: 5%; --scoops-w: 7%; --scoops-h: 40%; }
+  body[data-game-scene="SouthShoreScoopsScene"] [data-scoops-part="sprinkles"] { --scoops-x: 74%; --scoops-y: 54%; --scoops-w: 7%; --scoops-h: 22%; }
+  body[data-game-scene="SouthShoreScoopsScene"] [data-scoops-part="chocBits"] { --scoops-x: 82%; --scoops-y: 54%; --scoops-w: 7%; --scoops-h: 22%; }
+  body[data-game-scene="SouthShoreScoopsScene"] [data-scoops-part="marshmallows"] { --scoops-x: 82%; --scoops-y: 77%; --scoops-w: 7%; --scoops-h: 22%; }
+  body[data-game-scene="SouthShoreScoopsScene"] [data-scoops-part="cherry"] { --scoops-x: 74%; --scoops-y: 77%; --scoops-w: 7%; --scoops-h: 22%; }
+  body[data-game-scene="SouthShoreScoopsScene"] [data-scoops-part="milkshake"] { --scoops-x: 3%; --scoops-y: 52%; --scoops-w: 11%; --scoops-h: 44%; }
+  body[data-game-scene="SouthShoreScoopsScene"] [data-scoops-part="lemonade"] { --scoops-x: 15%; --scoops-y: 52%; --scoops-w: 11%; --scoops-h: 44%; }
+  body[data-game-scene="SouthShoreScoopsScene"] [data-scoops-part="shavedIce"] { --scoops-x: 90%; --scoops-y: 54%; --scoops-w: 7%; --scoops-h: 22%; }
+  body[data-game-scene="SouthShoreScoopsScene"] [data-scoops-part="fruitSyrup"] { --scoops-x: 90%; --scoops-y: 77%; --scoops-w: 7%; --scoops-h: 22%; }
+  body[data-game-scene="SouthShoreScoopsScene"] [data-scoops-part="lolly"] { --scoops-x: 66%; --scoops-y: 54%; --scoops-w: 7%; --scoops-h: 45%; }
+
+  body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-controls:not(.hidden) { display: contents !important; }
+  body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-controls button {
+    position: absolute !important;
+    z-index: 27 !important;
+    min-height: 44px !important;
+    padding: 4px 7px !important;
+    pointer-events: auto !important;
+    border: 3px solid #292238 !important;
+    border-radius: 8px !important;
+    box-shadow: 2px 3px 0 rgb(41 34 56 / 35%) !important;
+  }
+  body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] :is(#south-shore-scoops-serve, #south-shore-scoops-add-tray) {
+    right: 3% !important;
+    bottom: 6.5% !important;
+    width: 18% !important;
+    height: 56px !important;
+    color: #fffaf0 !important;
+    background: #388b42 !important;
+    font-size: 12px !important;
+  }
+  body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] #south-shore-scoops-undo {
+    right: 12.5% !important;
+    bottom: .75% !important;
+    width: 8.5% !important;
+    color: #fffaf0 !important;
+    background: #6d58a5 !important;
+  }
+  body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] #south-shore-scoops-discard {
+    right: 3% !important;
+    bottom: .75% !important;
+    width: 8.5% !important;
+    color: #fffaf0 !important;
+    background: #b94e42 !important;
+  }
+
+  body[data-game-scene="SouthShoreScoopsScene"] #south-shore-scoops-hud[data-scoops-view="shift"] .scoops-status {
+    position: absolute !important;
+    right: 31% !important;
+    bottom: .75% !important;
+    left: 31% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 34px !important;
+    max-height: 34px !important;
+    padding: 4px 9px !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+    border: 2px solid #6f5639 !important;
+    border-radius: 999px !important;
+    background: rgb(255 244 211 / 92%) !important;
+    box-shadow: 1px 2px 0 rgb(41 34 56 / 25%) !important;
+    font-size: 9px !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+  }
+
+  body[data-game-scene="BakeryScene"] #bakery-hud[data-bakery-view="shift"] .bakery-shift-heading,
+  body[data-game-scene="CafeScene"] #cafe-hud[data-cafe-view="shift"] .cafe-shift-heading,
+  body[data-game-scene="MorningMugScene"] #morning-mug-hud[data-morning-mug-view="shift"] .cafe-shift-heading,
+  body[data-game-scene="RiversideKitchenScene"] #riverside-kitchen-hud[data-riverside-kitchen-view="shift"] .cafe-shift-heading {
+    top: 4px !important;
+    right: auto !important;
+    left: clamp(190px, 22vw, 282px) !important;
+    width: min(390px, 35vw) !important;
+    height: 36px !important;
   }
 }

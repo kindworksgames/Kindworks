@@ -93,3 +93,20 @@ test("restaurant reference layouts keep interaction labels and responsive in-wor
   assert.match(styles, /grid-template-columns: repeat\(6, minmax\(42px, 1fr\)\) !important/);
   assert.match(styles, /top: 49% !important;[\s\S]*?right: 24% !important;[\s\S]*?bottom: 17% !important/);
 });
+
+test("restaurant visual polish keeps the illustrated fixtures as the interaction surface", async () => {
+  const [styles, presentation] = await Promise.all([
+    readText("src/style.css"),
+    readText("src/ui/RestaurantPresentation.js"),
+  ]);
+  assert.match(styles, /Shared restaurant presentation polish/);
+  assert.match(styles, /background: transparent !important;[\s\S]*?text-shadow: 0 1px #fffaf0 !important/);
+  assert.match(styles, /Final restaurant header placement guard/);
+  assert.match(styles, /left: clamp\(190px, 22vw, 282px\) !important/);
+  assert.match(styles, /South Shore Scoops reference-composition pass/);
+  assert.doesNotMatch(styles, /On phones narrower than 701px the existing compact rail/);
+  for (const fixture of ["MENU-BOARD", "HANGING-ANCHOR-SIGN", "MILKSHAKE-MACHINE", "LEMONADE-MACHINE", "SERVE-BUTTON"]) {
+    assert.ok(presentation.includes(`"${fixture}"`), fixture);
+  }
+  assert.match(presentation, /semanticSlot\(scene, `KW-SCOOPS-\$\{id\}`/);
+});

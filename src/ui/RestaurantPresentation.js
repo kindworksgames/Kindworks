@@ -232,9 +232,9 @@ export function updateRestaurantPresentation(scene, snapshot = {}) {
 }
 
 function drawScoopsCustomer(graphics, x, y, index, active) {
-  pixelPerson(graphics, x, y, index, null, active);
-  graphics.fillStyle(INK, 1); graphics.fillRoundedRect(x - 29, y + 33, 58, 12, 4);
-  graphics.fillStyle(active ? 0xf2d787 : 0x8aa0a0, 1); graphics.fillRoundedRect(x - 25, y + 36, 50, 6, 2);
+  pixelPerson(graphics, x, y, index, null, active, 1.42);
+  graphics.fillStyle(INK, 1); graphics.fillRoundedRect(x - 42, y + 45, 84, 15, 4);
+  graphics.fillStyle(active ? 0xf2d787 : 0x8aa0a0, 1); graphics.fillRoundedRect(x - 37, y + 49, 74, 7, 2);
 }
 
 function createLegacyScoopsPresentation(scene) {
@@ -293,6 +293,9 @@ export function createScoopsPresentation(scene) {
   art.fillStyle(INK, 1); art.fillRoundedRect(190, 11, 900, 74, 14);
   art.fillStyle(0xa96838, 1); art.fillRoundedRect(197, 18, 886, 60, 9);
   for (let y = 29; y < 73; y += 13) { art.fillStyle(0x7d4c2d, 0.55); art.fillRect(214, y, 850, 3); }
+  art.fillStyle(0xf1b34f, 1); art.fillCircle(232, 47, 17); art.fillCircle(1048, 47, 17);
+  art.fillStyle(0x173b6b, 1); art.fillRect(229, 30, 6, 34); art.fillRect(1045, 30, 6, 34); art.fillCircle(232, 47, 10); art.fillCircle(1048, 47, 10);
+  art.fillStyle(0xef876f, 1); art.fillCircle(1008, 58, 8); art.fillCircle(1008, 58, 3);
 
   art.fillStyle(0x173b6b, 1); art.fillRoundedRect(216, 92, 848, 225, 8);
   art.fillStyle(0x8bd5e8, 1); art.fillRect(222, 98, 836, 104);
@@ -301,25 +304,38 @@ export function createScoopsPresentation(scene) {
   for (let x = 250; x < 1040; x += 76) { art.fillStyle(0xd9f2f5, 0.72); art.fillRect(x, 219 + (x % 3) * 9, 45, 4); }
   art.fillStyle(0x684338, 1); art.fillRect(204, 300, 872, 22); art.fillStyle(0x2f6091, 1); art.fillRect(204, 306, 872, 12);
 
+  art.fillStyle(INK, 1); art.fillRoundedRect(42, 118, 128, 164, 7); art.fillStyle(0x24384b, 1); art.fillRoundedRect(48, 124, 116, 152, 4);
+  art.lineStyle(3, 0xf5d483, 0.8); art.strokeCircle(106, 170, 29); art.lineBetween(76, 225, 136, 225); art.lineBetween(82, 240, 130, 240);
+  art.fillStyle(0xf1b34f, 1); art.fillTriangle(91, 181, 121, 181, 106, 224); art.fillStyle(0xee9aa8, 1); art.fillCircle(106, 174, 18);
+  art.fillStyle(INK, 1); art.fillRoundedRect(1110, 123, 82, 105, 5); art.fillStyle(0xa96838, 1); art.fillRoundedRect(1116, 129, 70, 93, 3);
+  art.fillStyle(0x173b6b, 1); art.fillCircle(1151, 170, 23); art.lineStyle(5, 0xf1b34f, 1); art.strokeCircle(1151, 170, 16); art.lineBetween(1151, 148, 1151, 193);
+  [[106, 290], [1150, 290]].forEach(([x, y], index) => { art.fillStyle(INK, 1); art.fillRoundedRect(x - 37, y - 26, 74, 55, 9); art.fillStyle(index ? 0x4f8b78 : 0x3268a0, 1); art.fillRoundedRect(x - 32, y - 21, 64, 45, 7); [0xf6edc9, 0xee9aa8, 0xf1bf67, 0x8bd0a5].forEach((colour, flower) => { art.fillStyle(colour, 1); art.fillCircle(x - 24 + flower * 16, y - 22 - (flower % 2) * 8, 8); }); });
+
   art.fillStyle(INK, 1); art.fillRoundedRect(12, 327, 1256, 382, 10);
   art.fillStyle(0xa96838, 1); art.fillRoundedRect(20, 335, 1240, 366, 6);
   art.fillStyle(0x704123, 1); art.fillRect(20, 612, 1240, 89);
   const panel = (x, y, width, height, colour = PAPER) => { art.fillStyle(INK, 1); art.fillRoundedRect(x, y, width, height, 8); art.fillStyle(colour, 1); art.fillRoundedRect(x + 5, y + 5, width - 10, height - 10, 4); };
   panel(34, 350, 250, 118, 0xe3c18a); panel(34, 479, 250, 118, 0xd5d9d1);
-  panel(300, 350, 392, 247, 0xd7c49b); panel(706, 350, 258, 247, 0xe4bd84); panel(978, 350, 270, 247, 0xfff1c9);
+  panel(300, 350, 392, 230, 0xd7c49b); panel(706, 350, 258, 230, 0xe4bd84); panel(978, 350, 270, 345, 0xfff1c9);
   [[78, 408], [157, 408], [236, 408]].forEach(([x, y], index) => { art.fillStyle(index === 0 ? 0xc98b55 : index === 1 ? 0xe3aa62 : 0xead09a, 1); art.fillTriangle(x - 23, y - 18, x + 23, y - 18, x, y + 35); art.lineStyle(3, INK, 1); art.strokeTriangle(x - 23, y - 18, x + 23, y - 18, x, y + 35); });
   [[78, 538], [157, 538], [236, 538]].forEach(([x, y], index) => { art.fillStyle([0x8fc4d5, 0xc8d0cb, 0xa9b8b7][index], 1); art.fillRoundedRect(x - 26, y - 28, 52, 62, 9); art.lineStyle(3, INK, 1); art.strokeRoundedRect(x - 26, y - 28, 52, 62, 9); });
+  [[48, 493, 101, 96, 0xe98fa5], [163, 493, 101, 96, 0xf0c94f]].forEach(([x, y, width, height, colour], index) => {
+    art.fillStyle(INK, 1); art.fillRoundedRect(x, y, width, height, 8); art.fillStyle(colour, 1); art.fillRoundedRect(x + 5, y + 5, width - 10, height - 10, 5);
+    art.fillStyle(WHITE, 0.8); art.fillRoundedRect(x + 21, y + 18, width - 42, 34, 6); art.fillStyle(0xa9b8b7, 1); art.fillRoundedRect(x + 33, y + 57, width - 66, 28, 6);
+    art.fillStyle(INK, 1); art.fillRect(x + width / 2 - 4, y + 44, 8, 23); art.fillStyle(index ? 0xf3d979 : 0xee9aa8, 1); art.fillRect(x + 39, y + 66, width - 78, 13);
+  });
   [0xee9aa8, 0x8c5a43, 0xf6edc9, 0x8bd0a5, 0xaa78bd, 0x7687c5].forEach((colour, index) => { const x = 318 + (index % 3) * 122; const y = 382 + Math.floor(index / 3) * 89; art.fillStyle(INK, 1); art.fillRoundedRect(x, y, 108, 72, 7); art.fillStyle(colour, 1); art.fillRoundedRect(x + 5, y + 5, 98, 62, 5); art.fillStyle(0xffffff, 0.18); art.fillCircle(x + 35, y + 24, 11); });
   [0xd75f63, 0x6c432d, 0xd69a55].forEach((colour, index) => { const x = 730 + index * 72; art.fillStyle(INK, 1); art.fillRoundedRect(x, 371, 52, 98, 8); art.fillStyle(colour, 1); art.fillRoundedRect(x + 5, 376, 42, 88, 5); art.fillStyle(PAPER, 1); art.fillRect(x + 15, 399, 22, 25); });
   for (let index = 0; index < 6; index += 1) { const x = 730 + (index % 3) * 72; const y = 492 + Math.floor(index / 3) * 47; art.fillStyle(INK, 1); art.fillRoundedRect(x, y, 52, 38, 5); art.fillStyle([0xf1bf67, 0x6c432d, 0xe99baa, 0xd75f63, 0x8bd0a5, 0xe3aa62][index], 1); art.fillRoundedRect(x + 4, y + 4, 44, 30, 3); }
-  art.lineStyle(4, 0xd09f65, 1); art.strokeRoundedRect(1000, 377, 226, 194, 6);
+  art.lineStyle(4, 0xd09f65, 1); art.strokeRoundedRect(1000, 377, 226, 198, 6);
   [1018, 1084, 1150].forEach((x) => { art.fillStyle(0xd7c49b, 1); art.fillRoundedRect(x, 521, 54, 42, 5); });
-  panel(315, 620, 380, 67, 0xffe8b7); panel(714, 620, 244, 67, 0xc5d2dc);
+  art.fillStyle(0x2f7f3d, 1); art.fillRoundedRect(1005, 607, 216, 66, 9); art.lineStyle(4, INK, 1); art.strokeRoundedRect(1005, 607, 216, 66, 9);
+  panel(315, 590, 380, 105, 0xffe8b7); panel(714, 590, 244, 105, 0xc5d2dc);
 
   label(scene, 640, 36, "⚓  SOUTH SHORE SCOOPS  ⚓", 24).setOrigin(0.5).setDepth(5);
   label(scene, 49, 362, "CONTAINERS", 9, "#292238").setDepth(5); label(scene, 49, 491, "CUPS & DRINKS", 9, "#292238").setDepth(5);
   label(scene, 316, 362, "FLAVOURS", 9, "#292238").setDepth(5); label(scene, 722, 362, "SAUCES & EXTRAS", 9, "#292238").setDepth(5);
-  label(scene, 995, 362, "CURRENT ORDER", 9, "#292238").setDepth(5); label(scene, 331, 636, "BUILD MAT", 9, "#292238").setDepth(5); label(scene, 731, 636, "SERVING TRAY", 9, "#292238").setDepth(5);
+  label(scene, 995, 362, "CURRENT ORDER", 9, "#292238").setDepth(5); label(scene, 331, 606, "BUILD MAT", 9, "#292238").setDepth(5); label(scene, 731, 606, "SERVING TRAY", 9, "#292238").setDepth(5); label(scene, 1113, 632, "SERVE", 16, "#fffaf0").setOrigin(0.5).setDepth(5);
   [
     ["SCENE-BACKDROP", 640, 360, 1280, 720], ["SHOP-WALLS", 640, 514, 1280, 412], ["AWNING", 640, 34, 1280, 69],
     ["TITLE-SIGN", 640, 48, 900, 74], ["TITLE-ANCHOR-LEFT", 230, 48, 44, 44], ["TITLE-ANCHOR-RIGHT", 1050, 48, 44, 44], ["TITLE-STARFISH", 1005, 55, 34, 34],
@@ -336,7 +352,7 @@ export function createScoopsPresentation(scene) {
     ["TOPPING-BIN-SPRINKLES", 756, 511, 52, 38], ["TOPPING-BIN-CHOCOLATE-BITS", 828, 511, 52, 38], ["TOPPING-BIN-WAFFLE-PIECES", 900, 511, 52, 38],
     ["TOPPING-BIN-CHERRIES", 756, 558, 52, 38], ["TOPPING-BIN-MARSHMALLOWS", 828, 558, 52, 38], ["TOPPING-BIN-WAFER-STICKS", 900, 558, 52, 38],
     ["ORDER-CARD-PRODUCT", 1113, 448, 150, 140], ["ORDER-SLOT-1", 1045, 542, 54, 42], ["ORDER-SLOT-2", 1111, 542, 54, 42], ["ORDER-SLOT-3", 1177, 542, 54, 42],
-    ["BUILD-MAT", 505, 654, 380, 67], ["SERVING-TRAY", 836, 654, 244, 67],
+    ["BUILD-MAT", 505, 642, 380, 105], ["SERVING-TRAY", 836, 642, 244, 105], ["SERVE-BUTTON", 1113, 640, 216, 66],
   ].forEach(([id, x, y, width, height]) => semanticSlot(scene, `KW-SCOOPS-${id}`, x, y, width, height));
   const presentation = { dynamic: assetLabel(scene.add.container(0, 0), "KW-SCOOPS-DYNAMIC-PRESENTATION").setDepth(8), stateObjects: [] };
   scene.scoopsPresentation = presentation;
@@ -359,18 +375,18 @@ export function updateScoopsPresentation(scene, snapshot = {}) {
   });
   customers.slice(0, 3).forEach((customer, index) => {
     const [x, y] = customerSeats[index];
-    const bubble = assetLabel(scene.add.graphics(), `KW-SCOOPS-CUSTOMER-${index + 1}-ORDER-BUBBLE`).setDepth(9); bubble.fillStyle(INK, 1); bubble.fillRoundedRect(x - 65, y - 144, 130, 94, 10); bubble.fillTriangle(x - 12, y - 52, x + 12, y - 52, x, y - 35); bubble.fillStyle(WHITE, 1); bubble.fillRoundedRect(x - 60, y - 139, 120, 84, 6);
-    const picture = assetLabel(scene.add.graphics(), `KW-SCOOPS-CUSTOMER-${index + 1}-PRODUCT`).setDepth(10); drawScoopsProduct(picture, x, y - 98, customer.parts || [], 0.65);
+    const bubble = assetLabel(scene.add.graphics(), `KW-SCOOPS-CUSTOMER-${index + 1}-ORDER-BUBBLE`).setDepth(9); bubble.fillStyle(INK, 1); bubble.fillRoundedRect(x - 79, y - 168, 158, 118, 11); bubble.fillTriangle(x - 14, y - 52, x + 14, y - 52, x, y - 32); bubble.fillStyle(WHITE, 1); bubble.fillRoundedRect(x - 73, y - 162, 146, 106, 7);
+    const picture = assetLabel(scene.add.graphics(), `KW-SCOOPS-CUSTOMER-${index + 1}-PRODUCT`).setDepth(10); drawScoopsProduct(picture, x, y - 108, customer.parts || [], 0.82);
     presentation.stateObjects.push(bubble, picture);
     presentation.customerTargets[index].push(bubble, picture);
   });
   const productArt = assetLabel(scene.add.graphics(), "KW-SCOOPS-BUILD-TRAY-SELECTED-PRODUCTS").setDepth(10);
-  if (snapshot.buildParts?.length) drawScoopsProduct(productArt, 505, 654, snapshot.buildParts, 0.72);
+  if (snapshot.buildParts?.length) drawScoopsProduct(productArt, 505, 645, snapshot.buildParts, 0.84);
   else {
-    const prompt = label(scene, 505, 660, "BUILD HERE", 13, "#7d6546").setOrigin(0.5).setDepth(10);
+    const prompt = label(scene, 505, 648, "BUILD HERE", 13, "#7d6546").setOrigin(0.5).setDepth(10);
     presentation.stateObjects.push(prompt);
   }
-  (snapshot.trayItems || []).slice(0, 3).forEach((parts, index) => drawScoopsProduct(productArt, 780 + index * 56, 654, parts, 0.48));
+  (snapshot.trayItems || []).slice(0, 3).forEach((parts, index) => drawScoopsProduct(productArt, 780 + index * 56, 645, parts, 0.56));
   if (snapshot.selectedParts?.length) drawScoopsProduct(productArt, 1113, 452, snapshot.selectedParts, 1.18);
   presentation.stateObjects.push(productArt);
 }
