@@ -1,10 +1,20 @@
+import { spriteAiInventory } from "../assets/spriteAiLabels.js";
+import {
+  registerSouthShoreScoopsAssetManifest,
+  southShoreScoopsAsset,
+} from "../assets/southShoreScoopsAssetManifest.js";
+
 const INK = 0x292238;
 const PAPER = 0xfff1c9;
 const WHITE = 0xfffaf0;
 
 function assetLabel(object, id) {
+  const descriptor = southShoreScoopsAsset(id);
   object.name = id;
   object.setData?.("assetLabel", id);
+  object.spriteAiAssetId = id;
+  object.spriteAiAssetLabel = descriptor?.label || id;
+  object.spriteAiAssetKind = descriptor?.kind || object.spriteAiAssetKind || "visual";
   return object;
 }
 
@@ -274,6 +284,7 @@ function createLegacyScoopsPresentation(scene) {
 }
 
 export function createScoopsPresentation(scene) {
+  registerSouthShoreScoopsAssetManifest(spriteAiInventory);
   scene.add.rectangle(640, 360, 1280, 720, 0xedd6a6).setDepth(0);
   const art = assetLabel(scene.add.graphics(), "KW-SCOOPS-SEASIDE-COUNTER-PROCEDURAL-V2").setDepth(1);
   art.fillStyle(0xf7dfac, 1); art.fillRect(0, 0, 1280, 720);
@@ -310,8 +321,21 @@ export function createScoopsPresentation(scene) {
   label(scene, 316, 362, "FLAVOURS", 9, "#292238").setDepth(5); label(scene, 722, 362, "SAUCES & EXTRAS", 9, "#292238").setDepth(5);
   label(scene, 995, 362, "CURRENT ORDER", 9, "#292238").setDepth(5); label(scene, 331, 636, "BUILD MAT", 9, "#292238").setDepth(5); label(scene, 731, 636, "SERVING TRAY", 9, "#292238").setDepth(5);
   [
+    ["SCENE-BACKDROP", 640, 360, 1280, 720], ["SHOP-WALLS", 640, 514, 1280, 412], ["AWNING", 640, 34, 1280, 69],
+    ["TITLE-SIGN", 640, 48, 900, 74], ["TITLE-ANCHOR-LEFT", 230, 48, 44, 44], ["TITLE-ANCHOR-RIGHT", 1050, 48, 44, 44], ["TITLE-STARFISH", 1005, 55, 34, 34],
+    ["SEASIDE-SKY", 640, 150, 836, 104], ["SEASIDE-WATER", 640, 256, 836, 109], ["SEASIDE-BEACH", 640, 254, 836, 116],
+    ["SEASIDE-DISTANT-LAND", 890, 196, 260, 92], ["SEASIDE-SAILBOAT", 640, 217, 64, 45],
     ["CUSTOMER-WINDOW", 640, 205, 848, 225], ["CONTAINER-AREA", 159, 409, 250, 118], ["DRINK-AREA", 159, 538, 250, 118],
+    ["SERVICE-LEDGE", 640, 311, 872, 22], ["MENU-BOARD", 105, 206, 142, 174], ["HANGING-ANCHOR-SIGN", 1142, 194, 78, 112],
+    ["PLANTER-LEFT", 126, 290, 88, 90], ["PLANTER-RIGHT", 1152, 292, 88, 90], ["COUNTER-FRAME", 640, 518, 1256, 382],
+    ["MILKSHAKE-MACHINE", 92, 539, 94, 104], ["LEMONADE-MACHINE", 222, 539, 94, 104],
     ["FLAVOUR-TUBS", 496, 474, 392, 247], ["SAUCES-EXTRAS", 835, 474, 258, 247], ["ORDER-CARD", 1113, 474, 270, 247],
+    ["FLAVOUR-TUB-STRAWBERRY", 372, 418, 108, 72], ["FLAVOUR-TUB-CHOCOLATE", 494, 418, 108, 72], ["FLAVOUR-TUB-VANILLA", 616, 418, 108, 72],
+    ["FLAVOUR-TUB-MINT", 372, 507, 108, 72], ["FLAVOUR-TUB-GRAPE", 494, 507, 108, 72], ["FLAVOUR-TUB-BLUEBERRY", 616, 507, 108, 72],
+    ["SAUCE-BOTTLE-STRAWBERRY", 756, 420, 52, 98], ["SAUCE-BOTTLE-CHOCOLATE", 828, 420, 52, 98], ["SAUCE-BOTTLE-CARAMEL", 900, 420, 52, 98],
+    ["TOPPING-BIN-SPRINKLES", 756, 511, 52, 38], ["TOPPING-BIN-CHOCOLATE-BITS", 828, 511, 52, 38], ["TOPPING-BIN-WAFFLE-PIECES", 900, 511, 52, 38],
+    ["TOPPING-BIN-CHERRIES", 756, 558, 52, 38], ["TOPPING-BIN-MARSHMALLOWS", 828, 558, 52, 38], ["TOPPING-BIN-WAFER-STICKS", 900, 558, 52, 38],
+    ["ORDER-CARD-PRODUCT", 1113, 448, 150, 140], ["ORDER-SLOT-1", 1045, 542, 54, 42], ["ORDER-SLOT-2", 1111, 542, 54, 42], ["ORDER-SLOT-3", 1177, 542, 54, 42],
     ["BUILD-MAT", 505, 654, 380, 67], ["SERVING-TRAY", 836, 654, 244, 67],
   ].forEach(([id, x, y, width, height]) => semanticSlot(scene, `KW-SCOOPS-${id}`, x, y, width, height));
   const presentation = { dynamic: assetLabel(scene.add.container(0, 0), "KW-SCOOPS-DYNAMIC-PRESENTATION").setDepth(8), stateObjects: [] };
