@@ -42,6 +42,7 @@ import {
   FARMING_CROPS,
   LAWN_PLOTS,
   ORCHARD_CONFIG,
+  allotmentBedWorldRect,
   lawnNeedsCare,
 } from "../data/farming.js";
 import { ANIMAL_DEFINITIONS, SOUTH_MEADOW } from "../data/animals.js";
@@ -1216,26 +1217,25 @@ export class TownScene extends Phaser.Scene {
     this.lawnVisuals = lawnGraphics;
 
     state.allotment.beds.forEach((bed, index) => {
-      const x = 1090 + (index % 2) * 260;
-      const y = 2170 + Math.floor(index / 2) * 116;
+      const { x, y, width, height } = allotmentBedWorldRect(index);
       graphics.fillStyle(bed.unlocked ? 0x765638 : 0x77756b, 1);
-      graphics.fillRoundedRect(x, y, 225, 82, 11);
+      graphics.fillRoundedRect(x, y, width, height, 11);
       graphics.lineStyle(4, bed.status === "ready" ? 0xe7bd4e : 0xd0b37a, 0.9);
-      graphics.strokeRoundedRect(x, y, 225, 82, 11);
+      graphics.strokeRoundedRect(x, y, width, height, 11);
       if (bed.cropId) {
         const crop = FARMING_CROPS[bed.cropId];
         const progress = bed.status === "ready" ? 1 : Phaser.Math.Clamp(bed.growthMinutes / crop.growMinutes, 0, 0.99);
         const stage = [...CROP_STAGE_VISUALS].reverse().find((entry) => progress >= entry.progress) || CROP_STAGE_VISUALS[0];
-        const count = stage.id === "ready" ? 6 : stage.id === "seed" ? 4 : stage.id === "sprout" ? 3 : 5;
+        const count = stage.id === "ready" ? 10 : stage.id === "seed" ? 8 : stage.id === "sprout" ? 7 : 9;
         for (let plant = 0; plant < count; plant += 1) {
           const plantIcon = stage.id === "seed" ? "•" : stage.id === "sprout" ? "🌱" : stage.id === "flowering" ? `🌼${crop.icon}` : crop.icon;
-          const label = this.add.text(x + 28 + plant * 32, y + 41 + (plant % 2) * 6, plantIcon, { fontSize: stage.id === "ready" ? "24px" : stage.id === "seed" ? "20px" : "18px" }).setOrigin(0.5).setDepth(118);
+          const label = this.add.text(x + width * (plant + 1) / (count + 1), y + height / 2 + (plant % 2) * 5, plantIcon, { fontSize: stage.id === "ready" ? "22px" : stage.id === "seed" ? "20px" : "18px" }).setOrigin(0.5).setDepth(118);
           label.setData("cropStage", stage.id);
           setSpriteAiLabelHint(label, { id: `${stage.assetId}.${crop.id}`, label: `${crop.label} ${stage.id} stage`, kind: "crop-stage" });
           this.farmingLabels.push(label);
         }
       } else if (!bed.unlocked) {
-        this.farmingLabels.push(this.add.text(x + 112, y + 41, "🔒", { fontSize: "24px" }).setOrigin(0.5).setDepth(118));
+        this.farmingLabels.push(this.add.text(x + width / 2, y + height / 2, "🔒", { fontSize: "24px" }).setOrigin(0.5).setDepth(118));
       }
     });
 
@@ -1243,12 +1243,28 @@ export class TownScene extends Phaser.Scene {
       const progress = tree.status === "growing" ? tree.growthMinutes / ORCHARD_CONFIG.maturityMinutes : 1;
       const stageId = tree.status === "growing" ? progress < 0.35 ? "sapling" : progress < 0.72 ? "young" : "mature" : tree.availableFruit ? "fruiting" : "picked";
       const stage = ORCHARD_STAGE_VISUALS.find(({ id }) => id === stageId);
-      const icon = stageId === "sapling" ? "🌱" : stageId === "young" ? "🌿" : stageId === "fruiting" ? "🌳🍎" : "🌳";
-      const label = this.add.text(tree.x, tree.y, icon, { fontSize: tree.status === "growing" ? `${Math.round(30 + progress * 22)}px` : "58px" }).setOrigin(0.5).setDepth(118 + tree.y / 100);
-      label.setData("orchardTreeId", tree.id);
-      label.setData("orchardStage", stageId);
-      setSpriteAiLabelHint(label, { id: stage.assetId, label: `Apple tree ${stageId} stage`, kind: "orchard-stage" });
-      this.farmingLabels.push(label);
+      const scale = tree.status === "growing" ? 0.72 * Phaser.Math.Clamp(progress, 0.2, 0.68) : 0.72;
+      const container = this.add.container(tree.x, tree.y).setDepth(118 + tree.y / 100);
+      const treeGraphics = this.add.graphics();
+      treeGraphics.fillStyle(0x2f502c, 0.18).fillEllipse(8 * scale, 26 * scale, 68 * scale, 30 * scale);
+      treeGraphics.fillStyle(0x765238, 1).fillRect(-5 * scale, 8 * scale, 10 * scale, 28 * scale);
+      treeGraphics.fillStyle(0x3f8445, 1)
+        .fillCircle(-16 * scale, -3 * scale, 24 * scale)
+        .fillCircle(11 * scale, -12 * scale, 28 * scale)
+        .fillCircle(23 * scale, 7 * scale, 22 * scale)
+        .fillCircle(-4 * scale, 12 * scale, 27 * scale);
+      treeGraphics.fillStyle(0x66aa58, 1).fillCircle(-8 * scale, -11 * scale, 11 * scale).fillCircle(15 * scale, -17 * scale, 10 * scale);
+      if (tree.availableFruit > 0) {
+        treeGraphics.fillStyle(0xc94d3f, 1)
+          .fillCircle(-16 * scale, -42 * scale, 5 * scale)
+          .fillCircle(8 * scale, -50 * scale, 5 * scale)
+          .fillCircle(19 * scale, -31 * scale, 5 * scale);
+      }
+      container.add(treeGraphics);
+      container.setData("orchardTreeId", tree.id);
+      container.setData("orchardStage", stageId);
+      setSpriteAiLabelHint(container, { id: stage.assetId, label: `Apple tree ${stageId} stage`, kind: "orchard-stage" });
+      this.farmingLabels.push(container);
     }
     for (const plot of LAWN_PLOTS) {
       if (!plot.active) continue;
@@ -1571,7 +1587,30 @@ export class TownScene extends Phaser.Scene {
       detail: tree.status === "growing" ? "This sapling is still growing" : tree.availableFruit ? "One apple is ready" : "Producing its next apple",
       onActivate: () => this.openFarming("orchard", tree.id),
     }));
-    return [...publicBins, ...placed, ...trees];
+    const beds = (this.farming?.getSnapshot?.().allotment?.beds || []).map((bed, index) => {
+      const rect = allotmentBedWorldRect(index);
+      const crop = FARMING_CROPS[bed.cropId];
+      const action = !bed.unlocked ? "Unlock" : bed.status === "ready" ? "Harvest" : bed.status === "empty" ? "Plant in" : "Check";
+      const detail = !bed.unlocked
+        ? `Locked · 🪙 ${ALLOTMENT_CONFIG.bedUnlockCosts[index].toLocaleString()}`
+        : bed.status === "ready"
+          ? `${crop.label} ready to collect`
+          : bed.status === "growing"
+            ? `${crop.label} growing`
+            : "Choose carrots, fresh greens or wild berries";
+      return {
+        id: bed.id,
+        kind: "allotment-bed",
+        x: rect.x + rect.width / 2,
+        y: rect.y + rect.height / 2,
+        radius: Math.hypot(rect.width / 2, rect.height / 2),
+        icon: !bed.unlocked ? "🔒" : bed.status === "ready" ? crop.icon : bed.status === "growing" ? "🌱" : "🟫",
+        label: `${action} Allotment Bed ${index + 1}`,
+        detail,
+        onActivate: () => this.openFarming("allotment", bed.id),
+      };
+    });
+    return [...publicBins, ...placed, ...trees, ...beds];
   }
 
   renderNpcPublicBins() {

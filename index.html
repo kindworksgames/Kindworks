@@ -132,7 +132,7 @@
         </div>
       </section>
       <section id="grocer-hud" class="grocer-hud hidden" aria-label="Village Grocer information">
-        <div><small>MILESTONE 26 · TOP-DOWN INTERIOR</small><strong>🥕 Village Grocer</strong><span>Walk to a shelf or tap a product row</span></div>
+        <div><strong>🥕 Village Grocer</strong><span>Walk to a shelf or tap a product row</span></div>
         <span id="grocer-balance">🪙 100</span>
         <button id="grocer-exit" type="button">Return to Willowmere</button>
       </section>
@@ -384,7 +384,7 @@
       <section id="farming-panel" class="farming-panel hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="farming-title" aria-describedby="farming-status">
         <div class="farming-panel-card">
           <header class="farming-header">
-            <div><p>MILESTONE 26 · COMPLETE FARMING & ORCHARD</p><h2 id="farming-title">🌱 Willowmere Growing</h2></div>
+            <div><h2 id="farming-title">🌱 Willowmere Growing</h2></div>
             <span id="farming-balance" class="farming-balance">🪙 100</span>
             <button id="farming-close" type="button" aria-label="Close farming and lawn care">✕</button>
           </header>
@@ -395,12 +395,12 @@
           </div>
           <div class="farming-content">
             <section data-farming-pane="allotment" aria-label="Willow Allotments">
-              <div class="farming-intro"><div><h3>Willow Allotments</h3><p>Choose a crop, collect its packet from Village Grocer, then plant any unlocked empty bed. Rain helps growth; snow slows it.</p></div><button id="farming-buy-seed" type="button" data-buy-seed="carrot">Shop for Carrot Seeds · Village Grocer</button></div>
+              <div class="farming-intro"><div><h3>Willow Allotments</h3><p>Choose a crop, buy seeds, then plant an empty bed.</p></div><button id="farming-buy-seed" type="button" data-buy-seed="carrot">Shop for Carrot Seeds · Village Grocer</button></div>
               <div id="farming-crop-choices" class="farming-crop-choices" role="group" aria-label="Choose a crop"></div>
               <div id="farming-beds" class="farming-grid" aria-live="polite"></div>
             </section>
             <section data-farming-pane="orchard" aria-label="Community Orchard" hidden>
-              <div class="farming-intro"><div><h3>Community Orchard</h3><p>Grow up to 24 separately placed apple trees. Saplings mature with weather and game time; every mature tree then produces one apple at a time.</p></div><span id="farming-apple-count" class="farming-stock">0 in inventory</span></div>
+              <div class="farming-intro"><div><h3>Community Orchard</h3><p>Harvest apples or plant a sapling in town.</p></div><span id="farming-apple-count" class="farming-stock">0 in inventory</span></div>
               <article id="farming-orchard-state" class="orchard-state"></article>
               <div id="farming-orchard-trees" class="orchard-tree-grid" aria-live="polite"></div>
               <div class="farming-orchard-actions"><button id="farming-buy-sapling" type="button">🌱 Buy sapling · 🪙 2,800</button><button id="farming-place-sapling" class="farming-primary" type="button">Place owned sapling</button></div>
@@ -415,7 +415,7 @@
               </div>
             </section>
           </div>
-          <p id="farming-status" class="farming-status" data-status="neutral" role="status" aria-live="polite">Your farming progress is saved with the rest of Willowmere.</p>
+          <p id="farming-status" class="farming-status" data-status="neutral" role="status" aria-live="polite">Choose a crop, then plant or harvest one bed.</p>
         </div>
       </section>
       <section id="animal-friends-panel" class="animal-friends-panel hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="animal-friends-title" aria-describedby="animal-friends-status">

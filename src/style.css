@@ -4917,6 +4917,7 @@ body[data-game-scene="RiverClearoutScene"] .town-hud { display: none; }
 .farm-card { display: grid; grid-template-columns: 42px 1fr auto; align-items: center; gap: 10px; min-height: 82px; padding: 10px; border: 2px solid #c3d4ad; border-radius: 14px; background: rgba(255, 255, 255, 0.72); }
 .farm-card.locked { background: #eeeadf; }
 .farm-card.ready { border-color: #d2983f; background: #fff4c9; }
+.farm-card.focused { border-color: #315e3f; box-shadow: 0 0 0 3px #ffe16f; }
 .farm-card > div { display: grid; gap: 4px; }
 .farm-card progress, .orchard-state progress { width: 100%; height: 8px; accent-color: #4f8556; }
 .farm-icon { font-size: 30px; text-align: center; }

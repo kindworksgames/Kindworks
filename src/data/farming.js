@@ -9,6 +9,22 @@ export const ALLOTMENT_CONFIG = Object.freeze({
   interaction: Object.freeze({ x: 1340, y: 2250, radius: 190 }),
 });
 
+// Exact protected-HTML allotment footprint. Keeping this geometry in the
+// farming domain prevents the town artwork and tap targets drifting apart.
+export const ALLOTMENT_BED_GEOMETRY = Object.freeze({
+  x: 1080,
+  y: 2155,
+  width: 510,
+  height: 52,
+  rowGap: 70,
+});
+
+export function allotmentBedWorldRect(index) {
+  const bedIndex = Math.max(0, Math.min(ALLOTMENT_CONFIG.bedCount - 1, Math.floor(Number(index) || 0)));
+  const { x, y, width, height, rowGap } = ALLOTMENT_BED_GEOMETRY;
+  return { x, y: y + bedIndex * rowGap, width, height };
+}
+
 export const FARMING_CROPS = Object.freeze({
   carrot: Object.freeze({ id: "carrot", label: "Carrots", seedLabel: "Carrot Seeds", icon: "🥕", seedId: "carrot-seeds", produceId: "allotment-carrot", growMinutes: 360, seedPrice: 30, harvestYield: 6 }),
   "fresh-greens": Object.freeze({ id: "fresh-greens", label: "Fresh Greens", seedLabel: "Greens Seeds", icon: "🥬", seedId: "fresh-greens-seeds", produceId: "fresh-greens", growMinutes: 420, seedPrice: 80, harvestYield: 4 }),

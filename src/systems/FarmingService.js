@@ -10,6 +10,7 @@ import {
 import { WEATHER_KINDS, getWeatherForDay } from "../data/worldSimulation.js";
 import { NPC_RESIDENTS } from "../data/npcTownLife.js";
 import { validateTownPlacement } from "../data/townPlacement.js";
+import { inventoryLimitFor } from "../data/items.js";
 import { COIN_LEDGER_LIMIT } from "../state/economyState.js";
 import { InventoryService } from "./InventoryService.js";
 
@@ -255,12 +256,18 @@ export class FarmingService {
       const bed = state.farming.allotment.beds.find((entry) => entry.id === bedId);
       const crop = FARMING_CROPS[bed?.cropId];
       if (!bed || !crop || bed.status !== "ready") return { ok: false, code: "crop-not-ready", message: "This crop is not ready to harvest." };
-      const added = this.inventory.add(state.inventory, crop.produceId, crop.harvestYield);
+      const item = this.inventory.catalog[crop.produceId];
+      const before = this.inventory.quantity(state.inventory, crop.produceId);
+      const limit = inventoryLimitFor(item);
+      const room = Math.max(0, limit - before);
+      const quantity = Math.min(crop.harvestYield, room);
+      if (quantity < 1) return { ok: false, code: "capacity", message: `Your ${crop.label.toLowerCase()} inventory is full.`, before, limit };
+      const added = this.inventory.add(state.inventory, crop.produceId, quantity);
       if (!added.ok) return added;
       bed.harvests += 1;
-      bed.totalHarvested += crop.harvestYield;
+      bed.totalHarvested += quantity;
       Object.assign(bed, { cropId: null, status: "empty", growthMinutes: 0 });
-      return { ok: true, code: "crop-harvested", bedId, cropId: crop.id, itemId: crop.produceId, quantity: crop.harvestYield };
+      return { ok: true, code: "crop-harvested", bedId, cropId: crop.id, itemId: crop.produceId, quantity };
     });
   }
 
