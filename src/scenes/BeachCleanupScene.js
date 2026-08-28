@@ -5,11 +5,20 @@ import { renderBeachRakeGrooves } from "../ui/BeachRakePattern.js";
 
 const ROOM = Object.freeze({ width: 1280, height: 720 });
 const KEYS = Object.freeze({ U: "up", D: "down", L: "left", R: "right" });
-const ICONS = Object.freeze({ U: "🏖️", C: "🪑", T: "💧" });
 const CHALLENGE_LABELS = Object.freeze({ noUndo: "No Undo", underMoves: "Light Foot", cleanSweep: "Clean Sweep" });
 
 function setText(selector, value) { const element = document.querySelector(selector); if (element) element.textContent = String(value); }
 function show(selector, visible) { document.querySelector(selector)?.classList.toggle("hidden", !visible); }
+function safeAssetKey(value) { return String(value || "item").toUpperCase().replace(/[^A-Z0-9]+/g, "-").replace(/^-|-$/g, ""); }
+function beachObstacleMarkup(tile, row, col) {
+  if (tile === BEACH_TILE.umbrella) return `<span class="beach-obstacle umbrella" aria-hidden="true" data-asset-label="KW-BEACH-UMBRELLA-${row + 1}-${col + 1}"></span>`;
+  if (tile === BEACH_TILE.chair) return `<span class="beach-obstacle chair" aria-hidden="true" data-asset-label="KW-BEACH-CHAIR-${row + 1}-${col + 1}"></span>`;
+  return "";
+}
+function beachPlayerMarkup(facing, row, col) {
+  const direction = Object.hasOwn(KEYS, facing) ? facing : "U";
+  return `<span class="beach-player-icon" data-facing="${direction}" aria-hidden="true" data-asset-label="KW-BEACH-RAKER-${row + 1}-${col + 1}"><i class="beach-rake-tool" data-asset-label="KW-BEACH-L-RAKE"></i></span>`;
+}
 
 export class BeachCleanupScene extends Phaser.Scene {
   constructor() { super("BeachCleanupScene"); this.entryData = {}; }
@@ -33,23 +42,20 @@ export class BeachCleanupScene extends Phaser.Scene {
   drawBackdrop() {
     this.add.rectangle(ROOM.width / 2, ROOM.height / 2, ROOM.width, ROOM.height, 0x103146);
     const art = this.add.graphics();
-    art.fillStyle(0x3eb4ca, 1); art.fillRect(0, 0, ROOM.width, 230);
-    art.fillStyle(0xb7edf0, 0.7); for (let x = -20; x < ROOM.width; x += 68) art.fillEllipse(x, 220, 76, 24);
-    art.fillStyle(0xf0c96c, 1); art.fillRect(0, 235, ROOM.width, 485);
-    art.lineStyle(3, 0xd6a947, 0.32); for (let y = 275; y < 720; y += 34) art.lineBetween(0, y, ROOM.width, y + 9);
-    for (const [x, y, icon] of [[90, 105, "⛵"], [1140, 120, "🐚"], [109, 580, "🏖️"], [1172, 560, "🦀"]]) this.add.text(x, y, icon, { fontSize: "50px" }).setOrigin(0.5);
-    this.add.text(640, 27, "BEACH CLEANUP · SOUTH SHORE RESTORATION", { color: "#fff6d6", fontFamily: "ui-monospace, monospace", fontSize: "18px", fontStyle: "bold", stroke: "#153d54", strokeThickness: 5 }).setOrigin(0.5).setDepth(4);
+    art.fillStyle(0x2b9eb8, 1); art.fillRect(0, 0, ROOM.width, ROOM.height);
+    art.lineStyle(3, 0xb7edf0, 0.35); for (let y = 28; y < ROOM.height; y += 44) for (let x = -20; x < ROOM.width; x += 74) art.strokeEllipse(x + ((y / 44) % 2) * 30, y, 64, 18);
   }
 
   bindInterface() {
     this.hud = document.querySelector("#beach-cleanup-hud"); this.board = document.querySelector("#beach-board");
     this.buttons = { exit: document.querySelector("#beach-exit"), undo: document.querySelector("#beach-undo"), hint: document.querySelector("#beach-hint"), retry: document.querySelector("#beach-retry"), qa: document.querySelector("#beach-qa-complete"), return: document.querySelector("#beach-return") };
-    this.onExit = () => this.requestExit(); this.onUndo = () => { const undone = this.runAction(() => this.beachCleanup.undo(this.beachCleanup.getActiveSession()?.id)); if (undone) { this.setMessage("Run undone.", "hint"); this.render(); } return undone; };
-    this.onHint = () => this.showHint(); this.onRetry = () => this.restart(); this.onQa = () => this.runCertifiedCompletion();
+    this.closeMenu = () => { document.querySelector(".beach-challenges")?.removeAttribute("open"); document.querySelector(".beach-menu")?.removeAttribute("open"); };
+    this.onExit = () => { this.closeMenu(); return this.requestExit(); }; this.onUndo = () => { const undone = this.runAction(() => this.beachCleanup.undo(this.beachCleanup.getActiveSession()?.id)); if (undone) { this.setMessage("Run undone.", "hint"); this.render(); } return undone; };
+    this.onHint = () => { this.closeMenu(); return this.showHint(); }; this.onRetry = () => this.restart(); this.onQa = () => this.runCertifiedCompletion();
     this.onReturn = () => this.returnToTown(true);
     this.challengeHandlers = {};
     for (const button of document.querySelectorAll("[data-beach-challenge]")) {
-      const challenge = button.dataset.beachChallenge; const handler = () => this.toggleChallenge(challenge);
+      const challenge = button.dataset.beachChallenge; const handler = () => { const toggled = this.toggleChallenge(challenge); this.closeMenu(); return toggled; };
       this.challengeHandlers[challenge] = handler; button.addEventListener("click", handler);
     }
     this.onKeyDown = (event) => {
@@ -102,20 +108,20 @@ export class BeachCleanupScene extends Phaser.Scene {
     this.buttons.qa?.classList.toggle("hidden", !this.qaMode); this.hud?.classList.remove("hidden");
     if (this.buttons.exit) this.buttons.exit.textContent = "Exit";
     const session = this.beachCleanup.getActiveSession(); show("#beach-gameplay", Boolean(session)); show("#beach-result", false);
-    this.setMessage(session?.mode === "town-job" ? "Rake the beach and find every item." : "Swipe across the sand to rake.", session ? "success" : "neutral");
+    this.setMessage(session?.mode === "town-job" ? "Find every hidden item." : "Swipe to rake the sand.", session ? "progress" : "neutral");
   }
 
   setSceneInterface() {
     document.body.dataset.gameScene = this.scene.key; setText(".milestone-badge", "BEACH CLEANUP · MILESTONE 19"); setText("#location-status", "South Shore Beach");
-    setText("#control-hint", "Swipe, arrows or WASD walk · Z undoes · H hints · landscape play");
-    setText("#landscape-required-message", "Beach Cleanup is designed for landscape play. Turn your phone sideways to continue raking.");
+    setText("#control-hint", "Swipe across the sand · Tap Menu for help");
+    setText("#landscape-required-message", "Turn your device sideways to play.");
   }
 
   startLevel(level) {
     const previous = this.beachCleanup.getActiveSession(); if (previous) this.beachCleanup.cancel(previous.id);
     const result = this.beachCleanup.beginCampaign(level, { returnPosition: previous?.returnPosition || this.entryData.returnPosition, returnFacing: previous?.returnFacing || this.entryData.returnFacing || "down" });
     if (!result.ok) { this.setMessage(result.message, "error"); return false; }
-    this.lastResultContext = null; this.hintDirection = null; show("#beach-gameplay", true); show("#beach-result", false); this.setMessage("Rake every tile. Find every item.", "success"); this.render(); return true;
+    this.lastResultContext = null; this.hintDirection = null; show("#beach-gameplay", true); show("#beach-result", false); this.setMessage("Swipe to rake the sand.", "progress"); this.render(); return true;
   }
 
   walk(direction, options = {}) {
@@ -124,8 +130,8 @@ export class BeachCleanupScene extends Phaser.Scene {
     const moved = this.runAction(() => this.beachCleanup.move(session.id, direction, options));
     const after = this.beachCleanup.getSessionState();
     if (moved && after) {
-      if (after.collectedRubbish > before.collectedRubbish) this.setMessage(`Item found! ${after.totalRubbish - after.collectedRubbish} left.`, "success");
-      else this.setMessage(`${after.rakedCount} / ${after.totalSand} tiles raked.`, "neutral");
+      if (after.collectedRubbish > before.collectedRubbish) this.setMessage(`Found ${after.collectedItems.at(-1)?.name || "an item"}!`, "success");
+      else this.setMessage(`${after.rakedCount} of ${after.totalSand} tiles raked.`, "progress");
       this.render();
     }
     return moved;
@@ -150,21 +156,30 @@ export class BeachCleanupScene extends Phaser.Scene {
 
   render() {
     const session = this.beachCleanup.getActiveSession();
-    setText("#beach-balance", `🪙 ${this.gameState.getSnapshot().economy.coins}`);
+    const balance = document.querySelector("#beach-balance");
+    if (balance) balance.innerHTML = `<i aria-hidden="true"></i><span>Coins</span> ${this.gameState.getSnapshot().economy.coins}`;
     if (!session) { this.updateDomState(); return; }
     const state = this.beachCleanup.getSessionState(); const level = generateBeachLevel(session.assignedLevel);
-    setText("#beach-raked", `${state.rakedCount} / ${state.totalSand}`); setText("#beach-found", `${state.collectedRubbish} / ${state.totalRubbish}`);
-    const found = document.querySelector("#beach-found-items"); if (found) found.innerHTML = state.collectedItems.length ? state.collectedItems.map((item) => `<span title="${item.name}">${item.icon}<small>+${item.coins}</small></span>`).join("") : "<em>Hidden in the sand…</em>";
+    setText("#beach-level", `Level ${session.assignedLevel} / 750`); setText("#beach-found", `${state.collectedRubbish} / ${state.totalRubbish}`);
+    const found = document.querySelector("#beach-found-items");
+    if (found) found.innerHTML = Array.from({ length: state.totalRubbish }, (_unused, index) => {
+      const item = state.collectedItems[index];
+      return item
+        ? `<span class="beach-found-slot filled" title="${item.name}" aria-label="Found ${item.name}, ${item.coins} coins" data-asset-label="KW-BEACH-FOUND-${safeAssetKey(item.name)}">${item.icon}<small>+${item.coins}</small></span>`
+        : '<span class="beach-found-slot empty" aria-label="Hidden item"></span>';
+    }).join("");
     if (this.board) {
-      const raked = new Set(state.rakedCells); const collected = new Set(state.collectedCells); const cells = [];
+      const raked = new Set(state.rakedCells); const cells = [];
       for (let row = 0; row < level.height; row += 1) for (let col = 0; col < level.width; col += 1) {
         const tile = level.rows[row][col]; const key = `${row},${col}`; const player = state.row === row && state.col === col;
         const classes = ["beach-cell", tile === BEACH_TILE.boardwalk || tile === BEACH_TILE.player ? "boardwalk" : tile === BEACH_TILE.sand || tile === BEACH_TILE.rubbish ? raked.has(key) ? "raked" : "sand" : tile === BEACH_TILE.tide ? "tide" : "obstacle", player ? "beach-player" : ""].filter(Boolean).join(" ");
         const grooves = raked.has(key) ? renderBeachRakeGrooves(state.rakePatterns[key] || "h") : "";
-        const content = player ? '<span class="beach-player-icon" aria-hidden="true">🧑‍🌾</span>' : tile === BEACH_TILE.rubbish && !collected.has(key) ? "·" : ICONS[tile] || "";
-        cells.push(`<span class="${classes}" role="gridcell" data-rake-pattern="${raked.has(key) ? state.rakePatterns[key] || "h" : ""}" aria-label="${player ? "Beach raker" : raked.has(key) ? "Raked sand" : tile === BEACH_TILE.rubbish ? "Sand with hidden rubbish" : "Beach tile"}">${grooves}${content}</span>`);
+        const content = player ? beachPlayerMarkup(state.entryDirection, row, col) : beachObstacleMarkup(tile, row, col);
+        const kind = player ? "PLAYER" : tile === BEACH_TILE.umbrella ? "UMBRELLA" : tile === BEACH_TILE.chair ? "CHAIR" : tile === BEACH_TILE.tide ? "TIDE" : tile === BEACH_TILE.boardwalk || tile === BEACH_TILE.player ? "BOARDWALK" : "SAND";
+        const label = player ? "Beach raker" : raked.has(key) ? "Raked sand" : [BEACH_TILE.sand, BEACH_TILE.rubbish].includes(tile) ? "Unraked sand" : "Beach tile";
+        cells.push(`<span class="${classes}" role="gridcell" data-rake-pattern="${raked.has(key) ? state.rakePatterns[key] || "h" : ""}" data-asset-label="KW-BEACH-${kind}-${row + 1}-${col + 1}" aria-label="${label}">${grooves}${content}</span>`);
       }
-      this.board.style.setProperty("--beach-columns", level.width); this.board.style.setProperty("--beach-rows", level.height); this.board.innerHTML = cells.join(""); this.board.setAttribute("aria-label", `Beach Cleanup Level ${session.assignedLevel}, ${state.rakedCount} of ${state.totalSand} sand tiles raked`);
+      this.board.style.setProperty("--beach-columns", level.width); this.board.style.setProperty("--beach-rows", level.height); this.board.innerHTML = cells.join(""); this.board.setAttribute("aria-label", `Beach Cleanup Level ${session.assignedLevel}, ${state.rakedCount} of ${state.totalSand} sand tiles raked, ${state.collectedRubbish} of ${state.totalRubbish} items found`);
     }
     this.buttons.undo.disabled = state.won || !session.undoStack.length; this.buttons.undo.classList.toggle("hidden", !session.undoStack.length); this.buttons.retry.disabled = state.moves === 0; this.buttons.retry.classList.toggle("hidden", state.moves === 0); this.buttons.hint.disabled = state.won; if (this.buttons.qa) this.buttons.qa.disabled = state.won;
     for (const button of document.querySelectorAll("[data-beach-challenge]")) button.classList.toggle("active", Boolean(state.challenges[button.dataset.beachChallenge]));

@@ -477,16 +477,29 @@
       </section>
       <section id="beach-cleanup-hud" class="beach-cleanup-hud hidden" aria-labelledby="beach-cleanup-title">
         <header class="beach-header">
-          <div><h2 id="beach-cleanup-title">🏖️ Beach Cleanup</h2></div>
-          <span id="beach-balance">🪙 100</span><button id="beach-exit" type="button" aria-label="Exit Beach Cleanup safely">Exit</button>
+          <h2 id="beach-cleanup-title">Beach Cleanup</h2>
+          <strong id="beach-level" class="beach-level"><span>Level</span> 1 / 750</strong>
+          <span id="beach-balance" class="beach-balance"><i aria-hidden="true">●</i><span>Coins</span> 100</span>
+          <div class="beach-primary-actions" aria-label="Beach Cleanup actions">
+            <button id="beach-undo" class="hidden" type="button" aria-label="Undo last swipe">↶ <span>Undo</span></button>
+            <button id="beach-retry" class="hidden" type="button" aria-label="Restart this beach">↻ <span>Reset</span></button>
+            <details class="beach-menu">
+              <summary aria-label="Open Beach Cleanup menu">☰</summary>
+              <div class="beach-menu-panel">
+                <button id="beach-hint" type="button">Hint</button>
+                <details class="beach-challenges"><summary>Bonus</summary><div><button type="button" data-beach-challenge="noUndo">No Undo · +25</button><button type="button" data-beach-challenge="underMoves">Light Foot · +40</button><button type="button" data-beach-challenge="cleanSweep">Clean Sweep · +35</button></div></details>
+                <button id="beach-exit" type="button" aria-label="Exit Beach Cleanup safely">Exit</button>
+                <button id="beach-qa-complete" class="hidden" type="button">QA clear</button>
+              </div>
+            </details>
+          </div>
         </header>
         <section id="beach-gameplay" class="beach-gameplay hidden" aria-label="Active Beach Cleanup level">
-          <div class="beach-heading"><div><small>CURRENT CLEANUP</small><strong>Rake every tile and find every item</strong></div><span>Raked<strong id="beach-raked">0 / 24</strong></span><span>Found<strong id="beach-found">0 / 1</strong></span></div>
           <div class="beach-play-area">
-            <div class="beach-board-frame"><div id="beach-board" class="beach-board" role="grid" aria-label="Beach Cleanup board"></div><div class="beach-water" aria-hidden="true"></div></div>
-            <aside class="beach-side">
-              <article class="beach-found-card"><small>RUBBISH FOUND</small><div id="beach-found-items" class="beach-found-items"><em>Hidden in the sand…</em></div></article>
-              <div class="beach-secondary-actions"><details class="beach-challenges"><summary>Bonus</summary><div><button type="button" data-beach-challenge="noUndo">No Undo · +25</button><button type="button" data-beach-challenge="underMoves">Light Foot · +40</button><button type="button" data-beach-challenge="cleanSweep">Clean Sweep · +35</button></div></details><button id="beach-hint" type="button">Hint</button><button id="beach-undo" class="hidden" type="button" aria-label="Undo last swipe">↶ Undo</button><button id="beach-retry" class="hidden" type="button">Restart</button><button id="beach-qa-complete" class="hidden" type="button">QA clear</button></div>
+            <div class="beach-board-frame" data-asset-label="KW-BEACH-BOARDWALK-FRAME"><div id="beach-board" class="beach-board" role="grid" aria-label="Beach Cleanup board" data-asset-label="KW-BEACH-SAND-BOARD"></div><div class="beach-water" aria-hidden="true" data-asset-label="KW-BEACH-SHORE-WATER"></div></div>
+            <aside class="beach-side" aria-label="Rubbish found">
+              <header>Found <strong id="beach-found">0 / 1</strong></header>
+              <div id="beach-found-items" class="beach-found-items"></div>
             </aside>
           </div>
         </section>
