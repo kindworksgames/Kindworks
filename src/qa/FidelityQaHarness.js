@@ -16,6 +16,7 @@ const ACTIVITY_DATA = Object.freeze({
   "riverside-kitchen": Object.freeze({ scene: "RiversideKitchenScene" }),
   scoops: Object.freeze({ scene: "SouthShoreScoopsScene" }),
   "house-interior": Object.freeze({ scene: "HouseInteriorScene", houseId: "house-20" }),
+  "village-grocer": Object.freeze({ scene: "VillageGrocerScene", focusItemId: "carrot-seeds" }),
 });
 
 function visible(element) {
@@ -151,6 +152,7 @@ export class FidelityQaHarness {
       fidelityQa: true,
       requestedLevel: Number(levelValue) || null,
       houseId: route.houseId,
+      focusItemId: route.focusItemId,
       returnPosition: { x: 640, y: 610 },
       returnFacing: "down",
     });

@@ -50,9 +50,8 @@ export class VillageGrocerScene extends Phaser.Scene {
     this.bindInterface();
     this.setSceneInterface(true);
     this.cameras.main.fadeIn(220, 29, 54, 36);
-    if (this.focusItemId && ITEM_CATALOG[this.focusItemId]?.retailer === "town-grocer") {
-      this.time.delayedCall(320, () => this.openProduct(this.focusItemId));
-    }
+    const initialItemId = ITEM_CATALOG[this.focusItemId]?.retailer === "town-grocer" ? this.focusItemId : "carrot-seeds";
+    this.time.delayedCall(260, () => this.openProduct(initialItemId));
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.shutdownScene());
   }
 

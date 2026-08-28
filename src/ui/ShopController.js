@@ -1,4 +1,5 @@
 import { itemUseDestinationFor, placeableFootprintFor } from "../data/items.js";
+import { VILLAGE_GROCER_DISPLAYS } from "../data/villageGrocer.js";
 import { aquariumSnapshot } from "../state/aquariumState.js";
 
 function formatCoins(value) {
@@ -15,6 +16,14 @@ const GROUP_ICONS = Object.freeze({
   Mowers: "🚜", Vacuums: "🧹", Trees: "🌳", Seating: "🪑", Bins: "🗑️", Decorations: "🌼", Furniture: "🛋️",
   Farming: "🥕", "Animal Treats": "🐾",
 });
+
+const VILLAGE_GROCER_SHELVES = Object.freeze([
+  Object.freeze({ id: "seeds", label: "Seeds", itemIds: Object.freeze(["carrot-seeds", "fresh-greens-seeds", "wild-berry-starters"]) }),
+  Object.freeze({ id: "saplings", label: "Saplings", itemIds: Object.freeze(["orchard-apple-sapling"]) }),
+  Object.freeze({ id: "garden-goods", label: "Garden Goods", itemIds: Object.freeze(["mixed-seeds", "sunflower-seeds", "mealworms", "fresh-greens", "wild-berries"]) }),
+]);
+
+const VILLAGE_GROCER_COPY_COUNTS = new Map(VILLAGE_GROCER_DISPLAYS.map((display) => [display.id, display.count]));
 
 export class ShopController {
   constructor(shopService, runtime, { onModalChange = () => {}, onPlaceItem = () => ({ ok: false }), defaultShopId = "willowmere-shop" } = {}) {
@@ -88,6 +97,7 @@ export class ShopController {
     const shop = this.shopService.getShop(shopId);
     if (!shop || !this.panel) return { ok: false, code: "unknown-shop", message: `Unknown shop: ${shopId}` };
     this.previousFocus = document.activeElement;
+    this.panel.dataset.shopId = shopId;
     this.activeShopId = shopId;
     this.activeGroup = shop.groups.includes(group) ? group : shop.groups.includes(this.activeGroup) ? this.activeGroup : shop.groups[0];
     const catalogue = this.shopService.getCatalogue(shopId, { group: this.activeGroup });
@@ -179,6 +189,7 @@ export class ShopController {
       if (!this.searchQuery) return true;
       return `${product.item.name} ${product.item.description || ""}`.toLocaleLowerCase().includes(this.searchQuery);
     });
+    if (this.activeShopId === "town-grocer") return filtered;
     return filtered.sort((left, right) => {
       if (this.sortMode === "price-low") return left.quote.cost - right.quote.cost || left.item.name.localeCompare(right.item.name);
       if (this.sortMode === "price-high") return right.quote.cost - left.quote.cost || left.item.name.localeCompare(right.item.name);
@@ -216,10 +227,76 @@ export class ShopController {
     }
   }
 
+  renderVillageGrocer(products) {
+    if (!this.productList) return;
+    this.productList.replaceChildren();
+    const productsById = new Map(products.map((product) => [product.item.id, product]));
+    for (const shelfData of VILLAGE_GROCER_SHELVES) {
+      const shelf = document.createElement("section");
+      shelf.className = `grocer-shop-shelf grocer-shop-shelf-${shelfData.id}`;
+      shelf.dataset.grocerShelf = shelfData.id;
+      shelf.dataset.assetLabel = `KW-GROCER-SHELF-${shelfData.id.toUpperCase()}`;
+      shelf.dataset.spriteAiLabel = `grocer.shelf.${shelfData.id}`;
+      shelf.dataset.spriteAiKind = "shop-fixture";
+      const heading = document.createElement("h3");
+      heading.textContent = shelfData.label;
+      const stock = document.createElement("div");
+      stock.className = "grocer-shop-stock";
+      for (const itemId of shelfData.itemIds) {
+        const product = productsById.get(itemId);
+        if (!product) continue;
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "shop-product grocer-shop-product";
+        button.dataset.shopItem = product.item.id;
+        button.dataset.affordable = String(product.affordable);
+        button.dataset.locked = String(!product.unlocked);
+        button.dataset.assetLabel = `KW-GROCER-PRODUCT-${product.item.id.toUpperCase()}`;
+        button.dataset.spriteAiLabel = `grocer.product.${product.item.id}`;
+        button.dataset.spriteAiKind = "interactive-shop-product";
+        button.setAttribute("aria-pressed", String(product.item.id === this.selectedItemId));
+        button.setAttribute("aria-label", `${product.item.name}, ${formatCoins(product.item.price)} coins, ${product.owned} owned`);
+        const copies = document.createElement("span");
+        copies.className = "grocer-stock-copies";
+        copies.setAttribute("aria-hidden", "true");
+        const copyCount = Math.max(1, Math.min(10, VILLAGE_GROCER_COPY_COUNTS.get(itemId) || 1));
+        for (let index = 0; index < copyCount; index += 1) {
+          const copy = document.createElement("span");
+          copy.className = "grocer-stock-copy";
+          copy.dataset.assetLabel = `KW-GROCER-${product.item.id.toUpperCase()}-${index + 1}`;
+          copy.dataset.spriteAiLabel = `grocer.stock.${product.item.id}.${index + 1}`;
+          copy.dataset.spriteAiKind = "shop-stock-sprite";
+          copy.textContent = product.item.icon;
+          copies.append(copy);
+        }
+        const name = document.createElement("strong");
+        name.className = "sr-only";
+        name.textContent = product.item.name;
+        button.append(copies, name);
+        stock.append(button);
+      }
+      shelf.append(heading, stock);
+      this.productList.append(shelf);
+    }
+    const roomDetails = document.createElement("div");
+    roomDetails.className = "grocer-shop-room-details";
+    roomDetails.setAttribute("aria-hidden", "true");
+    roomDetails.innerHTML = [
+      '<span class="grocer-crates" data-asset-label="KW-GROCER-WOODEN-CRATES" data-sprite-ai-label="grocer.fixture.wooden-crates" data-sprite-ai-kind="shop-fixture">▤</span>',
+      '<span class="grocer-rug" data-asset-label="KW-GROCER-ENTRY-RUG" data-sprite-ai-label="grocer.fixture.entry-rug" data-sprite-ai-kind="shop-fixture"></span>',
+      '<span class="grocer-counter" data-asset-label="KW-GROCER-CHECKOUT-COUNTER" data-sprite-ai-label="grocer.fixture.checkout-counter" data-sprite-ai-kind="shop-fixture">▰</span>',
+      '<span class="grocer-clerk" data-asset-label="KW-GROCER-CLERK-MARA" data-sprite-ai-label="grocer.character.clerk-mara" data-sprite-ai-kind="shop-character">🧑🏾‍🌾</span>',
+    ].join("");
+    this.productList.append(roomDetails);
+    this.emptyMessage?.classList.toggle("hidden", products.length > 0);
+  }
+
   renderDetail(product) {
     if (!product?.ok) return;
     if (this.detailIcon) this.detailIcon.textContent = product.item.icon;
     if (this.detailIcon) this.detailIcon.dataset.assetLabel = `KW-SHOP-DETAIL-${product.item.id.toUpperCase()}`;
+    if (this.detailIcon) this.detailIcon.dataset.spriteAiLabel = `${this.activeShopId === "town-grocer" ? "grocer" : "shop"}.detail.${product.item.id}`;
+    if (this.detailIcon) this.detailIcon.dataset.spriteAiKind = "selected-product-art";
     if (this.detailName) this.detailName.textContent = product.item.name;
     if (this.detailDescription) {
       const base = product.item.description || `${product.item.shopGroup} stock from the original Kindworks catalogue.`;
@@ -247,8 +324,9 @@ export class ShopController {
       } else if (destination) this.placementPreview.textContent = `${destination.label} · ${destination.detail}`;
     }
     if (this.placeButton) {
-      this.placeButton.classList.toggle("hidden", !directlyPlaceable || product.owned < 1);
-      this.placeButton.disabled = !directlyPlaceable || product.owned < 1;
+      const placeFromHere = this.activeShopId !== "town-grocer";
+      this.placeButton.classList.toggle("hidden", !placeFromHere || !directlyPlaceable || product.owned < 1);
+      this.placeButton.disabled = !placeFromHere || !directlyPlaceable || product.owned < 1;
       this.placeButton.textContent = directlyPlaceable ? `${destination.label}: ${product.item.name}` : "Use owned item";
     }
     if (!this.buyButton) return;
@@ -277,17 +355,22 @@ export class ShopController {
     const catalogue = this.shopService.getCatalogue(this.activeShopId, { group: this.activeGroup });
     if (!catalogue.ok) return catalogue;
     this.activeGroup = catalogue.activeGroup;
-    if (!catalogue.products.some((product) => product.item.id === this.selectedItemId)) this.selectedItemId = catalogue.products[0]?.item.id || null;
-    if (this.title) this.title.textContent = `${catalogue.shop.icon} ${catalogue.shop.name}`;
+    const isVillageGrocer = this.activeShopId === "town-grocer";
+    const allProducts = isVillageGrocer
+      ? catalogue.shop.itemIds.map((itemId) => this.shopService.getProduct(this.activeShopId, itemId)).filter((product) => product.ok)
+      : catalogue.products;
+    if (!allProducts.some((product) => product.item.id === this.selectedItemId)) this.selectedItemId = allProducts[0]?.item.id || null;
+    if (this.title) this.title.textContent = isVillageGrocer ? catalogue.shop.name : `${catalogue.shop.icon} ${catalogue.shop.name}`;
     if (this.description) this.description.textContent = catalogue.shop.description;
     if (this.catalogueTitle) this.catalogueTitle.textContent = catalogue.activeGroup;
     if (this.balance) this.balance.textContent = formatCoins(catalogue.balance);
     if (this.searchInput && this.searchInput.value !== this.searchQuery) this.searchInput.value = this.searchQuery;
     if (this.sortSelect && this.sortSelect.value !== this.sortMode) this.sortSelect.value = this.sortMode;
     this.renderGroups(catalogue);
-    const visible = this.visibleProducts(catalogue);
-    if (!visible.some((product) => product.item.id === this.selectedItemId)) this.selectedItemId = visible[0]?.item.id || catalogue.products[0]?.item.id || null;
-    this.renderProducts(visible);
+    const visible = this.visibleProducts({ ...catalogue, products: allProducts });
+    if (!visible.some((product) => product.item.id === this.selectedItemId)) this.selectedItemId = visible[0]?.item.id || allProducts[0]?.item.id || null;
+    if (isVillageGrocer) this.renderVillageGrocer(visible);
+    else this.renderProducts(visible);
     const product = this.shopService.getProduct(this.activeShopId, this.selectedItemId);
     this.renderDetail(product);
     return catalogue;
