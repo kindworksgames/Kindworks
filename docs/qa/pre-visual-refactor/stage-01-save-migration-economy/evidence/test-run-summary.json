@@ -1,0 +1,55 @@
+{
+  "qaStage": "01-save-migration-economy",
+  "recordedAtUtc": "2026-08-28T22:56:37Z",
+  "branch": "phase-2-ui-simplification",
+  "commit": "2e42b1c22dbca9b77d5d0756b4b78602ca7ce47c",
+  "protectedHtml": {
+    "file": "kindworks_little_bakery_v65_house_rescue_reintegrated_fixed.html",
+    "sha256": "0b85bd71385b83e7a13676f7593ce376245959fa4ebf1a6b9a0e6765297aa5a5"
+  },
+  "automated": {
+    "focusedSaveMigrationEconomy": { "passed": 62, "failed": 0 },
+    "crossSystemPersistenceTransactionFilter": { "passed": 233, "failed": 0 },
+    "fullRegression": { "passed": 610, "failed": 0, "skipped": 0 },
+    "differentialParity": {
+      "status": "PASS",
+      "activities": 13,
+      "campaignLevels": 5850,
+      "sharedDomains": 19,
+      "exactRules": 85
+    },
+    "minigameParity": {
+      "status": "PASS",
+      "games": 14,
+      "comparisons": 75,
+      "deterministicInstances": 105795
+    },
+    "legacyVersions": { "first": 12, "last": 82, "count": 71, "status": "PASS" },
+    "productionBuild": { "status": "PASS", "performanceBudget": "PASS" }
+  },
+  "runtime": {
+    "storage": "isolated fidelity QA namespace on a fresh localhost origin",
+    "initial": { "coins": 100, "carrotSeeds": 1 },
+    "transaction": { "item": "carrot-seeds", "quantity": 1, "cost": 30 },
+    "afterTransaction": { "coins": 70, "carrotSeeds": 2 },
+    "afterFullReload": { "coins": 70, "carrotSeeds": 2 },
+    "saveStatus": "healthy",
+    "verifiedBackupAvailable": true,
+    "consoleWarnings": 0,
+    "consoleErrors": 0,
+    "viewports": [
+      { "width": 844, "height": 390, "check": "purchase and full reload" },
+      { "width": 568, "height": 320, "check": "persisted balance, inventory, and purchase control" },
+      { "width": 1024, "height": 768, "check": "persisted balance, inventory, and purchase control" }
+    ]
+  },
+  "findings": {
+    "confirmedDefects": 0,
+    "confirmedParityGaps": 0,
+    "visualOnlyIssues": 0,
+    "preExistingIssues": 1,
+    "observations": 2,
+    "userDecisionsRequired": 0
+  },
+  "verdict": "PASS_FOR_BROWSER_RUNTIME_CONTRACT"
+}
