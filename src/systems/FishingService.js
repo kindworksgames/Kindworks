@@ -4,6 +4,7 @@ import {
   FISH_RARITY,
   MAGNET_FISHING_CONFIG,
   MAGNET_FISHING_SPOT,
+  MAGNET_TARGETING_CONFIG,
   MAGNET_RARITY_ORDER,
   MAGNET_RECOVERY_CATALOG,
   ORNAMENTAL_FISH_IDS,
@@ -14,6 +15,7 @@ import {
   generateHiddenZones,
   hiddenZoneAt,
   pointInWater,
+  pointInMagnetWater,
 } from "../data/fishing.js";
 import { COIN_LEDGER_LIMIT } from "../state/economyState.js";
 import { aquariumFishCount, aquariumSnapshot, placedFishTank, routeOrnamentalCatchInto } from "../state/aquariumState.js";
@@ -120,7 +122,7 @@ export class FishingService {
       phase: "idle",
       target: null,
       zoneId: null,
-      hiddenZones: generateHiddenZones(this.random),
+      hiddenZones: generateHiddenZones(this.random, mode === "magnet" ? MAGNET_TARGETING_CONFIG : TARGETING_CONFIG),
       result: null,
       returnPosition: { x: Number(returnPosition?.x) || 640, y: Number(returnPosition?.y) || 610 },
       returnFacing,
@@ -136,7 +138,8 @@ export class FishingService {
     const session = this.activeSession;
     if (!session) return { ok: false, code: "no-session", message: "Open a fishing spot first." };
     if (!["idle", "success", "miss"].includes(session.phase)) return { ok: false, code: "cast-active", message: "Finish the current cast first." };
-    if (!pointInWater(point)) return { ok: false, code: "outside-water", message: "Choose a point inside the water. No cast was used." };
+    const insideWater = session.mode === "magnet" ? pointInMagnetWater(point) : pointInWater(point);
+    if (!insideWater) return { ok: false, code: "outside-water", message: "Choose a point inside the water. No cast was used." };
     const result = this.commit((state) => {
       const progress = session.mode === "magnet" ? state.fishing.magnet : state.fishing;
       const limit = session.mode === "magnet" ? MAGNET_FISHING_CONFIG.dailyCasts : FISHING_CONFIG.dailyCasts;

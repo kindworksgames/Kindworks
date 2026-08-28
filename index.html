@@ -314,37 +314,44 @@
               <div class="personal-home-label"><strong>🏡 Meadowlight House</strong><small id="personal-home-preview-label">Level 1 · Small Starter Cottage · South Shore</small></div>
             </aside>
             <form id="custom-resident-form" class="custom-resident-form" novalidate>
-              <fieldset>
-                <legend>Who are they?</legend>
-                <label class="resident-field resident-field-wide" for="resident-name">Resident name
-                  <input id="resident-name" name="name" maxlength="18" autocomplete="off" aria-describedby="resident-name-hint resident-name-error" required />
-                  <small id="resident-name-hint">Up to 18 characters. Letters, numbers, spaces, apostrophes or hyphens.</small>
-                  <span id="resident-name-error" class="resident-field-error" role="alert" hidden></span>
-                </label>
-              </fieldset>
-              <fieldset>
-                <legend>How do they look?</legend>
-                <div class="resident-fields-grid">
-                  <label class="resident-field" for="resident-skin">Skin tone<select id="resident-skin" name="skin"><option value="light">Light</option><option value="warm">Warm</option><option value="tan">Tan</option><option value="brown">Brown</option><option value="deep">Deep</option></select></label>
-                  <label class="resident-field" for="resident-hair">Hair style<select id="resident-hair" name="hair"><option value="0">Classic</option><option value="1">Side bun</option><option value="2">Swept</option><option value="3">Curly</option></select></label>
-                  <label class="resident-field" for="resident-hair-colour">Hair colour<select id="resident-hair-colour" name="hairColor"><option value="black">Black</option><option value="dark-brown">Dark brown</option><option value="brown">Brown</option><option value="auburn">Auburn</option><option value="blonde">Blonde</option><option value="grey">Grey</option></select></label>
-                  <label class="resident-field" for="resident-accessory">Accessory<select id="resident-accessory" name="accessory"><option value="none">None</option><option value="glasses">Glasses</option><option value="cap">Cap</option><option value="sunhat">Sun hat</option><option value="satchel">Satchel</option><option value="badge">Helper badge</option></select></label>
-                  <label class="resident-field" for="resident-outfit">Outfit colour<select id="resident-outfit" name="outfit"><option value="0">Kindly red</option><option value="1">Garden green</option><option value="2">Warm amber</option><option value="3">River blue</option><option value="4">Soft plum</option><option value="5">Teal</option></select></label>
-                  <label class="resident-field" for="resident-build">Body build<select id="resident-build" name="bodyBuild"><option value="slim">Slim</option><option value="average">Average</option><option value="broad">Broad</option><option value="stocky">Stocky</option><option value="larger">Larger</option></select></label>
-                </div>
-              </fieldset>
-              <fieldset>
-                <legend>What do they love doing? <small id="resident-hobby-count">0 / 3 selected</small></legend>
-                <div id="resident-hobbies" class="resident-hobbies">
-                  <label><input type="checkbox" name="hobby" value="fishing" /><span>🎣 Fishing</span></label><label><input type="checkbox" name="hobby" value="gardening" /><span>🌱 Gardening</span></label>
-                  <label><input type="checkbox" name="hobby" value="pub" /><span>🍺 Pub regular</span></label><label><input type="checkbox" name="hobby" value="coffee" /><span>☕ Coffee</span></label>
-                  <label><input type="checkbox" name="hobby" value="reading" /><span>📚 Reading</span></label><label><input type="checkbox" name="hobby" value="shopping" /><span>🛍️ Shopping</span></label>
-                  <label><input type="checkbox" name="hobby" value="nature" /><span>🐦 Nature</span></label><label><input type="checkbox" name="hobby" value="walking" /><span>🚶 Walking</span></label>
-                  <label><input type="checkbox" name="hobby" value="bakery" /><span>🥐 Bakery lover</span></label><label><input type="checkbox" name="hobby" value="music" /><span>🐾 Animal lover</span></label>
-                  <label><input type="checkbox" name="hobby" value="helping" /><span>🧹 Community helper</span></label><label><input type="checkbox" name="hobby" value="riverside" /><span>🌊 Riverside walks</span></label>
-                </div>
-              </fieldset>
-              <fieldset>
+              <nav class="resident-stepper" aria-label="Resident creation progress">
+                <strong id="resident-step-status" aria-live="polite">Step 1 of 3 · Appearance</strong>
+                <span class="resident-step-dots" aria-hidden="true"><i class="active"></i><i></i><i></i></span>
+              </nav>
+              <section class="resident-step" data-resident-step="0" aria-labelledby="resident-appearance-heading">
+                <fieldset>
+                  <legend id="resident-appearance-heading">Appearance</legend>
+                  <label class="resident-field resident-field-wide" for="resident-name">Resident name
+                    <input id="resident-name" name="name" maxlength="18" autocomplete="off" aria-describedby="resident-name-hint resident-name-error" required />
+                    <small id="resident-name-hint">Up to 18 characters. Letters, numbers, spaces, apostrophes or hyphens.</small>
+                    <span id="resident-name-error" class="resident-field-error" role="alert" hidden></span>
+                  </label>
+                  <div class="resident-fields-grid">
+                    <label class="resident-field" for="resident-skin">Skin tone<select id="resident-skin" name="skin"><option value="light">Light</option><option value="warm">Warm</option><option value="tan">Tan</option><option value="brown">Brown</option><option value="deep">Deep</option></select></label>
+                    <label class="resident-field" for="resident-hair">Hair style<select id="resident-hair" name="hair"><option value="0">Classic</option><option value="1">Side bun</option><option value="2">Swept</option><option value="3">Curly</option></select></label>
+                    <label class="resident-field" for="resident-hair-colour">Hair colour<select id="resident-hair-colour" name="hairColor"><option value="black">Black</option><option value="dark-brown">Dark brown</option><option value="brown">Brown</option><option value="auburn">Auburn</option><option value="blonde">Blonde</option><option value="grey">Grey</option></select></label>
+                    <label class="resident-field" for="resident-accessory">Accessory<select id="resident-accessory" name="accessory"><option value="none">None</option><option value="glasses">Glasses</option><option value="cap">Cap</option><option value="sunhat">Sun hat</option><option value="satchel">Satchel</option><option value="badge">Helper badge</option></select></label>
+                    <label class="resident-field" for="resident-outfit">Outfit colour<select id="resident-outfit" name="outfit"><option value="0">Kindly red</option><option value="1">Garden green</option><option value="2">Warm amber</option><option value="3">River blue</option><option value="4">Soft plum</option><option value="5">Teal</option></select></label>
+                    <label class="resident-field" for="resident-build">Body build<select id="resident-build" name="bodyBuild"><option value="slim">Slim</option><option value="average">Average</option><option value="broad">Broad</option><option value="stocky">Stocky</option><option value="larger">Larger</option></select></label>
+                  </div>
+                </fieldset>
+              </section>
+              <section class="resident-step" data-resident-step="1" aria-labelledby="resident-hobbies-heading" hidden>
+                <fieldset>
+                  <legend id="resident-hobbies-heading">Hobbies <small id="resident-hobby-count">0 / 3 selected</small></legend>
+                  <p class="resident-step-intro">Choose up to three. Hobbies guide where your resident goes and what they do in Willowmere.</p>
+                  <div id="resident-hobbies" class="resident-hobbies">
+                    <label><input type="checkbox" name="hobby" value="fishing" /><span>🎣 Fishing</span></label><label><input type="checkbox" name="hobby" value="gardening" /><span>🌱 Gardening</span></label>
+                    <label><input type="checkbox" name="hobby" value="pub" /><span>🍺 Pub regular</span></label><label><input type="checkbox" name="hobby" value="coffee" /><span>☕ Coffee</span></label>
+                    <label><input type="checkbox" name="hobby" value="reading" /><span>📚 Reading</span></label><label><input type="checkbox" name="hobby" value="shopping" /><span>🛍️ Shopping</span></label>
+                    <label><input type="checkbox" name="hobby" value="nature" /><span>🐦 Nature</span></label><label><input type="checkbox" name="hobby" value="walking" /><span>🚶 Walking</span></label>
+                    <label><input type="checkbox" name="hobby" value="bakery" /><span>🥐 Bakery lover</span></label><label><input type="checkbox" name="hobby" value="music" /><span>🐾 Animal lover</span></label>
+                    <label><input type="checkbox" name="hobby" value="helping" /><span>🧹 Community helper</span></label><label><input type="checkbox" name="hobby" value="riverside" /><span>🌊 Riverside walks</span></label>
+                  </div>
+                </fieldset>
+              </section>
+              <section class="resident-step" data-resident-step="2" aria-labelledby="personal-home-design-legend" hidden>
+                <fieldset>
                 <legend id="personal-home-design-legend">Starter-home design</legend>
                 <div class="resident-fields-grid">
                   <label class="resident-field" for="home-wall-colour">Wall colour<select id="home-wall-colour" name="wallColor"><option value="cream">Warm cream</option><option value="sage">Garden sage</option><option value="sky">Soft sky</option><option value="rose">Dusty rose</option><option value="yellow">Sunny yellow</option><option value="lavender">Lavender</option></select></label>
@@ -360,12 +367,15 @@
                     <button id="personal-home-upgrade" class="upgrade" type="button">Upgrade to Level 2 — 🪙 15,000</button>
                   </div>
                 </section>
-              </fieldset>
+                </fieldset>
+              </section>
               <p id="custom-resident-status" class="custom-resident-status" data-status="neutral" role="status" aria-live="polite">Every option and the starter cottage are free.</p>
               <div class="custom-resident-actions">
                 <button id="custom-resident-locate" class="hidden" type="button">📍 Locate in town</button>
                 <button id="custom-resident-control" class="hidden" type="button">🎮 Take a walk</button>
-                <button id="custom-resident-save" class="primary" type="submit">Create resident & home</button>
+                <button id="custom-resident-back" type="button" hidden>Back</button>
+                <button id="custom-resident-next" class="primary" type="button">Next: Hobbies</button>
+                <button id="custom-resident-save" class="primary" type="submit" hidden>Create resident &amp; home</button>
               </div>
             </form>
           </div>

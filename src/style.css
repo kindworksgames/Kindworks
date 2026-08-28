@@ -2484,7 +2484,7 @@ body[data-game-scene="PlaygroundPowerwashScene"] .touch-controls, body[data-game
 }
 
 .custom-resident-card {
-  width: min(1120px, 100%);
+  width: min(980px, 100%);
   max-height: min(92dvh, 880px);
   overflow: auto;
   border: 2px solid rgba(255, 255, 255, 0.72);
@@ -2552,7 +2552,7 @@ body[data-game-scene="PlaygroundPowerwashScene"] .touch-controls, body[data-game
 
 .custom-resident-layout {
   display: grid;
-  grid-template-columns: minmax(245px, 0.75fr) minmax(480px, 1.55fr);
+  grid-template-columns: minmax(225px, 0.7fr) minmax(430px, 1.3fr);
   gap: 20px;
   padding: 20px;
 }
@@ -2792,6 +2792,39 @@ body[data-game-scene="PlaygroundPowerwashScene"] .touch-controls, body[data-game
   gap: 14px;
 }
 
+.resident-step[hidden] { display: none; }
+.resident-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 34px;
+  padding: 0 4px;
+  color: #345c42;
+  font-size: 12px;
+}
+.resident-step-dots { display: flex; gap: 7px; }
+.resident-step-dots i {
+  width: 9px;
+  height: 9px;
+  border: 2px solid #76917b;
+  border-radius: 50%;
+  background: transparent;
+}
+.resident-step-dots i.active { border-color: #3f8051; background: #4f9962; }
+.resident-step-intro { margin: 0 0 10px; color: #647669; font-size: 11px; line-height: 1.4; }
+.custom-resident-panel[data-resident-step="0"] #personal-home-preview,
+.custom-resident-panel[data-resident-step="0"] .personal-home-label,
+.custom-resident-panel[data-resident-step="1"] #personal-home-preview,
+.custom-resident-panel[data-resident-step="1"] .personal-home-label { display: none; }
+.custom-resident-panel[data-resident-step="2"] #custom-resident-preview,
+.custom-resident-panel[data-resident-step="2"] #custom-resident-preview-name,
+.custom-resident-panel[data-resident-step="2"] #custom-resident-preview-summary { display: none; }
+.custom-resident-panel[data-resident-step="2"] .custom-resident-previews {
+  padding-top: 24px;
+  background: linear-gradient(#cfeaf1 0 57%, #a9ca82 57% 100%);
+}
+
 .custom-resident-form fieldset {
   min-width: 0;
   margin: 0;
@@ -2901,6 +2934,7 @@ body[data-game-scene="PlaygroundPowerwashScene"] .touch-controls, body[data-game
   font-weight: 850;
 }
 .custom-resident-actions .primary { border-color: #3f8051; background: #4f9962; color: white; }
+.custom-resident-actions [hidden] { display: none; }
 
 .resident-control-banner {
   position: fixed;

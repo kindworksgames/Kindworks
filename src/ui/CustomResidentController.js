@@ -32,6 +32,12 @@ export class CustomResidentController {
     this.hobbyGrid = document.querySelector("#resident-hobbies");
     this.hobbyCount = document.querySelector("#resident-hobby-count");
     this.submitButton = document.querySelector("#custom-resident-save");
+    this.backButton = document.querySelector("#custom-resident-back");
+    this.nextButton = document.querySelector("#custom-resident-next");
+    this.stepStatus = document.querySelector("#resident-step-status");
+    this.stepPanels = [...document.querySelectorAll("[data-resident-step]")];
+    this.stepDots = [...document.querySelectorAll(".resident-step-dots i")];
+    this.step = 0;
     this.locateButton = document.querySelector("#custom-resident-locate");
     this.controlButton = document.querySelector("#custom-resident-control");
     this.status = document.querySelector("#custom-resident-status");
@@ -55,7 +61,11 @@ export class CustomResidentController {
 
     this.onOpenClick = () => this.open();
     this.onCloseClick = () => this.close();
-    this.onSubmit = (event) => { event.preventDefault(); this.save(); };
+    this.onSubmit = (event) => {
+      event.preventDefault();
+      if (this.step < 2) this.nextStep();
+      else this.save();
+    };
     this.onFormInput = () => { this.clearError(); this.renderPreview(); };
     this.onHobbyChange = (event) => this.handleHobbyChange(event);
     this.onLocateClick = () => this.locate();
@@ -63,6 +73,8 @@ export class CustomResidentController {
     this.onReturnClick = () => this.endControl();
     this.onHomeRedesignClick = () => this.redesignHome();
     this.onHomeUpgradeClick = () => this.upgradeHome();
+    this.onBackClick = () => this.previousStep();
+    this.onNextClick = () => this.nextStep();
     this.onKeyDown = (event) => this.handleKeyDown(event);
     this.openButton?.addEventListener("click", this.onOpenClick);
     this.closeButton?.addEventListener("click", this.onCloseClick);
@@ -74,9 +86,12 @@ export class CustomResidentController {
     this.returnButton?.addEventListener("click", this.onReturnClick);
     this.homeRedesignButton?.addEventListener("click", this.onHomeRedesignClick);
     this.homeUpgradeButton?.addEventListener("click", this.onHomeUpgradeClick);
+    this.backButton?.addEventListener("click", this.onBackClick);
+    this.nextButton?.addEventListener("click", this.onNextClick);
     document.addEventListener("keydown", this.onKeyDown);
     this.unsubscribe = service.subscribe(() => this.render());
     this.populateForm();
+    this.setStep(0, { focus: false });
     this.render();
   }
 
@@ -200,12 +215,65 @@ export class CustomResidentController {
       this.openButton.setAttribute("aria-label", state.created ? `Open ${state.profile.name}'s resident profile` : "Create your personal resident");
     }
     if (this.submitButton) this.submitButton.textContent = state.created ? "Save changes" : "Create resident & home";
-    for (const button of [this.locateButton, this.controlButton]) button?.classList.toggle("hidden", !state.created);
     if (this.controlButton) this.controlButton.disabled = state.controlling;
     this.controlBanner?.classList.toggle("hidden", !state.controlling);
     this.controlBanner?.setAttribute("aria-hidden", state.controlling ? "false" : "true");
     if (this.controlBannerName) this.controlBannerName.textContent = state.profile?.name || "Your resident";
     if (this.form) this.renderHomeProgression(this.service.getHomeProgression(this.readDraft().home));
+    this.renderStep();
+  }
+
+  setStep(step, { focus = true } = {}) {
+    this.step = Math.max(0, Math.min(2, Number(step) || 0));
+    this.renderStep();
+    if (!focus) return this.step;
+    const active = this.stepPanels.find((panel) => Number(panel.dataset.residentStep) === this.step);
+    const target = active?.querySelector("input:not([disabled]), select:not([disabled]), button:not([disabled])")
+      || (this.step === 2 ? this.submitButton : this.nextButton);
+    target?.focus?.({ preventScroll: true });
+    return this.step;
+  }
+
+  renderStep() {
+    const labels = ["Appearance", "Hobbies", "Your house"];
+    this.panel?.setAttribute("data-resident-step", String(this.step));
+    for (const panel of this.stepPanels) {
+      const active = Number(panel.dataset.residentStep) === this.step;
+      panel.hidden = !active;
+      panel.setAttribute("aria-hidden", String(!active));
+    }
+    this.stepDots.forEach((dot, index) => dot.classList.toggle("active", index === this.step));
+    if (this.stepStatus) this.stepStatus.textContent = `Step ${this.step + 1} of 3 · ${labels[this.step]}`;
+    if (this.backButton) this.backButton.hidden = this.step === 0;
+    if (this.nextButton) {
+      this.nextButton.hidden = this.step === 2;
+      this.nextButton.textContent = this.step === 0 ? "Next: Hobbies" : "Next: Your house";
+    }
+    if (this.submitButton) this.submitButton.hidden = this.step !== 2;
+    const created = this.service.getSnapshot().created;
+    for (const button of [this.locateButton, this.controlButton]) button?.classList.toggle("hidden", !created || this.step !== 2);
+  }
+
+  nextStep() {
+    if (this.step === 0 && !String(this.nameInput?.value || "").trim()) {
+      this.nameInput?.setAttribute("aria-invalid", "true");
+      if (this.nameError) {
+        this.nameError.hidden = false;
+        this.nameError.textContent = "Enter a name for your resident.";
+      }
+      this.showStatus("Add a resident name before choosing hobbies.", "error");
+      this.nameInput?.focus?.({ preventScroll: true });
+      return { ok: false, code: "resident-name-required" };
+    }
+    this.clearError();
+    this.showStatus(this.step === 0 ? "Now choose up to three hobbies." : "Now design their starter home.", "neutral");
+    return { ok: true, step: this.setStep(this.step + 1) };
+  }
+
+  previousStep() {
+    this.clearError();
+    this.showStatus(this.step === 2 ? "Review hobbies or continue to the home when ready." : "Adjust the resident's appearance.", "neutral");
+    return { ok: true, step: this.setStep(this.step - 1) };
   }
 
   open() {
@@ -217,7 +285,7 @@ export class CustomResidentController {
     this.panel.classList.remove("hidden");
     this.panel.setAttribute("aria-hidden", "false");
     this.onModalChange(true);
-    this.nameInput?.focus({ preventScroll: true });
+    this.setStep(0);
     return { ok: true };
   }
 
@@ -306,7 +374,8 @@ export class CustomResidentController {
   }
 
   focusableElements() {
-    return [...(this.panel?.querySelectorAll('button:not([disabled]):not(.hidden), input:not([disabled]), select:not([disabled])') || [])];
+    return [...(this.panel?.querySelectorAll('button:not([disabled]):not(.hidden), input:not([disabled]), select:not([disabled])') || [])]
+      .filter((element) => !element.hidden && !element.closest("[hidden]"));
   }
 
   handleKeyDown(event) {
@@ -322,6 +391,6 @@ export class CustomResidentController {
   }
 
   getDiagnostics() {
-    return { open: this.isOpen(), hobbyOptions: Object.keys(CUSTOM_RESIDENT_HOBBIES).length, ...this.service.getDiagnostics() };
+    return { open: this.isOpen(), creatorStep: this.step, creatorSteps: 3, hobbyOptions: Object.keys(CUSTOM_RESIDENT_HOBBIES).length, ...this.service.getDiagnostics() };
   }
 }

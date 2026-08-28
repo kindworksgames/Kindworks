@@ -15,6 +15,8 @@ import { MovementController } from "../systems/MovementController.js";
 const PLAYER_RADIUS = 17;
 const WALK_SPEED = 220;
 const SPRINT_SPEED = 330;
+const HARBOUR_GENERAL_REFERENCE_KEY = "legacy-harbour-general";
+const HARBOUR_GENERAL_REFERENCE_PATH = "/assets/legacy-reference/harbour-general.webp";
 
 function circleTouchesRect(x, y, radius, rect) {
   const closestX = Math.max(rect.x, Math.min(x, rect.x + rect.width));
@@ -39,6 +41,10 @@ export class HarbourGeneralScene extends Phaser.Scene {
     this.returnFacing = data.returnFacing || "down";
     this.selectedSlot = Math.max(0, Math.min(5, Number(data.slot) || 0));
     this.selectedItemId = data.itemId || null;
+  }
+
+  preload() {
+    if (!this.textures.exists(HARBOUR_GENERAL_REFERENCE_KEY)) this.load.image(HARBOUR_GENERAL_REFERENCE_KEY, HARBOUR_GENERAL_REFERENCE_PATH);
   }
 
   create() {
@@ -66,24 +72,34 @@ export class HarbourGeneralScene extends Phaser.Scene {
   drawInterior() {
     const room = HARBOUR_GENERAL_INTERIOR.room;
     this.add.rectangle(640, 360, 1280, 720, 0x18383a);
+    const recoveredReference = this.textures.exists(HARBOUR_GENERAL_REFERENCE_KEY);
+    if (recoveredReference) {
+      this.add.image(640, 360, HARBOUR_GENERAL_REFERENCE_KEY)
+        .setDisplaySize(1280, 720)
+        .setDepth(1)
+        .setData("spriteAiLabel", "legacy-reference.harbour-general.complete-interior");
+    }
     const floor = this.add.graphics();
-    floor.fillStyle(0xa8ceca, 1);
+    floor.setDepth(2);
+    floor.fillStyle(0xa8ceca, recoveredReference ? 0.08 : 1);
     floor.fillRoundedRect(room.x, room.y, room.width, room.height, 18);
     floor.lineStyle(9, 0x29243a, 1);
     floor.strokeRoundedRect(room.x, room.y, room.width, room.height, 18);
-    floor.lineStyle(2, 0x5f9ca0, 0.34);
+    floor.lineStyle(2, 0x5f9ca0, recoveredReference ? 0.1 : 0.34);
     for (let x = room.x + 40; x < room.x + room.width; x += 40) floor.lineBetween(x, room.y + 8, x, room.y + room.height - 8);
     for (let y = room.y + 40; y < room.y + room.height; y += 40) floor.lineBetween(room.x + 8, y, room.x + room.width - 8, y);
-    this.add.text(640, 29, "HARBOUR GENERAL", { color: "#2d3240", fontFamily: "ui-monospace, monospace", fontSize: "28px", fontStyle: "bold", backgroundColor: "#fff5cf", padding: { x: 20, y: 8 } }).setOrigin(0.5).setDepth(60);
-    this.add.text(640, 68, "YOUR SHOP · WEATHER GEAR & EVERYDAY ESSENTIALS", { color: "#d6eeee", fontFamily: "system-ui", fontSize: "12px", fontStyle: "bold" }).setOrigin(0.5).setDepth(60);
+    if (!recoveredReference) {
+      this.add.text(640, 29, "HARBOUR GENERAL", { color: "#2d3240", fontFamily: "ui-monospace, monospace", fontSize: "28px", fontStyle: "bold", backgroundColor: "#fff5cf", padding: { x: 20, y: 8 } }).setOrigin(0.5).setDepth(60);
+      this.add.text(640, 68, "YOUR SHOP · WEATHER GEAR & EVERYDAY ESSENTIALS", { color: "#d6eeee", fontFamily: "system-ui", fontSize: "12px", fontStyle: "bold" }).setOrigin(0.5).setDepth(60);
+    }
 
     this.fixtureRects = [];
     for (const fixture of HARBOUR_GENERAL_INTERIOR.fixtures) {
-      floor.fillStyle(fixture.id === "weather" ? 0x627f80 : 0x7b684c, 1);
+      floor.fillStyle(fixture.id === "weather" ? 0x627f80 : 0x7b684c, recoveredReference ? 0.16 : 1);
       floor.fillRoundedRect(fixture.x, fixture.y, fixture.width, fixture.height, 10);
       floor.lineStyle(4, 0x29243a, 1);
       floor.strokeRoundedRect(fixture.x, fixture.y, fixture.width, fixture.height, 10);
-      this.add.text(fixture.x + fixture.width / 2, fixture.y + 12, fixture.label, { color: "#fff7dc", fontFamily: "ui-monospace, monospace", fontSize: "10px", fontStyle: "bold" }).setOrigin(0.5, 0).setDepth(15);
+      if (!recoveredReference) this.add.text(fixture.x + fixture.width / 2, fixture.y + 12, fixture.label, { color: "#fff7dc", fontFamily: "ui-monospace, monospace", fontSize: "10px", fontStyle: "bold" }).setOrigin(0.5, 0).setDepth(15);
       this.fixtureRects.push({ ...fixture });
     }
 
@@ -91,13 +107,15 @@ export class HarbourGeneralScene extends Phaser.Scene {
     for (const slot of HARBOUR_GENERAL_INTERIOR.slots) this.drawSlot(slot);
 
     const counter = { x: 750, y: 530, width: 140, height: 78 };
-    floor.fillStyle(0x79737c, 1);
+    floor.fillStyle(0x79737c, recoveredReference ? 0.14 : 1);
     floor.fillRoundedRect(counter.x, counter.y, counter.width, counter.height, 8);
     floor.lineStyle(4, 0x29243a, 1);
     floor.strokeRoundedRect(counter.x, counter.y, counter.width, counter.height, 8);
     this.fixtureRects.push({ id: "counter", ...counter });
-    this.add.text(820, 542, "AMELIA · COUNTER", { color: "#2d3240", backgroundColor: "#fff5cf", fontFamily: "ui-monospace, monospace", fontSize: "9px", fontStyle: "bold", padding: { x: 6, y: 4 } }).setOrigin(0.5).setDepth(18);
-    this.add.text(820, 578, "👩‍💼", { fontSize: "32px" }).setOrigin(0.5).setDepth(19);
+    if (!recoveredReference) {
+      this.add.text(820, 542, "AMELIA · COUNTER", { color: "#2d3240", backgroundColor: "#fff5cf", fontFamily: "ui-monospace, monospace", fontSize: "9px", fontStyle: "bold", padding: { x: 6, y: 4 } }).setOrigin(0.5).setDepth(18);
+      this.add.text(820, 578, "👩‍💼", { fontSize: "32px" }).setOrigin(0.5).setDepth(19);
+    }
 
     const exit = HARBOUR_GENERAL_INTERIOR.exit;
     const door = this.add.rectangle(exit.x, room.y + room.height - 4, 150, 21, 0xf0c85e).setStrokeStyle(4, 0x3d3428).setDepth(30);
