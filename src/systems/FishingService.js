@@ -35,6 +35,16 @@ function appendLedger(state, now, details) {
   return entry;
 }
 
+function fishingCatchableEntries(state, spot, inventory) {
+  const tankPlaced = Boolean(placedFishTank(state));
+  return (spot?.catchTable || []).filter((entry) => {
+    if (ORNAMENTAL_FISH_IDS.includes(entry.itemId)) {
+      return !tankPlaced || aquariumFishCount(state, entry.itemId) < FISHING_CONFIG.maxAquariumPerSpecies;
+    }
+    return inventory.quantity(state.inventory, entry.itemId) < FISHING_CONFIG.maxInventoryPerFish;
+  });
+}
+
 export class FishingService {
   constructor(gameState, repository, { now = () => Date.now(), random = Math.random, aquarium = null } = {}) {
     this.gameState = gameState;
@@ -140,6 +150,13 @@ export class FishingService {
     if (!["idle", "success", "miss"].includes(session.phase)) return { ok: false, code: "cast-active", message: "Finish the current cast first." };
     const insideWater = session.mode === "magnet" ? pointInMagnetWater(point) : pointInWater(point);
     if (!insideWater) return { ok: false, code: "outside-water", message: "Choose a point inside the water. No cast was used." };
+    if (session.mode === "fish") {
+      const state = this.gameState.getSnapshot();
+      const spot = FISHING_SPOT_BY_ID[session.spotId];
+      if (!fishingCatchableEntries(state, spot, this.inventory).length) {
+        return { ok: false, code: "storage-full", message: "All suitable fish storage is full." };
+      }
+    }
     const result = this.commit((state) => {
       const progress = session.mode === "magnet" ? state.fishing.magnet : state.fishing;
       const limit = session.mode === "magnet" ? MAGNET_FISHING_CONFIG.dailyCasts : FISHING_CONFIG.dailyCasts;
@@ -183,11 +200,9 @@ export class FishingService {
     if (!session || session.mode !== "fish" || session.phase !== "bite" || !spot) return { ok: false, code: "no-bite", message: "Wait for BITE before reeling in." };
     const safeQuality = clampQuality(quality);
     const before = this.gameState.getSnapshot();
-    const tankPlaced = Boolean(placedFishTank(before));
-    const catchTable = spot.catchTable.filter((entry) => !ORNAMENTAL_FISH_IDS.includes(entry.itemId)
-      || !tankPlaced
-      || aquariumFishCount(before, entry.itemId) < FISHING_CONFIG.maxAquariumPerSpecies);
-    const availableSpot = { ...spot, catchTable: catchTable.length ? catchTable : spot.catchTable };
+    const catchTable = fishingCatchableEntries(before, spot, this.inventory);
+    if (!catchTable.length) return { ok: false, code: "storage-full", message: "All suitable fish storage is full." };
+    const availableSpot = { ...spot, catchTable };
     const forcedAllowed = availableSpot.catchTable.some((entry) => entry.itemId === forcedItemId) ? forcedItemId : null;
     const itemId = forcedAllowed || chooseFishingCatch(availableSpot, safeQuality, this.random);
     const item = fishingItem(itemId);
