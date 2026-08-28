@@ -116,6 +116,7 @@ All 16 lazy scenes registered in `src/scenes/lazyScenes.js` have a Town entry ow
 | -------------- | --------------- | ------------- | -------- | ----------------- |
 | Lawn Care level picker | The player has no useful level choice in normal progression | Town interaction → picker → Start | Town interaction → current/assigned lawn immediately | 572/572 tests; production build and performance pass; live town-guided entry and active-save reload pass |
 | River Clear-Out level picker | Normal progression determines the cleanup and River is already orientation-gated | Town interaction → rotate/picker → Start | Town interaction → rotate when needed → active board | Focused River/gesture tests pass; normal onboarding entry, portrait play, tap rotation, and orientation resume pass |
+| Waste Collection campaign picker | Town progression already owns the current unlocked cleanup | Town interaction → campaign picker → Start | Town interaction → current/assigned matching board immediately | 573/573 tests; build/performance pass; isolated fidelity entry, touch selection and exact rotate/resume pass; first town job remains separate |
 
 ## Removed or relocated information
 
@@ -127,6 +128,8 @@ All 16 lazy scenes registered in `src/scenes/lazyScenes.js` have a Town entry ow
 | Replay, Next and Return trio | Lawn Care result | Duplicated | Contextual Try again on failure or Continue on success | One-primary-action rule |
 | Campaign/level/difficulty/par/stars metadata | River header, side rail and result | Debug-only/unnecessary | Removed; next-three preview and meaningful progress remain | Preserve fair play without exposing generator/scoring detail |
 | Four River result actions | River result | Duplicated | Continue on success; Undo last or Try again on failure | One clear recovery action |
+| Campaign totals, level selector, card/type/layer/difficulty and match totals | Waste Collection campaign | Debug-only/duplicated | Removed from visible UI; all 750 boards remain in the protected service and tests | The live board needs only the objective, cards left and five-slot tray |
+| Replay, Next and Return trio | Waste Collection campaign result | Duplicated | One Continue action with the saved reward | Town progression owns the next activity |
 
 ## Before-and-after verification
 
@@ -134,7 +137,8 @@ All 16 lazy scenes registered in `src/scenes/lazyScenes.js` have a Town entry ow
 | ------ | --------------- | -------------- | ------------ | ------------- | ----------------- | ------ |
 | Baseline town/onboarding | `phase2-ui-evidence/before/` | — | All nine required landscape sizes | 390×844 rotate state | 571/571 tests; build/performance pass | — |
 | Lawn Care | `phase2-evidence/wave4-lawn/lawn-568x320-before.png` | `phase2-ui-evidence/after/lawn-direct-568x320.png` | 568×320, 844×390, 1280×720 | 1024×768 | Direct entry, swipe 7%→29%, reload at 29%/1 move, rotate/resume exact, no fresh runtime errors, 572/572 tests | `484eeac` |
-| River Clear-Out | `phase2-evidence/wave4-river/river-390x844-picker-before.png` | `phase2-ui-evidence/after/river-direct-390x844.png` | 568×320 protected rotate state | 390×844 portrait activity | Entered through normal onboarding, no picker, tap rotated the I piece horizontally→vertically, rotate barrier restored exact active state, focused tests pass | Pending commit |
+| River Clear-Out | `phase2-evidence/wave4-river/river-390x844-picker-before.png` | `phase2-ui-evidence/after/river-direct-390x844.png` | 568×320 protected rotate state | 390×844 portrait activity | Entered through normal onboarding, no picker, tap rotated the I piece horizontally→vertically, rotate barrier restored exact active state, focused tests pass | `915aa7b` |
+| Waste Collection campaign | `phase2-evidence/wave4-waste/waste-picker-568x320-before.png` | `phase2-ui-evidence/after/waste-direct-568x320.png` | 568×320, 844×390; 390×844 rotate state | 1024×768 | Direct entry without picker, card selection changed 30/0 → 29/1, orientation pause restored exact active board; protected first town job already passed normal onboarding; 573/573 tests | Pending commit |
 
 ## Change register
 
@@ -143,6 +147,7 @@ All 16 lazy scenes registered in `src/scenes/lazyScenes.js` have a Town entry ow
 | KW-UI-000 | Inventory | Map all player and developer surfaces before restructuring | `docs/qa/PHASE_2_UI_SIMPLIFICATION_REPORT.md` | No | None | None | Complete |
 | KW-UI-001 | Lawn Care | Remove the redundant start screen and technical HUD/result data | `index.html`, `src/scenes/LawnCareScene.js`, `src/style.css` | Navigation/presentation only; current level auto-starts | Existing active session resumes unchanged; no schema change | Direct-entry UI gate added; 572 full tests pass | Complete |
 | KW-UI-002 | River Clear-Out | Start the assigned/current cleanup immediately and keep the portrait board dominant | `index.html`, `src/scenes/RiverClearoutScene.js`, `src/style.css` | Navigation/presentation only; current level auto-starts | Existing active session and result undo remain unchanged; no schema change | Direct-entry UI gate plus protected River/gesture suites | Complete |
+| KW-UI-003 | Waste Collection | Remove the redundant 750-level picker and keep the matching board dominant | `index.html`, `src/scenes/WasteCollectionScene.js`, `src/style.css` | Navigation/presentation only; current campaign level auto-starts while first town job remains unchanged | Existing campaign/town-job sessions resume unchanged; no schema change | Direct-entry UI gate; full protected campaign and layout suites pass | Complete |
 
 ## Deferred ideas
 

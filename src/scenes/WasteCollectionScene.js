@@ -1,7 +1,6 @@
 import Phaser from "phaser";
 import {
   WASTE_RUBBISH_CATALOG,
-  WASTE_TOTAL_LEVELS,
   WASTE_WORLD,
   WasteCollectionEngine,
   wasteLevelSummary,
@@ -64,32 +63,26 @@ export class WasteCollectionScene extends Phaser.Scene {
 
   bindCampaignInterface() {
     this.campaignHud = document.querySelector("#waste-campaign-hud");
-    this.levelSelect = document.querySelector("#waste-level-select");
-    this.startButton = document.querySelector("#waste-level-start");
     this.exitButton = document.querySelector("#waste-campaign-exit");
     this.boardElement = document.querySelector("#waste-board");
     this.trayElement = document.querySelector("#waste-tray");
     this.buttons = {
       hint: document.querySelector("#waste-hint"), retry: document.querySelector("#waste-retry"), qa: document.querySelector("#waste-qa-solve"),
-      replay: document.querySelector("#waste-replay"), next: document.querySelector("#waste-next"), return: document.querySelector("#waste-return"),
+      return: document.querySelector("#waste-return"),
     };
-    this.onStart = () => this.startCampaignLevel(Number(this.levelSelect?.value || 1));
-    this.onLevelChange = () => { if (this.startButton) this.startButton.textContent = `Start Level ${Number(this.levelSelect?.value || 1)}`; };
     this.onExit = () => this.requestExit();
     this.onBoardClick = (event) => { const button = event.target.closest("[data-waste-tile]"); if (button && !button.disabled) this.selectCampaignTile(Number(button.dataset.wasteTile)); };
     this.onHint = () => this.showHint();
     this.onRetry = () => this.restartCampaign();
     this.onQa = () => this.runCertifiedClear();
-    this.onReplay = () => this.startCampaignLevel(this.lastCampaignResult?.level || this.session?.assignedLevel || 1);
-    this.onNext = () => this.startCampaignLevel((this.lastCampaignResult?.level || 1) >= WASTE_TOTAL_LEVELS ? 1 : (this.lastCampaignResult?.level || 1) + 1);
     this.onReturn = () => this.returnToTown(true);
     this.onKeyDown = (event) => {
       if (event.key === "Escape") { event.preventDefault(); this.requestExit(); return; }
       if (event.key.toLowerCase() === "h" && this.session?.mode === "campaign") { event.preventDefault(); this.showHint(); }
     };
-    this.startButton?.addEventListener("click", this.onStart); this.levelSelect?.addEventListener("change", this.onLevelChange); this.exitButton?.addEventListener("click", this.onExit);
+    this.exitButton?.addEventListener("click", this.onExit);
     this.boardElement?.addEventListener("click", this.onBoardClick); this.buttons.hint?.addEventListener("click", this.onHint); this.buttons.retry?.addEventListener("click", this.onRetry); this.buttons.qa?.addEventListener("click", this.onQa);
-    this.buttons.replay?.addEventListener("click", this.onReplay); this.buttons.next?.addEventListener("click", this.onNext); this.buttons.return?.addEventListener("click", this.onReturn);
+    this.buttons.return?.addEventListener("click", this.onReturn);
     window.addEventListener("keydown", this.onKeyDown);
   }
 
@@ -99,34 +92,15 @@ export class WasteCollectionScene extends Phaser.Scene {
     document.querySelector("#cleanup-result")?.classList.add("hidden");
     this.buttons.qa?.classList.toggle("hidden", !this.qaMode);
     if (this.exitButton) this.exitButton.textContent = "Exit";
-    this.populateLevelSelect();
-    if (this.session?.mode === "campaign") {
-      document.querySelector("#waste-campaign-picker")?.classList.add("hidden");
-      document.querySelector("#waste-campaign-gameplay")?.classList.remove("hidden");
-      document.querySelector("#waste-campaign-result")?.classList.add("hidden");
-      this.setCampaignMessage(this.session.status === "failed" ? "Tray full. Restart to try another order." : "Pick an uncovered card. Match three before the tray fills.", this.session.status === "failed" ? "error" : "success");
-    } else {
-      document.querySelector("#waste-campaign-picker")?.classList.remove("hidden");
-      document.querySelector("#waste-campaign-gameplay")?.classList.add("hidden");
-      document.querySelector("#waste-campaign-result")?.classList.add("hidden");
-      this.setCampaignMessage("Choose a level.", "neutral");
+    if (!this.session) {
+      const level = this.entryData.level || this.cleanup.getCampaignSnapshot().nextLevel;
+      this.startCampaignLevel(level);
+      return;
     }
+    document.querySelector("#waste-campaign-gameplay")?.classList.remove("hidden");
+    document.querySelector("#waste-campaign-result")?.classList.add("hidden");
+    this.setCampaignMessage(this.session.status === "failed" ? "Tray full. Restart to try another order." : "Pick an uncovered card. Match three before the tray fills.", this.session.status === "failed" ? "error" : "success");
     this.renderCampaign();
-  }
-
-  populateLevelSelect() {
-    if (!this.levelSelect) return;
-    const progress = this.cleanup.getCampaignSnapshot();
-    if (this.levelSelect.options.length !== WASTE_TOTAL_LEVELS) {
-      const options = [];
-      for (let level = 1; level <= WASTE_TOTAL_LEVELS; level += 1) {
-        const summary = wasteLevelSummary(level);
-        options.push(`<option value="${level}">Level ${level} · ${summary.tileCount} cards · ${summary.layers} layers</option>`);
-      }
-      this.levelSelect.innerHTML = options.join("");
-    }
-    this.levelSelect.value = String(this.session?.assignedLevel || progress.nextLevel);
-    this.onLevelChange();
   }
 
   startCampaignLevel(level) {
@@ -140,7 +114,6 @@ export class WasteCollectionScene extends Phaser.Scene {
     this.session = result.session;
     this.lastCampaignResult = null;
     this.hintTileId = null;
-    document.querySelector("#waste-campaign-picker")?.classList.add("hidden");
     document.querySelector("#waste-campaign-gameplay")?.classList.remove("hidden");
     document.querySelector("#waste-campaign-result")?.classList.add("hidden");
     this.setCampaignMessage("Pick an uncovered card. Match three before the tray fills.", "success");
@@ -169,17 +142,13 @@ export class WasteCollectionScene extends Phaser.Scene {
   }
 
   renderCampaign() {
-    const progress = this.cleanup.getCampaignSnapshot();
-    setText("#waste-campaign-summary", `${progress.completed} cleared · ${progress.totalStars} stars · Level ${progress.nextLevel} next`);
     setText("#waste-campaign-balance", `🪙 ${this.gameState.getSnapshot().economy.coins}`);
     if (!this.session || this.session.mode !== "campaign") { this.updateDomState(); return; }
     const engine = new WasteCollectionEngine(this.session.assignedLevel, this.session);
     const state = engine.snapshot();
     const summary = wasteLevelSummary(this.session.assignedLevel);
     const exposed = new Set(state.exposedIds);
-    setText("#waste-level-name", `Level ${summary.level} of ${WASTE_TOTAL_LEVELS}${summary.checkpoint ? " · checkpoint" : ""}`);
-    setText("#waste-level-band", `${summary.tileCount} cards · ${summary.typeCount} types · ${summary.layers} layers · difficulty ${summary.difficulty}`);
-    setText("#waste-level-remaining", state.remaining); setText("#waste-level-matches", state.matches); setText("#waste-level-tray-count", `${state.tray.length} / 5`);
+    setText("#waste-level-remaining", state.remaining); setText("#waste-level-tray-count", `${state.tray.length} / 5`);
     if (this.boardElement) {
       const fragment = document.createDocumentFragment();
       const remainingTiles = engine.tiles.filter((entry) => !entry.removed);
@@ -270,10 +239,9 @@ export class WasteCollectionScene extends Phaser.Scene {
     this.onboarding?.recordJobCompleted?.("waste");
     document.querySelector("#waste-campaign-gameplay")?.classList.add("hidden");
     document.querySelector("#waste-campaign-result")?.classList.remove("hidden");
-    setText("#waste-result-title", "Park restored!"); setText("#waste-result-stars", "★★★");
-    setText("#waste-result-message", result.firstClear ? "The first clear is saved and its KindlyCoins were added once." : "Your best result remains saved. Campaign replays do not pay again.");
-    setText("#waste-result-percent", "100%"); setText("#waste-result-moves", result.moves); setText("#waste-result-matches", result.matches); setText("#waste-result-coins", `+${result.rewardCoins}`);
-    if (this.buttons.next) this.buttons.next.textContent = result.level >= WASTE_TOTAL_LEVELS ? "Back to Level 1" : "Next level";
+    setText("#waste-result-title", "Park restored!");
+    setText("#waste-result-message", result.firstClear ? "All rubbish matched and saved." : "All rubbish matched. Your best result is safe.");
+    setText("#waste-result-coins", `+${result.rewardCoins}`);
     this.setCampaignMessage("Level saved.", "success");
     this.renderCampaign();
   }
@@ -376,7 +344,7 @@ export class WasteCollectionScene extends Phaser.Scene {
   updateDomState() {
     const game = document.querySelector("#game"); if (!game) return;
     const active = this.cleanup?.getActiveSession(); const diagnostics = this.cleanup?.getDiagnostics();
-    game.dataset.scene = this.scene.key; game.dataset.wasteMode = active?.mode || (this.lastCampaignResult ? "result" : "picker");
+    game.dataset.scene = this.scene.key; game.dataset.wasteMode = active?.mode || (this.lastCampaignResult ? "result" : "loading");
     game.dataset.wasteLevel = String(active?.assignedLevel || this.lastCampaignResult?.level || diagnostics?.wasteProgress?.nextLevel || 1);
     game.dataset.wasteRemaining = String(active?.mode === "campaign" ? this.cleanup.getCampaignSessionState()?.remaining : this.job ? this.job.items.length - this.collected.size : 0);
     game.dataset.wasteCompleted = String(diagnostics?.wasteProgress?.completed || 0); game.dataset.wasteCatalogue = String(diagnostics?.totalLevels || 0);
@@ -384,9 +352,9 @@ export class WasteCollectionScene extends Phaser.Scene {
   }
 
   shutdownScene() {
-    this.startButton?.removeEventListener("click", this.onStart); this.levelSelect?.removeEventListener("change", this.onLevelChange); this.exitButton?.removeEventListener("click", this.onExit);
+    this.exitButton?.removeEventListener("click", this.onExit);
     this.boardElement?.removeEventListener("click", this.onBoardClick); this.buttons?.hint?.removeEventListener("click", this.onHint); this.buttons?.retry?.removeEventListener("click", this.onRetry); this.buttons?.qa?.removeEventListener("click", this.onQa);
-    this.buttons?.replay?.removeEventListener("click", this.onReplay); this.buttons?.next?.removeEventListener("click", this.onNext); this.buttons?.return?.removeEventListener("click", this.onReturn);
+    this.buttons?.return?.removeEventListener("click", this.onReturn);
     window.removeEventListener("keydown", this.onKeyDown);
     const list = document.querySelector("#cleanup-item-list"); list?.removeEventListener("click", this.onTownItem);
     document.querySelector("#cleanup-finish")?.removeEventListener("click", this.onTownFinish); document.querySelector("#cleanup-exit")?.removeEventListener("click", this.onTownExit); document.querySelector("#cleanup-result-return")?.removeEventListener("click", this.onTownResult);
