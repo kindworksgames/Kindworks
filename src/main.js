@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import "./style.css";
+import "./shop-reference.css";
 import { BootScene } from "./scenes/BootScene.js";
 import { TownScene } from "./scenes/TownScene.js";
 import { SpriteAiLabelPlugin } from "./plugins/SpriteAiLabelPlugin.js";
@@ -387,6 +388,7 @@ const economyHud = new EconomyHudController(stateRuntime, {
     setModalOpen("economy", open);
   },
   onUseConsumable(item) {
+    if (item?.farmingKind === "sapling") return activeTownScene()?.beginAppleTreePlacement?.() || { ok: false, message: "Return to Willowmere town to plant this sapling." };
     if (item?.shopGroup === "Farming") return game.registry.get("farmingController")?.open?.("allotment") || { ok: false };
     return game.registry.get("animalFriendsController")?.open?.() || { ok: false };
   },
@@ -416,6 +418,8 @@ const shopController = new ShopController(shopService, stateRuntime, {
     setModalOpen("shop", open);
   },
   onPlaceItem(item) {
+    if (item?.farmingKind === "sapling") return activeTownScene()?.beginAppleTreePlacement?.() || { ok: false, message: "Return to Willowmere town to plant this sapling." };
+    if (item?.category === "furniture") return activeTownScene()?.enterHouseInterior?.("house-20", { focusFurnitureId: item.id }) || { ok: false, message: "Return to Willowmere town to furnish your home." };
     return activeTownScene()?.beginTownPlacement?.(item?.id) || { ok: false, message: "Return to Willowmere town to place this item." };
   },
 });

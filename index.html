@@ -271,8 +271,15 @@
           <div class="shop-panel-body">
             <section class="shop-catalogue" aria-labelledby="shop-catalogue-title">
               <div id="shop-group-tabs" class="shop-group-tabs" role="tablist" aria-label="Shop categories"></div>
-              <h3 id="shop-catalogue-title">Market shelves</h3>
-              <div id="shop-product-list" class="shop-product-list"></div>
+              <div class="shop-shelf">
+                <div class="shop-catalogue-tools">
+                  <label class="shop-search"><span class="sr-only">Search this category</span><span aria-hidden="true">⌕</span><input id="shop-search" type="search" inputmode="search" autocomplete="off" placeholder="Search items…"></label>
+                  <label class="shop-sort"><span class="sr-only">Sort products</span><select id="shop-sort"><option value="name">Sort: Name</option><option value="price-low">Price: Low</option><option value="price-high">Price: High</option></select></label>
+                </div>
+                <h3 id="shop-catalogue-title">Market shelves</h3>
+                <div id="shop-product-list" class="shop-product-list"></div>
+                <p id="shop-empty" class="shop-empty hidden">No items match this search.</p>
+              </div>
             </section>
             <section class="shop-detail" aria-labelledby="shop-detail-name">
               <div id="shop-detail-icon" class="shop-detail-icon" aria-hidden="true">🐟</div>

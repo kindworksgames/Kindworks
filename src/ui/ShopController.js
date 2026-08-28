@@ -1,4 +1,4 @@
-import { placeableFootprintFor } from "../data/items.js";
+import { itemUseDestinationFor, placeableFootprintFor } from "../data/items.js";
 import { aquariumSnapshot } from "../state/aquariumState.js";
 
 function formatCoins(value) {
@@ -10,6 +10,11 @@ function unlockLabel(unlock) {
   const game = { lawn: "Lawn Care", river: "River Clear-Out", waste: "Waste Collection" }[unlock.game] || unlock.game;
   return `🔒 ${unlock.progress}/${unlock.required} perfect ${game} jobs`;
 }
+
+const GROUP_ICONS = Object.freeze({
+  Mowers: "🚜", Vacuums: "🧹", Trees: "🌳", Seating: "🪑", Bins: "🗑️", Decorations: "🌼", Furniture: "🛋️",
+  Farming: "🥕", "Animal Treats": "🐾",
+});
 
 export class ShopController {
   constructor(shopService, runtime, { onModalChange = () => {}, onPlaceItem = () => ({ ok: false }), defaultShopId = "willowmere-shop" } = {}) {
@@ -27,6 +32,9 @@ export class ShopController {
     this.groupTabs = document.querySelector("#shop-group-tabs");
     this.balance = document.querySelector("#shop-balance");
     this.productList = document.querySelector("#shop-product-list");
+    this.searchInput = document.querySelector("#shop-search");
+    this.sortSelect = document.querySelector("#shop-sort");
+    this.emptyMessage = document.querySelector("#shop-empty");
     this.detailIcon = document.querySelector("#shop-detail-icon");
     this.detailName = document.querySelector("#shop-detail-name");
     this.detailDescription = document.querySelector("#shop-detail-description");
@@ -40,6 +48,8 @@ export class ShopController {
     this.activeGroup = null;
     this.selectedItemId = null;
     this.previousFocus = null;
+    this.searchQuery = "";
+    this.sortMode = "name";
 
     this.onOpen = () => this.open(this.defaultShopId);
     this.onClose = () => this.close();
@@ -53,6 +63,8 @@ export class ShopController {
       const button = event.target.closest?.("[data-shop-group]");
       if (button) this.selectGroup(button.dataset.shopGroup, { focus: true });
     };
+    this.onSearch = () => { this.searchQuery = this.searchInput?.value.trim().toLocaleLowerCase() || ""; this.render(); };
+    this.onSort = () => { this.sortMode = this.sortSelect?.value || "name"; this.render(); };
     this.onKeyDown = (event) => this.handleKeyDown(event);
     this.openButton?.addEventListener("click", this.onOpen);
     this.closeButton?.addEventListener("click", this.onClose);
@@ -60,6 +72,8 @@ export class ShopController {
     this.placeButton?.addEventListener("click", this.onPlace);
     this.productList?.addEventListener("click", this.onProductClick);
     this.groupTabs?.addEventListener("click", this.onGroupClick);
+    this.searchInput?.addEventListener("input", this.onSearch);
+    this.sortSelect?.addEventListener("change", this.onSort);
     document.addEventListener("keydown", this.onKeyDown);
     this.unsubscribe = runtime.gameState.subscribe(() => {
       if (this.isOpen()) this.render();
@@ -148,15 +162,35 @@ export class ShopController {
       button.dataset.shopGroup = group;
       button.setAttribute("role", "tab");
       button.setAttribute("aria-selected", String(group === catalogue.activeGroup));
-      button.textContent = group;
+      const icon = document.createElement("span");
+      icon.className = "shop-group-icon";
+      icon.setAttribute("aria-hidden", "true");
+      icon.dataset.assetLabel = `KW-SHOP-CATEGORY-${group.toUpperCase().replaceAll(" ", "-")}`;
+      icon.textContent = GROUP_ICONS[group] || "🛍️";
+      const label = document.createElement("span");
+      label.textContent = group;
+      button.append(icon, label);
       this.groupTabs.append(button);
     }
   }
 
-  renderProducts(catalogue) {
+  visibleProducts(catalogue) {
+    const filtered = catalogue.products.filter((product) => {
+      if (!this.searchQuery) return true;
+      return `${product.item.name} ${product.item.description || ""}`.toLocaleLowerCase().includes(this.searchQuery);
+    });
+    return filtered.sort((left, right) => {
+      if (this.sortMode === "price-low") return left.quote.cost - right.quote.cost || left.item.name.localeCompare(right.item.name);
+      if (this.sortMode === "price-high") return right.quote.cost - left.quote.cost || left.item.name.localeCompare(right.item.name);
+      return left.item.name.localeCompare(right.item.name);
+    });
+  }
+
+  renderProducts(products) {
     if (!this.productList) return;
     this.productList.replaceChildren();
-    for (const product of catalogue.products) {
+    this.emptyMessage?.classList.toggle("hidden", products.length > 0);
+    for (const product of products) {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "shop-product";
@@ -167,6 +201,7 @@ export class ShopController {
       const icon = document.createElement("span");
       icon.className = "shop-product-icon";
       icon.setAttribute("aria-hidden", "true");
+      icon.dataset.assetLabel = `KW-SHOP-PRODUCT-${product.item.id.toUpperCase()}`;
       icon.textContent = product.item.icon;
       const copy = document.createElement("span");
       copy.className = "shop-product-copy";
@@ -184,6 +219,7 @@ export class ShopController {
   renderDetail(product) {
     if (!product?.ok) return;
     if (this.detailIcon) this.detailIcon.textContent = product.item.icon;
+    if (this.detailIcon) this.detailIcon.dataset.assetLabel = `KW-SHOP-DETAIL-${product.item.id.toUpperCase()}`;
     if (this.detailName) this.detailName.textContent = product.item.name;
     if (this.detailDescription) {
       const base = product.item.description || `${product.item.shopGroup} stock from the original Kindworks catalogue.`;
@@ -200,18 +236,20 @@ export class ShopController {
       : `🪙 ${formatCoins(product.item.price)}`;
     if (this.detailOwned) this.detailOwned.textContent = `${formatCoins(product.owned)} / ${formatCoins(product.limit)} owned`;
     const placeable = product.item.category === "placeable";
+    const directlyPlaceable = placeable || product.item.category === "furniture" || product.item.farmingKind === "sapling";
+    const destination = itemUseDestinationFor(product.item);
     if (this.placementPreview) {
-      this.placementPreview.classList.toggle("hidden", !placeable);
+      this.placementPreview.classList.toggle("hidden", !destination);
       if (placeable) {
         const diameter = placeableFootprintFor(product.item) * 2;
         const interaction = product.item.effect?.npcBin ? "Residents can use it as a public bin." : product.item.effect?.npcDestination ? "Residents can visit this object." : "Blocks wildlife and rubbish spawning safely.";
         this.placementPreview.textContent = `Town preview · ${diameter}×${diameter} footprint · rotates 90° · ${interaction}`;
-      }
+      } else if (destination) this.placementPreview.textContent = `${destination.label} · ${destination.detail}`;
     }
     if (this.placeButton) {
-      this.placeButton.classList.toggle("hidden", !placeable || product.owned < 1);
-      this.placeButton.disabled = !placeable || product.owned < 1;
-      this.placeButton.textContent = placeable ? `Place owned ${product.item.name}` : "Place in town";
+      this.placeButton.classList.toggle("hidden", !directlyPlaceable || product.owned < 1);
+      this.placeButton.disabled = !directlyPlaceable || product.owned < 1;
+      this.placeButton.textContent = directlyPlaceable ? `${destination.label}: ${product.item.name}` : "Use owned item";
     }
     if (!this.buyButton) return;
     const equipment = product.item.category === "equipment";
@@ -244,8 +282,12 @@ export class ShopController {
     if (this.description) this.description.textContent = catalogue.shop.description;
     if (this.catalogueTitle) this.catalogueTitle.textContent = catalogue.activeGroup;
     if (this.balance) this.balance.textContent = formatCoins(catalogue.balance);
+    if (this.searchInput && this.searchInput.value !== this.searchQuery) this.searchInput.value = this.searchQuery;
+    if (this.sortSelect && this.sortSelect.value !== this.sortMode) this.sortSelect.value = this.sortMode;
     this.renderGroups(catalogue);
-    this.renderProducts(catalogue);
+    const visible = this.visibleProducts(catalogue);
+    if (!visible.some((product) => product.item.id === this.selectedItemId)) this.selectedItemId = visible[0]?.item.id || catalogue.products[0]?.item.id || null;
+    this.renderProducts(visible);
     const product = this.shopService.getProduct(this.activeShopId, this.selectedItemId);
     this.renderDetail(product);
     return catalogue;
@@ -278,8 +320,9 @@ export class ShopController {
 
   activatePlacement() {
     const product = this.shopService.getProduct(this.activeShopId, this.selectedItemId);
-    if (!product.ok || product.item.category !== "placeable" || product.owned < 1) {
-      const result = { ok: false, code: "not-owned", message: "Buy or own this town item before placing it." };
+    const directlyPlaceable = product.ok && (product.item.category === "placeable" || product.item.category === "furniture" || product.item.farmingKind === "sapling");
+    if (!product.ok || !directlyPlaceable || product.owned < 1) {
+      const result = { ok: false, code: "not-owned", message: "Buy or own this item before placing it in its correct location." };
       this.showMessage(result.message, "error");
       return result;
     }
@@ -288,7 +331,7 @@ export class ShopController {
   }
 
   focusableElements() {
-    return [this.closeButton, ...(this.groupTabs?.querySelectorAll("button") || []), ...(this.productList?.querySelectorAll("button") || []), this.buyButton, this.placeButton]
+    return [this.closeButton, ...(this.groupTabs?.querySelectorAll("button") || []), this.searchInput, this.sortSelect, ...(this.productList?.querySelectorAll("button") || []), this.buyButton, this.placeButton]
       .filter((element) => element && !element.disabled);
   }
 
@@ -343,6 +386,8 @@ export class ShopController {
     this.placeButton?.removeEventListener("click", this.onPlace);
     this.productList?.removeEventListener("click", this.onProductClick);
     this.groupTabs?.removeEventListener("click", this.onGroupClick);
+    this.searchInput?.removeEventListener("input", this.onSearch);
+    this.sortSelect?.removeEventListener("change", this.onSort);
     document.removeEventListener("keydown", this.onKeyDown);
     this.unsubscribe?.();
   }

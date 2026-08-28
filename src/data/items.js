@@ -209,6 +209,18 @@ export function inventoryLimitFor(item) {
   return item?.category === "equipment" || item?.unique ? 1 : item?.inventoryLimit || INVENTORY_STACK_LIMIT;
 }
 
+export function itemUseDestinationFor(item) {
+  if (!item) return null;
+  if (item.farmingKind === "sapling") return Object.freeze({ id: "town-orchard", label: "Plant in town", detail: "Plant on clear open ground in Willowmere." });
+  if (item.category === "placeable") return Object.freeze({ id: "town", label: "Place in town", detail: "Place on clear open ground in Willowmere." });
+  if (item.category === "furniture") return Object.freeze({ id: "personal-home", label: "Furnish home", detail: "Place inside your personal resident's home." });
+  if (item.category === "equipment" && item.slot === "mower") return Object.freeze({ id: "lawn-care", label: "Use in Lawn Care", detail: "Equip it to improve mowing speed through resistant grass and weeds." });
+  if (item.category === "equipment" && item.slot === "vacuum") return Object.freeze({ id: "house-rescue", label: "Use in House Rescue", detail: "Equip it to improve vacuum power, reach and movement speed." });
+  if (item.category === "consumable" && item.shopGroup === "Farming") return Object.freeze({ id: "allotments", label: "Use at allotments", detail: "Plant in an unlocked allotment bed." });
+  if (item.category === "consumable" && item.shopGroup === "Animal Treats") return Object.freeze({ id: "animal-friends", label: "Use with animals", detail: "Offer it through Animal Friends when an animal accepts this food." });
+  return null;
+}
+
 export function placeableFootprintFor(item) {
   if (!item) return 30;
   if (["grand-oak", "grand-fountain"].includes(item.id)) return 72;
