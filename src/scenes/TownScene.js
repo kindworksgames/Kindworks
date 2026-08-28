@@ -16,6 +16,7 @@ import {
   PLAYER_START,
   RIVERSIDE_KITCHEN,
   SOUTH_SHORE_SCOOPS,
+  TOWN_REFERENCE_LAYOUT,
   RIVER_CLEAROUT,
   RIVER_PATH,
   ROADS,
@@ -623,19 +624,8 @@ export class TownScene extends Phaser.Scene {
       terrain.fillCircle(random.between(30, WORLD.width - 30), random.between(30, WORLD.height - 30), random.between(2, 6));
     }
 
-    const water = this.add.graphics().setDepth(5);
-    water.lineStyle(220, COLORS.waterDark, 1);
-    water.strokePoints(points(RIVER_PATH), false, false);
-    water.lineStyle(188, COLORS.water, 1);
-    water.strokePoints(points(RIVER_PATH), false, false);
-    water.lineStyle(18, COLORS.waterLight, 0.42);
-    water.strokePoints(points(RIVER_PATH), false, false);
-    water.fillStyle(COLORS.waterDark, 1);
-    water.fillRoundedRect(3050, 2490, 1070, 330, 70);
-    water.fillStyle(COLORS.water, 1);
-    water.fillRoundedRect(3070, 2510, 1030, 310, 58);
-    water.fillStyle(0xe8d29f, 1);
-    water.fillRoundedRect(3060, 2220, 1050, 310, 70);
+    this.drawReferenceWaterways();
+    this.drawReferenceWoodland();
 
     const roadLayer = this.add.graphics().setDepth(10);
     for (const road of ROADS) {
@@ -651,19 +641,12 @@ export class TownScene extends Phaser.Scene {
       roadLayer.strokePoints(points(path.points), false, false);
     }
 
-    const pond = this.add.graphics().setDepth(12);
-    pond.fillStyle(0xbca57b, 0.8);
-    pond.fillEllipse(1430, 1075, 450, 310);
-    pond.fillStyle(COLORS.water, 1);
-    pond.fillEllipse(1430, 1075, 410, 270);
-    pond.fillStyle(COLORS.waterLight, 0.45);
-    pond.fillEllipse(1390, 1035, 190, 56);
-    pond.fillStyle(COLORS.water, 1);
-    pond.fillEllipse(2005, 2335, 440, 300);
+    this.drawReferencePonds();
     this.drawAmbientPondDucks();
 
     this.drawBridges();
     this.drawParkDetails();
+    this.drawReferenceBeachDetails();
     HOUSES.forEach((house) => this.drawHouse(house));
     this.drawHouseRescueMarkers();
     SHOPS.forEach((shop) => this.drawShop(shop));
@@ -689,6 +672,163 @@ export class TownScene extends Phaser.Scene {
     this.add.rectangle(WORLD.width / 2, WORLD.height / 2, WORLD.width - 24, WORLD.height - 24)
       .setStrokeStyle(24, 0x315e3f, 1)
       .setDepth(300);
+  }
+
+  drawReferenceWaterways() {
+    const { river, beach } = TOWN_REFERENCE_LAYOUT;
+    const banks = this.add.graphics().setDepth(4);
+    banks.lineStyle(river.bankWidth + 30, 0x655e48, 0.28);
+    banks.strokePoints(points(RIVER_PATH), false, false);
+    banks.lineStyle(river.bankWidth, 0x9a8b68, 1);
+    banks.strokePoints(points(RIVER_PATH), false, false);
+
+    const water = this.add.graphics().setDepth(5);
+    water.lineStyle(river.waterWidth + 22, COLORS.waterDark, 1);
+    water.strokePoints(points(RIVER_PATH), false, false);
+    water.lineStyle(river.waterWidth, COLORS.water, 1);
+    water.strokePoints(points(RIVER_PATH), false, false);
+    water.lineStyle(13, COLORS.waterLight, 0.46);
+    water.strokePoints(points(RIVER_PATH), false, false);
+
+    const rockLayer = this.add.graphics().setDepth(7);
+    const bridgeY = BRIDGES.map((bridge) => bridge.y);
+    for (let y = 34, index = 0; y < WORLD.height - 24; y += 38, index += 1) {
+      if (bridgeY.some((crossing) => Math.abs(crossing - y) < 72)) continue;
+      const center = 2555 + Math.sin(y / 230) * 16;
+      for (const side of [-1, 1]) {
+        const jitter = (deterministicUnit("river-bank", index * 2 + (side > 0 ? 1 : 0)) - 0.5) * 14;
+        const radius = 10 + deterministicUnit("river-rock", index * 3 + (side > 0 ? 1 : 0)) * 12;
+        const bankOffset = river.waterWidth / 2 + radius * 0.55 + 5;
+        rockLayer.fillStyle(index % 4 === 0 ? 0x706a57 : index % 3 === 0 ? 0x8d8269 : 0xa69a78, 1);
+        rockLayer.fillCircle(center + side * bankOffset + jitter, y, radius);
+        rockLayer.fillStyle(0xc0b38d, 0.55);
+        rockLayer.fillCircle(center + side * bankOffset + jitter - radius * 0.24, y - radius * 0.28, radius * 0.42);
+      }
+    }
+
+    const flow = this.add.graphics().setDepth(8);
+    flow.lineStyle(3, 0xd8f5f2, 0.48);
+    for (let y = 85, index = 0; y < WORLD.height; y += 82, index += 1) {
+      if (bridgeY.some((crossing) => Math.abs(crossing - y) < 64)) continue;
+      const center = 2555 + Math.sin(y / 230) * 16;
+      const offset = index % 2 ? -42 : 26;
+      flow.beginPath();
+      flow.moveTo(center + offset - 20, y - 18);
+      flow.lineTo(center + offset + 2, y);
+      flow.lineTo(center + offset - 14, y + 18);
+      flow.strokePath();
+    }
+
+    const sand = this.add.graphics().setDepth(4);
+    sand.fillStyle(beach.sandColor, 1);
+    sand.fillPoints(points(beach.sandPolygon), true);
+    for (const [x, y, radius] of beach.roundedSandCaps) sand.fillCircle(x, y, radius);
+    sand.lineStyle(11, beach.sandEdgeColor, 0.9);
+    sand.strokePoints(points(beach.shoreline), false, false);
+
+    const harbour = this.add.graphics().setDepth(5);
+    harbour.fillStyle(COLORS.waterDark, 1);
+    harbour.fillPoints(points(beach.waterPolygon), true);
+    harbour.fillStyle(COLORS.water, 1);
+    harbour.fillPoints(points(beach.innerWaterPolygon), true);
+    harbour.lineStyle(5, 0xbdebf0, 0.72);
+    for (let row = 0; row < 4; row += 1) {
+      const y = 2535 + row * 62;
+      harbour.beginPath();
+      harbour.moveTo(3130 + (row % 2) * 40, y);
+      harbour.lineTo(3330 + (row % 2) * 40, y + 9);
+      harbour.lineTo(3525 + (row % 2) * 40, y);
+      harbour.strokePath();
+    }
+    setSpriteAiLabelHint(water, { id: "world.willow-river.water", label: "Willow River flowing water", kind: "river-water" });
+    setSpriteAiLabelHint(rockLayer, { id: "world.willow-river.rock-banks", label: "Willow River treeless rock banks", kind: "river-bank" });
+    setSpriteAiLabelHint(sand, { id: "world.south-shore.curved-beach", label: "South Shore curved golden beach", kind: "beach" });
+    setSpriteAiLabelHint(harbour, { id: "world.south-shore.harbour-water", label: "South Shore harbour water", kind: "harbour-water" });
+  }
+
+  drawReferenceWoodland() {
+    const { woodland } = TOWN_REFERENCE_LAYOUT;
+    const forest = this.add.graphics().setDepth(16);
+    const trees = [];
+    const addTree = (x, y, scale = 1) => {
+      if (Math.abs(x - woodland.riverClearCenterX) < woodland.riverClearHalfWidth) return;
+      trees.push([x, y, scale]);
+    };
+    for (let x = 35, index = 0; x < WORLD.width; x += 58, index += 1) {
+      addTree(x, 25 + (index % 3) * 25, 0.9 + (index % 4) * 0.08);
+      addTree(x + 24, WORLD.height - 28 - (index % 3) * 24, 0.94 + (index % 3) * 0.08);
+    }
+    for (let y = 80, index = 0; y < WORLD.height - 70; y += 62, index += 1) {
+      addTree(28 + (index % 3) * 24, y, 0.92 + (index % 4) * 0.07);
+      addTree(WORLD.width - 30 - (index % 3) * 25, y + 20, 0.95 + (index % 3) * 0.07);
+    }
+    for (const [x, y, scale] of woodland.interiorTrees) addTree(x, y, scale);
+    for (const [x, y, scale] of trees) {
+      forest.fillStyle(0x233f2b, 0.24);
+      forest.fillEllipse(x + 5 * scale, y + 22 * scale, 69 * scale, 26 * scale);
+      forest.fillStyle(0x684a31, 1);
+      forest.fillRect(x - 6 * scale, y - 2 * scale, 12 * scale, 35 * scale);
+      forest.fillStyle(0x285f34, 1);
+      forest.fillCircle(x - 18 * scale, y - 10 * scale, 25 * scale);
+      forest.fillCircle(x + 16 * scale, y - 17 * scale, 28 * scale);
+      forest.fillCircle(x, y - 35 * scale, 27 * scale);
+      forest.fillStyle(0x448c43, 1);
+      forest.fillCircle(x - 12 * scale, y - 29 * scale, 16 * scale);
+      forest.fillCircle(x + 13 * scale, y - 36 * scale, 15 * scale);
+      forest.fillStyle(0x79bb4d, 0.82);
+      forest.fillCircle(x - 16 * scale, y - 42 * scale, 8 * scale);
+      forest.fillCircle(x + 6 * scale, y - 50 * scale, 9 * scale);
+    }
+    setSpriteAiLabelHint(forest, { id: "world.woodland.perimeter", label: "Dense woodland surrounding Willowmere with clear river banks", kind: "woodland" });
+  }
+
+  drawReferencePonds() {
+    const pond = this.add.graphics().setDepth(12);
+    const { ponds } = TOWN_REFERENCE_LAYOUT;
+    for (const [index, waterBody] of ponds.entries()) {
+      pond.fillStyle(0x6f654d, 0.38);
+      pond.fillEllipse(waterBody.x, waterBody.y + 9, waterBody.width + 38, waterBody.height + 38);
+      const rockCount = index === 0 ? 28 : 34;
+      for (let rock = 0; rock < rockCount; rock += 1) {
+        const angle = (rock / rockCount) * Math.PI * 2;
+        const x = waterBody.x + Math.cos(angle) * (waterBody.width / 2 + 8);
+        const y = waterBody.y + Math.sin(angle) * (waterBody.height / 2 + 8);
+        const radius = 8 + (rock % 4) * 2;
+        pond.fillStyle(rock % 3 === 0 ? 0xa79a77 : 0x81765e, 1);
+        pond.fillCircle(x, y, radius);
+      }
+      pond.fillStyle(COLORS.waterDark, 1);
+      pond.fillEllipse(waterBody.x, waterBody.y, waterBody.width + 10, waterBody.height + 10);
+      pond.fillStyle(COLORS.water, 1);
+      pond.fillEllipse(waterBody.x, waterBody.y, waterBody.width, waterBody.height);
+      pond.fillStyle(COLORS.waterLight, 0.42);
+      pond.fillEllipse(waterBody.x - waterBody.width * 0.1, waterBody.y - waterBody.height * 0.16, waterBody.width * 0.46, waterBody.height * 0.2);
+      for (let lily = 0; lily < (index === 0 ? 10 : 13); lily += 1) {
+        const x = waterBody.x - waterBody.width * 0.34 + deterministicUnit(`pond-${index}`, lily * 2) * waterBody.width * 0.68;
+        const y = waterBody.y - waterBody.height * 0.3 + deterministicUnit(`pond-${index}`, lily * 2 + 1) * waterBody.height * 0.6;
+        pond.fillStyle(lily % 3 === 0 ? 0x7eaf47 : 0x4d934d, 0.95);
+        pond.fillEllipse(x, y, 18, 9);
+        if (lily % 4 === 0) pond.fillStyle(0xf4a8b8, 1).fillCircle(x + 2, y - 3, 4);
+      }
+    }
+    const fountain = this.add.graphics().setDepth(24);
+    fountain.fillStyle(0x887d65, 1).fillEllipse(1430, 1088, 76, 28);
+    fountain.fillStyle(0xb8ac8b, 1).fillRect(1422, 1029, 16, 59).fillCircle(1430, 1030, 15);
+    fountain.lineStyle(6, 0xc7f2f4, 0.9);
+    fountain.beginPath();
+    fountain.moveTo(1430, 1030);
+    fountain.lineTo(1405, 1067);
+    fountain.moveTo(1430, 1030);
+    fountain.lineTo(1455, 1067);
+    fountain.strokePath();
+    const dock = this.add.graphics().setDepth(24);
+    dock.fillStyle(0x694a32, 1).fillRoundedRect(1950, 2460, 255, 34, 6);
+    dock.fillStyle(0xb57a43, 1).fillRoundedRect(1958, 2465, 238, 22, 4);
+    dock.lineStyle(3, 0x74482d, 0.8);
+    for (let x = 1970; x < 2190; x += 27) dock.lineBetween(x, 2466, x, 2486);
+    setSpriteAiLabelHint(pond, { id: "world.ponds.rock-lined-water", label: "Willow Commons and Reedbank rock-lined ponds", kind: "pond" });
+    setSpriteAiLabelHint(fountain, { id: "world.commons.pond-fountain", label: "Willow Commons pond fountain", kind: "fountain" });
+    setSpriteAiLabelHint(dock, { id: "world.reedbank.fishing-dock", label: "Reedbank wooden fishing dock", kind: "dock" });
   }
 
   drawAmbientPondDucks() {
@@ -728,6 +868,47 @@ export class TownScene extends Phaser.Scene {
     const graphics = this.add.graphics().setDepth(20);
     graphics.fillStyle(0xb7d98a, 0.7);
     graphics.fillRoundedRect(1130, 745, 1220, 690, 80);
+    const playground = TOWN_REFERENCE_LAYOUT.playground;
+    graphics.fillStyle(0xb98c54, 0.45);
+    graphics.fillRoundedRect(playground.x - 10, playground.y - 10, playground.width + 20, playground.height + 20, 58);
+    graphics.fillStyle(playground.sandColor, 1);
+    graphics.fillRoundedRect(playground.x, playground.y, playground.width, playground.height, 52);
+    graphics.lineStyle(5, 0xf2d596, 0.72);
+    graphics.strokeRoundedRect(playground.x + 5, playground.y + 5, playground.width - 10, playground.height - 10, 47);
+
+    // A full authored play area, not a marker: twin swings, climbing tower and slide.
+    graphics.lineStyle(12, 0x68462f, 1);
+    graphics.lineBetween(1810, 1160, 1855, 970);
+    graphics.lineBetween(1945, 1160, 1900, 970);
+    graphics.lineBetween(1855, 970, 1900, 970);
+    graphics.lineStyle(5, 0xc6b27e, 1);
+    for (const x of [1868, 1888]) {
+      graphics.lineBetween(x - 5, 978, x - 5, 1060);
+      graphics.lineBetween(x + 9, 978, x + 9, 1060);
+      graphics.fillStyle(0x4d708b, 1);
+      graphics.fillRoundedRect(x - 10, 1055, 24, 9, 3);
+    }
+    graphics.fillStyle(0x70482e, 1);
+    graphics.fillRoundedRect(1990, 1000, 80, 120, 9);
+    graphics.fillStyle(0xd15e4c, 1);
+    graphics.fillTriangle(1980, 1004, 2030, 950, 2080, 1004);
+    graphics.fillStyle(0x4f8fb7, 1);
+    graphics.fillRoundedRect(2005, 1020, 50, 62, 7);
+    graphics.lineStyle(23, 0x4e8eb5, 1);
+    graphics.beginPath();
+    graphics.moveTo(2055, 1040);
+    graphics.lineTo(2100, 1090);
+    graphics.lineTo(2110, 1170);
+    graphics.strokePath();
+    graphics.lineStyle(5, 0xb8e1ec, 0.85);
+    graphics.beginPath();
+    graphics.moveTo(2057, 1040);
+    graphics.lineTo(2090, 1093);
+    graphics.lineTo(2100, 1168);
+    graphics.strokePath();
+    graphics.fillStyle(0x745136, 1);
+    for (const x of [2004, 2058]) graphics.fillRect(x, 1080, 11, 84);
+    setSpriteAiLabelHint(graphics, { id: "world.commons.playground-layout", label: "Commons full-size sand playground with swings and slide", kind: "playground" });
     graphics.fillStyle(0xd6bd83, 1);
     graphics.fillRoundedRect(1060, 2130, 560, 420, 25);
     graphics.lineStyle(5, 0x9b7d52, 0.8);
@@ -746,6 +927,34 @@ export class TownScene extends Phaser.Scene {
       graphics.fillStyle(COLORS.grassLight, 0.65);
       graphics.fillCircle(x - 10, y - 19, 14);
     }
+  }
+
+  drawReferenceBeachDetails() {
+    const details = this.add.graphics().setDepth(24);
+    const umbrellas = [
+      [3290, 2300, 0x3779a8], [3510, 2260, 0xd6574a], [3870, 2310, 0xe8b84e],
+    ];
+    for (const [x, y, color] of umbrellas) {
+      details.fillStyle(0x6d4c31, 1).fillRect(x - 4, y, 8, 76);
+      details.fillStyle(color, 1).fillTriangle(x - 58, y + 3, x, y - 44, x + 58, y + 3);
+      details.fillStyle(0xfff0c7, 0.95).fillTriangle(x - 28, y + 2, x, y - 43, x + 8, y + 2);
+      details.lineStyle(4, 0x6b4b35, 0.75).lineBetween(x - 58, y + 3, x + 58, y + 3);
+    }
+    for (const [x, y, color] of [[3200, 2390, 0x4f83a6], [3420, 2385, 0xbe5c55], [3740, 2375, 0x4f83a6], [3970, 2400, 0xbe5c55]]) {
+      details.fillStyle(color, 1).fillRoundedRect(x - 34, y - 9, 68, 18, 6);
+      details.fillStyle(0x6a4932, 1).fillRect(x - 29, y + 7, 8, 18).fillRect(x + 21, y + 7, 8, 18);
+    }
+    details.fillStyle(0x7a4d2d, 1).fillRoundedRect(3590, 2470, 210, 38, 5);
+    details.fillStyle(0xc18446, 1).fillRoundedRect(3598, 2476, 194, 24, 3);
+    details.fillStyle(0x7a4d2d, 1).fillRoundedRect(3658, 2470, 72, 245, 5);
+    details.fillStyle(0xc18446, 1).fillRoundedRect(3666, 2476, 56, 231, 3);
+    details.lineStyle(3, 0x754526, 0.85);
+    for (let y = 2500; y < 2690; y += 27) details.lineBetween(3668, y, 3720, y);
+    details.fillStyle(0xf5eee0, 1).fillRoundedRect(3990, 2220, 78, 110, 8);
+    details.fillStyle(0xc95343, 1).fillRoundedRect(3998, 2228, 62, 34, 5);
+    details.fillStyle(0x315f7d, 1).fillRect(4023, 2265, 12, 58);
+    details.lineStyle(5, 0x7d4d30, 1).strokeRoundedRect(3990, 2220, 78, 110, 8);
+    setSpriteAiLabelHint(details, { id: "world.south-shore.furniture-and-pier", label: "South Shore umbrellas, deck chairs, lifeguard hut and harbour pier", kind: "beach-details" });
   }
 
   drawHouse(house) {

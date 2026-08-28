@@ -31,6 +31,63 @@ export const RIVER_PATH = Object.freeze([
   [2585, 2920],
 ]);
 
+// Code-native transcription of the approved Willowmere overhead reference.
+// These values describe authored visual regions; they are deliberately separate
+// from the protected house, shop, interaction and save identities below.
+export const TOWN_REFERENCE_LAYOUT = Object.freeze({
+  river: Object.freeze({
+    waterWidth: 188,
+    bankWidth: 226,
+    bridgeCount: 3,
+    treeFree: true,
+  }),
+  ponds: Object.freeze([
+    Object.freeze({ id: "commons-pond", x: 1430, y: 1075, width: 410, height: 270, feature: "fountain" }),
+    Object.freeze({ id: "reedbank-pond", x: 2005, y: 2335, width: 440, height: 300, feature: "fishing-dock" }),
+  ]),
+  playground: Object.freeze({ x: 1768, y: 922, width: 356, height: 304, sandColor: 0xdab46f }),
+  beach: Object.freeze({
+    sandColor: 0xe8ca7a,
+    sandEdgeColor: 0xf4dfa3,
+    sandPolygon: Object.freeze([
+      Object.freeze([3050, 2520]), Object.freeze([3070, 2325]), Object.freeze([3160, 2180]),
+      Object.freeze([3340, 2095]), Object.freeze([3560, 2070]), Object.freeze([3820, 2110]),
+      Object.freeze([4025, 2225]), Object.freeze([4120, 2360]), Object.freeze([4120, 2540]),
+    ]),
+    roundedSandCaps: Object.freeze([
+      Object.freeze([3180, 2340, 190]), Object.freeze([3500, 2250, 250]), Object.freeze([3830, 2300, 245]),
+    ]),
+    shoreline: Object.freeze([
+      Object.freeze([3070, 2470]), Object.freeze([3190, 2440]), Object.freeze([3350, 2475]),
+      Object.freeze([3510, 2505]), Object.freeze([3690, 2480]), Object.freeze([3880, 2508]), Object.freeze([4100, 2480]),
+    ]),
+    waterPolygon: Object.freeze([
+      Object.freeze([3050, 2460]), Object.freeze([3200, 2430]), Object.freeze([3370, 2470]),
+      Object.freeze([3530, 2500]), Object.freeze([3710, 2470]), Object.freeze([3890, 2500]),
+      Object.freeze([4120, 2465]), Object.freeze([4120, 2800]), Object.freeze([3050, 2800]),
+    ]),
+    innerWaterPolygon: Object.freeze([
+      Object.freeze([3070, 2495]), Object.freeze([3210, 2470]), Object.freeze([3380, 2508]),
+      Object.freeze([3535, 2536]), Object.freeze([3715, 2506]), Object.freeze([3895, 2535]),
+      Object.freeze([4100, 2505]), Object.freeze([4100, 2800]), Object.freeze([3070, 2800]),
+    ]),
+  }),
+  woodland: Object.freeze({
+    riverClearCenterX: 2555,
+    riverClearHalfWidth: 190,
+    interiorTrees: Object.freeze([
+      Object.freeze([520, 1190, 1]), Object.freeze([780, 1320, 0.95]), Object.freeze([350, 1430, 1.05]),
+      Object.freeze([1160, 770, 0.94]), Object.freeze([1670, 760, 1.05]), Object.freeze([2210, 790, 1]),
+      Object.freeze([1130, 1370, 0.98]), Object.freeze([1570, 1390, 1.03]), Object.freeze([2260, 1320, 1]),
+      Object.freeze([2880, 250, 1]), Object.freeze([3100, 300, 0.96]), Object.freeze([3350, 310, 1.05]),
+      Object.freeze([2830, 1120, 0.92]), Object.freeze([3950, 1120, 1]), Object.freeze([2900, 1990, 1.04]),
+      Object.freeze([3230, 1975, 0.92]), Object.freeze([3980, 1985, 1.08]), Object.freeze([2940, 2240, 1]),
+      Object.freeze([760, 2170, 0.98]), Object.freeze([950, 2500, 1.05]), Object.freeze([1710, 2520, 1]),
+      Object.freeze([2250, 2140, 0.94]), Object.freeze([2250, 2590, 1.04]),
+    ]),
+  }),
+});
+
 export const ROADS = Object.freeze([
   { id: "north-road", width: 76, points: [[130, 530], [520, 530], [920, 530], [1320, 530], [1720, 530], [2120, 530], [2430, 530]] },
   { id: "market-loop", width: 64, points: [[150, 530], [145, 620], [205, 700], [360, 750], [600, 780], [820, 815], [1030, 860], [1050, 970]] },
