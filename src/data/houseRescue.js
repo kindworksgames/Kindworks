@@ -28,6 +28,21 @@ export const HOUSE_RESCUE_RULES = Object.freeze({
   initialDirty: Object.freeze(["house-1", "house-6", "house-11", "house-16"]),
 });
 
+// Exterior dirt is derived from the existing save fields, so old saves gain the
+// visual progression without a schema migration or a new reward-bearing state.
+export function houseExteriorDirtStage(home, worldDay = 1) {
+  if (!home || home.houseId === "house-20") return 0;
+  if (home.dirty) return 3;
+  const due = Math.max(0, Math.floor(Number(home.nextDirtyDay) || 0));
+  if (!due) return 0;
+  const day = Math.max(1, Math.floor(Number(worldDay) || 1));
+  const completed = Math.max(0, Math.floor(Number(home.lastCompletedDay) || 0));
+  const cleanDay = completed || Math.max(1, due - HOUSE_RESCUE_RULES.respawnMaxDays);
+  const duration = Math.max(1, due - cleanDay);
+  const progress = Math.max(0, Math.min(1, (day - cleanDay) / duration));
+  return progress >= 2 / 3 ? 2 : progress >= 1 / 3 ? 1 : 0;
+}
+
 export const HOUSE_RESCUE_CATEGORIES = Object.freeze({
   organic: Object.freeze({ id: "organic", label: "Organic", icon: "🌿", color: "#4d934f" }),
   recycle: Object.freeze({ id: "recycle", label: "Recycling", icon: "♻️", color: "#4389c7" }),

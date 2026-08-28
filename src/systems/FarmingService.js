@@ -412,7 +412,7 @@ export class FarmingService {
     return this.commit((state) => {
       const lawn = state.farming.lawns[lawnId];
       const plot = LAWN_PLOTS.find((entry) => entry.id === lawnId);
-      if (!lawn || !plot) return { ok: false, code: "unknown-lawn", message: "That lawn does not exist." };
+      if (!lawn || !plot?.active) return { ok: false, code: "unknown-lawn", message: "That lawn does not exist." };
       if (!lawnNeedsCare(lawn)) return { ok: false, code: "lawn-tidy", message: "This lawn does not need care yet." };
       if (state.economy.coins + LAWN_CONFIG.rewardCoins > Number.MAX_SAFE_INTEGER) return { ok: false, code: "balance-overflow", message: "Coin balance limit reached." };
       const completedAt = new Date(this.now()).toISOString();

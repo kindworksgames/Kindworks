@@ -125,7 +125,7 @@ export class LawnCareService {
   beginTownJob(targetId, { returnPosition = null, returnFacing = "down" } = {}) {
     const plot = LAWN_PLOTS.find((entry) => entry.id === targetId);
     const lawn = this.gameState.getSnapshot().farming.lawns[targetId];
-    if (!plot || !lawn) return { ok: false, code: "unknown-lawn", message: "That lawn does not exist." };
+    if (!plot?.active || !lawn) return { ok: false, code: "unknown-lawn", message: "That lawn does not exist." };
     if (!lawnNeedsCare(lawn)) return { ok: false, code: "lawn-tidy", message: "This lawn does not need care yet." };
     const level = this.getSnapshot().progress.nextLevel;
     return this.beginSession({ mode: "town-job", targetId, level, returnPosition, returnFacing });
@@ -387,7 +387,7 @@ export class LawnCareService {
       progress: this.getCampaignSnapshot(),
       activeSession: state.activeSession,
       mower: this.getMowerLoadout(),
-      townJobs: LAWN_PLOTS.filter((plot) => lawnNeedsCare(this.gameState.getSnapshot().farming.lawns[plot.id])).map((plot) => plot.id),
+      townJobs: LAWN_PLOTS.filter((plot) => plot.active && lawnNeedsCare(this.gameState.getSnapshot().farming.lawns[plot.id])).map((plot) => plot.id),
     };
   }
 }

@@ -53,10 +53,12 @@ import { cinemaAccess } from "../data/impactProjects.js";
 import { RUBBISH_PRESENTATION, riverItemPosition } from "../data/livingEnvironment.js";
 import {
   CROP_STAGE_VISUALS,
-  HOUSE_ARCHITECTURE_KITS,
   ORCHARD_STAGE_VISUALS,
+  PERSONAL_HOME_ARCHITECTURE_KITS,
   SHOP_VISUAL_STATES,
+  houseArchitectureKit,
 } from "../data/legacyVisualStates.js";
+import { houseExteriorDirtStage } from "../data/houseRescue.js";
 import { setSpriteAiLabelHint } from "../plugins/SpriteAiLabelPlugin.js";
 import { startLazyScene } from "./lazyScenes.js";
 
@@ -77,6 +79,26 @@ function containsWithRadius(rect, x, y, radius = PLAYER_RADIUS) {
     y + radius > rect.y &&
     y - radius < rect.y + rect.height
   );
+}
+
+function deterministicUnit(text, index = 0) {
+  let hash = 2166136261;
+  for (const character of `${text}:${index}`) {
+    hash ^= character.charCodeAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0) / 4294967296;
+}
+
+function lawnVisualStage(height) {
+  return height < 20 ? 0 : height < 45 ? 1 : height < 70 ? 2 : 3;
+}
+
+function shadeColor(color, factor) {
+  const red = Math.max(0, Math.min(255, Math.round(((color >> 16) & 255) * factor)));
+  const green = Math.max(0, Math.min(255, Math.round(((color >> 8) & 255) * factor)));
+  const blue = Math.max(0, Math.min(255, Math.round((color & 255) * factor)));
+  return (red << 16) | (green << 8) | blue;
 }
 
 export class TownScene extends Phaser.Scene {
@@ -111,6 +133,8 @@ export class TownScene extends Phaser.Scene {
     this.townWindowLights = [];
     this.ambientPondDucks = [];
     this.interactionHighlight = null;
+    this.houseRescueVisuals = [];
+    this.lawnVisuals = null;
   }
 
   create() {
@@ -166,8 +190,8 @@ export class TownScene extends Phaser.Scene {
     const qaTarget = qaParams?.get("qa") || null;
     const animalQa = ["animals", "animal-fidelity"].includes(qaTarget);
     const animalQaArea = animalQa ? qaParams?.get("area") : null;
-    const qaHouseNumber = Math.max(1, Math.min(HOUSES.length, Math.floor(Number(qaParams?.get("house") || 1))));
-    const qaHouse = HOUSES[qaHouseNumber - 1];
+    const qaHouseNumber = Math.max(1, Math.min(20, Math.floor(Number(qaParams?.get("house") || 1))));
+    const qaHouse = HOUSES.find((house) => Number(house.id.split("-")[1]) === qaHouseNumber) || HOUSES[0];
     const animalQaPresentation = animalQa
       ? this.animals?.getWorldPresentations?.().find((entry) => entry.visible && !entry.definition.rare)
       : null;
@@ -425,6 +449,7 @@ export class TownScene extends Phaser.Scene {
       });
     }
     for (const plot of LAWN_PLOTS) {
+      if (!plot.active) continue;
       interactables.push({
         id: plot.id,
         kind: "lawn-job",
@@ -522,6 +547,7 @@ export class TownScene extends Phaser.Scene {
     this.stateSyncElapsed = 0;
     this.farmingSyncElapsed = 0;
     this.unsubscribeFarming = this.farming?.subscribe?.((snapshot, result) => this.handleFarmingChange(snapshot, result));
+    this.unsubscribeHouseRescue = this.houseRescue?.subscribe?.(() => this.drawHouseRescueMarkers());
     this.unsubscribeAnimals = this.animals?.subscribe?.(() => this.refreshAnimalPresentations(0));
     this.unsubscribeTownPlacement = this.townPlacement?.subscribe?.((snapshot, result) => this.handleTownPlacementChange(snapshot, result));
     this.unsubscribeLivingEnvironment = this.livingEnvironment?.subscribe?.(() => this.refreshLivingEnvironment(true));
@@ -694,91 +720,98 @@ export class TownScene extends Phaser.Scene {
     const width = house.width * scale;
     const height = house.height * scale;
     const x = house.x + (house.width - width) / 2;
-    // Keep the authored doorway/approach edge stable while the home grows upward
-    // and outward through the four original scale tiers.
     const y = house.y + house.height - height;
     const wallColor = personalHome ? PERSONAL_HOME_OPTIONS.wallPalette[personalHome.wallColor] : COLORS.wall;
     const roofColor = personalHome ? PERSONAL_HOME_OPTIONS.roofPalette[personalHome.roofColor] : house.roof;
-    const architecture = HOUSE_ARCHITECTURE_KITS.find(({ id }) => id === house.architectureKit) || HOUSE_ARCHITECTURE_KITS[0];
+    const architecture = personalHome
+      ? houseArchitectureKit(PERSONAL_HOME_ARCHITECTURE_KITS[Math.max(0, Math.min(PERSONAL_HOME_ARCHITECTURE_KITS.length - 1, (personalHome.level || 1) - 1))])
+      : houseArchitectureKit(house.architectureKit);
     const roofStyle = personalHome?.roofStyle || architecture.roof;
     const layer = this.add.graphics().setDepth(60 + house.y / 100);
     if (personalHome) this.personalHomeGraphics = layer;
+    const scaleX = width / 198;
+    const scaleY = height / 116;
+    const centerX = house.x + house.width / 2;
+    const centerY = house.y + house.height - 50 * scaleY;
+    const px = (value) => centerX + value * scaleX;
+    const py = (value) => centerY + value * scaleY;
+    const rect = (localX, localY, localWidth, localHeight, color, alpha = 1) => {
+      layer.fillStyle(color, alpha);
+      layer.fillRect(px(localX), py(localY), localWidth * scaleX, localHeight * scaleY);
+    };
+    const polygon = (values, color, outline = 0x294637) => {
+      const mapped = values.map(([localX, localY]) => ({ x: px(localX), y: py(localY) }));
+      layer.fillStyle(color, 1);
+      layer.fillPoints(mapped, true);
+      layer.lineStyle(Math.max(2, 5 * Math.min(scaleX, scaleY)), outline, 0.92);
+      layer.strokePoints(mapped, true);
+    };
     layer.fillStyle(0x5c864e, 0.5);
     layer.fillRoundedRect(house.x - 36, house.y - 38, house.width + 72, house.height + 78, 18);
-    layer.fillStyle(wallColor, 1);
-    if (personalHome?.level >= 2) {
-      const wingWidth = width * (personalHome.level >= 4 ? 0.24 : 0.18);
-      const wingHeight = height * 0.4;
-      layer.fillRoundedRect(x - wingWidth * 0.62, y + height - wingHeight, wingWidth, wingHeight, 7);
-      if (personalHome.level >= 3) layer.fillRoundedRect(x + width - wingWidth * 0.38, y + height - wingHeight, wingWidth, wingHeight, 7);
+    const body = architecture.body;
+    rect(body.x - 4, body.y - 4, body.w + 8, body.h + 8, COLORS.ink);
+    rect(body.x, body.y, body.w, body.h, wallColor);
+    rect(body.x, 36, body.w, 14, shadeColor(wallColor, 0.78));
+    rect(body.x - 4, 47, body.w + 8, 7, 0x765238);
+    const roof = architecture.roofShape;
+    let roofPoints;
+    if (roofStyle === "hip") roofPoints = [[roof.left, roof.eaveY], [roof.left + 29, roof.topY + 6], [roof.right - 29, roof.topY + 6], [roof.right, roof.eaveY], [roof.right - 7, roof.eaveY + 6], [roof.left + 7, roof.eaveY + 6]];
+    else if (roofStyle === "gambrel") {
+      const span = roof.right - roof.left;
+      roofPoints = [[roof.left, roof.eaveY], [roof.left + span * 0.12, roof.topY + (roof.eaveY - roof.topY) * 0.46], [roof.left + span * 0.31, roof.topY], [roof.right - span * 0.31, roof.topY], [roof.right - span * 0.12, roof.topY + (roof.eaveY - roof.topY) * 0.46], [roof.right, roof.eaveY], [roof.right - 7, roof.eaveY + 6], [roof.left + 7, roof.eaveY + 6]];
+    } else roofPoints = [[roof.left, roof.eaveY], [0, roof.topY], [roof.right, roof.eaveY], [roof.right - 7, roof.eaveY + 6], [roof.left + 7, roof.eaveY + 6]];
+    polygon(roofPoints, roofColor);
+    layer.lineStyle(Math.max(1.5, 3 * Math.min(scaleX, scaleY)), shadeColor(roofColor, 1.22), 0.95);
+    layer.lineBetween(px(roof.left + 15), py(roof.eaveY - 5), px(0), py(roof.topY + 8));
+    layer.lineBetween(px(0), py(roof.topY + 8), px(roof.right - 15), py(roof.eaveY - 5));
+    rect(architecture.chimneyX - 10, roof.topY + 4, 20, 32, COLORS.ink);
+    rect(architecture.chimneyX - 6, roof.topY + 7, 12, 27, 0x9a5c48);
+    if (architecture.feature === "cross-gable") {
+      polygon([[17, -5], [52, -43], [89, -5], [84, 1], [22, 1]], shadeColor(roofColor, 0.68));
+      layer.fillStyle(0xa9d6df, 1).fillCircle(px(53), py(-17), 10 * Math.min(scaleX, scaleY));
+      layer.lineStyle(3, COLORS.ink, 0.9).strokeCircle(px(53), py(-17), 10 * Math.min(scaleX, scaleY));
     }
-    layer.fillRoundedRect(x, y + height * 0.22, width, height * 0.78, 10);
-    layer.fillStyle(roofColor, 1);
-    if (roofStyle === "hip" || roofStyle === "bay") {
-      layer.fillPoints([
-        { x: x + width * 0.28, y: y - height * 0.05 },
-        { x: x + width * 0.72, y: y - height * 0.05 },
-        { x: x + width + 12 * scale, y: y + height * 0.32 },
-        { x: x - 12 * scale, y: y + height * 0.32 },
-      ], true);
-    } else if (roofStyle === "gambrel" || roofStyle === "thatch") {
-      layer.fillPoints([
-        { x: x + width * 0.37, y: y - height * 0.08 },
-        { x: x + width * 0.63, y: y - height * 0.08 },
-        { x: x + width * 0.84, y: y + height * 0.1 },
-        { x: x + width + 12 * scale, y: y + height * 0.32 },
-        { x: x - 12 * scale, y: y + height * 0.32 },
-        { x: x + width * 0.16, y: y + height * 0.1 },
-      ], true);
-    } else {
-      layer.fillTriangle(x - 12 * scale, y + height * 0.32, x + width / 2, y - height * 0.08, x + width + 12 * scale, y + height * 0.32);
-    }
-    layer.fillRect(x + 13 * scale, y + height * 0.27, width - 26 * scale, 28 * scale);
-    layer.fillStyle(0x6f4c35, 1);
-    layer.fillRect(x + width / 2 - 16 * scale, y + height - 54 * scale, 32 * scale, 54 * scale);
-    layer.fillStyle(0x8ac5d5, 1);
-    layer.fillRect(x + 28 * scale, y + height * 0.57, 34 * scale, 30 * scale);
-    layer.fillRect(x + width - 62 * scale, y + height * 0.57, 34 * scale, 30 * scale);
-    if (!personalHome) {
-      if (architecture.detail === "brick-chimney") {
-        layer.fillStyle(0x9a5c48, 1).fillRect(x + width * 0.72, y + 2, 18, 43);
-      } else if (architecture.detail === "flower-box") {
-        layer.fillStyle(0x765238, 1).fillRect(x + 23, y + height * 0.77, 44, 8).fillRect(x + width - 67, y + height * 0.77, 44, 8);
-        layer.fillStyle(0xe47e86, 1).fillCircle(x + 33, y + height * 0.75, 5).fillCircle(x + width - 34, y + height * 0.75, 5);
-      } else if (architecture.detail === "round-window") {
-        layer.fillStyle(0xa9d6df, 1).fillCircle(x + width / 2, y + height * 0.18, 14).lineStyle(3, 0x6f4c35, 0.8).strokeCircle(x + width / 2, y + height * 0.18, 14);
-      } else if (architecture.detail === "awning") {
-        layer.fillStyle(0xf2d5a0, 1).fillTriangle(x + 17, y + height * 0.53, x + 75, y + height * 0.53, x + 46, y + height * 0.41);
-      } else if (architecture.detail === "porch") {
-        layer.fillStyle(0xc49a69, 1).fillRoundedRect(x + width * 0.31, y + height - 10, width * 0.38, 15, 4);
+    const drawWindow = (windowPoint) => {
+      const windowWidth = windowPoint.bay ? 46 : 32;
+      const windowHeight = windowPoint.bay ? 30 : 26;
+      rect(windowPoint.x - windowWidth / 2 - 4, windowPoint.y - windowHeight / 2 - 4, windowWidth + 8, windowHeight + 8, COLORS.ink);
+      rect(windowPoint.x - windowWidth / 2, windowPoint.y - windowHeight / 2, windowWidth, windowHeight, 0xf5e8bd);
+      rect(windowPoint.x - windowWidth / 2 + 3, windowPoint.y - windowHeight / 2 + 3, windowWidth - 6, windowHeight - 6, 0x8ac5d5);
+      rect(windowPoint.x - 2, windowPoint.y - windowHeight / 2 + 2, 4, windowHeight - 4, COLORS.ink);
+      rect(windowPoint.x - windowWidth / 2 + 2, windowPoint.y - 2, windowWidth - 4, 4, COLORS.ink);
+    };
+    for (const windowPoint of architecture.windows) drawWindow(windowPoint);
+    rect(-17, 3, 34, 49, COLORS.ink);
+    rect(-13, 7, 26, 43, 0x3e6f76);
+    rect(-9, 11, 18, 13, 0x8ac5d5);
+    rect(8, 33, 4, 4, 0xe7bd4e);
+    if (architecture.feature === "bay") {
+      rect(24, 34, 56, 12, shadeColor(wallColor, 0.78));
+      rect(20, 45, 64, 6, 0x765238);
+    } else if (architecture.feature === "two-storey") {
+      rect(body.x + 5, 0, body.w - 10, 4, shadeColor(roofColor, 0.68));
+    } else if (architecture.feature === "veranda") {
+      rect(-94, 22, 188, 8, COLORS.ink);
+      rect(-89, 24, 178, 4, shadeColor(roofColor, 0.68));
+      for (const columnX of [-78, -29, 29, 78]) {
+        rect(columnX - 3, 26, 7, 27, COLORS.ink);
+        rect(columnX - 1, 29, 3, 22, 0xf5e8bd);
       }
-      const lightDepth = 61 + house.y / 100;
-      for (const [lightX, side] of [[x + 45 * scale, "left"], [x + width - 45 * scale, "right"]]) {
-        const glow = this.add.rectangle(lightX, y + height * 0.57 + 15 * scale, 30 * scale, 26 * scale, 0xffe79a, 1).setDepth(lightDepth).setAlpha(0.08);
-        setSpriteAiLabelHint(glow, { id: `building.${house.id}.window-${side}-night-glow`, label: `${house.id} ${side} window night glow`, kind: "window-light" });
-        this.townWindowLights.push(glow);
-      }
-      setSpriteAiLabelHint(layer, { id: architecture.assetId, label: `${house.id} ${architecture.id} architecture`, kind: "house-exterior" });
+      rect(-98, 49, 196, 7, COLORS.ink);
+    } else if (architecture.feature === "compact") {
+      rect(-28, 45, 56, 5, 0xf5e8bd);
+      rect(-25, 45, 4, 12, 0x765238);
+      rect(21, 45, 4, 12, 0x765238);
     }
-    if (personalHome?.level >= 3) {
-      layer.fillStyle(roofColor, 1);
-      for (const offset of [-0.2, 0.2]) {
-        const dormerX = x + width * (0.5 + offset);
-        layer.fillTriangle(dormerX - 13 * scale, y + height * 0.22, dormerX, y + height * 0.08, dormerX + 13 * scale, y + height * 0.22);
-        layer.fillStyle(0xa9d6df, 1);
-        layer.fillRect(dormerX - 6 * scale, y + height * 0.14, 12 * scale, 12 * scale);
-        layer.fillStyle(roofColor, 1);
-      }
-    }
-    if (personalHome?.level >= 4) {
-      layer.fillStyle(0xf5e8bd, 1);
-      layer.fillRoundedRect(x + width * 0.3, y + height - 12 * scale, width * 0.4, 10 * scale, 4);
-      layer.fillStyle(0x7aab5b, 1);
-      layer.fillCircle(x + width * 0.23, y + height - 5, 7 * scale);
-      layer.fillCircle(x + width * 0.77, y + height - 5, 7 * scale);
-    }
+    const lightDepth = 61 + house.y / 100;
+    architecture.windows.forEach((windowPoint, index) => {
+      const glow = this.add.rectangle(px(windowPoint.x), py(windowPoint.y), (windowPoint.bay ? 42 : 28) * scaleX, 24 * scaleY, 0xffe79a, 1).setDepth(lightDepth).setAlpha(0.08);
+      setSpriteAiLabelHint(glow, { id: `building.${house.id}.window-${index + 1}-night-glow`, label: `${house.id} window ${index + 1} night glow`, kind: "window-light" });
+      this.townWindowLights.push(glow);
+    });
+    setSpriteAiLabelHint(layer, { id: architecture.assetId, label: `${house.id} ${architecture.label}`, kind: "house-exterior" });
     if (personalHome && this.customResident?.getSnapshot?.().created) {
-      this.personalHomeLabel = this.add.text(house.x + house.width / 2, y - 27, `💚 Meadowlight House · Level ${personalHome.level}`, {
+      this.personalHomeLabel = this.add.text(house.x + house.width / 2, py(roof.topY) - 25, `💚 Meadowlight House · Level ${personalHome.level}`, {
         color: "#294637", fontFamily: "system-ui, sans-serif", fontSize: "11px", fontStyle: "bold",
         backgroundColor: "rgba(255, 253, 241, 0.94)", padding: { x: 6, y: 3 },
       }).setOrigin(0.5).setDepth(90 + house.y / 100);
@@ -790,16 +823,56 @@ export class TownScene extends Phaser.Scene {
   }
 
   drawHouseRescueMarkers() {
-    for (const home of this.houseRescue?.dirtyHomes?.() || []) {
-      const house = HOUSES.find((entry) => entry.id === home.houseId);
-      if (!house) continue;
-      const x = house.x + house.width / 2;
-      const y = house.y - 35;
-      const marker = this.add.container(x, y).setDepth(128 + house.y / 100);
-      const pulse = this.add.circle(0, 0, 30, 0xffe47c, 0.2).setStrokeStyle(5, 0xffef9a, 0.9);
-      const badge = this.add.text(0, 0, "🧹", { fontFamily: "Apple Color Emoji, system-ui", fontSize: "28px", backgroundColor: "rgba(255,249,223,.95)", padding: { x: 7, y: 4 } }).setOrigin(0.5);
-      marker.add([pulse, badge]);
-      this.tweens.add({ targets: pulse, scale: 1.28, alpha: 0.04, duration: 950, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
+    for (const visual of this.houseRescueVisuals || []) visual.destroy?.();
+    this.houseRescueVisuals = [];
+    const state = this.gameState?.getSnapshot?.();
+    const homes = state?.houseRescue?.homes || {};
+    const worldDay = state?.world?.day || 1;
+    for (const house of HOUSES) {
+      const home = homes[house.id];
+      const stage = houseExteriorDirtStage(home, worldDay);
+      const interaction = this.baseInteractables?.find?.(({ id }) => id === `home-interior-${house.id}`);
+      if (interaction) {
+        interaction.icon = home?.dirty ? "🧹" : house.id === PERSONAL_HOME_RENDER_HOUSE_ID ? "💚" : "🏡";
+        interaction.detail = home?.dirty ? "This home needs House Rescue · enter to inspect or help" : "Clean interior · visit this household";
+      }
+      if (!stage) continue;
+      const graphics = this.add.graphics().setDepth(128 + house.y / 100);
+      const scaleX = house.width / 198;
+      const scaleY = house.height / 116;
+      const centerX = house.x + house.width / 2;
+      const centerY = house.y + house.height / 2;
+      const x = (value) => centerX + value * scaleX;
+      const y = (value) => centerY + value * scaleY;
+      const alpha = stage === 1 ? 0.22 : stage === 2 ? 0.38 : 0.58;
+      graphics.fillStyle(0x514334, alpha);
+      graphics.fillRect(x(-82), y(34), 164 * scaleX, 12 * scaleY);
+      graphics.fillRect(x(-76), y(27), 28 * scaleX, 7 * scaleY);
+      graphics.fillRect(x(42), y(29), 33 * scaleX, 6 * scaleY);
+      if (stage >= 2) {
+        graphics.fillStyle(0x525b4f, stage === 2 ? 0.25 : 0.38);
+        graphics.fillRect(x(-64), y(12), 22 * scaleX, 15 * scaleY);
+        graphics.fillRect(x(39), y(8), 23 * scaleX, 17 * scaleY);
+        for (let index = 0; index < 5; index += 1) {
+          const seed = Number(house.id.split("-")[1]) || 1;
+          const markX = -74 + ((seed * 31 + index * 37) % 142);
+          const markY = 30 + ((seed + index * 11) % 10);
+          graphics.fillStyle(0x493d30, stage === 2 ? 0.28 : 0.48);
+          graphics.fillRect(x(markX), y(markY), (9 + (index % 2) * 5) * scaleX, 4 * scaleY);
+        }
+      }
+      if (stage >= 3) {
+        graphics.lineStyle(Math.max(1.5, 2 * scaleX), 0xeee8cc, 0.76);
+        graphics.lineBetween(x(-70), y(5), x(-55), y(18));
+        graphics.lineBetween(x(-70), y(5), x(-48), y(8));
+        graphics.lineBetween(x(-70), y(5), x(-66), y(24));
+        graphics.lineBetween(x(-64), y(11), x(-53), y(12));
+        graphics.fillStyle(0x3f352d, 0.9);
+        graphics.fillRect(x(62), y(45), 22 * scaleX, 5 * scaleY);
+      }
+      graphics.setData("houseDirtStage", stage);
+      setSpriteAiLabelHint(graphics, { id: `building.${house.id}.dirt-stage-${stage}`, label: `${house.id} exterior dirt stage ${stage}`, kind: "house-dirt" });
+      this.houseRescueVisuals.push(graphics);
     }
   }
 
@@ -982,12 +1055,15 @@ export class TownScene extends Phaser.Scene {
 
   drawFarmingAreas() {
     this.farmingVisuals?.destroy();
+    this.lawnVisuals?.destroy();
     this.farmingLabels?.forEach((label) => label.destroy());
     this.farmingLabels = [];
     const state = this.farming?.getSnapshot?.();
     if (!state) return;
     const graphics = this.add.graphics().setDepth(116);
+    const lawnGraphics = this.add.graphics().setDepth(20);
     this.farmingVisuals = graphics;
+    this.lawnVisuals = lawnGraphics;
 
     state.allotment.beds.forEach((bed, index) => {
       const x = 1090 + (index % 2) * 260;
@@ -1027,13 +1103,44 @@ export class TownScene extends Phaser.Scene {
     for (const plot of LAWN_PLOTS) {
       if (!plot.active) continue;
       const lawn = state.lawns[plot.id];
-      const tall = lawn.grassHeight / 100;
-      graphics.fillStyle(lawnNeedsCare(lawn) ? 0x5f964d : 0x96cf78, 0.85);
-      graphics.fillRoundedRect(plot.x - 78, plot.y - 38, 156, 76, 16);
-      if (tall > 0.35) {
-        graphics.lineStyle(3, 0x456f3c, 0.9);
-        for (let blade = -62; blade <= 62; blade += 18) graphics.lineBetween(plot.x + blade, plot.y + 24, plot.x + blade + 5, plot.y + 24 - 28 * tall);
+      const stage = lawnVisualStage(lawn.grassHeight);
+      const yard = plot.yard || { x: plot.x - 92, y: plot.y - 52, width: 184, height: 104 };
+      const colors = [0x96cf78, 0x82bf66, 0x70ab58, 0x5f964d];
+      lawnGraphics.fillStyle(colors[stage], 0.92);
+      lawnGraphics.fillRoundedRect(yard.x + 7, yard.y + 7, yard.width - 14, yard.height - 14, 18);
+      if (lawn.grassHeight > 12) {
+        const tuftCount = Math.min(130, Math.round(10 + lawn.grassHeight * 1.15));
+        lawnGraphics.lineStyle(2.2, lawn.grassHeight >= 70 ? 0x265626 : 0x356f2e, 0.82);
+        for (let index = 0; index < tuftCount; index += 1) {
+          const tx = yard.x + 18 + deterministicUnit(plot.id, index * 2) * (yard.width - 36);
+          const ty = yard.y + 20 + deterministicUnit(plot.id, index * 2 + 1) * (yard.height - 40);
+          const length = 4 + lawn.grassHeight * 0.19 + deterministicUnit(plot.id, index + 200) * 5;
+          const lean = -3 + deterministicUnit(plot.id, index + 400) * 6;
+          lawnGraphics.lineBetween(tx, ty, tx + lean, ty - length);
+        }
       }
+      if (lawn.weedPressure >= 18) {
+        const patches = Math.min(28, Math.round(3 + lawn.weedPressure * 0.24));
+        for (let index = 0; index < patches; index += 1) {
+          const wx = yard.x + 20 + deterministicUnit(`${plot.id}:weed`, index * 2) * (yard.width - 40);
+          const wy = yard.y + 22 + deterministicUnit(`${plot.id}:weed`, index * 2 + 1) * (yard.height - 44);
+          const radius = 2.5 + lawn.weedPressure * 0.035;
+          lawnGraphics.fillStyle(lawn.weedPressure >= 55 ? 0x55783f : 0x6eaa55, 0.62);
+          lawnGraphics.fillCircle(wx, wy, radius);
+          if (lawn.weedPressure >= 38 && index % 4 === 0) {
+            lawnGraphics.fillStyle(0xe4d269, 0.88);
+            lawnGraphics.fillCircle(wx + 2, wy - radius, 2.2);
+          }
+        }
+      }
+      lawnGraphics.setData(`lawnStage:${plot.id}`, stage);
+      const semanticLawn = this.add.zone(plot.x, plot.y, yard.width, yard.height).setDepth(21);
+      semanticLawn.setData("lawnId", plot.id);
+      semanticLawn.setData("lawnStage", stage);
+      semanticLawn.setData("grassHeight", lawn.grassHeight);
+      semanticLawn.setData("weedPressure", lawn.weedPressure);
+      setSpriteAiLabelHint(semanticLawn, { id: `world.${plot.id}.stage-${stage}`, label: `${plot.title} growth stage ${stage}`, kind: "lawn" });
+      this.farmingLabels.push(semanticLawn);
       if (lawnNeedsCare(lawn)) this.farmingLabels.push(this.add.text(plot.x, plot.y - 58, "🌾 JOB", { color: "#294637", backgroundColor: "rgba(255,249,223,.9)", fontSize: "12px", fontStyle: "bold", padding: { x: 6, y: 3 } }).setOrigin(0.5).setDepth(119));
     }
   }
@@ -1664,6 +1771,7 @@ export class TownScene extends Phaser.Scene {
     this.movement?.destroy();
     this.unsubscribeCustomResident?.();
     this.unsubscribeFarming?.();
+    this.unsubscribeHouseRescue?.();
     this.unsubscribeAnimals?.();
     this.unsubscribeTownPlacement?.();
     this.unsubscribeLivingEnvironment?.();
@@ -1684,6 +1792,8 @@ export class TownScene extends Phaser.Scene {
     this.placementPreviewVisual?.destroy();
     for (const visual of this.placedObjectVisuals?.values?.() || []) visual.destroy();
     for (const visual of this.environmentVisuals || []) visual.destroy();
+    for (const visual of this.houseRescueVisuals || []) visual.destroy?.();
+    this.lawnVisuals?.destroy?.();
     this.environmentBadge?.destroy();
     this.municipalCollectionVisual?.destroy?.();
     this.municipalCollectionVisual = null;
@@ -1894,6 +2004,7 @@ export class TownScene extends Phaser.Scene {
   enterHouseInterior(houseId, { focusFurnitureId = null } = {}) {
     if (this.transitioning) return { ok: false, reason: "A scene transition is already running." };
     if (this.customResident?.getSnapshot?.().controlling) return { ok: false, reason: "Return to your character before entering a home." };
+    this.houseRescue?.ensureFirstVisit?.(houseId);
     const interior = this.homeInteriors?.getInterior?.(houseId);
     if (!interior?.ok) return interior || { ok: false, reason: "That home could not be opened." };
     if (focusFurnitureId && houseId !== PERSONAL_HOME_RENDER_HOUSE_ID) return { ok: false, reason: "Custom furniture belongs in Meadowlight House." };
@@ -2253,6 +2364,9 @@ export class TownScene extends Phaser.Scene {
     if (this.farmingSyncElapsed >= 5000) {
       this.farmingSyncElapsed = 0;
       this.farming?.refresh?.({ persist: true });
+      this.drawFarmingAreas();
+      const houseRefresh = this.houseRescue?.refreshJobs?.();
+      if (!houseRefresh?.changed) this.drawHouseRescueMarkers();
       this.livingEnvironment?.refresh?.({ persist: true });
       const rareVisits = this.animals?.refreshRareVisits?.({ persist: true });
       for (const notice of rareVisits?.notices || []) this.sharedOverlay?.showToast?.(notice.message, { tone: "success", duration: 5200 });

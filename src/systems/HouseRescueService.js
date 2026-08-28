@@ -125,6 +125,34 @@ export class HouseRescueService {
     return Object.values(this.getSnapshot().homes).filter((home) => home.dirty).map((home) => structuredClone(home));
   }
 
+  ensureFirstVisit(houseId) {
+    const snapshot = this.getSnapshot();
+    const home = snapshot.homes[houseId];
+    if (!home || houseId === "house-20") return { ok: true, code: "house-rescue-first-visit-ineligible", changed: false };
+    if (home.dirty || home.completionCount > 0) return { ok: true, code: "house-rescue-first-visit-current", changed: false, activated: home.dirty };
+    return this.commit((state) => {
+      const target = state.houseRescue.homes[houseId];
+      const activeId = state.houseRescue.active?.houseId || null;
+      const dirty = Object.values(state.houseRescue.homes).filter((entry) => entry.dirty);
+      let displacedHouseId = null;
+      if (dirty.length >= HOUSE_RESCUE_RULES.maxDirtyHomes) {
+        const candidate = dirty
+          .filter((entry) => entry.houseId !== activeId)
+          .sort((left, right) => Number(right.houseId.split("-")[1]) - Number(left.houseId.split("-")[1]))[0];
+        if (!candidate) {
+          target.nextDirtyDay = Math.max(1, Math.min(target.nextDirtyDay || state.world.day, state.world.day));
+          return { ok: true, code: "house-rescue-first-visit-queued", changed: true, activated: false, queued: true, displacedHouseId: null };
+        }
+        candidate.dirty = false;
+        candidate.nextDirtyDay = Math.max(1, Math.min(candidate.nextDirtyDay || state.world.day, state.world.day));
+        displacedHouseId = candidate.houseId;
+      }
+      target.dirty = true;
+      target.nextDirtyDay = 0;
+      return { ok: true, code: "house-rescue-first-visit-activated", changed: true, activated: true, queued: false, displacedHouseId };
+    });
+  }
+
   startLevel(level = 1, { houseId, returnPosition, returnFacing = "down" } = {}) {
     const requested = Math.floor(Number(level));
     if (!Number.isInteger(requested) || requested < 1 || requested > HOUSE_RESCUE_TOTAL_LEVELS) return { ok: false, code: "invalid-level", message: "Choose a House Rescue level from 1 to 750." };

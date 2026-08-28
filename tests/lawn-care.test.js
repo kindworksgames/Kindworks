@@ -140,6 +140,17 @@ test("town jobs apply the exact proportional lawn effect and pay each new occurr
   assert.equal(gameState.getSnapshot().farming.lawns[plot.id].completedJobs, 2);
 });
 
+test("the protected unused house-19 lawn slot can never surface as a playable town job", () => {
+  const { gameState, lawnCare } = runtime();
+  const inactivePlot = LAWN_PLOTS.find((plot) => !plot.active);
+  const state = gameState.getSnapshot();
+  state.farming.lawns[inactivePlot.id].grassHeight = 100;
+  state.farming.lawns[inactivePlot.id].weedPressure = 100;
+  assert.equal(gameState.replace(state).ok, true);
+  assert.equal(lawnCare.beginTownJob(inactivePlot.id).code, "unknown-lawn");
+  assert.equal(lawnCare.getDiagnostics().townJobs.includes(inactivePlot.id), false);
+});
+
 test("an in-progress campaign reloads its board, undo stack and town return point", () => {
   const storage = new MemoryStorage();
   const repository = new SaveRepository(storage);

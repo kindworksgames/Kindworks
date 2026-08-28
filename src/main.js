@@ -483,6 +483,7 @@ function handleVisibilityChange() {
   else {
     const result = worldSimulation.resume("background", { resolveOffline: true });
     animals.refresh({ persist: true, offline: (result?.advancedGameMinutes || 0) > 0 });
+    houseRescue.refreshJobs();
   }
 }
 document.addEventListener("visibilitychange", handleVisibilityChange);
