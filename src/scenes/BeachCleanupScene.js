@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { BEACH_TILE, BEACH_TOTAL_LEVELS, BeachCleanupEngine, beachLevelSummary, generateBeachLevel } from "../data/beachCleanup.js";
+import { BEACH_TILE, BeachCleanupEngine, generateBeachLevel } from "../data/beachCleanup.js";
 import { cardinalDirection } from "../input/mobileGestures.js";
 import { renderBeachRakeGrooves } from "../ui/BeachRakePattern.js";
 
@@ -22,7 +22,10 @@ export class BeachCleanupScene extends Phaser.Scene {
     this.npcTownLife = this.registry.get("npcTownLife");
     this.qaMode = import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "beach";
     this.worldSimulation?.setPaused("activity", true); this.npcTownLife?.setPaused("activity", true);
-    this.drawBackdrop(); this.bindInterface(); this.setSceneInterface(); this.render();
+    this.drawBackdrop(); this.bindInterface(); this.setSceneInterface();
+    const active = this.beachCleanup.getActiveSession();
+    if (active) this.render();
+    else this.startLevel(this.entryData.level || this.beachCleanup.getCampaignSnapshot().nextLevel);
     this.cameras.main.fadeIn(220, 20, 49, 70);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.shutdownScene());
   }
@@ -39,13 +42,11 @@ export class BeachCleanupScene extends Phaser.Scene {
   }
 
   bindInterface() {
-    this.hud = document.querySelector("#beach-cleanup-hud"); this.levelSelect = document.querySelector("#beach-level-select"); this.board = document.querySelector("#beach-board");
-    this.buttons = { start: document.querySelector("#beach-level-start"), exit: document.querySelector("#beach-exit"), undo: document.querySelector("#beach-undo"), hint: document.querySelector("#beach-hint"), retry: document.querySelector("#beach-retry"), qa: document.querySelector("#beach-qa-complete"), replay: document.querySelector("#beach-replay"), next: document.querySelector("#beach-next"), return: document.querySelector("#beach-return") };
-    this.onStart = () => this.startLevel(Number(this.levelSelect?.value || 1));
-    this.onLevelChange = () => { if (this.buttons.start) this.buttons.start.textContent = `Start Level ${this.levelSelect.value}`; };
+    this.hud = document.querySelector("#beach-cleanup-hud"); this.board = document.querySelector("#beach-board");
+    this.buttons = { exit: document.querySelector("#beach-exit"), undo: document.querySelector("#beach-undo"), hint: document.querySelector("#beach-hint"), retry: document.querySelector("#beach-retry"), qa: document.querySelector("#beach-qa-complete"), return: document.querySelector("#beach-return") };
     this.onExit = () => this.requestExit(); this.onUndo = () => { const undone = this.runAction(() => this.beachCleanup.undo(this.beachCleanup.getActiveSession()?.id)); if (undone) { this.setMessage("Run undone.", "hint"); this.render(); } return undone; };
     this.onHint = () => this.showHint(); this.onRetry = () => this.restart(); this.onQa = () => this.runCertifiedCompletion();
-    this.onReplay = () => this.startLevel(this.lastResultContext?.level || 1); this.onNext = () => this.startLevel(this.beachCleanup.getCampaignSnapshot().nextLevel); this.onReturn = () => this.returnToTown(true);
+    this.onReturn = () => this.returnToTown(true);
     this.challengeHandlers = {};
     for (const button of document.querySelectorAll("[data-beach-challenge]")) {
       const challenge = button.dataset.beachChallenge; const handler = () => this.toggleChallenge(challenge);
@@ -94,14 +95,14 @@ export class BeachCleanupScene extends Phaser.Scene {
       if (!this.pointerStart || (event?.pointerId !== undefined && this.pointerStart.id !== event.pointerId)) return;
       this.stopPointerHold(); this.pointerStart = null; this.pointerDirection = null;
     };
-    this.buttons.start?.addEventListener("click", this.onStart); this.levelSelect?.addEventListener("change", this.onLevelChange); this.buttons.exit?.addEventListener("click", this.onExit);
-    this.buttons.undo?.addEventListener("click", this.onUndo); this.buttons.hint?.addEventListener("click", this.onHint); this.buttons.retry?.addEventListener("click", this.onRetry); this.buttons.qa?.addEventListener("click", this.onQa); this.buttons.replay?.addEventListener("click", this.onReplay); this.buttons.next?.addEventListener("click", this.onNext); this.buttons.return?.addEventListener("click", this.onReturn);
+    this.buttons.exit?.addEventListener("click", this.onExit);
+    this.buttons.undo?.addEventListener("click", this.onUndo); this.buttons.hint?.addEventListener("click", this.onHint); this.buttons.retry?.addEventListener("click", this.onRetry); this.buttons.qa?.addEventListener("click", this.onQa); this.buttons.return?.addEventListener("click", this.onReturn);
     this.board?.addEventListener("pointerdown", this.onPointerDown); this.board?.addEventListener("pointermove", this.onPointerMove); this.board?.addEventListener("pointerup", this.onPointerUp);
     this.board?.addEventListener("pointercancel", this.onPointerCancel); this.board?.addEventListener("lostpointercapture", this.onPointerCancel); window.addEventListener("blur", this.onPointerCancel); window.addEventListener("keydown", this.onKeyDown);
     this.buttons.qa?.classList.toggle("hidden", !this.qaMode); this.hud?.classList.remove("hidden");
     if (this.buttons.exit) this.buttons.exit.textContent = "Exit";
-    const session = this.beachCleanup.getActiveSession(); show("#beach-picker", !session); show("#beach-gameplay", Boolean(session)); show("#beach-result", false);
-    this.setMessage(session?.mode === "town-job" ? "Rake the beach and find every item." : session ? "Swipe across the sand to rake." : "Choose a level.", session ? "success" : "neutral");
+    const session = this.beachCleanup.getActiveSession(); show("#beach-gameplay", Boolean(session)); show("#beach-result", false);
+    this.setMessage(session?.mode === "town-job" ? "Rake the beach and find every item." : "Swipe across the sand to rake.", session ? "success" : "neutral");
   }
 
   setSceneInterface() {
@@ -114,7 +115,7 @@ export class BeachCleanupScene extends Phaser.Scene {
     const previous = this.beachCleanup.getActiveSession(); if (previous) this.beachCleanup.cancel(previous.id);
     const result = this.beachCleanup.beginCampaign(level, { returnPosition: previous?.returnPosition || this.entryData.returnPosition, returnFacing: previous?.returnFacing || this.entryData.returnFacing || "down" });
     if (!result.ok) { this.setMessage(result.message, "error"); return false; }
-    this.lastResultContext = null; this.hintDirection = null; show("#beach-picker", false); show("#beach-gameplay", true); show("#beach-result", false); this.setMessage("Rake every tile. Find every item.", "success"); this.render(); return true;
+    this.lastResultContext = null; this.hintDirection = null; show("#beach-gameplay", true); show("#beach-result", false); this.setMessage("Rake every tile. Find every item.", "success"); this.render(); return true;
   }
 
   walk(direction, options = {}) {
@@ -148,15 +149,11 @@ export class BeachCleanupScene extends Phaser.Scene {
   runCertifiedCompletion() { if (!this.qaMode) return false; const session = this.beachCleanup.getActiveSession(); if (!session) return false; const result = this.beachCleanup.completeCertified(session.id); if (!result.ok) { this.setMessage(result.message, "error"); return false; } this.showResult(result.result, session); return true; }
 
   render() {
-    const campaign = this.beachCleanup.getCampaignSnapshot(); const session = this.beachCleanup.getActiveSession();
-    if (this.levelSelect && this.levelSelect.options.length !== BEACH_TOTAL_LEVELS) this.levelSelect.innerHTML = Array.from({ length: BEACH_TOTAL_LEVELS }, (_value, index) => { const summary = beachLevelSummary(index + 1); return `<option value="${index + 1}">Level ${index + 1} · ${summary.rubbish} rubbish · ${summary.width}×${summary.height}</option>`; }).join("");
-    if (this.levelSelect) { this.levelSelect.value = String(session?.assignedLevel || campaign.nextLevel); if (this.buttons.start) this.buttons.start.textContent = `Start Level ${this.levelSelect.value}`; }
-    setText("#beach-summary", `${campaign.completed} beaches cleared · ${campaign.totalStars} stars · Level ${campaign.nextLevel} next`); setText("#beach-balance", `🪙 ${this.gameState.getSnapshot().economy.coins}`);
+    const session = this.beachCleanup.getActiveSession();
+    setText("#beach-balance", `🪙 ${this.gameState.getSnapshot().economy.coins}`);
     if (!session) { this.updateDomState(); return; }
-    const state = this.beachCleanup.getSessionState(); const level = generateBeachLevel(session.assignedLevel); const summary = beachLevelSummary(session.assignedLevel);
-    setText("#beach-level-name", session.mode === "town-job" ? `South Shore job · Level ${session.assignedLevel}` : `Level ${session.assignedLevel} of ${BEACH_TOTAL_LEVELS}`);
-    setText("#beach-level-band", `${summary.width}×${summary.height} beach · ${summary.rubbish} hidden item${summary.rubbish === 1 ? "" : "s"}`);
-    setText("#beach-raked", `${state.rakedCount} / ${state.totalSand}`); setText("#beach-found", `${state.collectedRubbish} / ${state.totalRubbish}`); setText("#beach-moves", state.moves); setText("#beach-earned", `+${state.earnedCoins}`);
+    const state = this.beachCleanup.getSessionState(); const level = generateBeachLevel(session.assignedLevel);
+    setText("#beach-raked", `${state.rakedCount} / ${state.totalSand}`); setText("#beach-found", `${state.collectedRubbish} / ${state.totalRubbish}`);
     const found = document.querySelector("#beach-found-items"); if (found) found.innerHTML = state.collectedItems.length ? state.collectedItems.map((item) => `<span title="${item.name}">${item.icon}<small>+${item.coins}</small></span>`).join("") : "<em>Hidden in the sand…</em>";
     if (this.board) {
       const raked = new Set(state.rakedCells); const collected = new Set(state.collectedCells); const cells = [];
@@ -176,16 +173,15 @@ export class BeachCleanupScene extends Phaser.Scene {
 
   showResult(result, session) {
     this.lastResultContext = { level: result.level, mode: session.mode, returnPosition: session.returnPosition, returnFacing: session.returnFacing };
-    show("#beach-gameplay", false); show("#beach-result", true); setText("#beach-result-title", session.mode === "town-job" ? "South Shore is sparkling!" : "Beach cleaned!"); setText("#beach-result-message", session.mode === "town-job" ? "The shoreline litter is gone and Willowmere has been updated." : result.firstClear ? "The first clear is saved and its KindlyCoins were awarded once." : "Your best result remains saved. Campaign replays do not pay again.");
-    setText("#beach-result-raked", "100%"); setText("#beach-result-found", `${result.collectedRubbish} / ${result.totalRubbish}`); setText("#beach-result-moves", result.moves); setText("#beach-result-coins", `+${result.rewardCoins}`);
-    document.querySelector(".beach-result-actions")?.classList.toggle("town-job", session.mode === "town-job");
-    show("#beach-replay", session.mode !== "town-job"); show("#beach-next", session.mode !== "town-job"); this.setMessage("Beach saved.", "success"); this.render();
+    show("#beach-gameplay", false); show("#beach-result", true); setText("#beach-result-title", session.mode === "town-job" ? "South Shore is sparkling!" : "Beach cleaned!"); setText("#beach-result-message", session.mode === "town-job" ? "The shoreline is clear again." : result.firstClear ? "The cleanup is saved." : "Your best cleanup is safe.");
+    setText("#beach-result-coins", `+${result.rewardCoins}`);
+    this.setMessage("Beach saved.", "success"); this.render();
   }
   setMessage(message, status = "neutral") { const element = document.querySelector("#beach-status"); if (element) { element.textContent = message || "Continue cleaning."; element.dataset.status = status; } }
-  updateDomState() { const game = document.querySelector("#game"); if (!game) return; const session = this.beachCleanup.getActiveSession(); const state = this.beachCleanup.getSessionState(); const diagnostics = this.beachCleanup.getDiagnostics(); game.dataset.scene = this.scene.key; game.dataset.beachLevel = String(session?.assignedLevel || diagnostics.nextLevel); game.dataset.beachMode = session?.mode || this.lastResultContext?.mode || "picker"; game.dataset.beachPhase = this.lastResultContext ? "result" : session?.status || "picker"; game.dataset.beachRaked = String(state?.rakedCount || 0); game.dataset.beachRubbish = String(state?.collectedRubbish || 0); game.dataset.beachEarned = String(state?.earnedCoins || 0); game.dataset.beachCompleted = String(diagnostics.completed); game.dataset.beachCatalogue = String(diagnostics.totalLevels); game.dataset.beachCatalogueValid = String(diagnostics.catalogueValid); }
+  updateDomState() { const game = document.querySelector("#game"); if (!game) return; const session = this.beachCleanup.getActiveSession(); const state = this.beachCleanup.getSessionState(); const diagnostics = this.beachCleanup.getDiagnostics(); game.dataset.scene = this.scene.key; game.dataset.beachLevel = String(session?.assignedLevel || diagnostics.nextLevel); game.dataset.beachMode = session?.mode || this.lastResultContext?.mode || "loading"; game.dataset.beachPhase = this.lastResultContext ? "result" : session?.status || "loading"; game.dataset.beachRaked = String(state?.rakedCount || 0); game.dataset.beachRubbish = String(state?.collectedRubbish || 0); game.dataset.beachEarned = String(state?.earnedCoins || 0); game.dataset.beachCompleted = String(diagnostics.completed); game.dataset.beachCatalogue = String(diagnostics.totalLevels); game.dataset.beachCatalogueValid = String(diagnostics.catalogueValid); }
 
   requestExit() { const session = this.beachCleanup.getActiveSession(); if (session && Date.now() > this.exitArmedUntil) { this.exitArmedUntil = Date.now() + 3000; if (this.buttons.exit) this.buttons.exit.textContent = "Confirm Exit"; this.setMessage("Tap Confirm Exit to leave this attempt.", "error"); return false; } return this.returnToTown(false); }
   returnToTown(complete) { if (this.transitioning) return false; this.transitioning = true; const active = this.beachCleanup.getActiveSession(); const context = active || this.lastResultContext || {}; if (active) this.beachCleanup.cancel(active.id); const position = context.returnPosition || this.entryData.returnPosition || { x: 3220, y: 2320 }; const facing = context.returnFacing || this.entryData.returnFacing || "down"; this.gameState.updatePlayer({ scene: "TownScene", x: position.x, y: position.y, facing }); document.querySelector("#game")?.setAttribute("data-transition", complete ? "beach-cleanup-complete" : "leaving-beach-cleanup"); this.cameras.main.fadeOut(220, 20, 49, 70); this.time.delayedCall(240, () => this.scene.start("TownScene", { returnPosition: position, returnFacing: facing, transitionCount: Number(this.entryData.transitionCount || 0) + 1 })); return true; }
-  shutdownScene() { this.stopPointerHold?.(); this.buttons.start?.removeEventListener("click", this.onStart); this.levelSelect?.removeEventListener("change", this.onLevelChange); this.buttons.exit?.removeEventListener("click", this.onExit); for (const button of document.querySelectorAll("[data-beach-challenge]")) button.removeEventListener("click", this.challengeHandlers[button.dataset.beachChallenge]); this.buttons.undo?.removeEventListener("click", this.onUndo); this.buttons.hint?.removeEventListener("click", this.onHint); this.buttons.retry?.removeEventListener("click", this.onRetry); this.buttons.qa?.removeEventListener("click", this.onQa); this.buttons.replay?.removeEventListener("click", this.onReplay); this.buttons.next?.removeEventListener("click", this.onNext); this.buttons.return?.removeEventListener("click", this.onReturn); this.board?.removeEventListener("pointerdown", this.onPointerDown); this.board?.removeEventListener("pointermove", this.onPointerMove); this.board?.removeEventListener("pointerup", this.onPointerUp); this.board?.removeEventListener("pointercancel", this.onPointerCancel); this.board?.removeEventListener("lostpointercapture", this.onPointerCancel); window.removeEventListener("blur", this.onPointerCancel); window.removeEventListener("keydown", this.onKeyDown); this.pointerStart = null; this.pointerDirection = null; this.hud?.classList.add("hidden"); this.worldSimulation?.setPaused("activity", false); this.npcTownLife?.setPaused("activity", false); }
+  shutdownScene() { this.stopPointerHold?.(); this.buttons.exit?.removeEventListener("click", this.onExit); for (const button of document.querySelectorAll("[data-beach-challenge]")) button.removeEventListener("click", this.challengeHandlers[button.dataset.beachChallenge]); this.buttons.undo?.removeEventListener("click", this.onUndo); this.buttons.hint?.removeEventListener("click", this.onHint); this.buttons.retry?.removeEventListener("click", this.onRetry); this.buttons.qa?.removeEventListener("click", this.onQa); this.buttons.return?.removeEventListener("click", this.onReturn); this.board?.removeEventListener("pointerdown", this.onPointerDown); this.board?.removeEventListener("pointermove", this.onPointerMove); this.board?.removeEventListener("pointerup", this.onPointerUp); this.board?.removeEventListener("pointercancel", this.onPointerCancel); this.board?.removeEventListener("lostpointercapture", this.onPointerCancel); window.removeEventListener("blur", this.onPointerCancel); window.removeEventListener("keydown", this.onKeyDown); this.pointerStart = null; this.pointerDirection = null; this.hud?.classList.add("hidden"); this.worldSimulation?.setPaused("activity", false); this.npcTownLife?.setPaused("activity", false); }
   getMilestoneState() { return { scene: this.scene.key, gameplayConnected: true, landscapeRequired: true, keyboardControls: true, touchSwipeControls: true, continuousHeldSwipe: true, ...this.beachCleanup.getDiagnostics(), session: this.beachCleanup.getActiveSession(), legacySaveUntouched: true }; }
 }

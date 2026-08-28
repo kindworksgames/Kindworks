@@ -24,6 +24,9 @@ test("uses short contextual Beach Cleanup actions while preserving optional chal
   for (const challenge of ["noUndo", "underMoves", "cleanSweep"]) assert.match(markup, new RegExp(`data-beach-challenge="${challenge}"`));
   assert.match(markup, /id="beach-retry" class="hidden"[^>]*>Restart<\/button>/);
   assert.match(markup, /id="beach-hint"[^>]*>Hint<\/button>/);
+  assert.doesNotMatch(markup, /id="beach-picker"|id="beach-level-select"|id="beach-level-start"/);
+  assert.doesNotMatch(markup, /id="beach-result-raked"|id="beach-result-found"|id="beach-result-moves"|id="beach-replay"|id="beach-next"/);
+  assert.match(scene, /this\.startLevel\(this\.entryData\.level \|\| this\.beachCleanup\.getCampaignSnapshot\(\)\.nextLevel\)/);
   for (const copy of ["Rake the beach and find every item.", "Rake every tile. Find every item.", "Item found!", "Run undone.", "Beach restarted.", "Beach saved.", "Tap Confirm Exit to leave this attempt."]) assert.ok(scene.includes(copy), copy);
   assert.match(scene, /batchId: this\.pointerStart\.runId/);
   assert.match(scene, /buttons\.undo\.classList\.toggle\("hidden", !session\.undoStack\.length\)/);

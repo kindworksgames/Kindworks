@@ -475,16 +475,11 @@
       </section>
       <section id="beach-cleanup-hud" class="beach-cleanup-hud hidden" aria-labelledby="beach-cleanup-title">
         <header class="beach-header">
-          <div><p>MILESTONE 19 · ORIGINAL 750-LEVEL CAMPAIGN</p><h2 id="beach-cleanup-title">🏖️ Beach Cleanup</h2><small id="beach-summary">0 beaches cleared · 0 stars · Level 1 next</small></div>
+          <div><h2 id="beach-cleanup-title">🏖️ Beach Cleanup</h2></div>
           <span id="beach-balance">🪙 100</span><button id="beach-exit" type="button" aria-label="Exit Beach Cleanup safely">Exit</button>
         </header>
-        <section id="beach-picker" class="beach-picker" aria-label="Choose a Beach Cleanup level">
-          <div><strong>Restore 750 beaches</strong><small>Rake every sand tile and find the hidden rubbish.</small></div>
-          <label for="beach-level-select">Level<select id="beach-level-select"><option value="1">Level 1</option></select></label>
-          <button id="beach-level-start" type="button">Start Level 1</button>
-        </section>
         <section id="beach-gameplay" class="beach-gameplay hidden" aria-label="Active Beach Cleanup level">
-          <div class="beach-heading"><div><small id="beach-level-name">Level 1 of 750</small><strong id="beach-level-band">7×7 beach · 1 hidden item</strong></div><span>Raked<strong id="beach-raked">0 / 24</strong></span><span>Found<strong id="beach-found">0 / 1</strong></span><span>Moves<strong id="beach-moves">0</strong></span><span>Coins<strong id="beach-earned">+0</strong></span></div>
+          <div class="beach-heading"><div><small>CURRENT CLEANUP</small><strong>Rake every tile and find every item</strong></div><span>Raked<strong id="beach-raked">0 / 24</strong></span><span>Found<strong id="beach-found">0 / 1</strong></span></div>
           <div class="beach-play-area">
             <div class="beach-board-frame"><div id="beach-board" class="beach-board" role="grid" aria-label="Beach Cleanup board"></div><div class="beach-water" aria-hidden="true"></div></div>
             <aside class="beach-side">
@@ -493,8 +488,8 @@
             </aside>
           </div>
         </section>
-        <p id="beach-status" class="beach-status" data-status="neutral" role="status" aria-live="assertive">Choose a Beach Cleanup level to begin.</p>
-        <section id="beach-result" class="beach-result hidden" aria-labelledby="beach-result-title"><h3 id="beach-result-title">Beach cleaned!</h3><div class="beach-result-stars">★★★</div><p id="beach-result-message">Every patch of sand is freshly raked.</p><div class="beach-result-stats"><span>Raked<strong id="beach-result-raked">100%</strong></span><span>Found<strong id="beach-result-found">1 / 1</strong></span><span>Moves<strong id="beach-result-moves">38</strong></span><span>Coins<strong id="beach-result-coins">+100</strong></span></div><div class="beach-result-actions"><button id="beach-replay" type="button">Replay</button><button id="beach-next" type="button">Next beach</button><button id="beach-return" type="button">Return to Willowmere</button></div></section>
+        <p id="beach-status" class="beach-status" data-status="neutral" role="status" aria-live="assertive">Swipe across the sand to rake.</p>
+        <section id="beach-result" class="beach-result hidden" aria-labelledby="beach-result-title"><h3 id="beach-result-title">Beach cleaned!</h3><p id="beach-result-message">The cleanup is saved.</p><div class="beach-result-stats"><span>Reward<strong id="beach-result-coins">+100</strong></span></div><div class="beach-result-actions"><button id="beach-return" type="button">Continue</button></div></section>
       </section>
       <section id="lawn-care-hud" class="lawn-care-hud hidden" aria-labelledby="lawn-care-title">
         <header class="lawn-care-header">
