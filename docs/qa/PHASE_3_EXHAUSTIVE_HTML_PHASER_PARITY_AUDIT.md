@@ -30,7 +30,7 @@ The repository also contained one pre-existing untracked file, `KindWorks Migrat
 - The production build and performance budget pass.
 - The differential audit passes: 13 activities, all 5,850 campaign levels, 19 shared domains, 85 exact scalar comparisons across 12 legacy constants, 1,704 unique named legacy functions, 218 legacy public API entries, and 80 legacy validators.
 - All enumerated level counts and major catalogue counts match: 19 houses, 12 shops, 35 ordinary residents, 37 animal species, 56 animal identities, 82 item definitions, and the complete cooking/fishing/farming catalogues.
-- Power Washing's approved clean master and dirt reference, plus the protected animal reference sheet, have been extracted and hash-pinned.
+- Power Washing's approved clean master, dirt reference and three nozzle sprites, plus the protected animal reference sheet, have been extracted and hash-pinned.
 
 ### What is not equivalent
 
@@ -39,7 +39,7 @@ Two important behavioral differences are confirmed:
 1. The player-owned resident is not part of the autonomous town-life graph. When not directly controlled it is always presented as being at home, without schedules, needs, relationships, conversations, shopping, litter/community behavior, or story-linked daily movement.
 2. Legacy provides a general interrupted-mini-game recovery/result flow. Phaser boot automatically reopens only Waste, Lawn, Beach, and Power Washing. Restaurant shifts, River Clear-Out, House Rescue, and other persisted activity sessions retain data but boot to Town and require manual re-entry.
 
-The largest remaining gap is presentation. The HTML contains 150 named `draw*` functions and four embedded image payloads. Phaser's shipped `public` directory contains only three image files: the animal reference sheet and the two Power Washing images. Many screens are therefore functional, code-driven approximations rather than source-identical presentation. The repository's own differential contract explicitly says rendering is intentionally not source-identical and names final Sprite AI art, audio/animation feel, physical touch ergonomics, and pixel-level composition as manual gates.
+The largest remaining gap is presentation. The HTML contains 150 named `draw*` functions and four embedded image payloads. Phaser now ships the protected animal reference plus the Power Washing master, dirt reference and three exact nozzle sprites; many other screens remain functional, code-driven approximations rather than source-identical presentation. The repository's own differential contract explicitly says rendering is intentionally not source-identical and names final Sprite AI art, audio/animation feel, physical touch ergonomics, and pixel-level composition as manual gates.
 
 ### Parity percentages
 
@@ -74,7 +74,7 @@ This report records **0 Blocker, 0 Critical, 10 High, 12 Medium, and 1 Low** dif
 | HTML markup/CSS/JavaScript/data | Entire immutable file read and indexed; 548 unique DOM IDs, 718 unique classes, 204 button declarations, 13 canvas declarations, 1,716 named-function occurrences / 1,704 unique names, 161 getters, 80 validators, 65 major configuration constants, 218 public API keys |
 | Phaser source | 170 `src` files: 18 scenes, state owners, services, UI controllers, data modules, responsive/input code, QA harness, rendering and asset labelling |
 | Tests | 77 test files; 559 tests executed and passed |
-| Public assets | All four files inspected: three PNGs and one Power Washing manifest |
+| Public assets | Protected animal reference plus five Power Washing PNGs and the Power Washing manifest inspected |
 | Documentation/evidence | Phase 1, Phase 2, all Phase 3 reports, and existing baseline/restaurant/Power Washing screenshots inspected |
 | Build/runtime entry | HTML direct document; Phaser `src/main.js` → `BootScene` → `TownScene` or selected persisted activity |
 
@@ -187,7 +187,7 @@ The inventory was derived from the HTML, not from Phaser filenames.
 | MAT-052 | Mini-game | Beach rules/input/grooves | HTML embedded Beach payload | `beachCleanup.js`, `BeachRakePattern`, scene | Exact/functional match | — | 750 levels, 19 rubbish items, six groove patterns, swipe/continuous-run undo | Automated/runtime |
 | MAT-053 | Mini-game | Beach presentation | HTML authored sand/player/rake/collection/celebration | `BeachCleanupScene.js:30-38,159-170` | Partial migration | High | Groove semantics exist; world/player/rake/walk/flight/sound/celebration remain simplified | Existing runtime/code |
 | MAT-054 | Mini-game | Power Washing rules | HTML Power Washing payload | data/service/full-resolution renderer | Exact/functional match | — | 750, three nozzles, soap, interpolation, masks, supplies, 97%, reward cap | Automated/runtime |
-| MAT-055 | Mini-game | Power Washing art | Protected clean/dirt payloads | two public 1536×1024 PNGs, `LegacyPowerwashRenderer` | Exact asset/composition recovery | — | Approved artwork and full-resolution mask restored | Existing runtime/tests |
+| MAT-055 | Mini-game | Power Washing art | Protected clean/dirt/nozzle payloads | two public 1536×1024 PNGs, three exact nozzle sprites, `LegacyPowerwashRenderer` | Exact asset/composition recovery | — | Approved artwork, full-resolution mask and image-integrated tool controls restored | Existing runtime/tests |
 | MAT-056 | Mini-game | Fishing rules | HTML fishing config/tables | `fishing.js`, `FishingService` | Exact/functional match | — | Three spots, 10 catches, five casts, windows, inventory/aquarium, haptics | Automated/runtime |
 | MAT-057 | Mini-game | Fishing art | HTML embedded fish WebP and dynamic rig at 3460, 3799–3840 | `FishingScene.js:52-113,283-302` | Visual mismatch | Medium | Procedural bank plus emoji person/rod; exact embedded fish reference is not shipped | Existing runtime/code |
 | MAT-058 | Mini-game | Magnet Fishing rules | HTML magnet config/catalogue | shared Fishing service/scene | Exact/functional match | — | Eight finds, five casts, pity, river cleanup link, sink/settle/retrieve | Automated/runtime |

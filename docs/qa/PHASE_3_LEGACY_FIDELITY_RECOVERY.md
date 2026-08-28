@@ -65,8 +65,11 @@ Baseline evidence:
 | --- | --- | --- | ---: |
 | Approved clean master | `public/assets/powerwash/playground-master.png` | `0679fe2c14f28b750f61415641b73e6d17d1f35cbaadfc1a470a011d3cdd0f24` | 2,561,213 bytes |
 | Approved transparent dirt reference | `public/assets/powerwash/playground-reference-dirt.png` | `5db4c213d34d1e435f74f03a49590f766e172f01d8ac97703dc090ded7d36736` | 1,998,003 bytes |
+| Approved Precision nozzle | `public/assets/powerwash/tool-precision.png` | `d9e75832314fee928b606021986d0d24bf903f51f6d43d6e3beefb083cb16f61` | 4,711 bytes |
+| Approved Standard nozzle | `public/assets/powerwash/tool-standard.png` | `97f9dca3ecc229ba147cbc9e1bc44049c1a3946efd09812ebe03bec07dbe6290` | 7,461 bytes |
+| Approved Wide nozzle | `public/assets/powerwash/tool-wide.png` | `1e56931d3e0b759317dfcab7612a6abe535f812094ce5e507d684a7d11d87ceb` | 9,269 bytes |
 
-`scripts/extract-powerwash-assets.mjs` regenerates these files only from the protected embedded payload and fails if either hash changes.
+`scripts/extract-powerwash-assets.mjs` regenerates these files only from the protected embedded payload and fails if any hash changes.
 
 ## Restaurant visual fidelity review
 
