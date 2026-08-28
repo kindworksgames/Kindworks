@@ -768,15 +768,24 @@
       </section>
       <section id="waste-campaign-hud" class="waste-campaign-hud hidden" aria-labelledby="waste-campaign-title">
         <header class="waste-campaign-header">
-          <div><h2 id="waste-campaign-title">🧹 Waste Collection</h2></div>
-          <span id="waste-campaign-balance">🪙 100</span>
-          <button id="waste-campaign-exit" type="button" aria-label="Exit Waste Collection safely">Exit</button>
+          <div><h2 id="waste-campaign-title">Waste Collection</h2></div>
+          <span id="waste-campaign-level">Level 1 / 750</span>
+          <span class="waste-header-remaining"><strong id="waste-level-remaining">30</strong> left</span>
+          <details class="waste-campaign-menu">
+            <summary aria-label="Open Waste Collection menu">☰</summary>
+            <div>
+              <span id="waste-campaign-balance">🪙 100</span>
+              <button id="waste-hint" type="button">💡 Hint</button>
+              <button id="waste-retry" type="button">↻ Restart</button>
+              <button id="waste-qa-solve" class="hidden" type="button">✓ QA clear</button>
+              <button id="waste-campaign-exit" type="button" aria-label="Exit Waste Collection safely">Exit</button>
+            </div>
+          </details>
         </header>
         <section id="waste-campaign-gameplay" class="waste-campaign-gameplay hidden" aria-label="Active Waste Collection level">
-          <div class="waste-campaign-heading"><div><small>CURRENT CLEANUP</small><strong>Match every card in threes</strong></div><span>Left<strong id="waste-level-remaining">30</strong></span><span>Tray<strong id="waste-level-tray-count">0 / 5</strong></span></div>
-          <div id="waste-board-viewport" class="waste-board-viewport"><div id="waste-board" class="waste-board" aria-label="Waste Collection matching board"></div></div>
-          <div class="waste-tray-wrap"><small>TRAY · THREE MATCHES CLEAR</small><div id="waste-tray" class="waste-tray" aria-label="Five-slot collection tray"></div></div>
-          <div class="waste-campaign-actions"><button id="waste-hint" type="button">💡 Hint</button><button id="waste-retry" type="button">↻ Restart</button><button id="waste-qa-solve" class="hidden" type="button">✓ QA clear</button></div>
+          <p class="waste-campaign-objective">Match cards in threes.</p>
+          <div id="waste-board-viewport" class="waste-board-viewport" data-asset-label="KW-WASTE-PARK-BOARD"><div id="waste-board" class="waste-board" aria-label="Waste Collection matching board"></div></div>
+          <div class="waste-tray-wrap" data-asset-label="KW-WASTE-COLLECTION-TRAY"><small id="waste-level-tray-count">0 / 5</small><div id="waste-tray" class="waste-tray" aria-label="Five-slot collection tray"></div></div>
         </section>
         <p id="waste-campaign-status" class="waste-campaign-status" data-status="neutral" role="status" aria-live="assertive">Pick an uncovered card. Match three before the tray fills.</p>
         <section id="waste-campaign-result" class="waste-campaign-result hidden" aria-labelledby="waste-result-title">

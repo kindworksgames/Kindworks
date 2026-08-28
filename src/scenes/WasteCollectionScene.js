@@ -1,11 +1,12 @@
 import Phaser from "phaser";
 import {
   WASTE_RUBBISH_CATALOG,
+  WASTE_TOTAL_LEVELS,
   WASTE_WORLD,
   WasteCollectionEngine,
   wasteLevelSummary,
 } from "../data/wasteCollection.js";
-import { fitWasteCardLayout } from "../ui/WasteCardLayout.js";
+import { scatterWasteCardLayout } from "../ui/WasteCardLayout.js";
 
 const ROOM = Object.freeze({ width: 1280, height: 720 });
 
@@ -64,17 +65,19 @@ export class WasteCollectionScene extends Phaser.Scene {
   bindCampaignInterface() {
     this.campaignHud = document.querySelector("#waste-campaign-hud");
     this.exitButton = document.querySelector("#waste-campaign-exit");
+    this.campaignMenu = document.querySelector(".waste-campaign-menu");
     this.boardElement = document.querySelector("#waste-board");
     this.trayElement = document.querySelector("#waste-tray");
     this.buttons = {
       hint: document.querySelector("#waste-hint"), retry: document.querySelector("#waste-retry"), qa: document.querySelector("#waste-qa-solve"),
       return: document.querySelector("#waste-return"),
     };
-    this.onExit = () => this.requestExit();
+    const closeMenu = () => this.campaignMenu?.removeAttribute("open");
+    this.onExit = () => { closeMenu(); this.requestExit(); };
     this.onBoardClick = (event) => { const button = event.target.closest("[data-waste-tile]"); if (button && !button.disabled) this.selectCampaignTile(Number(button.dataset.wasteTile)); };
-    this.onHint = () => this.showHint();
-    this.onRetry = () => this.restartCampaign();
-    this.onQa = () => this.runCertifiedClear();
+    this.onHint = () => { closeMenu(); this.showHint(); };
+    this.onRetry = () => { closeMenu(); this.restartCampaign(); };
+    this.onQa = () => { closeMenu(); this.runCertifiedClear(); };
     this.onReturn = () => this.returnToTown(true);
     this.onKeyDown = (event) => {
       if (event.key === "Escape") { event.preventDefault(); this.requestExit(); return; }
@@ -148,11 +151,12 @@ export class WasteCollectionScene extends Phaser.Scene {
     const state = engine.snapshot();
     const summary = wasteLevelSummary(this.session.assignedLevel);
     const exposed = new Set(state.exposedIds);
+    setText("#waste-campaign-level", `Level ${summary.level} / ${WASTE_TOTAL_LEVELS}`);
     setText("#waste-level-remaining", state.remaining); setText("#waste-level-tray-count", `${state.tray.length} / 5`);
     if (this.boardElement) {
       const fragment = document.createDocumentFragment();
       const remainingTiles = engine.tiles.filter((entry) => !entry.removed);
-      const fitted = fitWasteCardLayout(remainingTiles, WASTE_WORLD);
+      const fitted = scatterWasteCardLayout(remainingTiles, WASTE_WORLD);
       const cardLayout = new Map(fitted.cards.map((card) => [card.id, card]));
       this.boardElement.style.setProperty("--waste-layout-scale", fitted.scale.toFixed(4));
       for (const tile of remainingTiles.sort((a, b) => a.layer - b.layer || a.id - b.id)) {
@@ -162,26 +166,32 @@ export class WasteCollectionScene extends Phaser.Scene {
         button.type = "button";
         button.className = `waste-card${isExposed ? "" : " blocked"}${this.hintTileId === tile.id ? " safe-hint" : ""}`;
         button.dataset.wasteTile = String(tile.id);
+        button.dataset.assetLabel = `KW-WASTE-CARD-${WASTE_RUBBISH_CATALOG[tile.typeId].key.toUpperCase().replaceAll("_", "-")}`;
+        button.dataset.cardInstance = String(tile.id);
+        button.dataset.exposed = String(isExposed);
         button.disabled = !isExposed || this.session.status === "failed";
         button.style.left = `${(layout.x / WASTE_WORLD.width) * 100}%`;
         button.style.top = `${(layout.y / WASTE_WORLD.height) * 100}%`;
         button.style.width = `${(layout.width / WASTE_WORLD.width) * 100}%`;
         button.style.height = `${(layout.height / WASTE_WORLD.height) * 100}%`;
-        button.style.zIndex = String(10 + tile.layer * 150 + tile.id);
+        button.style.zIndex = String((isExposed ? 10000 : 10) + tile.layer * 150 + tile.id);
         button.style.setProperty("--card-rotation", `${tile.rotation}deg`);
         button.title = tile.label;
         button.setAttribute("aria-label", isExposed ? `Select ${tile.label}` : `${tile.label}, blocked`);
         const hitArea = document.createElement("i"); hitArea.className = "waste-card-hit"; hitArea.setAttribute("aria-hidden", "true");
         const icon = document.createElement("span"); icon.setAttribute("aria-hidden", "true"); icon.textContent = tile.icon;
-        const layer = document.createElement("small"); layer.textContent = String(tile.layer + 1);
-        button.append(hitArea, icon, layer); fragment.appendChild(button);
+        button.append(hitArea, icon); fragment.appendChild(button);
       }
       this.boardElement.replaceChildren(fragment);
       this.boardElement.setAttribute("aria-label", `Waste Collection Level ${summary.level}, ${state.remaining} of ${state.total} cards remaining, ${state.tray.length} of 5 tray slots filled`);
     }
     if (this.trayElement) {
       const slots = [];
-      for (let index = 0; index < 5; index += 1) slots.push(`<span class="waste-tray-slot${state.tray[index] === undefined ? "" : " filled"}">${state.tray[index] === undefined ? "·" : WASTE_RUBBISH_CATALOG[state.tray[index]].icon}</span>`);
+      for (let index = 0; index < 5; index += 1) {
+        const typeId = state.tray[index];
+        const item = typeId === undefined ? null : WASTE_RUBBISH_CATALOG[typeId];
+        slots.push(`<span class="waste-tray-slot${item ? " filled" : ""}" data-asset-label="KW-WASTE-TRAY-SLOT-${index + 1}" aria-label="${item ? item.label : `Empty tray slot ${index + 1}`}">${item ? `<i aria-hidden="true">${item.icon}</i>` : ""}</span>`);
+      }
       this.trayElement.innerHTML = slots.join("");
     }
     if (this.buttons.hint) {

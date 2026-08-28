@@ -820,106 +820,285 @@
     height: 36px !important;
   }
 
-  /* Waste Collection uses the full landscape canvas, with the board as the
-     dominant visual and one compact tray/action rail below it. */
+  /* Waste Collection reference-led park composition. Gameplay data, authored
+     card geometry and the five-slot matching tray remain unchanged. */
   body[data-game-scene="WasteCollectionScene"] .waste-campaign-hud:not(.hidden) {
     inset: max(4px, env(safe-area-inset-top)) max(4px, env(safe-area-inset-right)) max(4px, env(safe-area-inset-bottom)) max(4px, env(safe-area-inset-left)) !important;
     display: grid !important;
-    grid-template-rows: 54px minmax(0, 1fr) 34px !important;
+    grid-template-rows: clamp(40px, 7vh, 60px) minmax(0, 1fr) !important;
     width: auto !important;
     max-height: none !important;
     overflow: hidden !important;
-    border: 4px solid #173b6b !important;
-    border-radius: 8px !important;
-    background: #071d42 !important;
-    box-shadow: none !important;
+    border: 4px solid #071a39 !important;
+    border-radius: 5px !important;
+    background: #0a244d !important;
+    box-shadow: inset 0 0 0 2px #2e5a8d !important;
   }
   body[data-game-scene="WasteCollectionScene"] .waste-campaign-header {
-    padding: 6px 10px !important;
+    position: relative !important;
+    z-index: 30 !important;
+    display: grid !important;
+    grid-template-columns: minmax(135px, 1.25fr) minmax(120px, .9fr) minmax(82px, .6fr) 44px !important;
+    align-items: stretch !important;
+    gap: 0 !important;
+    padding: 0 !important;
+    border-bottom: 4px solid #071a39 !important;
     color: #fff3cf !important;
-    background: linear-gradient(180deg, #173b6b, #0c2857) !important;
+    background: linear-gradient(180deg, #153b70, #081f47) !important;
   }
-  body[data-game-scene="WasteCollectionScene"] .waste-campaign-header h2 { font-size: clamp(16px, 2vw, 24px) !important; }
+  body[data-game-scene="WasteCollectionScene"] .waste-campaign-header > :is(div, span) {
+    display: grid !important;
+    place-items: center !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 5px 10px !important;
+    border: 0 !important;
+    border-right: 3px solid #071a39 !important;
+    border-radius: 0 !important;
+    color: #fff0b1 !important;
+    background: transparent !important;
+    box-shadow: inset -1px 0 #315f94 !important;
+    text-align: center !important;
+    text-transform: uppercase !important;
+  }
+  body[data-game-scene="WasteCollectionScene"] .waste-campaign-header h2 {
+    overflow: hidden !important;
+    margin: 0 !important;
+    font: 950 clamp(15px, 2.1vw, 28px)/1 ui-monospace, monospace !important;
+    letter-spacing: .03em !important;
+    text-overflow: ellipsis !important;
+    text-transform: uppercase !important;
+    white-space: nowrap !important;
+  }
+  body[data-game-scene="WasteCollectionScene"] #waste-campaign-level,
+  body[data-game-scene="WasteCollectionScene"] .waste-header-remaining {
+    font: 950 clamp(11px, 1.55vw, 21px)/1 ui-monospace, monospace !important;
+    letter-spacing: .025em !important;
+    white-space: nowrap !important;
+  }
+  body[data-game-scene="WasteCollectionScene"] .waste-header-remaining strong { margin-right: .35em !important; font-size: 1.08em !important; }
+  body[data-game-scene="WasteCollectionScene"] .waste-campaign-menu {
+    position: relative !important;
+    display: grid !important;
+    place-items: center !important;
+    min-width: 44px !important;
+  }
+  body[data-game-scene="WasteCollectionScene"] .waste-campaign-menu summary {
+    display: grid !important;
+    width: 44px !important;
+    height: 100% !important;
+    min-height: 44px !important;
+    place-items: center !important;
+    border-left: 1px solid #315f94 !important;
+    color: #fff3cf !important;
+    background: #0b2b5d !important;
+    font: 950 20px/1 ui-monospace, monospace !important;
+    cursor: pointer !important;
+    list-style: none !important;
+  }
+  body[data-game-scene="WasteCollectionScene"] .waste-campaign-menu summary::-webkit-details-marker { display: none !important; }
+  body[data-game-scene="WasteCollectionScene"] .waste-campaign-menu summary:focus-visible { outline: 3px solid #ffe36a !important; outline-offset: -4px !important; }
+  body[data-game-scene="WasteCollectionScene"] .waste-campaign-menu > div {
+    position: absolute !important;
+    top: calc(100% + 4px) !important;
+    right: 0 !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 6px !important;
+    width: 158px !important;
+    padding: 8px !important;
+    border: 3px solid #071a39 !important;
+    border-radius: 5px !important;
+    background: #0a244d !important;
+    box-shadow: 5px 6px 0 rgb(4 13 31 / 42%) !important;
+  }
+  body[data-game-scene="WasteCollectionScene"] .waste-campaign-menu:not([open]) > div { display: none !important; }
+  body[data-game-scene="WasteCollectionScene"] .waste-campaign-menu > div > :is(span, button) {
+    display: grid !important;
+    min-height: 44px !important;
+    place-items: center !important;
+    margin: 0 !important;
+    padding: 6px 8px !important;
+    border: 2px solid #d4b85d !important;
+    border-radius: 4px !important;
+    color: #13264a !important;
+    background: #fff1c8 !important;
+    box-shadow: none !important;
+    font: 900 11px/1 ui-monospace, monospace !important;
+  }
+  body[data-game-scene="WasteCollectionScene"] .waste-campaign-menu > div > button:disabled { opacity: .45 !important; cursor: not-allowed !important; }
   body[data-game-scene="WasteCollectionScene"] .waste-campaign-gameplay:not(.hidden) {
     display: grid !important;
-    grid-template: 44px minmax(0, 1fr) 54px / minmax(0, 1fr) 188px !important;
-    gap: 6px 8px !important;
+    grid-row: 2 !important;
+    grid-template: minmax(0, 1fr) clamp(40px, 10vh, 78px) / minmax(0, 1fr) !important;
+    gap: 0 !important;
     min-height: 0 !important;
-    padding: 7px !important;
+    padding: 0 !important;
     overflow: hidden !important;
-    background: #0a234b !important;
+    background: #56823f !important;
   }
-  body[data-game-scene="WasteCollectionScene"] .waste-campaign-heading {
-    grid-column: 1 / -1 !important;
-    grid-row: 1 !important;
-    margin: 0 !important;
-  }
-  body[data-game-scene="WasteCollectionScene"] .waste-campaign-heading > :is(div, span) {
-    border-color: #d7b95a !important;
-    background: #fff1c9 !important;
+  body[data-game-scene="WasteCollectionScene"] .waste-campaign-objective {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    clip-path: inset(50%) !important;
+    white-space: nowrap !important;
   }
   body[data-game-scene="WasteCollectionScene"] .waste-board-viewport {
-    grid-column: 1 / -1 !important;
-    grid-row: 2 !important;
+    position: relative !important;
+    grid-column: 1 !important;
+    grid-row: 1 !important;
     height: auto !important;
     min-height: 0 !important;
-    border-color: #d7b95a !important;
-    background: radial-gradient(circle at 15% 22%, #8fca5f 0 2px, transparent 3px), radial-gradient(circle at 78% 68%, #496e38 0 2px, transparent 3px), linear-gradient(#5d9747, #3f7338) !important;
-    box-shadow: inset 0 0 0 5px #82b45d, 0 3px 0 rgb(0 0 0 / 28%) !important;
-  }
-  body[data-game-scene="WasteCollectionScene"] .waste-tray-wrap {
-    grid-column: 1 !important;
-    grid-row: 3 !important;
-    align-self: stretch !important;
-    margin: 0 !important;
-  }
-  body[data-game-scene="WasteCollectionScene"] .waste-tray-wrap > small { color: #fff3cf !important; }
-  body[data-game-scene="WasteCollectionScene"] .waste-tray { height: 100% !important; }
-  body[data-game-scene="WasteCollectionScene"] .waste-tray-slot {
-    min-height: 44px !important;
-    border-color: #d7b95a !important;
-    background: #fff1c9 !important;
-  }
-  body[data-game-scene="WasteCollectionScene"] .waste-campaign-actions {
-    grid-column: 2 !important;
-    grid-row: 3 !important;
-    display: flex !important;
-    align-self: stretch !important;
-    gap: 5px !important;
-    margin: 0 !important;
-  }
-  body[data-game-scene="WasteCollectionScene"] .waste-campaign-actions button:not(.hidden) {
-    flex: 1 1 0 !important;
-    min-height: 44px !important;
-    padding: 3px !important;
-  }
-  body[data-game-scene="WasteCollectionScene"] .waste-campaign-status {
-    min-height: 34px !important;
-    max-height: 34px !important;
-    padding: 8px 10px !important;
     overflow: hidden !important;
-    border-top: 2px solid #d7b95a !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background:
+      radial-gradient(circle at 6% 18%, #e7cf43 0 3px, transparent 4px),
+      radial-gradient(circle at 93% 72%, #dca832 0 2px, transparent 3px),
+      radial-gradient(circle at 4% 78%, #315d2c 0 3px, transparent 4px),
+      linear-gradient(90deg, #57943f 0 15%, #968b6c 15% 85%, #57943f 85% 100%) !important;
+    box-shadow: inset 0 0 0 3px #284e31 !important;
+  }
+  body[data-game-scene="WasteCollectionScene"] .waste-board-viewport::before {
+    position: absolute !important;
+    z-index: 0 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 15% !important;
+    width: 70% !important;
+    content: "" !important;
+    background:
+      linear-gradient(90deg, transparent 47%, rgb(75 68 54 / 22%) 48% 52%, transparent 53%) 0 0 / 72px 72px,
+      linear-gradient(0deg, transparent 47%, rgb(75 68 54 / 22%) 48% 52%, transparent 53%) 0 0 / 72px 72px,
+      linear-gradient(135deg, #aaa082, #817a63) !important;
+    box-shadow: inset 8px 0 0 rgb(57 87 43 / 32%), inset -8px 0 0 rgb(57 87 43 / 32%) !important;
+  }
+  body[data-game-scene="WasteCollectionScene"] .waste-board-viewport::after {
+    position: absolute !important;
+    z-index: 1 !important;
+    inset: 0 !important;
+    content: "" !important;
+    pointer-events: none !important;
+    background:
+      radial-gradient(ellipse at 12% 42%, rgb(52 78 35 / 44%) 0 5px, transparent 6px),
+      radial-gradient(ellipse at 88% 24%, rgb(78 58 35 / 32%) 0 7px, transparent 8px),
+      radial-gradient(ellipse at 23% 84%, rgb(75 58 39 / 24%) 0 10px, transparent 11px),
+      radial-gradient(ellipse at 78% 70%, rgb(61 52 42 / 26%) 0 8px, transparent 9px) !important;
+  }
+  body[data-game-scene="WasteCollectionScene"] .waste-board {
+    z-index: 2 !important;
+    inset: clamp(4px, .8vw, 10px) !important;
+  }
+  body[data-game-scene="WasteCollectionScene"] .waste-card {
+    overflow: visible !important;
+    padding: 0 !important;
+    border: clamp(2px, .24vw, 4px) solid #2d2b27 !important;
+    border-radius: clamp(3px, .45vw, 7px) !important;
+    background: linear-gradient(145deg, #fff0c8, #e7d29e) !important;
+    box-shadow: clamp(2px, .35vw, 5px) clamp(3px, .45vw, 7px) 0 rgb(35 36 31 / 76%) !important;
+    opacity: 1 !important;
+    filter: none !important;
+    transform: none !important;
+  }
+  body[data-game-scene="WasteCollectionScene"] .waste-card.blocked { cursor: not-allowed !important; }
+  body[data-game-scene="WasteCollectionScene"] .waste-card:not(.blocked) { border-color: #171d1d !important; box-shadow: 0 0 0 2px #ead17b, 4px 6px 0 rgb(25 30 28 / 72%) !important; }
+  body[data-game-scene="WasteCollectionScene"] .waste-card span {
+    font-size: clamp(24px, 5vw, 58px) !important;
+    line-height: 1 !important;
+    filter: drop-shadow(2px 3px 0 rgb(50 47 39 / 24%)) !important;
+    transform: scale(.84) !important;
+  }
+  body[data-game-scene="WasteCollectionScene"] .waste-card small { display: none !important; }
+  body[data-game-scene="WasteCollectionScene"] .waste-card.safe-hint { animation: none !important; outline: 4px solid #ffe45a !important; outline-offset: 2px !important; }
+  body[data-game-scene="WasteCollectionScene"] .waste-tray-wrap {
+    z-index: 5 !important;
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    place-self: center !important;
+    width: min(76%, 650px) !important;
+    height: calc(100% - 8px) !important;
+    min-height: 34px !important;
+    margin: 0 !important;
+    padding: clamp(5px, .8vw, 10px) !important;
+    border: clamp(3px, .45vw, 6px) solid #071a39 !important;
+    border-radius: clamp(6px, .8vw, 12px) !important;
+    background: linear-gradient(180deg, #173f75, #081f47) !important;
+    box-shadow: inset 0 0 0 2px #37689d, 4px 5px 0 rgb(4 15 32 / 46%) !important;
+  }
+  body[data-game-scene="WasteCollectionScene"] .waste-tray-wrap > small {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    overflow: hidden !important;
+    clip-path: inset(50%) !important;
+  }
+  body[data-game-scene="WasteCollectionScene"] .waste-tray { height: 100% !important; gap: clamp(4px, .65vw, 9px) !important; }
+  body[data-game-scene="WasteCollectionScene"] .waste-tray-slot {
+    min-height: 28px !important;
+    border: clamp(2px, .32vw, 4px) solid #38689a !important;
+    border-radius: clamp(4px, .55vw, 8px) !important;
+    color: #fff2c6 !important;
+    background: #061a38 !important;
+    box-shadow: inset 0 0 0 2px rgb(3 12 29 / 55%) !important;
+    font-size: clamp(24px, 4.5vw, 52px) !important;
+  }
+  body[data-game-scene="WasteCollectionScene"] .waste-tray-slot.filled { border-color: #d8bc5f !important; background: #f3dfad !important; }
+  body[data-game-scene="WasteCollectionScene"] .waste-tray-slot i { font-style: normal !important; line-height: 1 !important; }
+  body[data-game-scene="WasteCollectionScene"] .waste-campaign-status {
+    position: absolute !important;
+    z-index: 25 !important;
+    top: calc(clamp(40px, 7vh, 60px) + 8px) !important;
+    left: 50% !important;
+    width: min(410px, calc(100% - 24px)) !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 7px 10px !important;
+    overflow: hidden !important;
+    border: 2px solid #071a39 !important;
+    border-radius: 5px !important;
     background: #fff1c9 !important;
+    box-shadow: 3px 4px 0 rgb(4 15 32 / 38%) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
     text-overflow: ellipsis !important;
+    transform: translateX(-50%) !important;
     white-space: nowrap !important;
+  }
+  body[data-game-scene="WasteCollectionScene"] .waste-campaign-status:is([data-status="error"], [data-status="hint"]) { opacity: 1 !important; }
+  body[data-game-scene="WasteCollectionScene"] .waste-campaign-result:not(.hidden) {
+    grid-row: 2 !important;
+    align-self: center !important;
+    justify-self: center !important;
+    width: min(460px, calc(100% - 24px)) !important;
+    padding: 16px !important;
+    border: 4px solid #071a39 !important;
+    border-radius: 8px !important;
+    background: #fff1c9 !important;
+    box-shadow: 7px 8px 0 rgb(4 15 32 / 38%) !important;
   }
 }
 
 @media (orientation: landscape) and (max-width: 700px) {
   body[data-game-scene="WasteCollectionScene"] .waste-campaign-hud:not(.hidden) {
-    grid-template-rows: 44px minmax(0, 1fr) 0 !important;
+    grid-template-rows: 40px minmax(0, 1fr) !important;
   }
+  body[data-game-scene="WasteCollectionScene"] .waste-campaign-header { grid-template-columns: minmax(124px, 1.2fr) minmax(104px, .9fr) minmax(70px, .55fr) 44px !important; }
+  body[data-game-scene="WasteCollectionScene"] .waste-campaign-header > :is(div, span) { padding: 3px 5px !important; }
+  body[data-game-scene="WasteCollectionScene"] .waste-campaign-header h2 { font-size: clamp(12px, 2.7vw, 16px) !important; }
+  body[data-game-scene="WasteCollectionScene"] #waste-campaign-level,
+  body[data-game-scene="WasteCollectionScene"] .waste-header-remaining { font-size: clamp(9px, 2.1vw, 12px) !important; }
   body[data-game-scene="WasteCollectionScene"] .waste-campaign-gameplay:not(.hidden) {
-    grid-template: 36px minmax(0, 1fr) 46px / minmax(0, 1fr) 142px !important;
-    gap: 4px 5px !important;
-    padding: 5px !important;
+    grid-template-rows: minmax(0, 1fr) 40px !important;
   }
-  body[data-game-scene="WasteCollectionScene"] .waste-campaign-heading {
-    grid-template-columns: minmax(0, 1fr) repeat(2, 64px) !important;
-  }
-  body[data-game-scene="WasteCollectionScene"] .waste-campaign-heading > :is(div, span) { padding: 3px !important; }
-  body[data-game-scene="WasteCollectionScene"] .waste-campaign-status { display: none !important; }
-  body[data-game-scene="WasteCollectionScene"] .waste-campaign-actions button:not(.hidden) { min-height: 42px !important; }
+  body[data-game-scene="WasteCollectionScene"] .waste-board { inset: 3px !important; }
+  body[data-game-scene="WasteCollectionScene"] .waste-card span { font-size: clamp(22px, 5.2vw, 31px) !important; }
+  body[data-game-scene="WasteCollectionScene"] .waste-tray-wrap { width: min(74%, 470px) !important; height: 36px !important; padding: 3px 5px !important; }
+  body[data-game-scene="WasteCollectionScene"] .waste-tray-slot { min-height: 24px !important; font-size: clamp(17px, 4.5vw, 25px) !important; }
+  body[data-game-scene="WasteCollectionScene"] .waste-campaign-status { top: 46px !important; font-size: 8px !important; }
 }
 
 /* Lawn Care full-canvas visual composition. The mower rules, board geometry,
