@@ -5095,7 +5095,7 @@ body[data-game-scene="HarbourGeneralScene"] .weather-effects { display: none; }
 .lawn-care-picker select { width: 100%; padding: 6px; }
 .lawn-care-picker > button { color: #fff; background: #4e874b; }
 .lawn-care-gameplay { display: grid; gap: 7px; padding: 8px; border-top: 3px solid #244f32; }
-.lawn-care-game-heading { display: grid; grid-template-columns: minmax(0, 1fr) repeat(3, auto); align-items: center; gap: 6px; }
+.lawn-care-game-heading { display: grid; grid-template-columns: minmax(0, 1fr) repeat(2, auto); align-items: center; gap: 6px; }
 .lawn-care-game-heading div { min-width: 0; }
 .lawn-care-game-heading small, .lawn-care-game-heading div > strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .lawn-care-game-heading small { color: #557057; font-size: 8px; }
@@ -5122,13 +5122,10 @@ body[data-game-scene="HarbourGeneralScene"] .weather-effects { display: none; }
 .lawn-board.mower-straining .lawn-cell.mower::before { animation: lawn-mower-strain 90ms ease-in-out infinite alternate; filter: drop-shadow(2px 2px 0 rgb(28 64 38 / 48%)) saturate(1.35); }
 @keyframes lawn-mower-strain { to { margin-left: 2px; margin-top: -1px; } }
 .lawn-care-side { display: grid; align-content: start; gap: 7px; min-width: 0; }
-.lawn-live-stars { padding: 5px; color: #f0c13e; border-radius: 7px; background: #244f32; font-size: 23px; letter-spacing: 2px; text-align: center; text-shadow: 1px 1px #6b4c1c; }
 .lawn-care-side article { display: grid; gap: 4px; padding: 7px; border: 2px solid #94bd68; border-radius: 7px; background: #fbfff2; }
 .lawn-care-side article small { color: #66805d; font-size: 7px; font-weight: 900; letter-spacing: 1px; }
 .lawn-care-side article strong { color: #244f32; font-size: 11px; }
 .lawn-care-side article span { color: #657865; font: 700 8px/1.35 system-ui, sans-serif; }
-.lawn-care-legend { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; color: #4c684f; font: 700 8px/1.2 system-ui, sans-serif; }
-.lawn-care-legend span { padding: 4px; border-radius: 5px; background: #dcebbe; }
 .lawn-care-side button { min-height: var(--kw-touch-min); }
 .lawn-care-side button.hinted { color: #614c0d; border-color: #d19d23; background: #ffea84; animation: lawn-hint-pulse 700ms ease-in-out infinite alternate; }
 #lawn-qa-complete { color: #fff; background: #76528c; }
@@ -5141,7 +5138,7 @@ body[data-game-scene="HarbourGeneralScene"] .weather-effects { display: none; }
 .lawn-care-result h3 { color: #244f32; }
 #lawn-result-stars { margin: 7px 0; color: #e3ad2c; font-size: 29px; letter-spacing: 3px; text-shadow: 2px 2px #244f32; }
 .lawn-care-result p { color: #526d56; font: 700 10px/1.4 system-ui, sans-serif; }
-.lawn-result-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 11px 0; }
+.lawn-result-stats { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; margin: 11px 0; }
 .lawn-result-stats span { display: grid; gap: 3px; padding: 7px; color: #58735d; border: 2px solid #9fc477; border-radius: 7px; background: #fbfff2; font-size: 7px; }
 .lawn-result-stats strong { color: #244f32; font-size: 13px; }
 .lawn-result-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
@@ -5174,8 +5171,7 @@ body[data-game-scene="LawnCareScene"] .town-hud { display: none; }
   .lawn-board-viewport { min-height: 0; padding: 3px; }
   .lawn-board { width: auto; height: 100%; max-width: 100%; max-height: 100%; }
   .lawn-care-side { gap: 4px; }
-  .lawn-care-side article, .lawn-care-legend { display: none; }
-  .lawn-live-stars { padding: 3px; font-size: 18px; }
+  .lawn-care-side article { display: none; }
   .lawn-care-side button { min-height: var(--kw-touch-min); }
   .lawn-care-side button { padding: 5px 3px; font-size: 9px; }
   .lawn-care-status { min-height: 30px; max-height: 30px; padding: 7px 9px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
