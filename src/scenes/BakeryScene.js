@@ -204,6 +204,9 @@ export class BakeryScene extends Phaser.Scene {
     }
     document.querySelector("#bakery-progress-summary").textContent = `${Object.keys(progress.completed).length} cleared · ${progress.totalStars} stars · ${progress.lifetimeServed} served`;
     document.querySelector("#bakery-balance").textContent = `🪙 ${this.gameState.getSnapshot().economy.coins}`;
+    const liveStars = document.querySelector("#bakery-live-stars");
+    const bestStars = session ? Number(progress.best[session.level.level]?.stars || 0) : 0;
+    if (liveStars) { liveStars.textContent = `${"★".repeat(bestStars)}${"☆".repeat(3 - bestStars)}`; liveStars.setAttribute("aria-label", `Best rating: ${bestStars} of 3 stars`); }
     if (!session) { updateRestaurantPresentation(this); this.updateDomState(); return; }
     const order = this.bakery.currentOrder();
     const tray = this.bakery.tray();
@@ -225,7 +228,7 @@ export class BakeryScene extends Phaser.Scene {
     const availableIds = [...new Set(session.level.menu.flatMap((id) => BAKERY_RECIPES[id].steps))];
     availableIds.sort((a, b) => a === expected ? -1 : b === expected ? 1 : (BAKERY_APPLIANCES[a] ? 1 : 0) - (BAKERY_APPLIANCES[b] ? 1 : 0));
     const activeBusy = this.busyTrays.has(session.activeTray);
-    if (this.stepList) this.stepList.innerHTML = availableIds.map((id) => { const item = bakeryStep(id); const station = Boolean(BAKERY_APPLIANCES[id]); return `<button type="button" data-bakery-step="${id}" class="${id === expected ? "next" : ""} ${station ? "station" : "ingredient"}" ${activeBusy ? "disabled" : ""}><span>${item.icon}</span><strong>${item.name}</strong><small>${station ? "Station" : "Ingredient"}</small></button>`; }).join("");
+    if (this.stepList) this.stepList.innerHTML = availableIds.map((id) => { const item = bakeryStep(id); const station = Boolean(BAKERY_APPLIANCES[id]); return `<button type="button" data-bakery-step="${id}" data-asset-label="KW-BAKERY-STEP-${id}" class="${id === expected ? "next" : ""} ${station ? "station" : "ingredient"}" ${activeBusy ? "disabled" : ""}><span>${item.icon}</span><strong>${item.name}</strong><small>${station ? "Station" : "Ingredient"}</small></button>`; }).join("");
     const canRevise = !activeBusy && Boolean(tray) && tray.stepIndex > 0 && Boolean(expected);
     if (this.undoButton) { this.undoButton.disabled = !canRevise; this.undoButton.classList.toggle("hidden", !canRevise); }
     if (this.discardButton) { this.discardButton.disabled = !canRevise; this.discardButton.classList.toggle("hidden", !canRevise); }

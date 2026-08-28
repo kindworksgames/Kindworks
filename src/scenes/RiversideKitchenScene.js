@@ -176,6 +176,9 @@ export class RiversideKitchenScene extends Phaser.Scene {
     }
     document.querySelector("#riverside-kitchen-progress-summary").textContent = `${Object.keys(progress.completed).length} cleared · ${progress.totalStars} stars · ${progress.lifetimeServed} served`;
     document.querySelector("#riverside-kitchen-balance").textContent = `🪙 ${this.gameState.getSnapshot().economy.coins}`;
+    const liveStars = document.querySelector("#riverside-kitchen-live-stars");
+    const bestStars = session ? Number(progress.best[session.level.level]?.stars || 0) : 0;
+    if (liveStars) { liveStars.textContent = `${"★".repeat(bestStars)}${"☆".repeat(3 - bestStars)}`; liveStars.setAttribute("aria-label", `Best rating: ${bestStars} of 3 stars`); }
     if (!session) { updateRestaurantPresentation(this); this.updateDomState(); return; }
     const tray = session.trays[session.activeTray]; const customerOrder = tray?.orderId ? session.orders.find((candidate) => candidate.id === tray.orderId) : null;
     const recipe = customerOrder ? RIVERSIDE_KITCHEN_RECIPES[customerOrder.recipes[tray.recipeIndex]] : null; const expected = recipe?.steps?.[tray.stepIndex] || null;
@@ -190,7 +193,7 @@ export class RiversideKitchenScene extends Phaser.Scene {
     if (sequence) sequence.innerHTML = recipe ? recipe.steps.map((step, index) => `<span class="${index < tray.stepIndex ? "done" : index === tray.stepIndex ? "next" : ""}">${riversideKitchenStep(step).icon}<small>${riversideKitchenStep(step).name}</small></span>`).join("") : "";
     const availableIds = [...new Set(session.level.menu.flatMap((id) => RIVERSIDE_KITCHEN_RECIPES[id].steps))];
     availableIds.sort((a, b) => a === expected ? -1 : b === expected ? 1 : (RIVERSIDE_KITCHEN_APPLIANCES[a] ? 1 : 0) - (RIVERSIDE_KITCHEN_APPLIANCES[b] ? 1 : 0));
-    if (this.stepList) this.stepList.innerHTML = availableIds.map((id) => { const item = riversideKitchenStep(id); const station = Boolean(RIVERSIDE_KITCHEN_APPLIANCES[id]); const stationState = session.appliances?.[id]?.status || "idle"; return `<button type="button" data-riverside-kitchen-step="${id}" class="${id === expected ? "next" : ""} ${station ? "station" : "ingredient"} ${stationState}"><span>${item.icon}</span><strong>${item.name}</strong><small>${stationState === "cooking" ? "Cooking…" : stationState === "ready" ? "Ready · tap" : stationState === "burnt" ? "Burnt · clear" : station ? "Heat / station" : "Ingredient"}</small></button>`; }).join("");
+    if (this.stepList) this.stepList.innerHTML = availableIds.map((id) => { const item = riversideKitchenStep(id); const station = Boolean(RIVERSIDE_KITCHEN_APPLIANCES[id]); const stationState = session.appliances?.[id]?.status || "idle"; return `<button type="button" data-riverside-kitchen-step="${id}" data-asset-label="KW-RIVERSIDE-STEP-${id}" class="${id === expected ? "next" : ""} ${station ? "station" : "ingredient"} ${stationState}"><span>${item.icon}</span><strong>${item.name}</strong><small>${stationState === "cooking" ? "Cooking…" : stationState === "ready" ? "Ready · tap" : stationState === "burnt" ? "Burnt · clear" : station ? "Heat / station" : "Ingredient"}</small></button>`; }).join("");
     const activeAppliance = this.riversideKitchen.activeAppliance();
     const canRevise = Boolean(tray?.orderId) && Boolean(expected) && (tray.stepIndex > 0 || tray.completedRecipes.length > 0 || activeAppliance);
     if (this.undoButton) { this.undoButton.disabled = !canRevise || (!activeAppliance && tray.stepIndex < 1); this.undoButton.classList.toggle("hidden", !canRevise || (!activeAppliance && tray.stepIndex < 1)); }

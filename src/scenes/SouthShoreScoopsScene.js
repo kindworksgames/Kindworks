@@ -178,6 +178,9 @@ export class SouthShoreScoopsScene extends Phaser.Scene {
     }
     document.querySelector("#south-shore-scoops-progress-summary").textContent = `${Object.keys(progress.completed).length} cleared · ${progress.totalStars} stars · restoration tier ${progress.restorationTier}`;
     document.querySelector("#south-shore-scoops-balance").textContent = `🪙 ${this.gameState.getSnapshot().economy.coins}`;
+    const liveStars = document.querySelector("#south-shore-scoops-live-stars");
+    const bestStars = session ? Number(progress.best[session.level.level]?.stars || 0) : 0;
+    if (liveStars) { liveStars.textContent = `${"★".repeat(bestStars)}${"☆".repeat(3 - bestStars)}`; liveStars.setAttribute("aria-label", `Best rating: ${bestStars} of 3 stars`); }
     if (!session) { updateScoopsPresentation(this); this.updateDomState(); return; }
     const order = session.orders.find((candidate) => candidate.id === session.selectedOrderId) || null;
     const work = order ? session.work[order.id] : { build: [], tray: [] };
@@ -201,7 +204,7 @@ export class SouthShoreScoopsScene extends Phaser.Scene {
     const guided = session.level.level <= 10;
     const available = southShoreScoopsAvailableParts(session.level.level).sort((left, right) => guided && left === expectedPart ? -1 : guided && right === expectedPart ? 1 : PART_ORDER.indexOf(left) - PART_ORDER.indexOf(right));
     if (this.partList) {
-      this.partList.innerHTML = available.map((id) => { const part = southShoreScoopsPart(id); const guide = guided && id === expectedPart; return `<button type="button" data-scoops-part="${id}" class="${part.category} ${guide ? "next" : ""}" aria-label="Add ${part.name}">${part.color ? `<i style="background:${part.color}"></i>` : `<span>${part.icon}</span>`}<strong>${part.name}</strong><small>${part.category}</small></button>`; }).join("");
+      this.partList.innerHTML = available.map((id) => { const part = southShoreScoopsPart(id); const guide = guided && id === expectedPart; return `<button type="button" data-scoops-part="${id}" data-asset-label="KW-SCOOPS-PART-${id}" class="${part.category} ${guide ? "next" : ""}" aria-label="Add ${part.name}">${part.color ? `<i style="background:${part.color}"></i>` : `<span>${part.icon}</span>`}<strong>${part.name}</strong><small>${part.category}</small></button>`; }).join("");
       if (guided) this.partList.scrollLeft = 0;
     }
     const canUndo = Boolean(work.build.length);
