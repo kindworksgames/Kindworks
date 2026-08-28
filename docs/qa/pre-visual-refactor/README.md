@@ -16,7 +16,8 @@ This directory is the evidence register for the staged functional QA cycle that 
 
 | Stage | System group | QA status | Repair status | Evidence |
 | --- | --- | --- | --- | --- |
-| 01 | Save integrity, schema migration, persistence, progression, economy, commerce duplicate protection | PASS for browser/runtime contract | No repair required; no confirmed defects | [Stage 01 report](stage-01-save-migration-economy/REPORT.md) |
+| 01 | Authoritative baseline, complete inventory, and protected HTML-to-Phaser parity | AUDIT COMPLETE — CONDITIONAL PASS; 0 P0/P1, 1 P3, visual/device gates open | Repair not performed in audit stage | [Baseline report](stage-01-authoritative-baseline-parity/REPORT.md), [inventory](stage-01-authoritative-baseline-parity/GAME_INVENTORY.md), [parity matrix](stage-01-authoritative-baseline-parity/HTML_PHASER_PARITY_MATRIX.md) |
+| 01A | Supplemental save integrity, schema migration, persistence, progression, economy, and duplicate protection gate | PASS for browser/runtime contract | No repair required in that focused gate | [Save/economy report](stage-01-save-migration-economy/REPORT.md) |
 | 02 | Town, world simulation, time, navigation, and environment | NOT STARTED | Not started | — |
 | 03 | NPCs, custom resident, onboarding, narrative, and control hand-off | NOT STARTED | Not started | — |
 | 04 | Animals, adoption, companion care, food, following, and aquarium | NOT STARTED | Not started | — |
@@ -28,4 +29,4 @@ This directory is the evidence register for the staged functional QA cycle that 
 
 ## Current gate
 
-Stage 01 is complete. No repair prompt is required because no functional defect was confirmed. Stage 02 must begin as a separate QA stage; no Stage 02 testing or repair was included in Stage 01.
+The authoritative Stage 01 audit is complete. Functional/data parity has strong current evidence, but the result is conditional: Beach Cleanup has one confirmed P3 exit-confirmation defect, older Phase 3 documentation contains a resolved/stale P1 statement, and visual/physical-device gates remain open. No repair was made because Stage 01 was audit-only. A separate repair prompt may address those confirmed findings before or alongside the separately scoped Stage 02 audit.
