@@ -4694,7 +4694,7 @@ body[data-game-scene="WasteCollectionScene"] .town-hud {
   box-shadow: 8px 9px 0 rgb(14 43 53 / 48%);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
-.river-hud.hidden, .river-picker.hidden, .river-gameplay.hidden, .river-result.hidden, #river-qa-solve.hidden { display: none; }
+.river-hud.hidden, .river-gameplay.hidden, .river-result.hidden, #river-qa-solve.hidden { display: none; }
 .river-hud-header { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 8px; padding: 10px; color: #efffff; background: #173f50; }
 .river-hud-header div { min-width: 0; }
 .river-hud-header p, .river-hud-header h2, .river-hud-header small { display: block; margin: 0; }
@@ -4705,13 +4705,6 @@ body[data-game-scene="WasteCollectionScene"] .town-hud {
 .river-hud button, .river-hud select { min-height: var(--kw-touch-min); border: 3px solid #173f50; border-radius: 7px; color: #173f50; background: #fbfff9; font: 900 10px/1 ui-monospace, monospace; box-shadow: 3px 3px 0 rgb(23 63 80 / 28%); touch-action: manipulation; }
 .river-hud button:disabled { opacity: .42; box-shadow: none; }
 .river-hud-header button { min-width: var(--kw-touch-min); min-height: var(--kw-touch-min); padding: 5px 8px; border-color: #b8f0e3; box-shadow: none; }
-.river-picker { display: grid; grid-template-columns: minmax(0, 1fr) 150px 120px; align-items: end; gap: 9px; padding: 13px; }
-.river-picker strong, .river-picker small { display: block; }
-.river-picker strong { color: #173f50; }
-.river-picker small { margin-top: 5px; color: #526f6d; font: 700 9px/1.35 system-ui, sans-serif; }
-.river-picker label { display: grid; gap: 4px; color: #3f6665; font-size: 8px; font-weight: 900; }
-.river-picker select { width: 100%; padding: 6px; }
-.river-picker > button { color: #fff; background: #317d73; }
 .river-gameplay { display: grid; gap: 7px; padding: 8px; border-top: 3px solid #173f50; }
 .river-game-heading { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 6px; }
 .river-game-heading div { min-width: 0; }
@@ -4732,15 +4725,11 @@ body[data-game-scene="WasteCollectionScene"] .town-hud {
 .river-cell.hint { background: #b9e3ff; outline: 3px dashed #285f78; outline-offset: -3px; animation: river-hint-pulse .72s steps(2, end) infinite; }
 @keyframes river-hint-pulse { 50% { filter: brightness(1.18); } }
 .river-side-panel { display: grid; align-content: start; gap: 7px; min-width: 0; }
-.river-stars { padding: 5px; color: #e7ad2f; background: #173f50; border-radius: 7px; font-size: 23px; letter-spacing: 2px; text-align: center; text-shadow: 1px 1px #fff; }
 .river-preview-card { padding: 7px; border: 2px solid #86b9b0; border-radius: 7px; background: #fbfff9; }
 .river-preview-card > small { color: #50716d; font-size: 7px; font-weight: 900; letter-spacing: 1px; }
 .river-preview { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-top: 5px; }
 .river-preview span { display: grid; place-items: center; min-height: 38px; border: 2px solid #a8cdc5; border-radius: 6px; color: #173f50; background: #d9f3eb; font-weight: 900; }
 .river-preview small { font-size: 15px; }
-.river-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
-.river-metrics span { display: grid; gap: 2px; padding: 5px; border: 2px solid #9cc8bf; border-radius: 6px; color: #55736f; background: #fbfff9; font-size: 7px; text-align: center; }
-.river-metrics strong { color: #173f50; font-size: 12px; }
 .river-side-panel button { min-height: var(--kw-touch-min); }
 #river-qa-solve { color: #fff; background: #6a4f8c; }
 .river-secondary-actions { display: grid; grid-template-columns: minmax(0, 1fr); gap: 5px; }
@@ -4754,11 +4743,10 @@ body[data-game-scene="WasteCollectionScene"] .town-hud {
 .river-result h3 { color: #173f50; }
 #river-result-stars { margin: 7px 0; color: #e3a82c; font-size: 29px; letter-spacing: 3px; text-shadow: 2px 2px #173f50; }
 .river-result p { color: #526d69; font: 700 10px/1.4 system-ui, sans-serif; }
-.river-result-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 11px 0; }
+.river-result-stats { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; margin: 11px 0; }
 .river-result-stats span { display: grid; gap: 3px; padding: 7px; border: 2px solid #9cc8bf; border-radius: 7px; background: #fbfff9; color: #58736f; font-size: 7px; }
 .river-result-stats strong { color: #173f50; font-size: 13px; }
 .river-result-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
-.river-result-actions #river-next { color: #fff; background: #317d73; }
 body[data-game-scene="RiverClearoutScene"] .touch-controls,
 body[data-game-scene="RiverClearoutScene"] .zoom-controls,
 body[data-game-scene="RiverClearoutScene"] .interaction-prompt,
@@ -4771,12 +4759,9 @@ body[data-game-scene="RiverClearoutScene"] .town-hud { display: none; }
   .river-hud-header h2 { font-size: 16px; }
   .river-hud-header > span { padding: 5px 6px; font-size: 9px; }
   .river-hud-header button { min-height: var(--kw-touch-min); padding: 4px 6px; font-size: 8px; }
-  .river-picker { grid-template-columns: minmax(0, 1fr) 110px; padding: 9px; }
-  .river-picker > div { grid-column: 1 / -1; }
   .river-gameplay { gap: 5px; padding: 6px; }
   .river-play-area { grid-template-columns: minmax(180px, 1fr) minmax(104px, 126px); gap: 6px; }
   .river-board { width: min(100%, 276px); }
-  .river-stars { font-size: 18px; }
   .river-preview-card { padding: 5px; }
   .river-preview span { min-height: 31px; }
   .river-side-panel button { font-size: 8px; }
@@ -4793,33 +4778,19 @@ body[data-game-scene="RiverClearoutScene"] .town-hud { display: none; }
     max-height: none;
     overflow: hidden;
   }
-  .river-picker,
   .river-gameplay,
   .river-result { grid-row: 2; }
   .river-status { grid-row: 3; }
-  .river-picker {
-    align-self: center;
-    justify-self: center;
-    width: min(356px, calc(100% - 20px));
-    padding: 12px;
-    border: 3px solid #173f50;
-    border-radius: 12px;
-    background: #fbfff9;
-    box-shadow: 5px 6px 0 rgb(23 63 80 / 22%);
-  }
   .river-gameplay { grid-template-rows: auto minmax(0, 1fr) auto; min-height: 0; overflow: hidden; }
   .river-game-heading div > strong { font-size: 9px; }
   .river-game-heading > span { min-width: 54px; padding: 3px; }
   .river-play-area { grid-template: minmax(0, 1fr) auto / minmax(0, 1fr); min-height: 0; overflow: hidden; }
   .river-board { width: auto; height: 100%; max-width: 100%; max-height: 100%; justify-self: center; }
-  .river-side-panel { grid-template-columns: 58px 88px minmax(110px, 1fr) 92px; align-items: stretch; gap: 4px; width: 100%; }
-  .river-stars { display: grid; place-items: center; padding: 3px; font-size: 15px; }
+  .river-side-panel { grid-template-columns: minmax(110px, 1fr) 92px; align-items: stretch; gap: 4px; width: 100%; }
   .river-preview-card { padding: 3px; }
   .river-preview-card > small { display: none; }
   .river-preview { gap: 2px; margin: 0; }
   .river-preview span { min-height: var(--kw-touch-min); }
-  .river-metrics { gap: 2px; }
-  .river-metrics span { padding: 2px; }
   .river-side-panel button { min-height: var(--kw-touch-min); padding: 3px; }
   #river-qa-solve { grid-column: 1 / -1; }
   .river-status { min-height: 30px; max-height: 30px; padding: 7px 9px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -4836,12 +4807,8 @@ body[data-game-scene="RiverClearoutScene"] .town-hud { display: none; }
 }
 
 @media (max-width: 360px) and (orientation: portrait) {
-  .river-side-panel { grid-template-columns: 44px 68px 92px 78px; }
-  .river-stars { font-size: 12px; letter-spacing: 0; }
+  .river-side-panel { grid-template-columns: minmax(0, 1fr) 78px; }
   .river-preview span { min-height: 36px; }
-  .river-metrics span:nth-child(2),
-  .river-metrics span:nth-child(4) { display: none; }
-  .river-metrics span { min-height: var(--kw-touch-min); }
 }
 
 @media (max-height: 610px) and (orientation: landscape) {

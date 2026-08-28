@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { RIVER_LEVELS, RIVER_TOTAL_LEVELS, getRiverRubbish } from "../data/riverClearout.js";
+import { getRiverRubbish } from "../data/riverClearout.js";
 import { riverGestureAction } from "../input/mobileGestures.js";
 
 const ROOM = Object.freeze({ width: 1280, height: 720 });
@@ -32,6 +32,7 @@ export class RiverClearoutScene extends Phaser.Scene {
     this.npcTownLife?.setPaused("activity", true);
     this.drawRiverBackdrop();
     this.bindInterface();
+    if (!this.river.getActiveSession()) this.startLevel(this.entryData.level || this.river.getSnapshot().nextLevel);
     this.setSceneInterface();
     this.render();
     this.cameras.main.fadeIn(220, 24, 55, 66);
@@ -57,26 +58,20 @@ export class RiverClearoutScene extends Phaser.Scene {
 
   bindInterface() {
     this.hud = document.querySelector("#river-hud");
-    this.levelSelect = document.querySelector("#river-level-select");
-    this.startButton = document.querySelector("#river-start");
     this.exitButton = document.querySelector("#river-exit");
     this.boardElement = document.querySelector("#river-board");
     this.buttons = {
       undo: document.querySelector("#river-undo"),
       hint: document.querySelector("#river-hint"), qa: document.querySelector("#river-qa-solve"),
       resultUndo: document.querySelector("#river-result-undo"),
-      replay: document.querySelector("#river-replay"), next: document.querySelector("#river-next"),
+      replay: document.querySelector("#river-replay"),
       return: document.querySelector("#river-return"),
     };
-    document.querySelector("#river-picker")?.classList.remove("hidden");
     document.querySelector("#river-gameplay")?.classList.add("hidden");
     document.querySelector("#river-result")?.classList.add("hidden");
     this.buttons.qa?.classList.toggle("hidden", !this.qaMode);
     if (this.exitButton) this.exitButton.textContent = "Exit";
-    this.setMessage(this.entryData.environmentTargetId ? "Choose a level to clear this debris." : "Choose a river level.", "neutral");
-
-    this.onStart = () => this.startLevel(Number(this.levelSelect?.value || 1));
-    this.onLevelChange = () => { if (this.startButton) this.startButton.textContent = `Start Level ${Number(this.levelSelect?.value || 1)}`; };
+    this.setMessage("Clear rows. Restore at least 50%.", "neutral");
     this.onExit = () => this.requestExit();
     this.onLeft = () => this.runAction(() => this.river.moveHorizontal(-1));
     this.onRight = () => this.runAction(() => this.river.moveHorizontal(1));
@@ -96,7 +91,6 @@ export class RiverClearoutScene extends Phaser.Scene {
     this.onHint = () => this.showHint();
     this.onQa = () => this.runCertifiedDemo();
     this.onReplay = () => this.startLevel(this.river.getActiveSession()?.level.id || 1);
-    this.onNext = () => this.startLevel(this.river.getSnapshot().nextLevel);
     this.onReturn = () => this.returnToTown(true);
     this.onKeyDown = (event) => {
       if (event.key === "Escape") { this.requestExit(); return; }
@@ -150,11 +144,11 @@ export class RiverClearoutScene extends Phaser.Scene {
       if (!this.pointerGesture || (event?.pointerId !== undefined && this.pointerGesture.pointerId !== event.pointerId)) return;
       this.pointerGesture = null;
     };
-    this.startButton?.addEventListener("click", this.onStart); this.levelSelect?.addEventListener("change", this.onLevelChange); this.exitButton?.addEventListener("click", this.onExit);
+    this.exitButton?.addEventListener("click", this.onExit);
     this.buttons.undo?.addEventListener("click", this.onUndo);
     this.buttons.hint?.addEventListener("click", this.onHint); this.buttons.qa?.addEventListener("click", this.onQa); this.buttons.replay?.addEventListener("click", this.onReplay);
     this.buttons.resultUndo?.addEventListener("click", this.onResultUndo);
-    this.buttons.next?.addEventListener("click", this.onNext); this.buttons.return?.addEventListener("click", this.onReturn);
+    this.buttons.return?.addEventListener("click", this.onReturn);
     this.boardElement?.addEventListener("pointerdown", this.onBoardPointerDown); this.boardElement?.addEventListener("pointermove", this.onBoardPointerMove);
     this.boardElement?.addEventListener("pointerup", this.onBoardPointerUp); this.boardElement?.addEventListener("pointercancel", this.onBoardPointerCancel);
     this.boardElement?.addEventListener("lostpointercapture", this.onBoardPointerCancel); window.addEventListener("keydown", this.onKeyDown);
@@ -172,7 +166,6 @@ export class RiverClearoutScene extends Phaser.Scene {
     if (this.river.getActiveSession()) this.river.cancel();
     const result = this.river.startLevel(level, { returnPosition: this.entryData.returnPosition, returnFacing: this.entryData.returnFacing || "down", autoFall: !this.qaMode, environmentTargetId: this.entryData.environmentTargetId || null });
     if (!result.ok) { this.setMessage(result.message, "error"); return false; }
-    document.querySelector("#river-picker")?.classList.add("hidden");
     document.querySelector("#river-gameplay")?.classList.remove("hidden");
     document.querySelector("#river-result")?.classList.add("hidden");
     this.setMessage("Clear rows. Recover at least 50%.", "success");
@@ -251,24 +244,12 @@ export class RiverClearoutScene extends Phaser.Scene {
   }
 
   render() {
-    const progress = this.river.getSnapshot();
     const session = this.river.getActiveSession();
-    if (this.levelSelect) {
-      const previous = Number(this.levelSelect.value || progress.nextLevel);
-      if (this.levelSelect.options.length !== RIVER_TOTAL_LEVELS) {
-        const summaries = RIVER_LEVELS.summaries();
-        this.levelSelect.innerHTML = summaries.map((level) => `<option value="${level.id}">Level ${level.id} · ${level.campaignBand}</option>`).join("");
-      }
-      this.levelSelect.value = String(Math.max(1, Math.min(RIVER_TOTAL_LEVELS, previous)));
-    }
-    setText("#river-progress-summary", `${progress.completed} cleared · ${progress.totalStars} stars · ${progress.restorationPoints} restoration points`);
     setText("#river-balance", `🪙 ${this.gameState.getSnapshot().economy.coins}`);
     if (!session) { this.updateDomState(); return; }
-    setText("#river-level-name", `Level ${session.level.id} · ${session.level.name}`);
-    setText("#river-band", `${session.level.campaignBand} · ${session.level.mechanics.includes("heavy") ? "heavy rubbish" : "standard rubbish"}`);
+    setText("#river-level-name", "CURRENT CLEANUP");
+    setText("#river-band", session.level.mechanics.includes("heavy") ? "Clear rows and recover the heavy rubbish" : "Clear rows to restore the river");
     setText("#river-percent", `${session.percent}%`); setText("#river-pieces", `${session.piecesPlaced} / ${session.level.queue.length}`);
-    setText("#river-live-stars", `${"★".repeat(session.stars)}${"☆".repeat(3 - session.stars)}`); setText("#river-rows", session.rowsCleared);
-    setText("#river-par", session.level.threeStarPieces); setText("#river-undos", session.undosRemaining); setText("#river-difficulty", Math.round(session.level.difficultyScore));
     const preview = document.querySelector("#river-preview");
     if (preview) preview.innerHTML = session.preview.map((piece) => `<span>${piece.type || "—"}<small>${piece.type ? getRiverRubbish(piece.icon).icon : ""}</small></span>`).join("");
     if (this.buttons.undo) this.buttons.undo.disabled = session.finished || session.undosRemaining === session.level.maxUndos;
@@ -285,10 +266,12 @@ export class RiverClearoutScene extends Phaser.Scene {
     document.querySelector("#river-result")?.classList.remove("hidden");
     setText("#river-result-title", result.won ? "River stretch restored!" : "River stretch needs another try");
     setText("#river-result-stars", `${"★".repeat(result.stars)}${"☆".repeat(3 - result.stars)}`);
-    setText("#river-result-message", result.won ? result.firstClear ? "Progress saved. This first clear also earned town coins." : "Your best result was saved. Replay coins are first-clear only." : "Restore at least 50% of the original rubbish to complete this level.");
-    setText("#river-result-percent", `${result.percent}%`); setText("#river-result-pieces", result.pieces); setText("#river-result-rows", result.rows); setText("#river-result-coins", `+${result.coins}`);
-    if (this.buttons.next) this.buttons.next.disabled = !result.won;
+    setText("#river-result-message", result.won ? "The water is flowing clearly again." : "Restore at least half, then try again.");
+    setText("#river-result-coins", `+${result.coins} coins`);
     if (this.buttons.resultUndo) this.buttons.resultUndo.disabled = !this.river.getActiveSession()?.canUndo;
+    this.buttons.resultUndo?.classList.toggle("hidden", result.won || !this.river.getActiveSession()?.canUndo);
+    this.buttons.replay?.classList.toggle("hidden", result.won || Boolean(this.river.getActiveSession()?.canUndo));
+    this.buttons.return?.classList.toggle("hidden", !result.won);
     this.setMessage(result.won ? "River saved." : "Try another placement.", result.won ? "success" : "error");
     this.render();
   }
@@ -340,11 +323,11 @@ export class RiverClearoutScene extends Phaser.Scene {
   }
 
   shutdownScene() {
-    this.startButton?.removeEventListener("click", this.onStart); this.levelSelect?.removeEventListener("change", this.onLevelChange); this.exitButton?.removeEventListener("click", this.onExit);
+    this.exitButton?.removeEventListener("click", this.onExit);
     this.buttons.undo?.removeEventListener("click", this.onUndo);
     this.buttons.hint?.removeEventListener("click", this.onHint); this.buttons.qa?.removeEventListener("click", this.onQa); this.buttons.replay?.removeEventListener("click", this.onReplay);
     this.buttons.resultUndo?.removeEventListener("click", this.onResultUndo);
-    this.buttons.next?.removeEventListener("click", this.onNext); this.buttons.return?.removeEventListener("click", this.onReturn);
+    this.buttons.return?.removeEventListener("click", this.onReturn);
     this.boardElement?.removeEventListener("pointerdown", this.onBoardPointerDown); this.boardElement?.removeEventListener("pointermove", this.onBoardPointerMove);
     this.boardElement?.removeEventListener("pointerup", this.onBoardPointerUp); this.boardElement?.removeEventListener("pointercancel", this.onBoardPointerCancel);
     this.boardElement?.removeEventListener("lostpointercapture", this.onBoardPointerCancel); window.removeEventListener("keydown", this.onKeyDown);

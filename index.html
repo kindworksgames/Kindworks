@@ -580,34 +580,27 @@
       </section>
       <section id="river-hud" class="river-hud hidden" aria-labelledby="river-hud-title">
         <header class="river-hud-header">
-          <div><p>MILESTONE 15 · 750-LEVEL CAMPAIGN</p><h2 id="river-hud-title">🌊 River Clear-Out</h2><small id="river-progress-summary">0 cleared · 0 stars · 0 restoration points</small></div>
+          <div><h2 id="river-hud-title">🌊 River Clear-Out</h2></div>
           <span id="river-balance">🪙 100</span>
           <button id="river-exit" type="button" aria-label="Exit River Clear-Out safely">Exit</button>
         </header>
-        <section id="river-picker" class="river-picker" aria-label="Choose a River Clear-Out level">
-          <div><strong>Restore 750 river stretches</strong><small>Place recovery shapes to clear rubbish. First clears earn coins.</small></div>
-          <label for="river-level-select">Level<select id="river-level-select"><option value="1">Level 1</option></select></label>
-          <button id="river-start" type="button">Start Level 1</button>
-        </section>
         <section id="river-gameplay" class="river-gameplay hidden" aria-label="Active River Clear-Out level">
-          <div class="river-game-heading"><div><small id="river-level-name">Level 1 · River Challenge 001</small><strong id="river-band">Early Challenge</strong></div><span>Restored<strong id="river-percent">0%</strong></span><span>Pieces<strong id="river-pieces">0 / 10</strong></span></div>
+          <div class="river-game-heading"><div><small id="river-level-name">CURRENT CLEANUP</small><strong id="river-band">Clear rows to restore the river</strong></div><span>Restored<strong id="river-percent">0%</strong></span><span>Pieces<strong id="river-pieces">0 / 10</strong></span></div>
           <div class="river-play-area">
             <div id="river-board" class="river-board" role="img" aria-label="10 by 16 River Clear-Out board"></div>
             <div class="river-side-panel">
-              <div class="river-stars" id="river-live-stars" aria-label="Current rating">☆☆☆</div>
               <div class="river-preview-card"><small>NEXT 3</small><div id="river-preview" class="river-preview"></div></div>
-              <div class="river-metrics"><span>Rows<strong id="river-rows">0</strong></span><span>Par<strong id="river-par">10</strong></span><span>Undos<strong id="river-undos">5</strong></span><span>Difficulty<strong id="river-difficulty">10</strong></span></div>
-              <button id="river-hint" type="button">💡 Show hint</button>
+              <button id="river-hint" type="button">💡 Hint</button>
               <button id="river-qa-solve" class="hidden" type="button">✓ Certified QA clear</button>
             </div>
           </div>
           <div class="river-secondary-actions"><button id="river-undo" type="button" aria-label="Undo last river gesture">↶ Undo</button></div>
         </section>
-        <p id="river-status" class="river-status" data-status="neutral" role="status" aria-live="assertive">Choose any river level to begin.</p>
+        <p id="river-status" class="river-status" data-status="neutral" role="status" aria-live="assertive">Clear rows. Restore at least 50%.</p>
         <section id="river-result" class="river-result hidden" aria-labelledby="river-result-title">
           <h3 id="river-result-title">River stretch restored!</h3><div id="river-result-stars">★★★</div><p id="river-result-message">The original rubbish has been recovered.</p>
-          <div class="river-result-stats"><span>Restored<strong id="river-result-percent">100%</strong></span><span>Pieces<strong id="river-result-pieces">10</strong></span><span>Rows<strong id="river-result-rows">4</strong></span><span>Coins<strong id="river-result-coins">+100</strong></span></div>
-          <div class="river-result-actions"><button id="river-result-undo" type="button">↶ Undo last</button><button id="river-replay" type="button">Replay</button><button id="river-next" type="button">Next level</button><button id="river-return" type="button">Return to Willowmere</button></div>
+          <div class="river-result-stats"><span>Reward<strong id="river-result-coins">+100 coins</strong></span></div>
+          <div class="river-result-actions"><button id="river-result-undo" class="hidden" type="button">↶ Undo last</button><button id="river-replay" class="hidden" type="button">Try again</button><button id="river-return" type="button">Continue</button></div>
         </section>
       </section>
       <section id="cafe-hud" class="cafe-hud hidden" aria-labelledby="cafe-hud-title">

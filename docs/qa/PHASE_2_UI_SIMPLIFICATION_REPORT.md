@@ -34,7 +34,7 @@ KindWorks production UI follows four rules:
 | HarbourGeneralScene | Operate the owned shop | Town building | Milestone label and raw keyboard command list dominate | SIMPLIFY | Contextual display action, compact till/sales, Exit; help in menu | Inventoried |
 | HouseInteriorScene | Inspect/use/place furniture and aquarium; enter house rescue | Town house | Dense badges, internal ownership/house detail, separate rescue start copy | SIMPLIFY | Room remains dominant; contextual furniture/occupant action; rescue starts directly when selected | Inventoried |
 | LawnCareScene | Clear a lawn with slide movement | Town lawn/campaign | Player level picker, level/campaign labels, board metadata, multi-stat result | CONVERT TO CONTEXTUAL UI | Load current unlocked or assigned job immediately; objective + moves/progress; brief reward then town | Complete |
-| RiverClearoutScene | Portrait falling-piece river cleanup | Town river/campaign | Player level picker, level/campaign metadata, technical result stats | CONVERT TO CONTEXTUAL UI | Load current level immediately; board + next/remaining + pause; brief result | Inventoried |
+| RiverClearoutScene | Portrait falling-piece river cleanup | Town river/campaign | Player level picker, level/campaign metadata, technical result stats | CONVERT TO CONTEXTUAL UI | Load current level immediately; board + next/remaining + pause; brief result | Complete |
 | WasteCollectionScene | First cleanup and 750-board triple match | Town rubbish/campaign | Campaign picker, level/board-generation metadata, detailed result; first-job and campaign HUDs overlap conceptually | CONVERT TO CONTEXTUAL UI | Assigned/current board begins immediately; board + tray + contextual hint/restart; brief result | Inventoried |
 | HouseRescueScene | Sort rubbish then vacuum dirt | Dirty house | Player picker, level/tier metadata, technical result detail | CONVERT TO CONTEXTUAL UI | Correct house/current rescue starts immediately; current tool/progress + pause; brief result | Inventoried |
 | BeachCleanupScene | Walk/rake South Shore | Town beach/campaign | Player picker, level/grid metadata, persistent challenge detail, multi-stat result | CONVERT TO CONTEXTUAL UI | Start assigned/current beach immediately; raked/found progress + contextual bonus; brief result | Inventoried |
@@ -115,6 +115,7 @@ All 16 lazy scenes registered in `src/scenes/lazyScenes.js` have a Town entry ow
 | Removed screen | Why unnecessary | Original flow | New flow | Regression result |
 | -------------- | --------------- | ------------- | -------- | ----------------- |
 | Lawn Care level picker | The player has no useful level choice in normal progression | Town interaction → picker → Start | Town interaction → current/assigned lawn immediately | 572/572 tests; production build and performance pass; live town-guided entry and active-save reload pass |
+| River Clear-Out level picker | Normal progression determines the cleanup and River is already orientation-gated | Town interaction → rotate/picker → Start | Town interaction → rotate when needed → active board | Focused River/gesture tests pass; normal onboarding entry, portrait play, tap rotation, and orientation resume pass |
 
 ## Removed or relocated information
 
@@ -124,13 +125,16 @@ All 16 lazy scenes registered in `src/scenes/lazyScenes.js` have a Town entry ow
 | Level number, campaign size and par | Lawn Care live HUD | Debug-only/unnecessary | Removed from visible UI; protected values remain in service/tests | The player needs cut progress and remaining moves |
 | Persistent stars, legend and upgrade explanation | Lawn Care side rail | Secondary/tutorial-only | Removed; mower name retained | The board shows grass/hedges and the explanation consumed playable width |
 | Replay, Next and Return trio | Lawn Care result | Duplicated | Contextual Try again on failure or Continue on success | One-primary-action rule |
+| Campaign/level/difficulty/par/stars metadata | River header, side rail and result | Debug-only/unnecessary | Removed; next-three preview and meaningful progress remain | Preserve fair play without exposing generator/scoring detail |
+| Four River result actions | River result | Duplicated | Continue on success; Undo last or Try again on failure | One clear recovery action |
 
 ## Before-and-after verification
 
 | Screen | Before evidence | After evidence | Phone tested | Tablet tested | Regression result | Commit |
 | ------ | --------------- | -------------- | ------------ | ------------- | ----------------- | ------ |
 | Baseline town/onboarding | `phase2-ui-evidence/before/` | — | All nine required landscape sizes | 390×844 rotate state | 571/571 tests; build/performance pass | — |
-| Lawn Care | `phase2-evidence/wave4-lawn/lawn-568x320-before.png` | `phase2-ui-evidence/after/lawn-direct-568x320.png` | 568×320, 844×390, 1280×720 | 1024×768 | Direct entry, swipe 7%→29%, reload at 29%/1 move, rotate/resume exact, no fresh runtime errors, 572/572 tests | Pending commit |
+| Lawn Care | `phase2-evidence/wave4-lawn/lawn-568x320-before.png` | `phase2-ui-evidence/after/lawn-direct-568x320.png` | 568×320, 844×390, 1280×720 | 1024×768 | Direct entry, swipe 7%→29%, reload at 29%/1 move, rotate/resume exact, no fresh runtime errors, 572/572 tests | `484eeac` |
+| River Clear-Out | `phase2-evidence/wave4-river/river-390x844-picker-before.png` | `phase2-ui-evidence/after/river-direct-390x844.png` | 568×320 protected rotate state | 390×844 portrait activity | Entered through normal onboarding, no picker, tap rotated the I piece horizontally→vertically, rotate barrier restored exact active state, focused tests pass | Pending commit |
 
 ## Change register
 
@@ -138,6 +142,7 @@ All 16 lazy scenes registered in `src/scenes/lazyScenes.js` have a Town entry ow
 | --------- | ------ | --------- | ------------- | ------------------ | ----------- | ----------- | ------ |
 | KW-UI-000 | Inventory | Map all player and developer surfaces before restructuring | `docs/qa/PHASE_2_UI_SIMPLIFICATION_REPORT.md` | No | None | None | Complete |
 | KW-UI-001 | Lawn Care | Remove the redundant start screen and technical HUD/result data | `index.html`, `src/scenes/LawnCareScene.js`, `src/style.css` | Navigation/presentation only; current level auto-starts | Existing active session resumes unchanged; no schema change | Direct-entry UI gate added; 572 full tests pass | Complete |
+| KW-UI-002 | River Clear-Out | Start the assigned/current cleanup immediately and keep the portrait board dominant | `index.html`, `src/scenes/RiverClearoutScene.js`, `src/style.css` | Navigation/presentation only; current level auto-starts | Existing active session and result undo remain unchanged; no schema change | Direct-entry UI gate plus protected River/gesture suites | Complete |
 
 ## Deferred ideas
 
