@@ -509,33 +509,23 @@
         <p id="beach-status" class="beach-status" data-status="neutral" role="status" aria-live="assertive">Swipe across the sand to rake.</p>
         <section id="beach-result" class="beach-result hidden" aria-labelledby="beach-result-title"><h3 id="beach-result-title">Beach cleaned!</h3><p id="beach-result-message">The cleanup is saved.</p><div class="beach-result-stats"><span>Reward<strong id="beach-result-coins">+100</strong></span></div><div class="beach-result-actions"><button id="beach-return" type="button">Continue</button></div></section>
       </section>
-      <section id="lawn-care-hud" class="lawn-care-hud hidden" aria-labelledby="lawn-care-title">
-        <header class="lawn-care-header">
-          <div><h2 id="lawn-care-title">🌿 Lawn Care</h2></div>
-          <span id="lawn-care-balance">🪙 100</span>
-          <button id="lawn-care-exit" type="button" aria-label="Exit Lawn Care safely">Exit</button>
-        </header>
+      <section id="lawn-care-hud" class="lawn-care-hud hidden" aria-label="Lawn Care">
+        <button id="lawn-care-exit" type="button" aria-label="Exit Lawn Care safely">✕</button>
         <section id="lawn-care-gameplay" class="lawn-care-gameplay hidden" aria-label="Active Lawn Care level">
-          <div class="lawn-care-game-heading">
-            <div><small id="lawn-level-name">CURRENT JOB</small><strong id="lawn-level-band">Clear the whole lawn</strong></div>
-            <span>Cut<strong id="lawn-progress">0%</strong></span><span>Moves<strong id="lawn-moves">0 / 11</strong></span>
-          </div>
-          <div class="lawn-care-play-area">
-            <div id="lawn-board-viewport" class="lawn-board-viewport"><div id="lawn-board" class="lawn-board" role="grid" aria-label="Lawn Care board"></div></div>
-            <aside class="lawn-care-side">
-              <article><small>MOWER</small><strong id="lawn-mower">Old Green Mower</strong></article>
-              <button id="lawn-hint" type="button">💡 Hint</button>
-              <button id="lawn-undo" type="button" aria-label="Undo last mower swipe">↶ Undo</button>
-              <button id="lawn-retry" type="button">↻ Restart</button>
-              <button id="lawn-qa-complete" class="hidden" type="button">✓ Certified QA completion</button>
-            </aside>
+          <div id="lawn-board-viewport" class="lawn-board-viewport"><div id="lawn-board" class="lawn-board" role="grid" aria-label="Lawn Care board"></div></div>
+          <div class="lawn-care-actions" aria-label="Lawn Care controls">
+            <button id="lawn-undo" type="button" aria-label="Undo last mower swipe">↶ Undo</button>
+            <button id="lawn-hint" type="button">💡 Hint</button>
+            <button id="lawn-qa-complete" class="hidden" type="button">✓ Certified QA completion</button>
           </div>
         </section>
-        <p id="lawn-care-status" class="lawn-care-status" data-status="neutral" role="status" aria-live="assertive">Swipe to mow.</p>
+        <p id="lawn-care-status" class="sr-only" data-status="neutral" role="status" aria-live="assertive">Swipe to mow.</p>
         <section id="lawn-care-result" class="lawn-care-result hidden" aria-labelledby="lawn-result-title">
-          <h3 id="lawn-result-title">Lawn restored!</h3><div id="lawn-result-stars">★★★</div><p id="lawn-result-message">Every strip is freshly cut.</p>
-          <div class="lawn-result-stats"><span>Reward<strong id="lawn-result-coins">+100 coins</strong></span></div>
-          <div class="lawn-result-actions"><button id="lawn-replay" class="hidden" type="button">Try again</button><button id="lawn-return" type="button">Continue</button></div>
+          <div class="lawn-result-card">
+            <h3 id="lawn-result-title">Lawn restored!</h3><div id="lawn-result-stars">★★★</div><p id="lawn-result-message">Every strip is freshly cut.</p>
+            <div class="lawn-result-stats"><span>Reward<strong id="lawn-result-coins">+100 coins</strong></span></div>
+            <div class="lawn-result-actions"><button id="lawn-replay" class="hidden" type="button">Try again</button><button id="lawn-return" type="button">Continue</button></div>
+          </div>
         </section>
       </section>
       <section id="home-interior-hud" class="home-interior-hud hidden" aria-labelledby="home-interior-title">

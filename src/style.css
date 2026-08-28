@@ -1101,71 +1101,133 @@
   body[data-game-scene="WasteCollectionScene"] .waste-campaign-status { top: 46px !important; font-size: 8px !important; }
 }
 
-/* Lawn Care full-canvas visual composition. The mower rules, board geometry,
-   move history and completion thresholds remain unchanged. */
+/* Lawn Care board-only composition. The board is the entire visual surface;
+   only Exit, Undo and Hint remain visible during play. Gameplay rules, level
+   data, move history, rewards and completion thresholds are unchanged. */
 @media (orientation: landscape) {
   body[data-game-scene="LawnCareScene"] .lawn-care-hud:not(.hidden) {
-    inset: max(4px, env(safe-area-inset-top)) max(4px, env(safe-area-inset-right)) max(4px, env(safe-area-inset-bottom)) max(4px, env(safe-area-inset-left)) !important;
-    display: grid !important;
-    grid-template-rows: 56px minmax(0, 1fr) 34px !important;
-    width: auto !important;
+    inset: 0 !important;
+    display: block !important;
+    width: 100vw !important;
+    height: 100dvh !important;
     max-height: none !important;
     overflow: hidden !important;
-    border-radius: 9px !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: #355d39 !important;
     box-shadow: none !important;
   }
-  body[data-game-scene="LawnCareScene"] .lawn-care-header { padding: 6px 10px !important; }
-  body[data-game-scene="LawnCareScene"] .lawn-care-gameplay:not(.hidden) {
-    display: grid !important;
-    grid-template-rows: 46px minmax(0, 1fr) !important;
-    gap: 6px !important;
-    min-height: 0 !important;
-    padding: 7px !important;
-    overflow: hidden !important;
+  body[data-game-scene="LawnCareScene"] #lawn-care-exit {
+    position: absolute !important;
+    z-index: 12 !important;
+    top: max(8px, env(safe-area-inset-top)) !important;
+    right: max(8px, env(safe-area-inset-right)) !important;
+    width: 46px !important;
+    min-height: 46px !important;
+    padding: 0 !important;
+    border: 3px solid #fff5d1 !important;
+    color: #fff5d1 !important;
+    background: rgb(34 34 56 / 82%) !important;
+    box-shadow: 3px 3px 0 rgb(18 31 24 / 48%) !important;
+    font-size: 18px !important;
   }
-  body[data-game-scene="LawnCareScene"] .lawn-care-play-area {
-    grid-template-columns: minmax(0, 1fr) 150px !important;
+  body[data-game-scene="LawnCareScene"] #lawn-care-exit.confirming {
+    color: #222238 !important;
+    border-color: #fff5d1 !important;
+    background: #f3ca52 !important;
+  }
+  body[data-game-scene="LawnCareScene"] .lawn-care-gameplay:not(.hidden) {
+    position: absolute !important;
+    inset: 0 !important;
+    display: block !important;
     min-height: 0 !important;
+    padding: 0 !important;
     overflow: hidden !important;
+    border: 0 !important;
   }
   body[data-game-scene="LawnCareScene"] .lawn-board-viewport {
+    position: absolute !important;
+    inset: 0 !important;
+    display: block !important;
     min-height: 0 !important;
-    padding: 5px !important;
-    background: linear-gradient(145deg, #c9df8d, #99bd65) !important;
+    padding: 0 0 58px !important;
+    overflow: hidden !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: #4d7b45 !important;
   }
   body[data-game-scene="LawnCareScene"] .lawn-board {
-    width: auto !important;
+    width: 100% !important;
     height: 100% !important;
-    max-width: 100% !important;
-    max-height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    aspect-ratio: auto !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: inset 0 0 0 4px rgb(34 34 56 / 72%) !important;
   }
-  body[data-game-scene="LawnCareScene"] .lawn-care-side {
-    align-content: start !important;
-    gap: 6px !important;
+  body[data-game-scene="LawnCareScene"] .lawn-cell { font-size: clamp(13px, 3.2vmin, 28px) !important; }
+  body[data-game-scene="LawnCareScene"] .lawn-cell.mower::before { font-size: clamp(15px, 4.2vmin, 34px) !important; }
+  body[data-game-scene="LawnCareScene"] .lawn-care-actions {
+    position: absolute !important;
+    z-index: 8 !important;
+    right: max(8px, env(safe-area-inset-right)) !important;
+    bottom: max(7px, env(safe-area-inset-bottom)) !important;
+    left: max(8px, env(safe-area-inset-left)) !important;
+    display: flex !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    pointer-events: none !important;
   }
-  body[data-game-scene="LawnCareScene"] .lawn-care-side article { padding: 6px !important; }
-  body[data-game-scene="LawnCareScene"] .lawn-care-status {
-    min-height: 34px !important;
-    max-height: 34px !important;
-    padding: 8px 10px !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
+  body[data-game-scene="LawnCareScene"] .lawn-care-actions button {
+    min-width: 106px !important;
+    min-height: 44px !important;
+    padding: 7px 14px !important;
+    border: 3px solid #222238 !important;
+    color: #222238 !important;
+    background: rgb(255 245 209 / 94%) !important;
+    box-shadow: 3px 3px 0 rgb(34 34 56 / 58%) !important;
+    font-size: 11px !important;
+    pointer-events: auto !important;
   }
+  body[data-game-scene="LawnCareScene"] .lawn-care-actions button:disabled { opacity: .46 !important; }
+  body[data-game-scene="LawnCareScene"] .lawn-care-actions button.hinted {
+    color: #513d00 !important;
+    border-color: #8b6812 !important;
+    background: #ffe36c !important;
+  }
+  body[data-game-scene="LawnCareScene"] .lawn-care-result:not(.hidden) {
+    position: absolute !important;
+    z-index: 10 !important;
+    inset: 0 !important;
+    display: grid !important;
+    place-items: center !important;
+    padding: max(58px, env(safe-area-inset-top)) 16px max(58px, env(safe-area-inset-bottom)) !important;
+    border: 0 !important;
+    background: rgb(20 34 28 / 58%) !important;
+  }
+  body[data-game-scene="LawnCareScene"] .lawn-result-card {
+    width: min(360px, calc(100vw - 32px)) !important;
+    max-height: calc(100dvh - 116px) !important;
+    padding: 16px !important;
+    overflow: auto !important;
+    border: 3px solid #222238 !important;
+    border-radius: 6px !important;
+    color: #222238 !important;
+    background: #fff5d1 !important;
+    box-shadow: 5px 5px 0 rgb(18 31 24 / 55%) !important;
+    text-align: center !important;
+  }
+  body[data-game-scene="LawnCareScene"] .lawn-result-actions { grid-template-columns: 1fr !important; }
 }
 
-@media (orientation: landscape) and (max-width: 700px) {
-  body[data-game-scene="LawnCareScene"] .lawn-care-hud:not(.hidden) { grid-template-rows: 44px minmax(0, 1fr) 0 !important; }
-  body[data-game-scene="LawnCareScene"] .lawn-care-gameplay:not(.hidden) {
-    grid-template-rows: 36px minmax(0, 1fr) !important;
-    gap: 4px !important;
-    padding: 5px !important;
-  }
-  body[data-game-scene="LawnCareScene"] .lawn-care-play-area { grid-template-columns: minmax(0, 1fr) 106px !important; gap: 4px !important; }
-  body[data-game-scene="LawnCareScene"] .lawn-care-side article { display: none !important; }
-  body[data-game-scene="LawnCareScene"] .lawn-care-side { gap: 4px !important; }
-  body[data-game-scene="LawnCareScene"] .lawn-care-side button { min-height: 42px !important; padding: 3px !important; font-size: 8px !important; }
-  body[data-game-scene="LawnCareScene"] .lawn-care-status { display: none !important; }
+@media (orientation: landscape) and (max-height: 390px) {
+  body[data-game-scene="LawnCareScene"] .lawn-board-viewport { padding-bottom: 52px !important; }
+  body[data-game-scene="LawnCareScene"] #lawn-care-exit { width: 44px !important; min-height: 44px !important; }
+  body[data-game-scene="LawnCareScene"] .lawn-care-actions button { min-height: 44px !important; padding: 5px 12px !important; }
+  body[data-game-scene="LawnCareScene"] .lawn-result-card { padding: 10px 14px !important; }
+  body[data-game-scene="LawnCareScene"] #lawn-result-stars { margin: 3px 0 !important; font-size: 23px !important; }
+  body[data-game-scene="LawnCareScene"] .lawn-result-stats { margin: 6px 0 !important; }
 }
 
 /* Fishing keeps the water and animated cast as the focus. Town chrome and
