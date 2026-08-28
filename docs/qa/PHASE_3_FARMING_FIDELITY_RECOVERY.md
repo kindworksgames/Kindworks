@@ -3,6 +3,7 @@
 Date: 2026-08-28  
 Protected reference: `kindworks_little_bakery_v65_house_rescue_reintegrated_fixed.html`  
 Phaser branch: `phase-2-ui-simplification`
+Implementation commit: `a0721a0`
 
 ## Verdict
 
