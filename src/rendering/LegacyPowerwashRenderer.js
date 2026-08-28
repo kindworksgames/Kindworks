@@ -7,6 +7,12 @@ import {
 } from "../data/playgroundPowerwash.js";
 
 export const LEGACY_POWERWASH_RENDER_REVISION = "phase-3-full-resolution-layers-v1";
+export const POWERWASH_INTEGRATED_TOOL_RECTS = Object.freeze({
+  soap: Object.freeze({ x: 456, y: 866, width: 144, height: 142 }),
+  precision: Object.freeze({ x: 616, y: 866, width: 144, height: 142 }),
+  standard: Object.freeze({ x: 776, y: 866, width: 144, height: 142 }),
+  wide: Object.freeze({ x: 936, y: 866, width: 144, height: 142 }),
+});
 
 function clamp(value, minimum, maximum) {
   return Math.max(minimum, Math.min(maximum, value));
@@ -31,11 +37,12 @@ function makeLayer(canvasFactory) {
 }
 
 export class LegacyPowerwashRenderer {
-  constructor({ canvas, masterArtwork, referenceDirtArtwork, level, state, canvasFactory = () => document.createElement("canvas") }) {
+  constructor({ canvas, masterArtwork, referenceDirtArtwork, toolArtwork = {}, level, state, canvasFactory = () => document.createElement("canvas") }) {
     this.canvas = canvas;
     this.context = canvas.getContext("2d");
     this.masterArtwork = masterArtwork;
     this.referenceDirtArtwork = referenceDirtArtwork;
+    this.toolArtwork = toolArtwork;
     this.level = level;
     this.layers = Object.fromEntries(["dirt", "dirtMask", "resistant", "resistantMask", "soapMask", "foam", "brush", "wet"].map((name) => [name, makeLayer(canvasFactory)]));
     this.particles = [];
@@ -263,9 +270,42 @@ export class LegacyPowerwashRenderer {
     context.restore();
   }
 
+  drawToolButton(context, rect, active, image) {
+    const { x, y, width, height } = rect;
+    context.fillStyle = "#020610"; context.fillRect(x, y, width, height);
+    context.fillStyle = active ? "#f1c34b" : "#617087"; context.fillRect(x + 5, y + 5, width - 10, height - 10);
+    context.fillStyle = "#10213c"; context.fillRect(x + 12, y + 12, width - 24, height - 24);
+    context.fillStyle = "#07162d"; context.fillRect(x + 17, y + 17, width - 34, height - 34);
+    if (image?.complete && image.naturalWidth) {
+      const scale = Math.min((width - 34) / image.naturalWidth, (height - 28) / image.naturalHeight);
+      const drawWidth = Math.round(image.naturalWidth * scale); const drawHeight = Math.round(image.naturalHeight * scale);
+      context.drawImage(image, Math.round(x + (width - drawWidth) / 2), Math.round(y + (height - drawHeight) / 2), drawWidth, drawHeight);
+    }
+  }
+
+  drawSoapButton(context, rect, active) {
+    const { x, y, width, height } = rect; this.drawToolButton(context, rect, active, null);
+    context.save(); context.translate(x, y); context.scale(width / 98, height / 118);
+    const bottleX = 32; const bottleY = 41;
+    context.fillStyle = "#173347"; context.fillRect(bottleX - 4, bottleY - 4, 38, 51);
+    context.fillStyle = "#d9f6de"; context.fillRect(bottleX, bottleY, 30, 43);
+    context.fillStyle = "#78c99d"; context.fillRect(bottleX + 5, bottleY + 6, 8, 31);
+    context.fillStyle = "#173347"; context.fillRect(bottleX + 6, bottleY - 19, 19, 19);
+    context.fillStyle = "#f5d45f"; context.fillRect(bottleX + 10, bottleY - 15, 11, 11);
+    context.fillStyle = "#f8fff9"; context.fillRect(70, 27, 9, 9); context.fillRect(78, 48, 6, 6);
+    context.fillStyle = "#a6efe0"; context.fillRect(64, 17, 6, 6); context.fillRect(67, 62, 7, 7);
+    context.restore();
+  }
+
+  drawIntegratedTools(context, state) {
+    this.drawSoapButton(context, POWERWASH_INTEGRATED_TOOL_RECTS.soap, state.toolMode === "soap");
+    for (const nozzle of ["precision", "standard", "wide"]) this.drawToolButton(context, POWERWASH_INTEGRATED_TOOL_RECTS[nozzle], state.toolMode === "water" && state.nozzle === nozzle, this.toolArtwork[nozzle]);
+  }
+
   draw(state, active = false) {
     const context = this.context; context.imageSmoothingEnabled = false; context.clearRect(0, 0, POWERWASH_CANVAS.width, POWERWASH_CANVAS.height); context.drawImage(this.masterArtwork, 0, 0, POWERWASH_CANVAS.width, POWERWASH_CANVAS.height); context.drawImage(this.layers.dirt.canvas, 0, 0); context.drawImage(this.layers.resistant.canvas, 0, 0); context.drawImage(this.layers.foam.canvas, 0, 0); context.drawImage(this.layers.wet.canvas, 0, 0);
     for (const particle of this.particles) { const alpha = particle.life / particle.max; context.fillStyle = `rgba(196,242,255,${alpha * 0.82})`; const size = Math.max(2, Math.round(particle.size * alpha)); context.fillRect(Math.round(particle.x), Math.round(particle.y), size, size); }
+    this.drawIntegratedTools(context, state);
     this.drawNozzle(context, active, state);
     if (performance.now() < this.soapHintUntil && this.pointer) { const x = clamp(this.pointer.x, 170, POWERWASH_CANVAS.width - 170); const y = clamp(this.pointer.y - 72, 135, 815); context.fillStyle = "rgba(4,9,20,.9)"; context.fillRect(x - 164, y - 12, 328, 54); context.fillStyle = "#f1c34b"; context.fillRect(x - 158, y - 6, 316, 42); context.fillStyle = "#10213c"; context.fillRect(x - 152, y, 304, 30); context.fillStyle = "#fff1bc"; context.font = "900 24px ui-monospace, monospace"; context.textAlign = "center"; context.fillText("SOAP FIRST", x, y + 23); }
   }

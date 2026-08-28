@@ -1,5 +1,6 @@
 import {
   CUSTOM_RESIDENT_APPEARANCE,
+  CUSTOM_RESIDENT_AUTONOMY,
   CUSTOM_RESIDENT_HOBBIES,
   CUSTOM_RESIDENT_ID,
   PERSONAL_HOME_HOUSE_ID,
@@ -8,10 +9,76 @@ import {
   PERSONAL_HOME_NODE_ID,
   PERSONAL_HOME_OPTIONS,
 } from "../data/customResident.js";
+import { NPC_NAVIGATION_NODES, NPC_RESIDENTS } from "../data/npcTownLife.js";
 
-export const CUSTOM_RESIDENT_STATE_SCHEMA_VERSION = 2;
+export const CUSTOM_RESIDENT_STATE_SCHEMA_VERSION = 3;
 export const PERSONAL_HOME_POSITION = Object.freeze({ x: 3875, y: 1620 });
 const DIRECTIONS = new Set(["up", "down", "left", "right"]);
+const PHASES = new Set(["sleeping", "home", "commuting", "working", "leisure"]);
+const NODE_IDS = new Set(NPC_NAVIGATION_NODES.map((node) => node.id));
+const NPC_IDS = NPC_RESIDENTS.map((resident) => resident.id);
+
+function bounded(value, minimum, maximum, fallback) {
+  const number = Number(value);
+  return Number.isFinite(number) ? Math.max(minimum, Math.min(maximum, number)) : fallback;
+}
+
+function freshRelationships() {
+  return Object.fromEntries(NPC_IDS.map((id) => [id, 12]));
+}
+
+export function createFreshCustomResidentAutonomy() {
+  return {
+    currentNodeId: PERSONAL_HOME_NODE_ID,
+    targetNodeId: PERSONAL_HOME_NODE_ID,
+    route: [PERSONAL_HOME_NODE_ID],
+    routeIndex: 0,
+    phase: "home",
+    activity: `At home in ${PERSONAL_HOME_NAME}`,
+    visible: false,
+    needs: { hunger: 28, social: 24, recreation: 22, errands: 15, rest: 20 },
+    relationships: freshRelationships(),
+    conversations: 0,
+    shoppingVisits: 0,
+    communityCareEvents: 0,
+    responsibleDisposals: 0,
+    completedActivities: 0,
+    lastConversationAt: 0,
+    lastCommunityCareAt: 0,
+    lastResolvedAbsoluteMinute: 0,
+    eventSerial: 1,
+  };
+}
+
+export function normalizeCustomResidentAutonomy(value) {
+  const fresh = createFreshCustomResidentAutonomy();
+  if (!value || typeof value !== "object" || Array.isArray(value)) return fresh;
+  const currentNodeId = NODE_IDS.has(value.currentNodeId) ? value.currentNodeId : fresh.currentNodeId;
+  const targetNodeId = NODE_IDS.has(value.targetNodeId) ? value.targetNodeId : currentNodeId;
+  const route = Array.isArray(value.route) && value.route.length && value.route.every((id) => NODE_IDS.has(id))
+    ? value.route.slice(0, 128)
+    : [currentNodeId];
+  return {
+    currentNodeId,
+    targetNodeId,
+    route,
+    routeIndex: Math.max(0, Math.min(route.length, Math.floor(Number(value.routeIndex) || 0))),
+    phase: PHASES.has(value.phase) ? value.phase : fresh.phase,
+    activity: String(value.activity || fresh.activity).slice(0, 120),
+    visible: Boolean(value.visible),
+    needs: Object.fromEntries(Object.keys(fresh.needs).map((key) => [key, bounded(value.needs?.[key], 0, 100, fresh.needs[key])])),
+    relationships: Object.fromEntries(NPC_IDS.map((id) => [id, bounded(value.relationships?.[id], 0, 100, 12)])),
+    conversations: Math.max(0, Math.floor(Number(value.conversations) || 0)),
+    shoppingVisits: Math.max(0, Math.floor(Number(value.shoppingVisits) || 0)),
+    communityCareEvents: Math.max(0, Math.floor(Number(value.communityCareEvents) || 0)),
+    responsibleDisposals: Math.max(0, Math.floor(Number(value.responsibleDisposals) || 0)),
+    completedActivities: Math.max(0, Math.floor(Number(value.completedActivities) || 0)),
+    lastConversationAt: Math.max(0, Math.floor(Number(value.lastConversationAt) || 0)),
+    lastCommunityCareAt: Math.max(0, Math.floor(Number(value.lastCommunityCareAt) || 0)),
+    lastResolvedAbsoluteMinute: Math.max(0, Math.floor(Number(value.lastResolvedAbsoluteMinute) || 0)),
+    eventSerial: Math.max(1, Math.floor(Number(value.eventSerial) || 1)),
+  };
+}
 
 export function validateResidentName(value) {
   const raw = String(value ?? "").trim();
@@ -67,6 +134,7 @@ export function createFreshCustomResidentState() {
     profile: null,
     home: normalizePersonalHome(),
     location: { ...PERSONAL_HOME_POSITION, facing: "down" },
+    autonomy: createFreshCustomResidentAutonomy(),
   };
 }
 
@@ -83,6 +151,7 @@ export function normalizeCustomResidentState(value) {
       y: Number.isFinite(value.location?.y) ? Math.max(0, Math.min(2900, Number(value.location.y))) : fresh.location.y,
       facing: DIRECTIONS.has(value.location?.facing) ? value.location.facing : fresh.location.facing,
     },
+    autonomy: normalizeCustomResidentAutonomy(value.autonomy),
   };
 }
 
@@ -106,5 +175,9 @@ export function validateCustomResidentState(value) {
   if (!Number.isFinite(value.location?.x) || !Number.isFinite(value.location?.y)
     || value.location.x < 0 || value.location.x > 4400 || value.location.y < 0 || value.location.y > 2900) errors.push("Custom-resident location is invalid.");
   if (!DIRECTIONS.has(value.location?.facing)) errors.push("Custom-resident facing direction is invalid.");
+  const autonomy = normalizeCustomResidentAutonomy(value.autonomy);
+  if (JSON.stringify(autonomy) !== JSON.stringify(value.autonomy)) errors.push("Custom-resident autonomy state is invalid.");
+  if (autonomy.relationships && Object.keys(autonomy.relationships).length !== NPC_IDS.length) errors.push("Custom-resident relationships are incomplete.");
+  if (autonomy.phase === "working" && autonomy.targetNodeId !== CUSTOM_RESIDENT_AUTONOMY.workNodeId) errors.push("Custom-resident work destination is invalid.");
   return { ok: errors.length === 0, errors };
 }

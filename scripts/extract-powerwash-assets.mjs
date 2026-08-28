@@ -9,6 +9,17 @@ const outputDirectory = resolve(root, "public/assets/powerwash");
 const expected = Object.freeze({
   POWERWASH_MASTER_ART: "0679fe2c14f28b750f61415641b73e6d17d1f35cbaadfc1a470a011d3cdd0f24",
   POWERWASH_REFERENCE_DIRT_ART: "5db4c213d34d1e435f74f03a49590f766e172f01d8ac97703dc090ded7d36736",
+  POWERWASH_UI_PRECISION_ART: "d9e75832314fee928b606021986d0d24bf903f51f6d43d6e3beefb083cb16f61",
+  POWERWASH_UI_STANDARD_ART: "97f9dca3ecc229ba147cbc9e1bc44049c1a3946efd09812ebe03bec07dbe6290",
+  POWERWASH_UI_WIDE_ART: "1e56931d3e0b759317dfcab7612a6abe535f812094ce5e507d684a7d11d87ceb",
+});
+
+const filenames = Object.freeze({
+  POWERWASH_MASTER_ART: "playground-master.png",
+  POWERWASH_REFERENCE_DIRT_ART: "playground-reference-dirt.png",
+  POWERWASH_UI_PRECISION_ART: "tool-precision.png",
+  POWERWASH_UI_STANDARD_ART: "tool-standard.png",
+  POWERWASH_UI_WIDE_ART: "tool-wide.png",
 });
 
 function sha256(buffer) { return createHash("sha256").update(buffer).digest("hex"); }
@@ -26,7 +37,7 @@ for (const [constant, expectedHash] of Object.entries(expected)) {
   const buffer = Buffer.from(encoded, "base64");
   const actualHash = sha256(buffer);
   if (actualHash !== expectedHash) throw new Error(`${constant} hash mismatch: ${actualHash}`);
-  const filename = constant === "POWERWASH_MASTER_ART" ? "playground-master.png" : "playground-reference-dirt.png";
+  const filename = filenames[constant];
   await writeFile(resolve(outputDirectory, filename), buffer);
   manifest[constant] = { filename, sha256: actualHash, bytes: buffer.length };
 }

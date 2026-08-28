@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import {
   NPC_NAVIGATION_LINKS,
   NPC_NAVIGATION_NODES,
@@ -155,4 +156,19 @@ test("a full simulated day leaves all 35 residents in valid locations and phases
   assert.equal(diagnostics.graph.ok, true);
   assert.equal(diagnostics.allHomesReachWork, true);
   assert.equal(Object.values(diagnostics.phaseCounts).reduce((sum, count) => sum + count, 0), 35);
+});
+
+test("Town diagnostics clone the shared save at a bounded cadence instead of every frame", async () => {
+  const gameState = new GameStateService(createFreshGameState({ now: 0 }));
+  const service = new NpcTownLifeService(gameState, { save: () => ({ ok: true }) }, { now: () => 1000 });
+  const getSnapshot = gameState.getSnapshot.bind(gameState);
+  let snapshotReads = 0;
+  gameState.getSnapshot = () => { snapshotReads += 1; return getSnapshot(); };
+  service.getDiagnostics();
+  assert.equal(snapshotReads, 1);
+
+  const town = await readFile(new URL("../src/scenes/TownScene.js", import.meta.url), "utf8");
+  assert.match(town, /this\.cachedNpcDiagnostics = this\.npcTownLife\?\.getDiagnostics\?\.\(\) \|\| null/);
+  assert.match(town, /if \(this\.stateSyncElapsed >= 250\)[\s\S]*this\.cachedNpcDiagnostics = this\.npcTownLife\?\.getDiagnostics/);
+  assert.match(town, /const diagnostics = this\.cachedNpcDiagnostics/);
 });

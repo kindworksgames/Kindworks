@@ -69,19 +69,44 @@ export const CUSTOM_RESIDENT_APPEARANCE = Object.freeze({
 });
 
 export const CUSTOM_RESIDENT_HOBBIES = Object.freeze({
-  fishing: Object.freeze({ label: "Fishing", icon: "🎣" }),
-  gardening: Object.freeze({ label: "Gardening", icon: "🌱" }),
-  pub: Object.freeze({ label: "Pub regular", icon: "🍺" }),
-  coffee: Object.freeze({ label: "Coffee", icon: "☕" }),
-  reading: Object.freeze({ label: "Reading", icon: "📚" }),
-  shopping: Object.freeze({ label: "Shopping", icon: "🛍️" }),
-  nature: Object.freeze({ label: "Nature", icon: "🐦" }),
-  walking: Object.freeze({ label: "Walking", icon: "🚶" }),
-  bakery: Object.freeze({ label: "Bakery lover", icon: "🥐" }),
-  music: Object.freeze({ label: "Animal lover", icon: "🐾" }),
-  helping: Object.freeze({ label: "Community helper", icon: "🧹" }),
-  riverside: Object.freeze({ label: "Riverside walks", icon: "🌊" }),
+  fishing: Object.freeze({ label: "Fishing", icon: "🎣", kind: "recreation", nodes: Object.freeze(["dock", "river3", "harbour1"]) }),
+  gardening: Object.freeze({ label: "Gardening", icon: "🌱", kind: "recreation", nodes: Object.freeze(["garden", "orchard", "cnw"]) }),
+  pub: Object.freeze({ label: "Pub regular", icon: "🍺", kind: "social", nodes: Object.freeze(["biz_pub1"]), hours: Object.freeze([16, 23.5]) }),
+  coffee: Object.freeze({ label: "Coffee", icon: "☕", kind: "eat", nodes: Object.freeze(["shop1", "biz_coffee2"]), hours: Object.freeze([6, 19]) }),
+  reading: Object.freeze({ label: "Reading", icon: "📚", kind: "recreation", nodes: Object.freeze(["cnw", "cne", "cs"]) }),
+  shopping: Object.freeze({ label: "Shopping", icon: "🛍️", kind: "shop", nodes: Object.freeze(["shop2", "biz_market", "biz_news"]) }),
+  nature: Object.freeze({ label: "Nature", icon: "🐦", kind: "recreation", nodes: Object.freeze(["orchard", "cnw", "rpar3"]) }),
+  walking: Object.freeze({ label: "Walking", icon: "🚶", kind: "recreation", nodes: Object.freeze(["trade5", "square", "rpar1", "rpar3", "shore2", "harbour1"]) }),
+  bakery: Object.freeze({ label: "Bakery lover", icon: "🥐", kind: "eat", nodes: Object.freeze(["shop3"]), hours: Object.freeze([6, 16]) }),
+  music: Object.freeze({ label: "Animal lover", icon: "🐾", kind: "social", nodes: Object.freeze(["biz_arcade", "south-meadow"]), hours: Object.freeze([9, 19]) }),
+  helping: Object.freeze({ label: "Community helper", icon: "🧹", kind: "recreation", nodes: Object.freeze(["square", "cnw", "garden"]) }),
+  riverside: Object.freeze({ label: "Riverside walks", icon: "🌊", kind: "recreation", nodes: Object.freeze(["rpar1", "rpar3", "dock"]) }),
 });
+
+export const CUSTOM_RESIDENT_AUTONOMY = Object.freeze({
+  wakeHour: 7,
+  workStartHour: 9,
+  workEndHour: 17,
+  sleepHour: 23,
+  workNodeId: "square",
+  speedWorldUnitsPerGameMinute: 6,
+  conversationCooldownGameMinutes: 90,
+  communityCareCooldownGameMinutes: 180,
+  defaultPreferredNodes: Object.freeze(["square", "cnw", "rpar2", "harbour1"]),
+});
+
+export function customResidentPreferredNodes(profile) {
+  const preferred = [];
+  for (const hobbyId of profile?.hobbies || []) {
+    for (const nodeId of CUSTOM_RESIDENT_HOBBIES[hobbyId]?.nodes || []) {
+      if (!preferred.includes(nodeId)) preferred.push(nodeId);
+    }
+  }
+  for (const nodeId of CUSTOM_RESIDENT_AUTONOMY.defaultPreferredNodes) {
+    if (!preferred.includes(nodeId)) preferred.push(nodeId);
+  }
+  return preferred.slice(0, 10);
+}
 
 export const PERSONAL_HOME_OPTIONS = Object.freeze({
   wallColor: Object.freeze({ cream: "Warm cream", sage: "Garden sage", sky: "Soft sky", rose: "Dusty rose", yellow: "Sunny yellow", lavender: "Lavender" }),

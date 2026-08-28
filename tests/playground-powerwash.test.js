@@ -63,6 +63,15 @@ test("pins the protected Playground Power Wash source, actual payload and approv
   ]);
   assert.equal(sha256(master), POWERWASH_MASTER_ART_SHA256);
   assert.equal(sha256(dirt), POWERWASH_REFERENCE_DIRT_SHA256);
+  for (const [name, filename, expected] of [
+    ["POWERWASH_UI_PRECISION_ART", "tool-precision.png", "d9e75832314fee928b606021986d0d24bf903f51f6d43d6e3beefb083cb16f61"],
+    ["POWERWASH_UI_STANDARD_ART", "tool-standard.png", "97f9dca3ecc229ba147cbc9e1bc44049c1a3946efd09812ebe03bec07dbe6290"],
+    ["POWERWASH_UI_WIDE_ART", "tool-wide.png", "1e56931d3e0b759317dfcab7612a6abe535f812094ce5e507d684a7d11d87ceb"],
+  ]) {
+    const encoded = html.match(new RegExp(`const ${name}='data:image/png;base64,([^']+)'`))?.[1];
+    const extracted = await readFile(new URL(`../public/assets/powerwash/${filename}`, import.meta.url));
+    assert.ok(encoded, `${name} is embedded`); assert.equal(sha256(Buffer.from(encoded, "base64")), expected); assert.equal(sha256(extracted), expected);
+  }
 });
 
 test("recreates all 750 deterministic difficulty levels and exact tool constants", () => {

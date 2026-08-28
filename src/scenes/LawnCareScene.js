@@ -1,6 +1,5 @@
 import Phaser from "phaser";
 import {
-  LAWN_TOTAL_LEVELS,
   LAWN_WEED_TYPES,
   getLawnLevel,
   lawnTravelPlan,
@@ -47,6 +46,7 @@ export class LawnCareScene extends Phaser.Scene {
     this.npcTownLife?.setPaused("activity", true);
     this.drawGardenBackdrop();
     this.bindInterface();
+    if (!this.lawnCare.getActiveSession()) this.startLevel(this.entryData.level || this.lawnCare.getCampaignSnapshot().nextLevel);
     this.setSceneInterface();
     this.render();
     this.cameras.main.fadeIn(220, 38, 75, 42);
@@ -73,25 +73,20 @@ export class LawnCareScene extends Phaser.Scene {
 
   bindInterface() {
     this.hud = document.querySelector("#lawn-care-hud");
-    this.levelSelect = document.querySelector("#lawn-level-select");
-    this.startButton = document.querySelector("#lawn-level-start");
     this.exitButton = document.querySelector("#lawn-care-exit");
     this.boardElement = document.querySelector("#lawn-board");
     this.buttons = {
       undo: document.querySelector("#lawn-undo"), hint: document.querySelector("#lawn-hint"),
       retry: document.querySelector("#lawn-retry"), qa: document.querySelector("#lawn-qa-complete"),
-      replay: document.querySelector("#lawn-replay"), next: document.querySelector("#lawn-next"),
+      replay: document.querySelector("#lawn-replay"),
       return: document.querySelector("#lawn-return"),
     };
-    this.onStart = () => this.startLevel(Number(this.levelSelect?.value || 1));
-    this.onLevelChange = () => { if (this.startButton) this.startButton.textContent = `Start Level ${Number(this.levelSelect?.value || 1)}`; };
     this.onExit = () => this.requestExit();
     this.onUndo = () => this.runServiceAction(() => this.lawnCare.undo(this.lawnCare.getActiveSession()?.id));
     this.onHint = () => this.showHint();
     this.onRetry = () => this.restart();
     this.onQa = () => this.runCertifiedCompletion();
     this.onReplay = () => this.startLevel(this.lastResultContext?.level || 1);
-    this.onNext = () => this.startLevel(this.lawnCare.getCampaignSnapshot().nextLevel);
     this.onReturn = () => this.returnToTown(true);
     this.onKeyDown = (event) => {
       if (event.key === "Escape") { this.requestExit(); return; }
@@ -112,15 +107,12 @@ export class LawnCareScene extends Phaser.Scene {
       this.mow(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "R" : "L") : (dy > 0 ? "D" : "U"));
     };
 
-    this.startButton?.addEventListener("click", this.onStart);
-    this.levelSelect?.addEventListener("change", this.onLevelChange);
     this.exitButton?.addEventListener("click", this.onExit);
     this.buttons.undo?.addEventListener("click", this.onUndo);
     this.buttons.hint?.addEventListener("click", this.onHint);
     this.buttons.retry?.addEventListener("click", this.onRetry);
     this.buttons.qa?.addEventListener("click", this.onQa);
     this.buttons.replay?.addEventListener("click", this.onReplay);
-    this.buttons.next?.addEventListener("click", this.onNext);
     this.buttons.return?.addEventListener("click", this.onReturn);
     this.boardElement?.addEventListener("pointerdown", this.onPointerDown);
     this.boardElement?.addEventListener("pointerup", this.onPointerUp);
@@ -128,14 +120,13 @@ export class LawnCareScene extends Phaser.Scene {
     this.buttons.qa?.classList.toggle("hidden", !this.qaMode);
     this.hud?.classList.remove("hidden");
     const session = this.lawnCare.getActiveSession();
-    show("#lawn-care-picker", !session);
     show("#lawn-care-gameplay", Boolean(session));
     show("#lawn-care-result", false);
     this.setMessage(session
       ? session.mode === "town-job"
         ? "Mow this lawn. Your result updates the town."
         : "Swipe to mow. Cut at least 50%."
-      : "Choose a lawn to begin.", session ? "success" : "neutral");
+      : "Swipe to mow.", session ? "success" : "neutral");
   }
 
   setSceneInterface() {
@@ -156,7 +147,6 @@ export class LawnCareScene extends Phaser.Scene {
     });
     if (!result.ok) { this.setMessage(result.message, "error"); return false; }
     this.lastResultContext = null;
-    show("#lawn-care-picker", false);
     show("#lawn-care-gameplay", true);
     show("#lawn-care-result", false);
     this.setMessage("Swipe to mow. Cut at least 50%.", "success");
@@ -271,33 +261,16 @@ export class LawnCareScene extends Phaser.Scene {
   }
 
   render() {
-    const campaign = this.lawnCare.getCampaignSnapshot();
     const session = this.lawnCare.getActiveSession();
-    if (this.levelSelect) {
-      const selected = Number(this.levelSelect.value || campaign.nextLevel);
-      if (this.levelSelect.options.length !== LAWN_TOTAL_LEVELS) {
-        const options = [];
-        for (let level = 1; level <= LAWN_TOTAL_LEVELS; level += 1) {
-          const summary = lawnLevelSummary(level);
-          options.push(`<option value="${level}">Level ${level} · ${summary.optimalMoves} par${summary.woodyWeeds ? " · woody weeds" : summary.toughWeeds ? " · tough weeds" : ""}</option>`);
-        }
-        this.levelSelect.innerHTML = options.join("");
-      }
-      this.levelSelect.value = String(Math.max(1, Math.min(LAWN_TOTAL_LEVELS, selected)));
-      if (this.startButton) this.startButton.textContent = `Start Level ${this.levelSelect.value}`;
-    }
-    setText("#lawn-care-summary", `${campaign.completed} lawns cleared · ${campaign.totalStars} stars · Level ${campaign.nextLevel} next`);
     setText("#lawn-care-balance", `🪙 ${this.gameState.getSnapshot().economy.coins}`);
     if (!session) { this.updateDomState(); return; }
     const state = this.lawnCare.getSessionState();
     const summary = lawnLevelSummary(session.assignedLevel);
     const mower = this.lawnCare.getMowerLoadout();
-    setText("#lawn-level-name", `${session.mode === "town-job" ? "Town job" : `Level ${session.assignedLevel} of ${LAWN_TOTAL_LEVELS}`} · ${summary.name}`);
-    setText("#lawn-level-band", summary.woodyWeeds ? `${summary.toughWeeds} tough · ${summary.woodyWeeds} woody weeds` : summary.toughWeeds ? `${summary.toughWeeds} tough weeds` : "Fresh starter grass");
+    setText("#lawn-level-name", session.mode === "town-job" ? "NEIGHBOUR'S LAWN" : "CURRENT JOB");
+    setText("#lawn-level-band", summary.woodyWeeds ? "Clear the grass and woody weeds" : summary.toughWeeds ? "Clear the grass and tough weeds" : "Clear the whole lawn");
     setText("#lawn-progress", `${state.percent}%`);
     setText("#lawn-moves", `${state.moves} / ${state.moveLimit}`);
-    setText("#lawn-optimal", state.moves <= summary.optimalMoves ? summary.optimalMoves : `${summary.optimalMoves} par`);
-    setText("#lawn-live-stars", `${"★".repeat(state.stars)}${"☆".repeat(3 - state.stars)}`);
     setText("#lawn-mower", mower.label);
     this.buttons.undo.disabled = state.ended || session.undoStack.length === 0;
     this.buttons.hint.disabled = state.ended;
@@ -318,16 +291,13 @@ export class LawnCareScene extends Phaser.Scene {
     show("#lawn-care-result", true);
     const won = !failed && result.stars >= 1;
     if (won) this.onboarding?.recordJobCompleted?.("lawn");
-    setText("#lawn-result-title", won ? session?.mode === "town-job" ? "Neighbourhood lawn restored!" : "Lawn challenge complete!" : "This lawn needs another pass");
+    setText("#lawn-result-title", won ? "Lawn restored!" : "Keep mowing");
     setText("#lawn-result-stars", `${"★".repeat(result.stars)}${"☆".repeat(3 - result.stars)}`);
-    setText("#lawn-result-message", won ? result.firstClear ? "Progress saved and the first-clear coins were added." : session?.mode === "town-job" ? "The lawn has been improved and your job coins were added." : "Your best result is saved. Replays do not award the first-clear coins again." : "Cut at least half of the grass before the move limit. Restart to try a new route.");
-    setText("#lawn-result-percent", `${result.percent}%`);
-    setText("#lawn-result-moves", result.moves);
-    setText("#lawn-result-par", result.optimalMoves);
-    setText("#lawn-result-coins", `+${result.rewardCoins || 0}`);
-    show("#lawn-replay", session?.mode !== "town-job");
-    show("#lawn-next", won && session?.mode !== "town-job");
-    if (this.buttons.return) this.buttons.return.textContent = "Return to Willowmere";
+    setText("#lawn-result-message", won ? "The grass looks wonderful." : "Clear at least half, then try again.");
+    setText("#lawn-result-coins", `+${result.rewardCoins || 0} coins`);
+    show("#lawn-replay", !won);
+    show("#lawn-return", won);
+    if (this.buttons.return) this.buttons.return.textContent = "Continue";
     this.setMessage(won ? "Result saved." : "Restart to try again.", won ? "success" : "error");
     this.render();
   }
@@ -381,15 +351,12 @@ export class LawnCareScene extends Phaser.Scene {
   }
 
   shutdownScene() {
-    this.startButton?.removeEventListener("click", this.onStart);
-    this.levelSelect?.removeEventListener("change", this.onLevelChange);
     this.exitButton?.removeEventListener("click", this.onExit);
     this.buttons.undo?.removeEventListener("click", this.onUndo);
     this.buttons.hint?.removeEventListener("click", this.onHint);
     this.buttons.retry?.removeEventListener("click", this.onRetry);
     this.buttons.qa?.removeEventListener("click", this.onQa);
     this.buttons.replay?.removeEventListener("click", this.onReplay);
-    this.buttons.next?.removeEventListener("click", this.onNext);
     this.buttons.return?.removeEventListener("click", this.onReturn);
     this.boardElement?.removeEventListener("pointerdown", this.onPointerDown);
     this.boardElement?.removeEventListener("pointerup", this.onPointerUp);

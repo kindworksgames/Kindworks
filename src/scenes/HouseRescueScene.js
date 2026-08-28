@@ -1,9 +1,7 @@
 import Phaser from "phaser";
 import {
-  HOUSE_RESCUE_CATEGORIES,
   HOUSE_RESCUE_RULES,
   houseRescueCoverage,
-  houseRescueLevel,
 } from "../data/houseRescue.js";
 import { startLazyScene } from "./lazyScenes.js";
 
@@ -40,8 +38,14 @@ export class HouseRescueScene extends Phaser.Scene {
     this.drawRoom();
     this.bindInterface();
     this.setSceneInterface();
-    this.render();
-    if (this.houseRescue.getActiveSession()) this.setMessage("Rescue resumed.", "success");
+    const active = this.houseRescue.getActiveSession();
+    if (active) {
+      this.render();
+      this.setMessage("Rescue resumed.", "success");
+    } else {
+      const progress = this.houseRescue.getSnapshot();
+      this.startLevel(this.entryData.level || progress.selectedLevel);
+    }
     this.cameras.main.fadeIn(220, 53, 42, 35);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.shutdownScene());
   }
@@ -89,8 +93,6 @@ export class HouseRescueScene extends Phaser.Scene {
 
   bindInterface() {
     this.hud = document.querySelector("#house-rescue-hud");
-    this.levelSelect = document.querySelector("#house-rescue-level-select");
-    this.startButton = document.querySelector("#house-rescue-start");
     this.exitButton = document.querySelector("#house-rescue-exit");
     this.sortFloor = document.querySelector("#house-rescue-sort-floor");
     this.vacuumFloor = document.querySelector("#house-rescue-vacuum-floor");
@@ -99,7 +101,6 @@ export class HouseRescueScene extends Phaser.Scene {
     this.resultButtons = {
       return: document.querySelector("#house-rescue-return"),
     };
-    this.onStart = () => this.startLevel(Number(this.levelSelect?.value || 1));
     this.onExit = () => this.returnToTown();
     this.onQa = () => this.completeQa();
     this.onReturn = () => this.returnToTown();
@@ -154,7 +155,6 @@ export class HouseRescueScene extends Phaser.Scene {
       this.render();
     };
     this.onKeyDown = (event) => this.handleKey(event);
-    this.startButton?.addEventListener("click", this.onStart);
     this.exitButton?.addEventListener("click", this.onExit);
     this.qaButton?.addEventListener("click", this.onQa);
     this.resultButtons.return?.addEventListener("click", this.onReturn);
@@ -177,7 +177,7 @@ export class HouseRescueScene extends Phaser.Scene {
     const badge = document.querySelector(".milestone-badge");
     if (badge) badge.textContent = "HOUSE RESCUE · MILESTONE 16";
     setText("#location-status", "House Rescue");
-    setText("#control-hint", "Sort: arrows + 1/2/3 · Vacuum: arrows or swipe · landscape play");
+    setText("#control-hint", "Tap an item, then its bin · swipe to vacuum");
   }
 
   startLevel(level) {
@@ -187,7 +187,6 @@ export class HouseRescueScene extends Phaser.Scene {
       returnFacing: this.entryData.returnFacing,
     });
     if (!result.ok) { this.setMessage(result.message, "error"); return false; }
-    document.querySelector("#house-rescue-picker")?.classList.add("hidden");
     document.querySelector("#house-rescue-gameplay")?.classList.remove("hidden");
     document.querySelector("#house-rescue-result")?.classList.add("hidden");
     this.selectedItemId = null;
@@ -246,7 +245,10 @@ export class HouseRescueScene extends Phaser.Scene {
     if (!this.sortFloor) return;
     const wave = this.currentWave(session);
     const visible = session.items.filter((item) => !item.sorted && item.wave === wave);
-    this.sortFloor.innerHTML = `${this.geometryMarkup()}${visible.map((item) => `<button type="button" draggable="true" class="house-rescue-item${item.id === this.selectedItemId ? " selected" : ""}" data-house-rescue-item="${item.id}" style="left:${item.x}%;top:${item.y}%" aria-label="${item.label}, ${item.category}"><span>${item.icon}</span><small>${item.label}</small></button>`).join("")}`;
+    this.sortFloor.innerHTML = `${this.geometryMarkup()}${visible.map((item) => {
+      const slot = session.items.findIndex((entry) => entry.id === item.id) % HOUSE_RESCUE_RULES.visibleItemsPerWave + 1;
+      return `<button type="button" draggable="true" class="house-rescue-item compact-slot-${slot}${item.id === this.selectedItemId ? " selected" : ""}" data-house-rescue-item="${item.id}" style="left:${item.x}%;top:${item.y}%" aria-label="${item.label}, ${item.category}"><span>${item.icon}</span><small>${item.label}</small></button>`;
+    }).join("")}`;
     setText("#house-rescue-wave", `${wave + 1} / ${Math.ceil(session.items.length / HOUSE_RESCUE_RULES.visibleItemsPerWave)}`);
     setText("#house-rescue-remaining", session.items.length - session.correct);
   }
@@ -262,27 +264,15 @@ export class HouseRescueScene extends Phaser.Scene {
   render() {
     const progress = this.houseRescue.getSnapshot();
     const session = progress.active;
-    const picker = document.querySelector("#house-rescue-picker");
     const gameplay = document.querySelector("#house-rescue-gameplay");
     if (!session) {
-      picker?.classList.remove("hidden");
       gameplay?.classList.add("hidden");
-      if (this.levelSelect) {
-        if (this.levelSelect.options.length !== progress.unlockedLevel) this.levelSelect.innerHTML = Array.from({ length: progress.unlockedLevel }, (_, index) => `<option value="${index + 1}">Level ${index + 1} · ${houseRescueLevel(index + 1).label}</option>`).join("");
-        this.levelSelect.value = String(progress.selectedLevel);
-      }
-      if (this.startButton) this.startButton.textContent = `Start Level ${progress.selectedLevel}`;
     } else {
-      picker?.classList.add("hidden");
       gameplay?.classList.remove("hidden");
-      const config = houseRescueLevel(session.level);
       const coverage = houseRescueCoverage(session.dirt);
-      setText("#house-rescue-level-name", `Level ${session.level} of 750 · ${config.label}`);
-      setText("#house-rescue-score", session.score);
-      setText("#house-rescue-mistakes", session.mistakes);
       setText("#house-rescue-coverage", `${Math.round(coverage * 100)}%`);
       const vacuum = this.houseRescue.getVacuumLoadout();
-      setText("#house-rescue-vacuum-tool", `${vacuum.icon} ${vacuum.name} · power ${vacuum.power}`);
+      setText("#house-rescue-vacuum-tool", `${vacuum.icon} ${vacuum.name}`);
       document.querySelector("#house-rescue-sort-stage")?.classList.toggle("active", session.phase === "sorting");
       document.querySelector("#house-rescue-sort-stage")?.classList.toggle("done", session.phase === "vacuum");
       document.querySelector("#house-rescue-vacuum-stage")?.classList.toggle("active", session.phase === "vacuum");
@@ -290,13 +280,12 @@ export class HouseRescueScene extends Phaser.Scene {
       document.querySelector("#house-rescue-vacuum-panel")?.classList.toggle("hidden", session.phase !== "vacuum");
       if (session.phase === "sorting") this.renderSorting(session); else this.renderVacuum(session);
     }
-    setText("#house-rescue-progress-summary", `${progress.completed} rescued · ${progress.totalStars} stars · Level ${progress.unlockedLevel} unlocked`);
     setText("#house-rescue-balance", `🪙 ${this.gameState.getSnapshot().economy.coins}`);
     const game = document.querySelector("#game");
     if (game) {
       game.dataset.scene = this.scene.key;
       game.dataset.houseRescueLevel = String(session?.level || progress.selectedLevel);
-      game.dataset.houseRescuePhase = session?.phase || "picker";
+      game.dataset.houseRescuePhase = session?.phase || "loading";
       game.dataset.houseRescueCoverage = String(Math.round(houseRescueCoverage(session?.dirt) * 100));
       game.dataset.houseRescueCatalogue = "750";
     }
@@ -310,17 +299,11 @@ export class HouseRescueScene extends Phaser.Scene {
   }
 
   showResult(result) {
-    document.querySelector("#house-rescue-picker")?.classList.add("hidden");
     document.querySelector("#house-rescue-gameplay")?.classList.add("hidden");
     document.querySelector("#house-rescue-result")?.classList.remove("hidden");
-    setText("#house-rescue-result-title", `Level ${result.level} · Cottage restored!`);
-    setText("#house-rescue-result-stars", `${"★".repeat(result.stars)}${"☆".repeat(3 - result.stars)}`);
-    setText("#house-rescue-result-message", `${Math.round(result.completionCoverage * 100)}% clean.`);
-    setText("#house-rescue-result-score", result.score);
-    setText("#house-rescue-result-accuracy", `${Math.round(result.accuracy * 100)}%`);
+    setText("#house-rescue-result-title", "Cottage restored!");
+    setText("#house-rescue-result-message", "The home is clean and ready again.");
     setText("#house-rescue-result-coins", `+${result.coins}`);
-    const progress = this.houseRescue.getSnapshot();
-    setText("#house-rescue-progress-summary", `${progress.completed} rescued · ${progress.totalStars} stars · Level ${progress.unlockedLevel} unlocked`);
     setText("#house-rescue-balance", `🪙 ${this.gameState.getSnapshot().economy.coins}`);
     const game = document.querySelector("#game");
     if (game) {
@@ -357,7 +340,6 @@ export class HouseRescueScene extends Phaser.Scene {
     this.worldSimulation?.setPaused("activity", false);
     this.npcTownLife?.setPaused("activity", false);
     this.hud?.classList.add("hidden");
-    this.startButton?.removeEventListener("click", this.onStart);
     this.exitButton?.removeEventListener("click", this.onExit);
     this.qaButton?.removeEventListener("click", this.onQa);
     this.resultButtons.return?.removeEventListener("click", this.onReturn);

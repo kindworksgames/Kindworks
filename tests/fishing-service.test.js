@@ -4,6 +4,7 @@ import {
   FISHING_CONFIG,
   FISHING_SPOTS,
   MAGNET_FISHING_CONFIG,
+  MAGNET_TARGETING_CONFIG,
   MAGNET_RARITY_ORDER,
   MAGNET_RECOVERY_CATALOG,
   ORNAMENTAL_FISH_IDS,
@@ -37,6 +38,8 @@ test("pins the original three fishing spots, catch tables, targeting and two fiv
   assert.deepEqual(FISHING_SPOTS.map((spot) => spot.catchTable.reduce((sum, entry) => sum + entry.weight, 0)), [100, 100, 100]);
   assert.deepEqual(FISHING_SPOTS.map((spot) => spot.catchTable.length), [2, 7, 3]);
   assert.equal(TARGETING_CONFIG.zonesPerSession, 3);
+  assert.equal(MAGNET_TARGETING_CONFIG.zonesPerSession, 3);
+  assert.deepEqual(MAGNET_TARGETING_CONFIG.waterArea, { x: 32, y: 139, width: 1216, height: 338 });
   assert.equal(FISHING_CONFIG.dailyCasts, 5);
   assert.equal(MAGNET_FISHING_CONFIG.dailyCasts, 5);
   assert.equal(Object.keys(MAGNET_RECOVERY_CATALOG).length, 8);
@@ -141,7 +144,7 @@ test("magnet recovery removes the original visible river target and delays respa
 test("empty magnet water awards no coins and advances both pity counters", () => {
   const { gameState, fishing } = runtime();
   fishing.begin("magnet", "magnet-mill-bridge");
-  fishing.cast({ x: TARGETING_CONFIG.waterArea.x + 2, y: TARGETING_CONFIG.waterArea.y + 2 });
+  fishing.cast({ x: MAGNET_TARGETING_CONFIG.waterArea.x + 2, y: MAGNET_TARGETING_CONFIG.waterArea.y + 2 });
   fishing.signalReady();
   const result = fishing.retrieveMagnet();
   assert.equal(result.code, "magnet-empty");

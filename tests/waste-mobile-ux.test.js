@@ -19,9 +19,11 @@ test("keeps the Waste Collection board, tray, controls, and status inside short 
 
 test("uses short contextual Waste copy and reveals only currently useful actions", async () => {
   const [markup, styles, scene] = await Promise.all([readText("index.html"), readText("src/style.css"), readText("src/scenes/WasteCollectionScene.js")]);
-  assert.match(markup, /Match rubbish in threes/);
-  assert.match(markup, /Pick uncovered cards\. Keep the five-slot tray open\./);
-  for (const copy of ["Choose a level.", "Tray full. Try another order.", "Level saved.", "Everything is collected.", "Tap Confirm Exit to leave this attempt."]) assert.ok(scene.includes(copy), copy);
+  assert.match(markup, /Match every card in threes/);
+  assert.doesNotMatch(markup, /id="waste-campaign-picker"|id="waste-level-select"|id="waste-level-start"/);
+  assert.doesNotMatch(markup, /id="waste-result-percent"|id="waste-result-moves"|id="waste-result-matches"|id="waste-replay"|id="waste-next"/);
+  assert.match(scene, /const level = this\.entryData\.level \|\| this\.cleanup\.getCampaignSnapshot\(\)\.nextLevel;[\s\S]*this\.startCampaignLevel\(level\)/);
+  for (const copy of ["Tray full. Try another order.", "Level saved.", "Everything is collected.", "Tap Confirm Exit to leave this attempt."]) assert.ok(scene.includes(copy), copy);
   assert.match(scene, /buttons\.retry\.classList\.toggle\("hidden", this\.session\.moves === 0\)/);
   assert.match(scene, /finish\.classList\.toggle\("hidden", count !== total\)/);
   assert.match(styles, /\.cleanup-item-list button\.collected \{\s*display: none;/);

@@ -1,10 +1,20 @@
+import { spriteAiInventory } from "../assets/spriteAiLabels.js";
+import {
+  registerSouthShoreScoopsAssetManifest,
+  southShoreScoopsAsset,
+} from "../assets/southShoreScoopsAssetManifest.js";
+
 const INK = 0x292238;
 const PAPER = 0xfff1c9;
 const WHITE = 0xfffaf0;
 
 function assetLabel(object, id) {
+  const descriptor = southShoreScoopsAsset(id);
   object.name = id;
   object.setData?.("assetLabel", id);
+  object.spriteAiAssetId = id;
+  object.spriteAiAssetLabel = descriptor?.label || id;
+  object.spriteAiAssetKind = descriptor?.kind || object.spriteAiAssetKind || "visual";
   return object;
 }
 
@@ -16,10 +26,10 @@ const PALETTES = Object.freeze({
 });
 
 const VENUE_COPY = Object.freeze({
-  bakery: Object.freeze({ dining: "CUSTOMER QUEUE", counter: "ORDER COUNTER · THREE TICKETS", prep: "BAKERY BENCH · THREE PREP SPACES", kitchen: "BAKERY KITCHEN", stations: ["MIX", "SHAPE", "OVEN", "FINISH"] }),
-  cafe: Object.freeze({ dining: "DINING ROOM", counter: "ORDER COUNTER · THREE TICKETS", prep: "PREP COUNTER · THREE TRAYS", kitchen: "CAFÉ KITCHEN", stations: ["KETTLE", "TOASTER", "HOB", "OVEN"] }),
-  mug: Object.freeze({ dining: "COFFEE LOUNGE", counter: "ORDER COUNTER · THREE TICKETS", prep: "DRINK COUNTER · THREE TRAYS", kitchen: "BARISTA STATIONS", stations: ["GRINDER", "ESPRESSO", "STEAM", "COLD"] }),
-  riverside: Object.freeze({ dining: "DINING ROOM", counter: "ORDER PASS · THREE TICKETS", prep: "PLATING PASS · THREE TRAYS", kitchen: "RESTAURANT KITCHEN", stations: ["PREP", "PAN", "POT", "GRILL", "OVEN"] }),
+  bakery: Object.freeze({ dining: "CUSTOMERS", counter: "ORDER COUNTER", prep: "PREP BENCH", kitchen: "BAKERY KITCHEN", stations: ["MIX", "SHAPE", "OVEN", "FINISH"] }),
+  cafe: Object.freeze({ dining: "DINING ROOM", counter: "ORDER COUNTER", prep: "PREP COUNTER", kitchen: "CAFÉ KITCHEN", stations: ["KETTLE", "TOASTER", "HOB", "OVEN"] }),
+  mug: Object.freeze({ dining: "COFFEE LOUNGE", counter: "ORDER COUNTER", prep: "DRINK COUNTER", kitchen: "BARISTA KITCHEN", stations: ["GRINDER", "ESPRESSO", "STEAM", "COLD"] }),
+  riverside: Object.freeze({ dining: "DINING ROOM", counter: "ORDER PASS", prep: "PLATING PASS", kitchen: "RESTAURANT KITCHEN", stations: ["PREP", "PAN", "POT", "GRILL", "OVEN"] }),
 });
 
 function label(scene, x, y, value, size = 13, color = "#fff1c9") {
@@ -55,7 +65,11 @@ function roomTag(scene, x, y, width, text) {
   const g = scene.add.graphics().setDepth(3);
   g.fillStyle(INK, 1); g.fillRoundedRect(x, y, width, 30, 4);
   g.fillStyle(PAPER, 1); g.fillRoundedRect(x + 3, y + 3, width - 6, 24, 3);
-  label(scene, x + 10, y + 8, text, 10, "#453b36").setDepth(4);
+  label(scene, x + width / 2, y + 8, text, 10, "#453b36").setOrigin(0.5, 0).setDepth(4);
+}
+
+function semanticSlot(scene, id, x, y, width, height) {
+  return assetLabel(scene.add.zone(x, y, width, height), id).setDepth(2);
 }
 
 function checkerFloor(graphics, x, y, width, height, base, light, size = 32) {
@@ -133,10 +147,24 @@ export function createRestaurantPresentation(scene, venue) {
   room.fillStyle(INK, 1); room.fillRoundedRect(834, 486, 170, 128, 7); room.fillStyle(0x6a7072, 1); room.fillRoundedRect(840, 492, 158, 116, 4); room.fillStyle(0x292238, 1); room.fillCircle(884, 530, 31); room.fillCircle(952, 530, 31); room.fillStyle(0xe9c75f, 1); room.fillRect(852, 575, 134, 18);
   room.fillStyle(INK, 1); room.fillRoundedRect(1016, 486, 105, 128, 7); room.fillStyle(palette.wood, 1); room.fillRoundedRect(1022, 492, 93, 116, 4); room.fillStyle(PAPER, 1); room.fillRect(1036, 511, 65, 50);
   room.fillStyle(INK, 1); room.fillRoundedRect(1132, 486, 106, 128, 7); room.fillStyle(palette.wood, 1); room.fillRoundedRect(1138, 492, 94, 116, 4); room.fillStyle(0x435844, 1); room.fillRect(1151, 511, 68, 50);
-  roomTag(scene, 28, 88, 474, copy.dining);
-  roomTag(scene, 542, 88, 256, copy.counter);
-  roomTag(scene, 542, 246, 256, copy.prep);
-  roomTag(scene, 836, 88, 408, copy.kitchen);
+  roomTag(scene, 166, 88, 202, copy.dining);
+  roomTag(scene, 570, 88, 200, copy.counter);
+  roomTag(scene, 570, 246, 200, copy.prep);
+  roomTag(scene, 952, 88, 176, copy.kitchen);
+  const venueId = venue.toUpperCase();
+  semanticSlot(scene, `KW-${venueId}-DINING-ZONE`, 268, 390, 500, 620);
+  semanticSlot(scene, `KW-${venueId}-ORDER-COUNTER-ZONE`, 670, 180, 260, 115);
+  semanticSlot(scene, `KW-${venueId}-PREP-COUNTER-ZONE`, 670, 456, 260, 372);
+  semanticSlot(scene, `KW-${venueId}-KITCHEN-ZONE`, 1042, 390, 440, 620);
+  [[205, 215], [430, 215], [205, 405], [430, 405], [205, 585], [430, 585]].forEach(([x, y], index) => semanticSlot(scene, `KW-${venueId}-DINING-TABLE-${index + 1}`, x, y, 100, 100));
+  [587, 670, 753].forEach((x, index) => semanticSlot(scene, `KW-${venueId}-ORDER-TICKET-${index + 1}`, x, 190, 78, 65));
+  [338, 450, 562].forEach((y, index) => semanticSlot(scene, `KW-${venueId}-PREP-TRAY-${index + 1}`, 670, y, 224, 101));
+  copy.stations.forEach((station, index) => semanticSlot(scene, `KW-${venueId}-KITCHEN-STATION-${station}`, 846 + index * (stationWidth + 9) + stationWidth / 2, 198, stationWidth, 88));
+  semanticSlot(scene, `KW-${venueId}-KITCHEN-SINK`, 888, 331, 108, 92);
+  semanticSlot(scene, `KW-${venueId}-KITCHEN-FRIDGE`, 1180, 360, 116, 170);
+  semanticSlot(scene, `KW-${venueId}-KITCHEN-HOB`, 919, 550, 170, 128);
+  semanticSlot(scene, `KW-${venueId}-KITCHEN-CUTTING-BOARD`, 1069, 550, 105, 128);
+  semanticSlot(scene, `KW-${venueId}-KITCHEN-INGREDIENTS`, 1185, 550, 106, 128);
   label(scene, 26, 23, `${venue === "bakery" ? "LITTLE BAKERY" : venue === "mug" ? "MORNING MUG COFFEE" : venue === "riverside" ? "RIVERSIDE KITCHEN" : "CORNER CAFÉ"} · WILLOWMERE`, 17).setDepth(5);
   const dynamic = assetLabel(scene.add.container(0, 0), `KW-${venue.toUpperCase()}-DYNAMIC-PRESENTATION`).setDepth(8);
   const worker = assetLabel(scene.add.graphics(), `KW-${venue.toUpperCase()}-WORKER-PIXEL`); pixelPerson(worker, 1080, 437, 0, palette.uniform, true, 1.35); dynamic.add(worker);
@@ -158,7 +186,7 @@ export function updateRestaurantPresentation(scene, snapshot = {}) {
   const orders = snapshot.orders || [];
   const seats = [[95, 210], [320, 210], [95, 400], [320, 400], [95, 580], [320, 580]];
   const people = assetLabel(scene.add.graphics(), `KW-${presentation.venue.toUpperCase()}-CUSTOMER-GROUP`).setDepth(8);
-  seats.forEach(([x, y], index) => pixelPerson(people, x, y, index + 1, null, Boolean(orders[index]), 1.3));
+  seats.forEach(([x, y], index) => { if (orders[index]) pixelPerson(people, x, y, index + 1, null, true, 1.3); });
   presentation.stateObjects.push(people);
   orders.slice(0, 6).forEach((order, index) => {
     const [x, y] = seats[index];
@@ -169,6 +197,10 @@ export function updateRestaurantPresentation(scene, snapshot = {}) {
     const patience = Math.max(0, Math.min(1, Number(order.patience ?? 1)));
     bubble.fillStyle(0xe2d5b8, 1); bubble.fillRect(x + 29, y - 40, 84, 6); bubble.fillStyle(patience < 0.3 ? 0xd55a4d : patience < 0.6 ? 0xe0a43e : 0x66aa55, 1); bubble.fillRect(x + 29, y - 40, Math.round(84 * patience), 6);
     presentation.stateObjects.push(bubble, icon);
+    if (index < 3) {
+      const ticketIcon = assetLabel(scene.add.text(587 + index * 83, 183, order.icons || "…", { fontSize: "18px", resolution: 2 }), `KW-${presentation.venue.toUpperCase()}-ORDER-TICKET-${index + 1}-ART`).setOrigin(0.5).setDepth(10);
+      presentation.stateObjects.push(ticketIcon);
+    }
   });
   (snapshot.trays || []).slice(0, 3).forEach((trayState, index) => {
     if (!trayState.icon) return;
@@ -200,12 +232,12 @@ export function updateRestaurantPresentation(scene, snapshot = {}) {
 }
 
 function drawScoopsCustomer(graphics, x, y, index, active) {
-  pixelPerson(graphics, x, y, index, null, active);
-  graphics.fillStyle(INK, 1); graphics.fillRoundedRect(x - 29, y + 33, 58, 12, 4);
-  graphics.fillStyle(active ? 0xf2d787 : 0x8aa0a0, 1); graphics.fillRoundedRect(x - 25, y + 36, 50, 6, 2);
+  pixelPerson(graphics, x, y, index, null, active, 1.42);
+  graphics.fillStyle(INK, 1); graphics.fillRoundedRect(x - 42, y + 45, 84, 15, 4);
+  graphics.fillStyle(active ? 0xf2d787 : 0x8aa0a0, 1); graphics.fillRoundedRect(x - 37, y + 49, 74, 7, 2);
 }
 
-export function createScoopsPresentation(scene) {
+function createLegacyScoopsPresentation(scene) {
   scene.add.rectangle(640, 360, 1280, 720, 0x79c8d0).setDepth(0);
   const art = assetLabel(scene.add.graphics(), "KW-SCOOPS-COUNTER-PROCEDURAL-V1").setDepth(1);
   art.fillStyle(0x79c8d0, 1); art.fillRect(0, 0, 1280, 212);
@@ -251,33 +283,111 @@ export function createScoopsPresentation(scene) {
   return presentation;
 }
 
+export function createScoopsPresentation(scene) {
+  registerSouthShoreScoopsAssetManifest(spriteAiInventory);
+  scene.add.rectangle(640, 360, 1280, 720, 0xedd6a6).setDepth(0);
+  const art = assetLabel(scene.add.graphics(), "KW-SCOOPS-SEASIDE-COUNTER-PROCEDURAL-V2").setDepth(1);
+  art.fillStyle(0xf7dfac, 1); art.fillRect(0, 0, 1280, 720);
+  art.fillStyle(0x173b6b, 1); art.fillRect(0, 0, 1280, 69);
+  for (let x = 0; x < 1280; x += 100) { art.fillStyle((x / 100) % 2 ? 0xffefd0 : 0x245fa8, 1); art.fillRect(x, 0, 100, 69); }
+  art.fillStyle(INK, 1); art.fillRoundedRect(190, 11, 900, 74, 14);
+  art.fillStyle(0xa96838, 1); art.fillRoundedRect(197, 18, 886, 60, 9);
+  for (let y = 29; y < 73; y += 13) { art.fillStyle(0x7d4c2d, 0.55); art.fillRect(214, y, 850, 3); }
+  art.fillStyle(0xf1b34f, 1); art.fillCircle(232, 47, 17); art.fillCircle(1048, 47, 17);
+  art.fillStyle(0x173b6b, 1); art.fillRect(229, 30, 6, 34); art.fillRect(1045, 30, 6, 34); art.fillCircle(232, 47, 10); art.fillCircle(1048, 47, 10);
+  art.fillStyle(0xef876f, 1); art.fillCircle(1008, 58, 8); art.fillCircle(1008, 58, 3);
+
+  art.fillStyle(0x173b6b, 1); art.fillRoundedRect(216, 92, 848, 225, 8);
+  art.fillStyle(0x8bd5e8, 1); art.fillRect(222, 98, 836, 104);
+  art.fillStyle(0x4fa9d1, 1); art.fillRect(222, 202, 836, 109);
+  art.fillStyle(0xf5d483, 1); art.fillTriangle(222, 238, 460, 195, 460, 311); art.fillTriangle(1058, 238, 820, 195, 820, 311);
+  for (let x = 250; x < 1040; x += 76) { art.fillStyle(0xd9f2f5, 0.72); art.fillRect(x, 219 + (x % 3) * 9, 45, 4); }
+  art.fillStyle(0x684338, 1); art.fillRect(204, 300, 872, 22); art.fillStyle(0x2f6091, 1); art.fillRect(204, 306, 872, 12);
+
+  art.fillStyle(INK, 1); art.fillRoundedRect(42, 118, 128, 164, 7); art.fillStyle(0x24384b, 1); art.fillRoundedRect(48, 124, 116, 152, 4);
+  art.lineStyle(3, 0xf5d483, 0.8); art.strokeCircle(106, 170, 29); art.lineBetween(76, 225, 136, 225); art.lineBetween(82, 240, 130, 240);
+  art.fillStyle(0xf1b34f, 1); art.fillTriangle(91, 181, 121, 181, 106, 224); art.fillStyle(0xee9aa8, 1); art.fillCircle(106, 174, 18);
+  art.fillStyle(INK, 1); art.fillRoundedRect(1110, 123, 82, 105, 5); art.fillStyle(0xa96838, 1); art.fillRoundedRect(1116, 129, 70, 93, 3);
+  art.fillStyle(0x173b6b, 1); art.fillCircle(1151, 170, 23); art.lineStyle(5, 0xf1b34f, 1); art.strokeCircle(1151, 170, 16); art.lineBetween(1151, 148, 1151, 193);
+  [[106, 290], [1150, 290]].forEach(([x, y], index) => { art.fillStyle(INK, 1); art.fillRoundedRect(x - 37, y - 26, 74, 55, 9); art.fillStyle(index ? 0x4f8b78 : 0x3268a0, 1); art.fillRoundedRect(x - 32, y - 21, 64, 45, 7); [0xf6edc9, 0xee9aa8, 0xf1bf67, 0x8bd0a5].forEach((colour, flower) => { art.fillStyle(colour, 1); art.fillCircle(x - 24 + flower * 16, y - 22 - (flower % 2) * 8, 8); }); });
+
+  art.fillStyle(INK, 1); art.fillRoundedRect(12, 327, 1256, 382, 10);
+  art.fillStyle(0xa96838, 1); art.fillRoundedRect(20, 335, 1240, 366, 6);
+  art.fillStyle(0x704123, 1); art.fillRect(20, 612, 1240, 89);
+  const panel = (x, y, width, height, colour = PAPER) => { art.fillStyle(INK, 1); art.fillRoundedRect(x, y, width, height, 8); art.fillStyle(colour, 1); art.fillRoundedRect(x + 5, y + 5, width - 10, height - 10, 4); };
+  panel(34, 350, 250, 118, 0xe3c18a); panel(34, 479, 250, 118, 0xd5d9d1);
+  panel(300, 350, 392, 230, 0xd7c49b); panel(706, 350, 258, 230, 0xe4bd84); panel(978, 350, 270, 345, 0xfff1c9);
+  [[78, 408], [157, 408], [236, 408]].forEach(([x, y], index) => { art.fillStyle(index === 0 ? 0xc98b55 : index === 1 ? 0xe3aa62 : 0xead09a, 1); art.fillTriangle(x - 23, y - 18, x + 23, y - 18, x, y + 35); art.lineStyle(3, INK, 1); art.strokeTriangle(x - 23, y - 18, x + 23, y - 18, x, y + 35); });
+  [[78, 538], [157, 538], [236, 538]].forEach(([x, y], index) => { art.fillStyle([0x8fc4d5, 0xc8d0cb, 0xa9b8b7][index], 1); art.fillRoundedRect(x - 26, y - 28, 52, 62, 9); art.lineStyle(3, INK, 1); art.strokeRoundedRect(x - 26, y - 28, 52, 62, 9); });
+  [[48, 493, 101, 96, 0xe98fa5], [163, 493, 101, 96, 0xf0c94f]].forEach(([x, y, width, height, colour], index) => {
+    art.fillStyle(INK, 1); art.fillRoundedRect(x, y, width, height, 8); art.fillStyle(colour, 1); art.fillRoundedRect(x + 5, y + 5, width - 10, height - 10, 5);
+    art.fillStyle(WHITE, 0.8); art.fillRoundedRect(x + 21, y + 18, width - 42, 34, 6); art.fillStyle(0xa9b8b7, 1); art.fillRoundedRect(x + 33, y + 57, width - 66, 28, 6);
+    art.fillStyle(INK, 1); art.fillRect(x + width / 2 - 4, y + 44, 8, 23); art.fillStyle(index ? 0xf3d979 : 0xee9aa8, 1); art.fillRect(x + 39, y + 66, width - 78, 13);
+  });
+  [0xee9aa8, 0x8c5a43, 0xf6edc9, 0x8bd0a5, 0xaa78bd, 0x7687c5].forEach((colour, index) => { const x = 318 + (index % 3) * 122; const y = 382 + Math.floor(index / 3) * 89; art.fillStyle(INK, 1); art.fillRoundedRect(x, y, 108, 72, 7); art.fillStyle(colour, 1); art.fillRoundedRect(x + 5, y + 5, 98, 62, 5); art.fillStyle(0xffffff, 0.18); art.fillCircle(x + 35, y + 24, 11); });
+  [0xd75f63, 0x6c432d, 0xd69a55].forEach((colour, index) => { const x = 730 + index * 72; art.fillStyle(INK, 1); art.fillRoundedRect(x, 371, 52, 98, 8); art.fillStyle(colour, 1); art.fillRoundedRect(x + 5, 376, 42, 88, 5); art.fillStyle(PAPER, 1); art.fillRect(x + 15, 399, 22, 25); });
+  for (let index = 0; index < 6; index += 1) { const x = 730 + (index % 3) * 72; const y = 492 + Math.floor(index / 3) * 47; art.fillStyle(INK, 1); art.fillRoundedRect(x, y, 52, 38, 5); art.fillStyle([0xf1bf67, 0x6c432d, 0xe99baa, 0xd75f63, 0x8bd0a5, 0xe3aa62][index], 1); art.fillRoundedRect(x + 4, y + 4, 44, 30, 3); }
+  art.lineStyle(4, 0xd09f65, 1); art.strokeRoundedRect(1000, 377, 226, 198, 6);
+  [1018, 1084, 1150].forEach((x) => { art.fillStyle(0xd7c49b, 1); art.fillRoundedRect(x, 521, 54, 42, 5); });
+  art.fillStyle(0x2f7f3d, 1); art.fillRoundedRect(1005, 607, 216, 66, 9); art.lineStyle(4, INK, 1); art.strokeRoundedRect(1005, 607, 216, 66, 9);
+  panel(315, 590, 380, 105, 0xffe8b7); panel(714, 590, 244, 105, 0xc5d2dc);
+
+  label(scene, 640, 36, "⚓  SOUTH SHORE SCOOPS  ⚓", 24).setOrigin(0.5).setDepth(5);
+  label(scene, 49, 362, "CONTAINERS", 9, "#292238").setDepth(5); label(scene, 49, 491, "CUPS & DRINKS", 9, "#292238").setDepth(5);
+  label(scene, 316, 362, "FLAVOURS", 9, "#292238").setDepth(5); label(scene, 722, 362, "SAUCES & EXTRAS", 9, "#292238").setDepth(5);
+  label(scene, 995, 362, "CURRENT ORDER", 9, "#292238").setDepth(5); label(scene, 331, 606, "BUILD MAT", 9, "#292238").setDepth(5); label(scene, 731, 606, "SERVING TRAY", 9, "#292238").setDepth(5); label(scene, 1113, 632, "SERVE", 16, "#fffaf0").setOrigin(0.5).setDepth(5);
+  [
+    ["SCENE-BACKDROP", 640, 360, 1280, 720], ["SHOP-WALLS", 640, 514, 1280, 412], ["AWNING", 640, 34, 1280, 69],
+    ["TITLE-SIGN", 640, 48, 900, 74], ["TITLE-ANCHOR-LEFT", 230, 48, 44, 44], ["TITLE-ANCHOR-RIGHT", 1050, 48, 44, 44], ["TITLE-STARFISH", 1005, 55, 34, 34],
+    ["SEASIDE-SKY", 640, 150, 836, 104], ["SEASIDE-WATER", 640, 256, 836, 109], ["SEASIDE-BEACH", 640, 254, 836, 116],
+    ["SEASIDE-DISTANT-LAND", 890, 196, 260, 92], ["SEASIDE-SAILBOAT", 640, 217, 64, 45],
+    ["CUSTOMER-WINDOW", 640, 205, 848, 225], ["CONTAINER-AREA", 159, 409, 250, 118], ["DRINK-AREA", 159, 538, 250, 118],
+    ["SERVICE-LEDGE", 640, 311, 872, 22], ["MENU-BOARD", 105, 206, 142, 174], ["HANGING-ANCHOR-SIGN", 1142, 194, 78, 112],
+    ["PLANTER-LEFT", 126, 290, 88, 90], ["PLANTER-RIGHT", 1152, 292, 88, 90], ["COUNTER-FRAME", 640, 518, 1256, 382],
+    ["MILKSHAKE-MACHINE", 92, 539, 94, 104], ["LEMONADE-MACHINE", 222, 539, 94, 104],
+    ["FLAVOUR-TUBS", 496, 474, 392, 247], ["SAUCES-EXTRAS", 835, 474, 258, 247], ["ORDER-CARD", 1113, 474, 270, 247],
+    ["FLAVOUR-TUB-STRAWBERRY", 372, 418, 108, 72], ["FLAVOUR-TUB-CHOCOLATE", 494, 418, 108, 72], ["FLAVOUR-TUB-VANILLA", 616, 418, 108, 72],
+    ["FLAVOUR-TUB-MINT", 372, 507, 108, 72], ["FLAVOUR-TUB-GRAPE", 494, 507, 108, 72], ["FLAVOUR-TUB-BLUEBERRY", 616, 507, 108, 72],
+    ["SAUCE-BOTTLE-STRAWBERRY", 756, 420, 52, 98], ["SAUCE-BOTTLE-CHOCOLATE", 828, 420, 52, 98], ["SAUCE-BOTTLE-CARAMEL", 900, 420, 52, 98],
+    ["TOPPING-BIN-SPRINKLES", 756, 511, 52, 38], ["TOPPING-BIN-CHOCOLATE-BITS", 828, 511, 52, 38], ["TOPPING-BIN-WAFFLE-PIECES", 900, 511, 52, 38],
+    ["TOPPING-BIN-CHERRIES", 756, 558, 52, 38], ["TOPPING-BIN-MARSHMALLOWS", 828, 558, 52, 38], ["TOPPING-BIN-WAFER-STICKS", 900, 558, 52, 38],
+    ["ORDER-CARD-PRODUCT", 1113, 448, 150, 140], ["ORDER-SLOT-1", 1045, 542, 54, 42], ["ORDER-SLOT-2", 1111, 542, 54, 42], ["ORDER-SLOT-3", 1177, 542, 54, 42],
+    ["BUILD-MAT", 505, 642, 380, 105], ["SERVING-TRAY", 836, 642, 244, 105], ["SERVE-BUTTON", 1113, 640, 216, 66],
+  ].forEach(([id, x, y, width, height]) => semanticSlot(scene, `KW-SCOOPS-${id}`, x, y, width, height));
+  const presentation = { dynamic: assetLabel(scene.add.container(0, 0), "KW-SCOOPS-DYNAMIC-PRESENTATION").setDepth(8), stateObjects: [] };
+  scene.scoopsPresentation = presentation;
+  return presentation;
+}
+
 export function updateScoopsPresentation(scene, snapshot = {}) {
   const presentation = scene.scoopsPresentation;
   if (!presentation) return;
   presentation.stateObjects.forEach((object) => object.destroy()); presentation.stateObjects.length = 0;
   const customers = snapshot.customers || [];
   presentation.customerTargets = [];
-  [[80, 190], [235, 190], [80, 420], [235, 420]].forEach(([x, y], index) => {
+  const customerSeats = [[390, 252], [640, 252], [890, 252]];
+  customerSeats.forEach(([x, y], index) => {
+    if (!customers[index]) return;
     const person = assetLabel(scene.add.graphics(), `KW-SCOOPS-CUSTOMER-${index + 1}-PIXEL`).setDepth(8);
-    drawScoopsCustomer(person, x, y, index + 2, Boolean(customers[index]));
+    drawScoopsCustomer(person, x, y, index + 2, true);
     presentation.stateObjects.push(person);
     presentation.customerTargets[index] = [person];
   });
-  customers.slice(0, 4).forEach((customer, index) => {
-    const [x, y] = [[80, 190], [235, 190], [80, 420], [235, 420]][index];
-    const bubble = assetLabel(scene.add.graphics(), `KW-SCOOPS-CUSTOMER-${index + 1}-ORDER-BUBBLE`).setDepth(9); bubble.fillStyle(INK, 1); bubble.fillRoundedRect(x - 42, y - 102, 84, 58, 7); bubble.fillStyle(WHITE, 1); bubble.fillRoundedRect(x - 38, y - 98, 76, 50, 4);
-    const picture = assetLabel(scene.add.graphics(), `KW-SCOOPS-CUSTOMER-${index + 1}-PRODUCT`).setDepth(10); drawScoopsProduct(picture, x, y - 72, customer.parts || [], 0.48);
+  customers.slice(0, 3).forEach((customer, index) => {
+    const [x, y] = customerSeats[index];
+    const bubble = assetLabel(scene.add.graphics(), `KW-SCOOPS-CUSTOMER-${index + 1}-ORDER-BUBBLE`).setDepth(9); bubble.fillStyle(INK, 1); bubble.fillRoundedRect(x - 79, y - 168, 158, 118, 11); bubble.fillTriangle(x - 14, y - 52, x + 14, y - 52, x, y - 32); bubble.fillStyle(WHITE, 1); bubble.fillRoundedRect(x - 73, y - 162, 146, 106, 7);
+    const picture = assetLabel(scene.add.graphics(), `KW-SCOOPS-CUSTOMER-${index + 1}-PRODUCT`).setDepth(10); drawScoopsProduct(picture, x, y - 108, customer.parts || [], 0.82);
     presentation.stateObjects.push(bubble, picture);
     presentation.customerTargets[index].push(bubble, picture);
   });
   const productArt = assetLabel(scene.add.graphics(), "KW-SCOOPS-BUILD-TRAY-SELECTED-PRODUCTS").setDepth(10);
-  if (snapshot.buildParts?.length) drawScoopsProduct(productArt, 582, 448, snapshot.buildParts, 1.55);
+  if (snapshot.buildParts?.length) drawScoopsProduct(productArt, 505, 645, snapshot.buildParts, 0.84);
   else {
-    const prompt = label(scene, 582, 452, "CHOOSE PARTS", 25, "#292238").setOrigin(0.5).setDepth(10);
+    const prompt = label(scene, 505, 648, "BUILD HERE", 13, "#7d6546").setOrigin(0.5).setDepth(10);
     presentation.stateObjects.push(prompt);
   }
-  (snapshot.trayItems || []).slice(0, 2).forEach((parts, index) => drawScoopsProduct(productArt, 831, 426 + index * 94, parts, 0.82));
-  if (snapshot.selectedParts?.length) drawScoopsProduct(productArt, 1087, 447, snapshot.selectedParts, 1.35);
+  (snapshot.trayItems || []).slice(0, 3).forEach((parts, index) => drawScoopsProduct(productArt, 780 + index * 56, 645, parts, 0.56));
+  if (snapshot.selectedParts?.length) drawScoopsProduct(productArt, 1113, 452, snapshot.selectedParts, 1.18);
   presentation.stateObjects.push(productArt);
 }
 

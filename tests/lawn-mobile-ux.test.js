@@ -26,3 +26,13 @@ test("uses short action-led Lawn Care feedback without changing validated game r
   assert.match(scene, /queuedDirection/);
   assert.match(scene, /Dead end\. Undo or restart this route\./);
 });
+
+test("enters the current Lawn Care job directly without a player level screen", async () => {
+  const [markup, scene] = await Promise.all([readText("index.html"), readText("src/scenes/LawnCareScene.js")]);
+  assert.doesNotMatch(markup, /id="lawn-care-picker"|id="lawn-level-select"|id="lawn-level-start"/);
+  assert.doesNotMatch(markup, /MILESTONE 18 · ORIGINAL 750-LEVEL CAMPAIGN|id="lawn-level-name">Level 1 of 750|id="lawn-next"/);
+  assert.match(scene, /if \(!this\.lawnCare\.getActiveSession\(\)\) this\.startLevel\(this\.entryData\.level \|\| this\.lawnCare\.getCampaignSnapshot\(\)\.nextLevel\)/);
+  assert.match(markup, /id="lawn-level-band">Clear the whole lawn/);
+  assert.match(markup, /id="lawn-replay" class="hidden"[^>]*>Try again<\/button>/);
+  assert.match(markup, /id="lawn-return"[^>]*>Continue<\/button>/);
+});

@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import "./style.css";
+import "./shop-reference.css";
 import { BootScene } from "./scenes/BootScene.js";
 import { TownScene } from "./scenes/TownScene.js";
 import { SpriteAiLabelPlugin } from "./plugins/SpriteAiLabelPlugin.js";
@@ -37,6 +38,7 @@ import { HarbourGeneralService } from "./systems/HarbourGeneralService.js";
 import { ImpactProjectService } from "./systems/ImpactProjectService.js";
 import { NpcNarrativeService } from "./systems/NpcNarrativeService.js";
 import { OnboardingService } from "./systems/OnboardingService.js";
+import { PersistentActivityRecoveryService } from "./systems/PersistentActivityRecoveryService.js";
 import { CommerceService } from "./systems/CommerceService.js";
 import { createDevelopmentBillingBridge, verifyDevelopmentReceipt } from "./systems/DevelopmentBillingBridge.js";
 import { EconomyHudController } from "./ui/EconomyHudController.js";
@@ -71,16 +73,17 @@ const fidelityQa = import.meta.env.DEV && ["fidelity", "animal-fidelity"].includ
 const runtimeStorage = fidelityQa ? createFidelityStorage(window.localStorage) : window.localStorage;
 const stateRuntime = bootstrapState(runtimeStorage);
 const worldSimulation = new WorldSimulationService(stateRuntime.gameState, stateRuntime.repository);
+const customResident = new CustomResidentService(stateRuntime.gameState, stateRuntime.repository);
 const farming = new FarmingService(stateRuntime.gameState, stateRuntime.repository);
 const livingEnvironment = new LivingEnvironmentService(stateRuntime.gameState, stateRuntime.repository);
 worldSimulation.addStateAdvancer((state) => farming.resolveInto(state));
 worldSimulation.addStateAdvancer((state) => livingEnvironment.advanceInto(state));
+worldSimulation.addStateAdvancer((state, before, result) => customResident.advanceInto(state, before, result));
 const offlineResolution = worldSimulation.resolveOffline();
 const harbourGeneral = new HarbourGeneralService(stateRuntime.gameState, stateRuntime.repository);
 const npcTownLife = new NpcTownLifeService(stateRuntime.gameState, stateRuntime.repository, { harbourGeneral });
 const npcNarratives = new NpcNarrativeService(stateRuntime.gameState, stateRuntime.repository, { npcTownLife });
 const municipalCollection = new MunicipalCollectionService(stateRuntime.gameState, stateRuntime.repository);
-const customResident = new CustomResidentService(stateRuntime.gameState, stateRuntime.repository);
 const aquarium = new AquariumService(stateRuntime.gameState, stateRuntime.repository);
 const homeInteriors = new HomeInteriorService(stateRuntime.gameState, stateRuntime.repository, { customResident, aquarium });
 farming.refresh({ persist: true });
@@ -167,6 +170,8 @@ game.registry.set("pawsWonders", pawsWonders);
 game.registry.set("harbourGeneral", harbourGeneral);
 game.registry.set("homeownerGifts", homeownerGifts);
 game.registry.set("impactProjects", impactProjects);
+const activityRecovery = new PersistentActivityRecoveryService(game.registry);
+game.registry.set("activityRecovery", activityRecovery);
 const economy = new EconomyService(stateRuntime.gameState, stateRuntime.repository);
 game.registry.set("economy", economy);
 const commerceQa = import.meta.env.DEV && ["commerce", "commerce-disabled"].includes(qaMode);
@@ -383,6 +388,7 @@ const economyHud = new EconomyHudController(stateRuntime, {
     setModalOpen("economy", open);
   },
   onUseConsumable(item) {
+    if (item?.farmingKind === "sapling") return activeTownScene()?.beginAppleTreePlacement?.() || { ok: false, message: "Return to Willowmere town to plant this sapling." };
     if (item?.shopGroup === "Farming") return game.registry.get("farmingController")?.open?.("allotment") || { ok: false };
     return game.registry.get("animalFriendsController")?.open?.() || { ok: false };
   },
@@ -412,6 +418,8 @@ const shopController = new ShopController(shopService, stateRuntime, {
     setModalOpen("shop", open);
   },
   onPlaceItem(item) {
+    if (item?.farmingKind === "sapling") return activeTownScene()?.beginAppleTreePlacement?.() || { ok: false, message: "Return to Willowmere town to plant this sapling." };
+    if (item?.category === "furniture") return activeTownScene()?.enterHouseInterior?.("house-20", { focusFurnitureId: item.id }) || { ok: false, message: "Return to Willowmere town to furnish your home." };
     return activeTownScene()?.beginTownPlacement?.(item?.id) || { ok: false, message: "Return to Willowmere town to place this item." };
   },
 });

@@ -14,8 +14,9 @@ export class FarmingController {
     this.onPlaceSapling = onPlaceSapling;
     this.selectedCropId = "carrot";
     this.selectedTab = "allotment";
+    this.selectedBedId = null;
     this.selectedLawnId = LAWN_PLOTS[0].id;
-    this.selectedTreeId = "apple-tree-1";
+    this.selectedTreeId = null;
     this.panel = document.querySelector("#farming-panel");
     this.status = document.querySelector("#farming-status");
     this.bind();
@@ -29,6 +30,7 @@ export class FarmingController {
       if (button.id === "farming-close") return this.close();
       if (button.dataset.farmingTab) {
         this.selectedTab = button.dataset.farmingTab;
+        this.setContextStatus(this.selectedTab);
         return this.render();
       }
       if (button.dataset.cropId) {
@@ -82,16 +84,31 @@ export class FarmingController {
     return Boolean(this.panel && !this.panel.classList.contains("hidden"));
   }
 
+  setContextStatus(tab) {
+    if (!this.status) return;
+    const messages = {
+      allotment: "Choose a crop, then plant or harvest one bed.",
+      orchard: "Harvest a ripe apple or plant an owned sapling.",
+      lawns: "Choose a lawn to see whether it needs care.",
+    };
+    this.status.textContent = messages[tab] || messages.allotment;
+    this.status.dataset.status = "neutral";
+  }
+
   open(tab = "allotment", targetId = null) {
     this.selectedTab = ["allotment", "orchard", "lawns"].includes(tab) ? tab : "allotment";
+    const snapshot = this.farming.getSnapshot();
+    this.selectedBedId = targetId && snapshot.allotment.beds.some((bed) => bed.id === targetId) ? targetId : null;
+    this.selectedTreeId = targetId && snapshot.orchard.trees.some((tree) => tree.id === targetId) ? targetId : null;
     if (targetId && LAWN_PLOTS.some((plot) => plot.active && plot.id === targetId)) this.selectedLawnId = targetId;
-    if (targetId && this.farming.getSnapshot().orchard.trees.some((tree) => tree.id === targetId)) this.selectedTreeId = targetId;
     this.farming.refresh({ persist: true });
     this.panel?.classList.remove("hidden");
     this.panel?.setAttribute("aria-hidden", "false");
     this.onModalChange(true);
+    this.setContextStatus(this.selectedTab);
     this.render();
     document.querySelector("#farming-close")?.focus({ preventScroll: true });
+    if (targetId) requestAnimationFrame(() => this.panel?.querySelector(`[data-farming-target="${targetId}"]`)?.scrollIntoView?.({ block: "nearest" }));
     return { ok: true, tab: this.selectedTab };
   }
 
@@ -151,12 +168,12 @@ export class FarmingController {
     if (beds) beds.innerHTML = state.allotment.beds.map((bed, index) => {
       if (!bed.unlocked) {
         const cost = ALLOTMENT_CONFIG.bedUnlockCosts[index];
-        return `<article class="farm-card locked"><span class="farm-icon">🔒</span><div><strong>Bed ${index + 1}</strong><small>Unlock for 🪙 ${cost.toLocaleString()}</small></div><button type="button" data-unlock-bed="${bed.id}" ${game.economy.coins < cost ? "disabled" : ""}>Unlock</button></article>`;
+        return `<article data-farming-target="${bed.id}" class="farm-card locked ${bed.id === this.selectedBedId ? "focused" : ""}" ${bed.id === this.selectedBedId ? 'aria-current="true"' : ""}><span class="farm-icon">🔒</span><div><strong>Bed ${index + 1}</strong><small>Unlock for 🪙 ${cost.toLocaleString()}</small></div><button type="button" data-unlock-bed="${bed.id}" ${game.economy.coins < cost ? "disabled" : ""}>Unlock</button></article>`;
       }
-      if (bed.status === "empty") return `<article class="farm-card"><span class="farm-icon">🟫</span><div><strong>Bed ${index + 1}</strong><small>Empty and ready</small></div><button type="button" data-plant-bed="${bed.id}" ${this.farming.inventory.quantity(game.inventory, selectedCrop.seedId) < 1 ? "disabled" : ""}>Plant ${selectedCrop.icon}</button></article>`;
+      if (bed.status === "empty") return `<article data-farming-target="${bed.id}" class="farm-card ${bed.id === this.selectedBedId ? "focused" : ""}" ${bed.id === this.selectedBedId ? 'aria-current="true"' : ""}><span class="farm-icon">🟫</span><div><strong>Bed ${index + 1}</strong><small>Empty and ready</small></div><button type="button" data-plant-bed="${bed.id}" ${this.farming.inventory.quantity(game.inventory, selectedCrop.seedId) < 1 ? "disabled" : ""}>Plant ${selectedCrop.icon}</button></article>`;
       const crop = FARMING_CROPS[bed.cropId];
       const progress = percentage(bed.growthMinutes, crop.growMinutes);
-      return `<article class="farm-card ${bed.status}"><span class="farm-icon">${crop.icon}</span><div><strong>Bed ${index + 1} · ${crop.label}</strong><small>${bed.status === "ready" ? `Ready · collect ${crop.harvestYield}` : `Growing · ${progress}%`}</small><progress max="100" value="${progress}">${progress}%</progress></div><button type="button" data-harvest-bed="${bed.id}" ${bed.status !== "ready" ? "disabled" : ""}>Harvest</button></article>`;
+      return `<article data-farming-target="${bed.id}" class="farm-card ${bed.status} ${bed.id === this.selectedBedId ? "focused" : ""}" ${bed.id === this.selectedBedId ? 'aria-current="true"' : ""}><span class="farm-icon">${crop.icon}</span><div><strong>Bed ${index + 1} · ${crop.label}</strong><small>${bed.status === "ready" ? `Ready · collect up to ${crop.harvestYield}` : `Growing · ${progress}%`}</small><progress max="100" value="${progress}">${progress}%</progress></div><button type="button" data-harvest-bed="${bed.id}" ${bed.status !== "ready" ? "disabled" : ""}>Harvest</button></article>`;
     }).join("");
 
     const readyTrees = state.orchard.trees.filter((tree) => tree.availableFruit > 0).length;
@@ -169,7 +186,7 @@ export class FarmingController {
         ? percentage(tree.growthMinutes, ORCHARD_CONFIG.maturityMinutes)
         : percentage(tree.fruitProgressMinutes, ORCHARD_CONFIG.productionMinutes);
       const detail = tree.status === "growing" ? `Sapling growing · ${progress}%` : tree.availableFruit ? "One ripe apple ready" : `Producing next apple · ${progress}%`;
-      return `<article class="farm-card orchard-tree-card ${tree.availableFruit ? "ready" : tree.status}"><span class="farm-icon">${tree.status === "growing" ? "🌱" : tree.availableFruit ? "🍎" : "🌳"}</span><div><strong>Tree ${index + 1}</strong><small>${detail} · ${Math.round(tree.x)}, ${Math.round(tree.y)}</small><progress max="100" value="${progress}">${progress}%</progress></div><button type="button" data-harvest-tree="${tree.id}" ${tree.availableFruit < 1 ? "disabled" : ""}>Harvest</button></article>`;
+      return `<article data-farming-target="${tree.id}" class="farm-card orchard-tree-card ${tree.availableFruit ? "ready" : tree.status} ${tree.id === this.selectedTreeId ? "focused" : ""}" ${tree.id === this.selectedTreeId ? 'aria-current="true"' : ""}><span class="farm-icon">${tree.status === "growing" ? "🌱" : tree.availableFruit ? "🍎" : "🌳"}</span><div><strong>Tree ${index + 1}</strong><small>${detail}</small><progress max="100" value="${progress}">${progress}%</progress></div><button type="button" data-harvest-tree="${tree.id}" ${tree.availableFruit < 1 ? "disabled" : ""}>Harvest</button></article>`;
     }).join("");
     const buySapling = document.querySelector("#farming-buy-sapling");
     if (buySapling) buySapling.disabled = state.orchard.trees.length + state.orchard.purchasedSaplings >= ORCHARD_CONFIG.maxTrees;
@@ -200,6 +217,6 @@ export class FarmingController {
   }
 
   getDiagnostics() {
-    return { open: this.isOpen(), selectedTab: this.selectedTab, selectedCropId: this.selectedCropId, selectedLawnId: this.selectedLawnId, selectedTreeId: this.selectedTreeId };
+    return { open: this.isOpen(), selectedTab: this.selectedTab, selectedCropId: this.selectedCropId, selectedBedId: this.selectedBedId, selectedLawnId: this.selectedLawnId, selectedTreeId: this.selectedTreeId };
   }
 }

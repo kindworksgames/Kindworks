@@ -176,7 +176,8 @@ test("schema 27 and legacy HTML homes convert through schema 28 to the current s
   delete old.houseRescue.homes["house-20"];
   const upgraded = upgradeGameState(old, { now: 1000 });
   assert.equal(upgraded.schemaVersion, 37);
-  assert.equal(upgraded.customResident.schemaVersion, 2);
+  assert.equal(upgraded.customResident.schemaVersion, 3);
+  assert.equal(upgraded.customResident.autonomy.currentNodeId, "home20");
   assert.equal(upgraded.customResident.home.level, 3);
   assert.equal(upgraded.customResident.home.wallColor, "lavender");
   assert.equal(upgraded.houseRescue.homes["house-19"], undefined);

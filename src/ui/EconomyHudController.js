@@ -1,4 +1,4 @@
-import { INVENTORY_BUCKETS, ITEM_CATALOG, ITEM_IDS } from "../data/items.js";
+import { INVENTORY_BUCKETS, ITEM_CATALOG, ITEM_IDS, itemUseDestinationFor } from "../data/items.js";
 
 const BUCKET_LABELS = Object.freeze({
   equipment: "Tools",
@@ -57,19 +57,23 @@ export class EconomyHudController {
     this.render();
   }
 
-  ownedEntries(inventory, bucket) {
-    return Object.entries(inventory[bucket] || {})
+  ownedEntries(state, bucket) {
+    const quantities = { ...(state.inventory?.[bucket] || {}) };
+    if (bucket === "consumables" && state.farming?.orchard?.purchasedSaplings > 0) {
+      quantities["orchard-apple-sapling"] = state.farming.orchard.purchasedSaplings;
+    }
+    return Object.entries(quantities)
       .filter(([, quantity]) => quantity > 0)
       .map(([id, quantity]) => ({ item: ITEM_CATALOG[id], quantity }))
       .filter(({ item }) => item)
       .sort((a, b) => a.item.name.localeCompare(b.item.name));
   }
 
-  renderInventory(inventory, aquarium = null) {
+  renderInventory(state, aquarium = null) {
     if (!this.inventoryGroups) return;
     this.inventoryGroups.replaceChildren();
     for (const bucket of INVENTORY_BUCKETS) {
-      const entries = this.ownedEntries(inventory, bucket);
+      const entries = this.ownedEntries(state, bucket);
       const section = document.createElement("section");
       section.className = "inventory-group";
       const heading = document.createElement("h3");
@@ -93,7 +97,7 @@ export class EconomyHudController {
           const action = document.createElement("span");
           action.className = "inventory-item-action";
           if (item.category === "equipment") {
-            const equipped = inventory.equipped?.[item.slot] === item.id;
+            const equipped = state.inventory.equipped?.[item.slot] === item.id;
             if (equipped) action.textContent = "Equipped";
             else {
               const button = document.createElement("button");
@@ -106,7 +110,7 @@ export class EconomyHudController {
             const button = document.createElement("button");
             button.type = "button";
             button.dataset.useItem = item.id;
-            button.textContent = item.shopGroup === "Farming" ? "Use at allotments" : "Use with animals";
+            button.textContent = itemUseDestinationFor(item)?.label || "Use item";
             action.append(button);
           } else if (item.category === "placeable") {
             const button = document.createElement("button");
@@ -212,8 +216,10 @@ export class EconomyHudController {
   render() {
     const state = this.runtime.gameState.getSnapshot();
     const aquarium = this.aquarium?.getSnapshot?.() || null;
-    const ownedTypes = INVENTORY_BUCKETS.reduce((total, bucket) => total + Object.keys(state.inventory[bucket]).length, 0);
-    const ownedUnits = INVENTORY_BUCKETS.reduce((total, bucket) => total + Object.values(state.inventory[bucket]).reduce((sum, quantity) => sum + quantity, 0), 0);
+    const saplings = Number(state.farming?.orchard?.purchasedSaplings) || 0;
+    const saplingAlreadyInInventory = Number(state.inventory.consumables?.["orchard-apple-sapling"]) || 0;
+    const ownedTypes = INVENTORY_BUCKETS.reduce((total, bucket) => total + Object.keys(state.inventory[bucket]).length, 0) + (saplings > 0 && saplingAlreadyInInventory < 1 ? 1 : 0);
+    const ownedUnits = INVENTORY_BUCKETS.reduce((total, bucket) => total + Object.values(state.inventory[bucket]).reduce((sum, quantity) => sum + quantity, 0), 0) + saplings;
     if (this.coinButton) {
       this.coinButton.textContent = `🪙 ${formatCoins(state.economy.coins)}`;
       this.coinButton.setAttribute("aria-label", `${formatCoins(state.economy.coins)} KindlyCoins. Open wallet.`);
@@ -226,7 +232,7 @@ export class EconomyHudController {
     if (this.lifetime) this.lifetime.textContent = `${formatCoins(state.economy.lifetimeCoinsEarned)} earned · ${formatCoins(state.economy.lifetimeCoinsSpent)} spent`;
     if (this.catalogueStatus) this.catalogueStatus.textContent = `${ITEM_IDS.length} legacy item definitions ready · ${ownedTypes} types currently owned${aquarium?.owned ? ` · ${aquarium.totalFish} aquarium fish` : ""}`;
     this.renderLedger(state.economy);
-    this.renderInventory(state.inventory, aquarium);
+    this.renderInventory(state, aquarium);
   }
 
   showView(view) {

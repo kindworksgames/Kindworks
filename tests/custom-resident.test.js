@@ -138,3 +138,54 @@ test("projects an original-HTML creator profile and cottage design", () => {
   assert.equal(projected.home.level, 4);
   assert.equal(projected.home.nodeId, "home20");
 });
+
+test("moves the owned resident through the original daily schedule instead of leaving them permanently at home", () => {
+  const { gameState, service } = runtime();
+  service.saveProfile(draft({ hobbies: ["helping"] }));
+  const state = gameState.getSnapshot();
+  state.world.day = 1;
+  state.world.clockMinutes = 10 * 60;
+  const advanced = service.advanceInto(state, gameState.getSnapshot(), { advancedGameMinutes: 1000 });
+  assert.equal(advanced.phase, "working");
+  assert.equal(state.customResident.autonomy.currentNodeId, "square");
+  assert.equal(state.customResident.autonomy.targetNodeId, "square");
+  assert.equal(state.customResident.autonomy.visible, true);
+  assert.match(state.customResident.autonomy.activity, /Helping (around|keep) Willowmere/);
+  assert.notDeepEqual(state.customResident.location, { x: 3875, y: 1620, facing: "down" });
+  assert.deepEqual(validateGameState(state).errors, []);
+});
+
+test("persists custom-resident needs, relationships, conversations, shopping and community-care counters", () => {
+  const { gameState, service } = runtime();
+  service.saveProfile(draft({ hobbies: ["helping", "shopping", "coffee"] }));
+  const state = gameState.getSnapshot();
+  state.world.day = 1;
+  state.world.clockMinutes = 18 * 60;
+  state.npcs.residents[0].visible = true;
+  const relationshipBefore = state.customResident.autonomy.relationships[state.npcs.residents[0].id];
+  service.advanceInto(state, gameState.getSnapshot(), { advancedGameMinutes: 1200 });
+  const autonomy = state.customResident.autonomy;
+  assert.ok(autonomy.completedActivities >= 1);
+  assert.ok(autonomy.conversations >= 1);
+  assert.ok(state.npcs.socialRuntime.conversationEvents >= 1);
+  assert.ok(state.npcs.conversationHistory.some((entry) => entry.a === "npc-kindly-member"));
+  assert.ok(Object.values(autonomy.relationships).some((value) => value > relationshipBefore));
+  assert.equal(Object.keys(autonomy.relationships).length, 35);
+  assert.deepEqual(validateGameState(state).errors, []);
+});
+
+test("direct control pauses autonomy and returns to a valid autonomous graph node", () => {
+  const { gameState, service } = runtime();
+  service.saveProfile(draft());
+  service.beginControl({ x: 100, y: 200, facing: "down" });
+  const duringControl = gameState.getSnapshot();
+  duringControl.world.clockMinutes = 12 * 60;
+  assert.equal(service.advanceInto(duringControl, gameState.getSnapshot(), { advancedGameMinutes: 500 }).controlled, true);
+  assert.equal(duringControl.customResident.autonomy.currentNodeId, "home20");
+  service.setRuntimePosition({ x: 970, y: 1260, facing: "left" });
+  assert.equal(service.endControl().ok, true);
+  const saved = gameState.getSnapshot().customResident;
+  assert.equal(saved.autonomy.phase, "leisure");
+  assert.equal(saved.autonomy.visible, true);
+  assert.equal(validateGameState(gameState.getSnapshot()).ok, true);
+});

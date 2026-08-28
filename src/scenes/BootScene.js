@@ -16,11 +16,11 @@ export class BootScene extends Phaser.Scene {
 
   create() {
     createPlayerAssets(this);
-    const activePowerwash = this.registry.get("playgroundPowerwash")?.getActiveSession();
-    const activeLawnCare = this.registry.get("lawnCare")?.getActiveSession();
-    const activeBeachCleanup = this.registry.get("beachCleanup")?.getActiveSession();
-    const activeCleanup = this.registry.get("cleanupService")?.getActiveSession();
-    const target = activePowerwash ? "PlaygroundPowerwashScene" : activeBeachCleanup ? "BeachCleanupScene" : activeLawnCare ? "LawnCareScene" : activeCleanup ? "WasteCollectionScene" : "TownScene";
+    const recovery = this.registry.get("activityRecovery")?.resolve?.();
+    const target = recovery?.selected?.sceneKey || "TownScene";
+    if (recovery?.status === "conflict-resolved") {
+      console.warn(`Multiple interrupted activities were found. Resuming ${recovery.selected.label}; ${recovery.conflictCount} older checkpoint(s) remain preserved.`);
+    }
     if (target === "TownScene") this.scene.start(target);
     else startLazyScene(this, target).catch((error) => {
       console.error(`Unable to resume ${target}. Returning safely to Willowmere.`, error);

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { FARMING_CROPS, LAWN_CONFIG, ORCHARD_CONFIG } from "../src/data/farming.js";
+import { ALLOTMENT_BED_GEOMETRY, FARMING_CROPS, LAWN_CONFIG, ORCHARD_CONFIG, allotmentBedWorldRect } from "../src/data/farming.js";
 import { getWeatherForDay } from "../src/data/worldSimulation.js";
 import { createFreshGameState, GameStateService, upgradeGameState, validateGameState } from "../src/state/GameState.js";
 import { SaveRepository } from "../src/state/SaveRepository.js";
@@ -87,6 +87,44 @@ test("a ready crop harvest adds the original yield and resets only its own bed",
   assert.equal(gameState.getSnapshot().inventory.consumables["allotment-carrot"], 6);
   assert.equal(gameState.getSnapshot().farming.allotment.beds[0].status, "empty");
   assert.equal(gameState.getSnapshot().farming.allotment.beds[1].status, "empty");
+});
+
+test("a ready crop fills the remaining produce capacity exactly like the protected HTML", () => {
+  const { gameState, farming } = runtime();
+  const state = gameState.getSnapshot();
+  state.inventory.consumables["allotment-carrot"] = 98;
+  state.farming.allotment.beds[0] = { ...state.farming.allotment.beds[0], cropId: "carrot", status: "ready", growthMinutes: FARMING_CROPS.carrot.growMinutes };
+  assert.equal(gameState.replace(state).ok, true);
+  const result = farming.harvest("allotment-bed-1");
+  assert.equal(result.ok, true);
+  assert.equal(result.quantity, 1);
+  assert.equal(gameState.getSnapshot().inventory.consumables["allotment-carrot"], 99);
+  assert.equal(gameState.getSnapshot().farming.allotment.beds[0].status, "empty");
+  assert.equal(gameState.getSnapshot().farming.allotment.beds[0].totalHarvested, 1);
+});
+
+test("a full produce inventory preserves the ready crop for a later harvest", () => {
+  const { gameState, farming } = runtime();
+  const state = gameState.getSnapshot();
+  state.inventory.consumables["allotment-carrot"] = 99;
+  state.farming.allotment.beds[0] = { ...state.farming.allotment.beds[0], cropId: "carrot", status: "ready", growthMinutes: FARMING_CROPS.carrot.growMinutes };
+  assert.equal(gameState.replace(state).ok, true);
+  const result = farming.harvest("allotment-bed-1");
+  assert.equal(result.code, "capacity");
+  assert.equal(gameState.getSnapshot().inventory.consumables["allotment-carrot"], 99);
+  assert.equal(gameState.getSnapshot().farming.allotment.beds[0].status, "ready");
+});
+
+test("all six Phaser allotment rows retain the protected HTML town geometry", () => {
+  assert.deepEqual(ALLOTMENT_BED_GEOMETRY, { x: 1080, y: 2155, width: 510, height: 52, rowGap: 70 });
+  assert.deepEqual(Array.from({ length: 6 }, (_, index) => allotmentBedWorldRect(index)), [
+    { x: 1080, y: 2155, width: 510, height: 52 },
+    { x: 1080, y: 2225, width: 510, height: 52 },
+    { x: 1080, y: 2295, width: 510, height: 52 },
+    { x: 1080, y: 2365, width: 510, height: 52 },
+    { x: 1080, y: 2435, width: 510, height: 52 },
+    { x: 1080, y: 2505, width: 510, height: 52 },
+  ]);
 });
 
 test("orchard harvest collects exactly one apple and cannot duplicate before regrowth", () => {

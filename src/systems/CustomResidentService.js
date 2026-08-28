@@ -1,5 +1,6 @@
 import {
   CUSTOM_RESIDENT_APPEARANCE,
+  CUSTOM_RESIDENT_AUTONOMY,
   CUSTOM_RESIDENT_HOBBIES,
   CUSTOM_RESIDENT_ID,
   PERSONAL_HOME_HOUSE_ID,
@@ -8,10 +9,12 @@ import {
   PERSONAL_HOME_NODE_ID,
   PERSONAL_HOME_OPTIONS,
   customResidentPalette,
+  customResidentPreferredNodes,
   personalHomeCapacity,
   personalHomeLevel,
   personalHomeRedesignQuote,
 } from "../data/customResident.js";
+import { NPC_INDOOR_NODE_KINDS, NPC_NAVIGATION_LINKS, NPC_NAVIGATION_NODES } from "../data/npcTownLife.js";
 import { COIN_LEDGER_LIMIT } from "../state/economyState.js";
 import {
   normalizeCustomResidentProfile,
@@ -20,8 +23,44 @@ import {
   validateResidentName,
 } from "../state/customResidentState.js";
 import { reconcileHomeFurnitureInto } from "./HomeInteriorService.js";
+import { NavigationGraph } from "./NavigationGraph.js";
 
 const DIRECTIONS = new Set(["up", "down", "left", "right"]);
+
+function absoluteMinute(world) {
+  return Math.max(0, (Math.max(1, Math.floor(Number(world?.day) || 1)) - 1) * 1440 + Math.max(0, Math.floor(Number(world?.clockMinutes) || 0)));
+}
+
+function hourInRange(hour, [start, end] = [0, 24]) {
+  return start <= end ? hour >= start && hour < end : hour >= start || hour < end;
+}
+
+function autonomySchedule(profile, world) {
+  const hour = Math.max(0, Math.min(23.999, Number(world?.clockMinutes || 0) / 60));
+  if (hour >= CUSTOM_RESIDENT_AUTONOMY.sleepHour || hour < CUSTOM_RESIDENT_AUTONOMY.wakeHour) {
+    return { phase: "sleeping", targetNodeId: PERSONAL_HOME_NODE_ID, activity: "Sleeping at home", hobby: null };
+  }
+  if (hour < CUSTOM_RESIDENT_AUTONOMY.workStartHour) {
+    return { phase: "home", targetNodeId: PERSONAL_HOME_NODE_ID, activity: `Starting the day at ${PERSONAL_HOME_NAME}`, hobby: null };
+  }
+  if (hour < CUSTOM_RESIDENT_AUTONOMY.workEndHour) {
+    return { phase: "working", targetNodeId: CUSTOM_RESIDENT_AUTONOMY.workNodeId, activity: "Helping around Willowmere", hobby: null };
+  }
+  const eligible = (profile?.hobbies || [])
+    .map((id) => ({ id, ...CUSTOM_RESIDENT_HOBBIES[id] }))
+    .filter((hobby) => hobby.nodes?.length && (!hobby.hours || hourInRange(hour, hobby.hours)));
+  const day = Math.max(1, Math.floor(Number(world?.day) || 1));
+  const slot = Math.floor(hour * 2);
+  const hobby = eligible[(day + slot) % Math.max(1, eligible.length)] || null;
+  const preferred = hobby?.nodes?.length ? hobby.nodes : customResidentPreferredNodes(profile);
+  const targetNodeId = preferred[(day + slot) % preferred.length] || "square";
+  return {
+    phase: "leisure",
+    targetNodeId,
+    activity: hobby ? `Enjoying ${hobby.label.toLowerCase()}` : "Enjoying some free time",
+    hobby,
+  };
+}
 
 function choiceExists(catalogue, value) {
   return Object.prototype.hasOwnProperty.call(catalogue, value);
@@ -50,6 +89,7 @@ export class CustomResidentService {
     this.repository = repository;
     this.now = now;
     this.listeners = new Set();
+    this.graph = new NavigationGraph(NPC_NAVIGATION_NODES, NPC_NAVIGATION_LINKS);
     this.control = { active: false, returnPlayer: null };
     this.runtimeLocation = { ...normalizeCustomResidentState(gameState.getSnapshot().customResident).location };
     this.locationDirty = false;
@@ -88,15 +128,117 @@ export class CustomResidentService {
       y: state.location.y,
       facingX: state.location.facing === "left" ? -1 : state.location.facing === "right" ? 1 : 0,
       facingY: state.location.facing === "up" ? -1 : state.location.facing === "down" ? 1 : 0,
-      phase: this.control.active ? "controlled" : "home",
-      activity: this.control.active ? "Exploring town with you" : `At home in ${PERSONAL_HOME_NAME}`,
-      visible: true,
+      phase: this.control.active ? "controlled" : state.autonomy.phase,
+      activity: this.control.active ? "Exploring town with you" : state.autonomy.activity,
+      visible: this.control.active || state.autonomy.visible,
       palette: customResidentPalette(state.profile),
       hairStyle: state.profile.hair,
       accessoryStyle: state.profile.accessory,
       bodyScale: CUSTOM_RESIDENT_APPEARANCE.bodyBuild[state.profile.bodyBuild],
       hobbies: [...state.profile.hobbies],
+      needs: structuredClone(state.autonomy.needs),
+      relationships: structuredClone(state.autonomy.relationships),
+      conversations: state.autonomy.conversations,
+      shoppingVisits: state.autonomy.shoppingVisits,
+      communityCareEvents: state.autonomy.communityCareEvents,
+      responsibleDisposals: state.autonomy.responsibleDisposals,
     };
+  }
+
+  nearestNode(x, y) {
+    return NPC_NAVIGATION_NODES
+      .map((node) => ({ node, distance: Math.hypot(node.x - x, node.y - y) }))
+      .sort((a, b) => a.distance - b.distance || a.node.id.localeCompare(b.node.id))[0]?.node || null;
+  }
+
+  advanceInto(state, _before, result = {}) {
+    const resident = normalizeCustomResidentState(state.customResident);
+    const minutes = Math.max(0, Math.floor(Number(result.advancedGameMinutes) || 0));
+    if (!resident.profile || !minutes || this.control.active) {
+      state.customResident = resident;
+      return { advanced: 0, controlled: this.control.active };
+    }
+    const autonomy = resident.autonomy;
+    const now = absoluteMinute(state.world);
+    const schedule = autonomySchedule(resident.profile, state.world);
+    if (autonomy.targetNodeId !== schedule.targetNodeId || autonomy.route.at(-1) !== schedule.targetNodeId) {
+      autonomy.targetNodeId = schedule.targetNodeId;
+      autonomy.route = this.graph.findPath(autonomy.currentNodeId, schedule.targetNodeId);
+      if (!autonomy.route.length) autonomy.route = [autonomy.currentNodeId];
+      autonomy.routeIndex = autonomy.route.length > 1 ? 1 : 0;
+      if (schedule.hobby?.kind === "shop") autonomy.shoppingVisits += 1;
+    }
+
+    let remaining = minutes * CUSTOM_RESIDENT_AUTONOMY.speedWorldUnitsPerGameMinute;
+    while (remaining > 0 && autonomy.routeIndex < autonomy.route.length) {
+      const target = this.graph.getNode(autonomy.route[autonomy.routeIndex]);
+      const dx = target.x - resident.location.x;
+      const dy = target.y - resident.location.y;
+      const distance = Math.hypot(dx, dy);
+      if (distance > remaining && distance > 0) {
+        resident.location.x += (dx / distance) * remaining;
+        resident.location.y += (dy / distance) * remaining;
+        resident.location.facing = Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? "left" : "right") : (dy < 0 ? "up" : "down");
+        remaining = 0;
+        break;
+      }
+      resident.location.x = target.x;
+      resident.location.y = target.y;
+      autonomy.currentNodeId = target.id;
+      autonomy.routeIndex += 1;
+      remaining -= distance;
+    }
+
+    const arrived = autonomy.currentNodeId === schedule.targetNodeId && autonomy.routeIndex >= autonomy.route.length;
+    autonomy.phase = arrived ? schedule.phase : "commuting";
+    autonomy.activity = arrived ? schedule.activity : `Walking to ${this.graph.getNode(schedule.targetNodeId)?.label || "another part of Willowmere"}`;
+    autonomy.visible = !arrived || !NPC_INDOOR_NODE_KINDS.has(this.graph.getNode(schedule.targetNodeId)?.kind);
+
+    const needs = autonomy.needs;
+    needs.hunger = Math.min(100, needs.hunger + minutes * 0.035);
+    needs.social = Math.min(100, needs.social + minutes * 0.03);
+    needs.recreation = Math.min(100, needs.recreation + minutes * 0.028);
+    needs.errands = Math.min(100, needs.errands + minutes * 0.018);
+    needs.rest = Math.min(100, needs.rest + minutes * 0.025);
+    if (arrived && schedule.phase === "sleeping") needs.rest = Math.max(0, needs.rest - minutes * 0.2);
+    if (arrived && schedule.hobby?.kind === "eat") needs.hunger = Math.max(0, needs.hunger - minutes * 0.18);
+    if (arrived && schedule.hobby?.kind === "shop") needs.errands = Math.max(0, needs.errands - minutes * 0.16);
+    if (arrived && schedule.phase === "leisure") needs.recreation = Math.max(0, needs.recreation - minutes * 0.12);
+
+    const candidates = (state.npcs?.residents || []).filter((entry) => entry.visible && entry.id && entry.id !== resident.residentId);
+    if (arrived && schedule.phase === "leisure" && candidates.length && now - autonomy.lastConversationAt >= CUSTOM_RESIDENT_AUTONOMY.conversationCooldownGameMinutes) {
+      const partner = candidates[autonomy.eventSerial % candidates.length];
+      autonomy.eventSerial += 1;
+      autonomy.lastConversationAt = now;
+      autonomy.conversations += 1;
+      autonomy.completedActivities += 1;
+      autonomy.needs.social = Math.max(0, autonomy.needs.social - 72);
+      autonomy.relationships[partner.id] = Math.min(100, (autonomy.relationships[partner.id] || 12) + 2.5);
+      partner.relationships = partner.relationships || {};
+      partner.relationships[resident.residentId] = Math.min(100, (partner.relationships[resident.residentId] || 12) + 2.5);
+      partner.conversations = Math.max(0, Number(partner.conversations) || 0) + 1;
+      partner.completedActivities = Math.max(0, Number(partner.completedActivities) || 0) + 1;
+      state.npcs.socialRuntime.conversationEvents += 1;
+      state.npcs.conversationHistory.push({ id: `conversation-custom-${autonomy.eventSerial}`, a: resident.residentId, b: partner.id, startedAt: Math.max(0, now - 12), endedAt: now, topic: "life in Willowmere" });
+      state.npcs.conversationHistory = state.npcs.conversationHistory.slice(-100);
+      autonomy.activity = `Lovely chat with ${partner.id}`;
+    }
+
+    if (arrived && resident.profile.hobbies.includes("helping")
+      && ["square", "cnw", "garden"].includes(autonomy.currentNodeId)
+      && now - autonomy.lastCommunityCareAt >= CUSTOM_RESIDENT_AUTONOMY.communityCareCooldownGameMinutes) {
+      autonomy.lastCommunityCareAt = now;
+      autonomy.communityCareEvents += 1;
+      autonomy.completedActivities += 1;
+      autonomy.responsibleDisposals += 1;
+      autonomy.activity = "Helping keep Willowmere tidy";
+    }
+
+    autonomy.lastResolvedAbsoluteMinute = now;
+    resident.autonomy = autonomy;
+    state.customResident = resident;
+    this.runtimeLocation = { ...resident.location };
+    return { advanced: minutes, phase: autonomy.phase, activity: autonomy.activity };
   }
 
   validateDraft(raw = {}) {
@@ -304,6 +446,16 @@ export class CustomResidentService {
     const result = this.commit((state) => {
       const customResident = normalizeCustomResidentState(state.customResident);
       customResident.location = { ...this.runtimeLocation };
+      const nearest = this.nearestNode(this.runtimeLocation.x, this.runtimeLocation.y);
+      if (nearest) {
+        customResident.autonomy.currentNodeId = nearest.id;
+        customResident.autonomy.targetNodeId = nearest.id;
+        customResident.autonomy.route = [nearest.id];
+        customResident.autonomy.routeIndex = 0;
+        customResident.autonomy.phase = "leisure";
+        customResident.autonomy.activity = "Choosing what to do next";
+        customResident.autonomy.visible = true;
+      }
       state.customResident = customResident;
       return { ok: true, code: "location-saved" };
     });
@@ -338,6 +490,16 @@ export class CustomResidentService {
       controlling: state.controlling,
       location: { ...state.location },
       locationDirty: this.locationDirty,
+      autonomy: {
+        phase: state.autonomy.phase,
+        activity: state.autonomy.activity,
+        currentNodeId: state.autonomy.currentNodeId,
+        targetNodeId: state.autonomy.targetNodeId,
+        conversations: state.autonomy.conversations,
+        shoppingVisits: state.autonomy.shoppingVisits,
+        communityCareEvents: state.autonomy.communityCareEvents,
+        responsibleDisposals: state.autonomy.responsibleDisposals,
+      },
       lastResult: { ...this.lastResult },
     };
   }

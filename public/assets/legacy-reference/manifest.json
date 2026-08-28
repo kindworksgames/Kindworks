@@ -1,0 +1,20 @@
+{
+  "source": "kindworks_little_bakery_v65_house_rescue_reintegrated_fixed.html",
+  "assets": {
+    "harbourGeneral": {
+      "filename": "harbour-general.webp",
+      "sha256": "34caade00f417c2495589d4e370b8fbeffa60797fef44e5535c4760bb51c48ed",
+      "bytes": 1859834
+    },
+    "fishing": {
+      "filename": "fishing.webp",
+      "sha256": "ade1c03c8ae32dad0b98ded9c1d6e485cf9422560777f5d8f3a41c6189b8c5bb",
+      "bytes": 320228
+    },
+    "magnetFishing": {
+      "filename": "magnet-fishing.webp",
+      "sha256": "43a7a50e5f32b6c4946283f9225ffc6581c308299ad37223fb556034afb2cce9",
+      "bytes": 20510
+    }
+  }
+}

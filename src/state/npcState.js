@@ -6,6 +6,7 @@ import {
   NPC_RESIDENTS,
   NPC_TOWN_LIFE_CONFIG,
 } from "../data/npcTownLife.js";
+import { CUSTOM_RESIDENT_ID } from "../data/customResident.js";
 import { NavigationGraph } from "../systems/NavigationGraph.js";
 import { createInitialHarbourWardrobe, HARBOUR_GENERAL_CATALOG, HARBOUR_GENERAL_WARDROBE_KEYS } from "../data/harbourGeneral.js";
 import { createFreshNpcNarrativeState, normalizeNpcNarrativeState, validateNpcNarrativeState } from "./npcNarrativeState.js";
@@ -31,8 +32,11 @@ function absoluteMinute(world) {
 }
 
 function initialRelationships(definition) {
-  return Object.fromEntries(NPC_RESIDENTS.filter((other) => other.id !== definition.id)
-    .map((other) => [other.id, definition.friendNames.includes(other.name) ? 35 : 8]));
+  return Object.fromEntries([
+    ...NPC_RESIDENTS.filter((other) => other.id !== definition.id)
+      .map((other) => [other.id, definition.friendNames.includes(other.name) ? 35 : 8]),
+    [CUSTOM_RESIDENT_ID, 12],
+  ]);
 }
 
 function freshResident(definition, index) {
@@ -257,7 +261,7 @@ export function validateNpcState(value, world = { day: 1, clockMinutes: 0 }) {
     if (!PHASES.has(resident.phase) || !ACTIONS.has(resident.actionState)) errors.push(`${resident.id} activity phase is invalid.`);
     if (typeof resident.visible !== "boolean" || typeof resident.activity !== "string") errors.push(`${resident.id} presentation state is invalid.`);
     if (!resident.needs || Object.values(resident.needs).some((need) => !Number.isFinite(need) || need < 0 || need > 100)) errors.push(`${resident.id} needs are invalid.`);
-    if (!resident.relationships || Object.keys(resident.relationships).length !== NPC_RESIDENTS.length - 1 || Object.values(resident.relationships).some((score) => !Number.isFinite(score) || score < 0 || score > 100)) errors.push(`${resident.id} relationships are invalid.`);
+    if (!resident.relationships || Object.keys(resident.relationships).length !== NPC_RESIDENTS.length || Object.values(resident.relationships).some((score) => !Number.isFinite(score) || score < 0 || score > 100)) errors.push(`${resident.id} relationships are invalid.`);
     if (!CARRY_STAGES.has(resident.carryStage) || (resident.carryStage === "none" && resident.carryItem !== null)) errors.push(`${resident.id} carried item is invalid.`);
     if (!resident.weatherWardrobe || HARBOUR_GENERAL_WARDROBE_KEYS.some((key) => typeof resident.weatherWardrobe[key] !== "boolean")) errors.push(`${resident.id} weather wardrobe is invalid.`);
     if (resident.lastHarbourPurchaseId !== null && !HARBOUR_GENERAL_CATALOG[resident.lastHarbourPurchaseId]) errors.push(`${resident.id} Harbour General purchase is invalid.`);

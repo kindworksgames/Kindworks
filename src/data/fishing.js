@@ -23,6 +23,13 @@ export const TARGETING_CONFIG = Object.freeze({
   waterArea: Object.freeze({ x: 120, y: 135, width: 1040, height: 405 }),
 });
 
+export const MAGNET_TARGETING_CONFIG = Object.freeze({
+  zonesPerSession: 3,
+  zoneRadiusMin: 103,
+  zoneRadiusMax: 139,
+  waterArea: Object.freeze({ x: 32, y: 139, width: 1216, height: 338 }),
+});
+
 export const FISHING_SPOTS = Object.freeze([
   Object.freeze({
     id: "fishing-commons", pondId: "commons-pond", type: "fishing", title: "Commons Pond Fishing", shortTitle: "Commons Pond", icon: "🎣",
@@ -104,13 +111,18 @@ export function pointInWater(point) {
   return Number.isFinite(point?.x) && Number.isFinite(point?.y) && point.x >= x && point.x <= x + width && point.y >= y && point.y <= y + height;
 }
 
-export function generateHiddenZones(random = Math.random) {
-  const { waterArea: area } = TARGETING_CONFIG;
+export function pointInMagnetWater(point) {
+  const { x, y, width, height } = MAGNET_TARGETING_CONFIG.waterArea;
+  return Number.isFinite(point?.x) && Number.isFinite(point?.y) && point.x >= x && point.x <= x + width && point.y >= y && point.y <= y + height;
+}
+
+export function generateHiddenZones(random = Math.random, targeting = TARGETING_CONFIG) {
+  const { waterArea: area } = targeting;
   const zones = [];
-  for (let index = 0; index < TARGETING_CONFIG.zonesPerSession; index += 1) {
+  for (let index = 0; index < targeting.zonesPerSession; index += 1) {
     let candidate;
     for (let attempt = 0; attempt < 40; attempt += 1) {
-      const radius = TARGETING_CONFIG.zoneRadiusMin + random() * (TARGETING_CONFIG.zoneRadiusMax - TARGETING_CONFIG.zoneRadiusMin);
+      const radius = targeting.zoneRadiusMin + random() * (targeting.zoneRadiusMax - targeting.zoneRadiusMin);
       const margin = radius + 8;
       const x = area.x + margin + random() * Math.max(1, area.width - margin * 2);
       const y = area.y + margin + random() * Math.max(1, area.height - margin * 2);

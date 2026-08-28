@@ -15,6 +15,7 @@ import { createBinSpillInto, placeNpcLandLitterInto, removeLandItemsInto, update
 import { NavigationGraph } from "./NavigationGraph.js";
 import { HARBOUR_GENERAL_CONFIG } from "../data/harbourGeneral.js";
 import { restorationFestivalActive } from "../state/restorationMilestoneState.js";
+import { CUSTOM_RESIDENT_ID } from "../data/customResident.js";
 
 const PHASES = new Set(["sleeping", "home", "commuting", "working", "leisure"]);
 const RIVER_RESTORATION_NODES = new Set(["dock", "mill", "rpar1", "rpar2", "rpar3"]);
@@ -452,6 +453,9 @@ export class NpcTownLifeService {
     this.npcState.residents = NPC_RESIDENTS.map((definition) => {
       const resident = savedResident(this.residents.get(definition.id));
       resident.residentLawnCareEvents = Math.max(resident.residentLawnCareEvents || 0, externalResidents.get(definition.id)?.residentLawnCareEvents || 0);
+      resident.relationships[CUSTOM_RESIDENT_ID] = Math.max(resident.relationships[CUSTOM_RESIDENT_ID] || 0, externalResidents.get(definition.id)?.relationships?.[CUSTOM_RESIDENT_ID] || 0);
+      resident.conversations = Math.max(resident.conversations || 0, externalResidents.get(definition.id)?.conversations || 0);
+      resident.completedActivities = Math.max(resident.completedActivities || 0, externalResidents.get(definition.id)?.completedActivities || 0);
       return resident;
     });
     this.npcState.publicBins = structuredClone(next.npcs.publicBins);
@@ -555,6 +559,7 @@ export class NpcTownLifeService {
 
   getDiagnostics() {
     const residents = this.getResidents();
+    const state = this.gameState.getSnapshot();
     const counts = residents.reduce((out, resident) => {
       out[resident.phase] = (out[resident.phase] || 0) + 1;
       return out;
@@ -570,23 +575,23 @@ export class NpcTownLifeService {
       phaseCounts: counts,
       graph: this.graph.validate(),
       allHomesReachWork: NPC_RESIDENTS.every((resident) => this.graph.findPath(resident.homeNodeId, resident.workNodeId).length > 0),
-      needsAndRelationships: residents.every((resident) => resident.needs && Object.keys(resident.relationships || {}).length === 34),
+      needsAndRelationships: residents.every((resident) => resident.needs && Object.keys(resident.relationships || {}).length === 35),
       conversations: this.npcState.socialRuntime.conversationEvents,
       greetings: this.npcState.socialRuntime.greetingEvents,
       carryingCount: residents.filter((resident) => resident.carryItem).length,
       publicBins: this.getPublicBins().map((bin) => ({ id: bin.id, fill: bin.fill, capacity: bin.capacity, tipped: bin.tipped })),
-      playerPlacedBins: (this.gameState.getSnapshot().townPlacement?.objects || []).filter((object) => object.hooks?.npcBin).length,
+      playerPlacedBins: (state.townPlacement?.objects || []).filter((object) => object.hooks?.npcBin).length,
       deliberateLitterEvents: this.npcState.socialRuntime.deliberateLitterEvents,
       communityCareEvents: this.npcState.socialRuntime.communityCareEvents,
       residentLawnCareEvents: residents.reduce((sum, resident) => sum + resident.residentLawnCareEvents, 0),
       restorationResponses: {
-        commons: Boolean(this.gameState.getSnapshot().restorationMilestones?.unlocked?.commons),
-        highstreet: Boolean(this.gameState.getSnapshot().restorationMilestones?.unlocked?.highstreet),
-        river: Boolean(this.gameState.getSnapshot().restorationMilestones?.unlocked?.river),
-        station: Boolean(this.gameState.getSnapshot().restorationMilestones?.unlocked?.station),
-        shore: Boolean(this.gameState.getSnapshot().restorationMilestones?.unlocked?.shore),
-        green: Boolean(this.gameState.getSnapshot().restorationMilestones?.unlocked?.green),
-        festival: restorationFestivalActive(this.gameState.getSnapshot()),
+        commons: Boolean(state.restorationMilestones?.unlocked?.commons),
+        highstreet: Boolean(state.restorationMilestones?.unlocked?.highstreet),
+        river: Boolean(state.restorationMilestones?.unlocked?.river),
+        station: Boolean(state.restorationMilestones?.unlocked?.station),
+        shore: Boolean(state.restorationMilestones?.unlocked?.shore),
+        green: Boolean(state.restorationMilestones?.unlocked?.green),
+        festival: restorationFestivalActive(state),
         litterMultipliers: {
           river: NPC_SOCIAL_CONFIG.riverRestoredMultiplier,
           green: NPC_SOCIAL_CONFIG.greenTownMultiplier,
@@ -595,7 +600,7 @@ export class NpcTownLifeService {
       },
       harbourGeneral: {
         enabled: Boolean(this.harbourGeneral),
-        customersToday: residents.filter((resident) => resident.lastHarbourPurchaseDay === this.gameState.getSnapshot().world.day).length,
+        customersToday: residents.filter((resident) => resident.lastHarbourPurchaseDay === state.world.day).length,
         wardrobeOwners: residents.filter((resident) => Object.values(resident.weatherWardrobe || {}).some(Boolean)).length,
       },
       lastResult: { ...this.lastResult },

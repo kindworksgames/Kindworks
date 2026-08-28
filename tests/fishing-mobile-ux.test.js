@@ -52,6 +52,9 @@ test("does not change protected fishing data or reward formulas", async () => {
 
 test("restores the protected rod, curved line, bobber ripples and magnet descent phases", async () => {
   const scene = await readText("src/scenes/FishingScene.js");
-  for (const contract of ["floatMarker", "drawCurvedLine", "quadraticBezierTo", "spawnRipple", 'this.phase = "sinking"', 'this.phase = "settling"', "Magnet sinking…", "Magnet settling on the riverbed…"]) assert.ok(scene.includes(contract), contract);
-  assert.match(scene, /duration: this\.duration\(MAGNET_FISHING_CONFIG\.sinkAnimationMs\)/);
+  for (const contract of ["FISH_RIG", "MAGNET_RIG", "floatMarker", "drawRod", "drawCurvedLine", "controlX", "lineTo", "drawActiveRig", "spawnRipple", 'this.phase = "sinking"', 'this.phase = "settling"', "Magnet sinking…", "Magnet settling on the riverbed…"]) assert.ok(scene.includes(contract), contract);
+  assert.match(scene, /Math\.sin\(Math\.PI \* progress\) \* 146/);
+  assert.match(scene, /Math\.sin\(Math\.PI \* progress\) \* 190/);
+  assert.match(scene, /this\.drawActiveRig\(performance\.now\(\)\)/);
+  assert.doesNotMatch(scene, /legacy-magnet-fishing/);
 });
