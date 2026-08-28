@@ -64,7 +64,7 @@ test("pins all ten authored furniture products and the 60-placement boundary", (
   assert.equal(HOME_FURNITURE_LIMIT, 60);
 });
 
-test("builds all 19 bird's-eye interiors with walls, floors, doors, beds and household furniture", () => {
+test("builds every neighbour home with household furniture and keeps the fresh personal home bed-only", () => {
   const state = createFreshGameState({ now: 0 });
   assert.equal(HOUSES.length, 19);
   assert.equal(HOUSE_INTERIOR_THEMES.length, 6);
@@ -73,8 +73,12 @@ test("builds all 19 bird's-eye interiors with walls, floors, doors, beds and hou
     assert.ok(layout.w >= 620 && layout.h >= 390);
     assert.ok(layout.door.w > 0 && layout.door.h > 0);
     assert.ok(layout.furniture.some((item) => item.kind === "bed"));
-    assert.ok(layout.furniture.some((item) => item.kind === "table"));
-    assert.ok(layout.furniture.some((item) => item.kind === "kitchen"));
+    if (house.id === "house-20") {
+      assert.deepEqual(layout.furniture.map((item) => item.kind), ["bed"]);
+    } else {
+      assert.ok(layout.furniture.some((item) => item.kind === "table"));
+      assert.ok(layout.furniture.some((item) => item.kind === "kitchen"));
+    }
     assert.equal(houseHomeNodeId(house.id), house.id === "house-20" ? "home20" : `home${house.id.split("-")[1].padStart(2, "0")}`);
   }
 });

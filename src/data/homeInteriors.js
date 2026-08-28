@@ -91,11 +91,6 @@ function personalTheme(state, base) {
   };
 }
 
-function personalDecorKinds(state) {
-  const map = { fishing: "fishing", gardening: "plant", reading: "bookshelf", music: "radio", coffee: "coffee", helping: "broom", bakery: "coffee", nature: "plant" };
-  return [...new Set((state.customResident?.profile?.hobbies || []).map((hobby) => map[hobby]).filter(Boolean))].slice(0, 3);
-}
-
 export function furnitureLayoutItem(saved, shell) {
   const item = ITEM_CATALOG[saved.itemId];
   if (!item?.indoorSize) return null;
@@ -145,14 +140,16 @@ export function buildHouseInteriorLayout(state, houseId) {
     x: x + rx * width, y: y + ry * height, w: rw * width, h: rh * height, ...extra,
   });
   for (let index = 0; index < bedCount; index += 1) add(`bed-${index + 1}`, "bed", bedCount > 1 ? `Bed ${index + 1}` : "Bed", 0.055 + index * 0.19, 0.07, 0.16, 0.27, { residentId: residentDefinitions[index]?.id || null });
-  add("dining-table", "table", "Dining table", 0.42, 0.44, 0.20, 0.22, { chairs: Math.max(2, Math.min(4, residentDefinitions.length || 2)) });
-  add("kitchen-counter", "kitchen", "Kitchen counter", 0.69, 0.07, 0.245, 0.14);
-  add("wardrobe", "wardrobe", "Wardrobe", 0.055, 0.69, 0.13, 0.19);
-  add("front-rug", "rug", "Front-door rug", 0.43, 0.84, 0.14, 0.09, { floorLayer: true });
-  if (level >= 2) add("sofa", "sofa", "Cosy sofa", 0.68, 0.61, 0.22, 0.13);
-  if (level >= 3) add("bookshelf", "bookshelf", "Bookshelf", 0.48, 0.68, 0.10, 0.15);
-  if (level >= 4) add("hearth", "hearth", "Warm fireplace", 0.83, 0.34, 0.10, 0.18);
-  const decor = personal ? personalDecorKinds(state) : [number % 2 ? "plant" : "picture", number % 3 === 0 ? "radio" : "plant"];
+  if (!personal) {
+    add("dining-table", "table", "Dining table", 0.42, 0.44, 0.20, 0.22, { chairs: Math.max(2, Math.min(4, residentDefinitions.length || 2)) });
+    add("kitchen-counter", "kitchen", "Kitchen counter", 0.69, 0.07, 0.245, 0.14);
+    add("wardrobe", "wardrobe", "Wardrobe", 0.055, 0.69, 0.13, 0.19);
+    add("front-rug", "rug", "Front-door rug", 0.43, 0.84, 0.14, 0.09, { floorLayer: true });
+    if (level >= 2) add("sofa", "sofa", "Cosy sofa", 0.68, 0.61, 0.22, 0.13);
+    if (level >= 3) add("bookshelf", "bookshelf", "Bookshelf", 0.48, 0.68, 0.10, 0.15);
+    if (level >= 4) add("hearth", "hearth", "Warm fireplace", 0.83, 0.34, 0.10, 0.18);
+  }
+  const decor = personal ? [] : [number % 2 ? "plant" : "picture", number % 3 === 0 ? "radio" : "plant"];
   const decorLabels = { plant: "House plant", bookshelf: "Hobby bookshelf", radio: "Record player", fishing: "Fishing gear", coffee: "Coffee corner", broom: "Community helper's cleaning kit", picture: "Family photograph" };
   decor.forEach((kind, index) => add(`decor-${index + 1}`, kind, decorLabels[kind] || "Decoration", 0.21 + index * 0.08, 0.76, 0.06, 0.10));
   const adopted = personal ? Object.values(state.animals?.residents || {}).filter((animal) => animal.adopted).slice(0, personalHomeCapacity(level)) : [];

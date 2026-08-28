@@ -14,6 +14,265 @@
   --kw-control-shift: 2px;
 }
 
+/* Phase 3 — House Rescue full-room fidelity recovery.
+   The reference rooms are rebuilt from live DOM layers; no reference bitmap is used. */
+@media (orientation: landscape) {
+  body[data-game-scene="HouseRescueScene"] .house-rescue-hud {
+    position: fixed !important;
+    inset: max(3px, env(safe-area-inset-top)) max(3px, env(safe-area-inset-right)) max(3px, env(safe-area-inset-bottom)) max(3px, env(safe-area-inset-left)) !important;
+    display: block !important;
+    width: auto !important;
+    max-height: none !important;
+    overflow: hidden !important;
+    color: #fff7df;
+    pointer-events: none;
+    border: 0 !important;
+    border-radius: 8px !important;
+    background: #17151a !important;
+    box-shadow: 0 0 0 3px #30252a, inset 0 0 32px rgb(0 0 0 / 48%) !important;
+    transform: none !important;
+  }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-hud.hidden { display: none !important; }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-hud-header { display: contents !important; }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-hud-header > div { display: none !important; }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-hud-header > span,
+  body[data-game-scene="HouseRescueScene"] .house-rescue-hud-header > button {
+    position: absolute;
+    z-index: 20;
+    top: 7px;
+    min-height: 44px !important;
+    pointer-events: auto;
+    border: 2px solid #3c2d2a !important;
+    border-radius: 9px !important;
+    background: rgb(255 246 218 / 94%) !important;
+    box-shadow: 2px 3px 0 rgb(31 24 24 / 42%) !important;
+  }
+  body[data-game-scene="HouseRescueScene"] #house-rescue-balance {
+    right: 7px;
+    display: grid;
+    min-width: 84px;
+    padding: 0 10px !important;
+    place-items: center;
+    color: #4b3624 !important;
+  }
+  body[data-game-scene="HouseRescueScene"] #house-rescue-exit {
+    left: 7px;
+    width: 44px;
+    padding: 0 !important;
+    overflow: hidden;
+    color: transparent !important;
+    font-size: 0 !important;
+  }
+  body[data-game-scene="HouseRescueScene"] #house-rescue-exit::after {
+    content: "☰";
+    color: #3b3028;
+    font-size: 18px;
+  }
+  body[data-game-scene="HouseRescueScene"] #house-rescue-qa-complete { left: 57px; padding: 0 8px; color: #fff !important; background: rgb(105 72 127 / 94%) !important; }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-gameplay { display: contents !important; }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-gameplay.hidden,
+  body[data-game-scene="HouseRescueScene"] .house-rescue-sort-panel.hidden,
+  body[data-game-scene="HouseRescueScene"] .house-rescue-vacuum-panel.hidden { display: none !important; }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-sort-panel:not(.hidden),
+  body[data-game-scene="HouseRescueScene"] .house-rescue-vacuum-panel:not(.hidden),
+  body[data-game-scene="HouseRescueScene"] .house-rescue-sort-layout { display: contents !important; }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-stages { display: none !important; }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-game-heading { display: contents !important; }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-game-heading > div { display: none !important; }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-game-heading > span {
+    position: absolute;
+    z-index: 20;
+    top: 7px;
+    left: 50%;
+    display: none;
+    min-width: 82px;
+    min-height: 40px;
+    padding: 3px 10px !important;
+    place-items: center;
+    color: #f8f0d4;
+    pointer-events: none;
+    border: 2px solid #d5ba77;
+    border-radius: 999px;
+    background: rgb(48 39 36 / 88%);
+    box-shadow: 2px 3px 0 rgb(0 0 0 / 30%);
+    transform: translateX(-50%);
+  }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-hud[data-house-rescue-phase="vacuum"] .house-rescue-game-heading > span { display: grid; }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-game-heading > span strong { color: #ffe276; font-size: 15px; }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-stage-meta {
+    position: absolute;
+    z-index: 19;
+    top: 57px;
+    left: 7px;
+    display: flex;
+    width: fit-content;
+    min-height: 28px !important;
+    max-width: min(300px, 52vw);
+    gap: 6px;
+    padding: 4px 8px;
+    color: #fff8e4;
+    pointer-events: none;
+    border: 1px solid rgb(255 226 150 / 60%);
+    border-radius: 999px;
+    background: rgb(52 41 36 / 82%);
+    box-shadow: none;
+  }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-stage-meta strong { color: #ffe276; }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-stage-meta small { display: none; }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-sort-floor,
+  body[data-game-scene="HouseRescueScene"] .house-rescue-vacuum-floor {
+    position: absolute !important;
+    z-index: 1;
+    inset: 0 !important;
+    width: auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: hidden;
+    pointer-events: auto;
+    border: 0 !important;
+    border-radius: 8px !important;
+    background:
+      linear-gradient(90deg, transparent 49.5%, rgb(93 60 37 / 10%) 50%, transparent 50.5%) 0 0 / 78px 100%,
+      repeating-linear-gradient(0deg, #c98f58 0 3px, #bb7948 4px 5px, #d19a60 6px 32px) !important;
+    box-shadow: inset 0 0 0 12px #3d2c2a, inset 0 0 0 16px #1f191d, inset 0 0 48px rgb(39 24 18 / 32%) !important;
+    touch-action: none;
+  }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-sort-floor::before,
+  body[data-game-scene="HouseRescueScene"] .house-rescue-vacuum-floor::before { display: none !important; }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-room-geometry { position: absolute; z-index: 1; inset: 14px; overflow: hidden; pointer-events: none; border-radius: 2px; }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-room-zone { position: absolute; z-index: 0; display: block; opacity: .9; }
+  body[data-game-scene="HouseRescueScene"] .room-level-1 .zone-sleeping { top: 2%; left: 2%; width: 29%; height: 42%; background: rgb(241 214 163 / 22%); }
+  body[data-game-scene="HouseRescueScene"] .room-level-1 .zone-living { top: 34%; left: 27%; width: 42%; height: 57%; border-radius: 38% 32% 12% 18%; background: rgb(105 128 119 / 13%); }
+  body[data-game-scene="HouseRescueScene"] .room-level-1 .zone-dining { top: 42%; left: 63%; width: 17%; height: 30%; background: rgb(241 214 163 / 12%); }
+  body[data-game-scene="HouseRescueScene"] .room-level-1 .zone-kitchen { right: 1%; bottom: 1%; width: 26%; height: 37%; border: 5px solid #533d34; background: repeating-linear-gradient(90deg, #e7d8ad 0 24px, #d7c38f 25px 26px); }
+  body[data-game-scene="HouseRescueScene"] .room-level-1 .zone-bathroom { top: 1%; right: 1%; width: 26%; height: 36%; border: 5px solid #533d34; background: linear-gradient(90deg, rgb(83 115 113 / 22%) 1px, transparent 1px), linear-gradient(rgb(83 115 113 / 22%) 1px, transparent 1px), #a9c9c5; background-size: 16px 16px; }
+  body[data-game-scene="HouseRescueScene"] .room-level-1 .zone-hall { display: none; }
+  body[data-game-scene="HouseRescueScene"] .room-level-2 .zone-kitchen-dining,
+  body[data-game-scene="HouseRescueScene"] .room-level-3 .zone-kitchen-dining,
+  body[data-game-scene="HouseRescueScene"] .room-level-4 .zone-kitchen-dining { top: 1%; left: 1%; width: 47%; height: 45%; background: rgb(236 201 135 / 20%); }
+  body[data-game-scene="HouseRescueScene"] :is(.room-level-2,.room-level-3,.room-level-4) .zone-bedroom { top: 1%; right: 1%; width: 44%; height: 45%; background: rgb(221 195 150 / 20%); }
+  body[data-game-scene="HouseRescueScene"] :is(.room-level-2,.room-level-3,.room-level-4) .zone-living { bottom: 1%; left: 1%; width: 47%; height: 43%; background: rgb(126 139 119 / 16%); }
+  body[data-game-scene="HouseRescueScene"] :is(.room-level-2,.room-level-3,.room-level-4) .zone-bathroom { right: 1%; bottom: 1%; width: 44%; height: 43%; background: linear-gradient(90deg, rgb(83 115 113 / 22%) 1px, transparent 1px), linear-gradient(rgb(83 115 113 / 22%) 1px, transparent 1px), #a9c9c5; background-size: 18px 18px; }
+  body[data-game-scene="HouseRescueScene"] :is(.room-level-2,.room-level-3,.room-level-4) .zone-hall { top: 43%; left: 43%; width: 17%; height: 54%; border-left: 5px solid #533d34; border-right: 5px solid #533d34; background: rgb(213 169 109 / 44%); }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-fixture { position: absolute; z-index: 1; display: block; border: 2px solid #4f3b34; box-shadow: 2px 3px 0 rgb(36 26 23 / 25%); }
+  body[data-game-scene="HouseRescueScene"] .fixture-front-door { right: 45%; bottom: -3px; width: 10%; height: 12%; border-bottom: 0; border-radius: 3px 3px 0 0; background: #85572f; }
+  body[data-game-scene="HouseRescueScene"] .fixture-window-left { top: 2%; left: 34%; width: 12%; height: 7%; border-color: #5d412a; background: linear-gradient(90deg, transparent 47%, #f1ead4 48% 52%, transparent 53%), #8dc9d7; }
+  body[data-game-scene="HouseRescueScene"] .fixture-window-right { top: 2%; right: 32%; width: 12%; height: 7%; border-color: #5d412a; background: linear-gradient(90deg, transparent 47%, #f1ead4 48% 52%, transparent 53%), #8dc9d7; }
+  body[data-game-scene="HouseRescueScene"] .fixture-bath-tub { top: 6%; right: 3%; width: 18%; height: 12%; border: 4px solid #e8eee8; border-radius: 45% 12% 12% 45%; background: #bfe1e2; }
+  body[data-game-scene="HouseRescueScene"] .fixture-kitchen-sink { right: 4%; bottom: 6%; width: 17%; height: 9%; border: 4px solid #8a7358; background: radial-gradient(ellipse at center, #86a5a3 0 38%, #d9d1bd 40% 100%); }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-furniture { z-index: 3; border-width: 2px; border-color: #523a2b; border-radius: 4px; background: #7c5738; box-shadow: 2px 3px 0 rgb(53 34 25 / 31%), inset 0 0 0 2px rgb(255 226 169 / 15%); }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-furniture.kind-bed { border-radius: 5px 5px 12px 12px; background: linear-gradient(90deg, #ece0c7 0 24%, #6285a2 25% 100%); }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-furniture.kind-bed::before { content: ""; position: absolute; top: 6%; left: 4%; width: 19%; height: 40%; border-radius: 30%; background: #fff7e8; }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-furniture.kind-table { background: radial-gradient(circle at 14% 14%, #52331e 0 3px, transparent 4px), radial-gradient(circle at 86% 86%, #52331e 0 3px, transparent 4px), #9b6637; }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-furniture.kind-kitchen { background: repeating-linear-gradient(90deg, #86603e 0 30%, #4b3529 31% 33%), linear-gradient(#c4baa2 0 24%, #7d5638 25%); }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-furniture.kind-wardrobe { background: linear-gradient(90deg, #745034 0 48%, #4f3526 49% 52%, #745034 53%); }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-furniture.kind-sofa { border-radius: 7px 7px 12px 12px; background: linear-gradient(#657b59 0 36%, #81956c 37% 70%, #536649 71%); }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-furniture.kind-bookshelf { background: repeating-linear-gradient(0deg, #593b29 0 8%, #af8545 9% 13%, #70413c 14% 24%); }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-furniture.kind-rug { border: 3px solid rgb(77 55 38 / 48%); background: repeating-linear-gradient(90deg, #56788e 0 9px, #d0aa72 10px 12px); }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-furniture:is(.kind-bed,.kind-table,.kind-kitchen,.kind-wardrobe,.kind-sofa,.kind-bookshelf,.kind-rug) > span { display: none; }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-partition { z-index: 4; height: 9px; border: 2px solid #312421; background: #5b4034; box-shadow: 0 3px 0 rgb(28 20 19 / 34%); }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-item {
+    z-index: 9;
+    width: 50px !important;
+    min-height: 50px !important;
+    padding: 0 !important;
+    overflow: visible;
+    cursor: grab;
+    border: 0 !important;
+    border-radius: 50% !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    filter: drop-shadow(2px 3px 1px rgb(47 30 20 / 38%));
+  }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-item span { font-size: clamp(23px, 4.7vw, 38px); }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-item small { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-item.selected { outline: 4px solid #ffe16b !important; background: rgb(255 247 201 / 30%) !important; filter: drop-shadow(0 0 5px #fff1a2); transform: translate(-50%, -50%) scale(1.08); }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-bins {
+    position: absolute;
+    z-index: 22;
+    right: 8px;
+    bottom: 8px;
+    display: flex !important;
+    gap: 5px;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity .14s ease, transform .14s ease;
+  }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-bins.is-open { pointer-events: auto; opacity: 1; transform: none; }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-bins button {
+    --bin-colour: #4d934f;
+    --bin-dark: #27572e;
+    display: grid;
+    width: 44px;
+    min-height: 44px !important;
+    padding: 3px !important;
+    place-items: center;
+    overflow: visible;
+    border: 0 !important;
+    border-radius: 8px !important;
+    background: rgb(255 247 218 / 14%) !important;
+    box-shadow: none !important;
+  }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-bins button span {
+    position: relative;
+    display: grid;
+    width: 25px;
+    height: 30px;
+    place-items: center;
+    color: transparent;
+    border: 2px solid #253027;
+    border-radius: 3px 3px 6px 6px;
+    background: linear-gradient(90deg, var(--bin-dark) 0 18%, var(--bin-colour) 19% 81%, var(--bin-dark) 82%);
+    box-shadow: 1px 2px 0 rgb(25 24 22 / 40%);
+    font-size: 0;
+  }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-bins button span::before { content: ""; position: absolute; top: -5px; left: -4px; width: 29px; height: 5px; border: 2px solid #253027; border-radius: 4px 4px 2px 2px; background: var(--bin-colour); }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-bins button span::after { position: absolute; top: 8px; left: 50%; color: #fff9dd; font: 900 11px/1 system-ui, sans-serif; text-shadow: 1px 1px 0 var(--bin-dark); transform: translateX(-50%); }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-bins button strong { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-bins button small { display: none; }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-bins [data-house-rescue-bin="organic"] { --bin-colour: #579b55; --bin-dark: #2c5f33; }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-bins [data-house-rescue-bin="organic"] span::after { content: "❧"; }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-bins [data-house-rescue-bin="recycle"] { --bin-colour: #438dcc; --bin-dark: #24557d; }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-bins [data-house-rescue-bin="recycle"] span::after { content: "↻"; }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-bins [data-house-rescue-bin="garbage"] { --bin-colour: #555d5f; --bin-dark: #2e3436; }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-bins [data-house-rescue-bin="garbage"] span::after { content: "▤"; }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-vacuum { z-index: 10; }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-stain { z-index: 8; }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-status {
+    position: absolute;
+    z-index: 21;
+    bottom: 8px;
+    left: 8px;
+    width: fit-content;
+    max-width: calc(100% - 205px);
+    min-height: 32px !important;
+    max-height: 38px !important;
+    margin: 0;
+    padding: 7px 11px !important;
+    overflow: hidden;
+    color: #fff7df !important;
+    pointer-events: none;
+    border: 1px solid rgb(255 224 153 / 60%) !important;
+    border-radius: 999px;
+    background: rgb(50 39 35 / 86%) !important;
+    box-shadow: 2px 3px 0 rgb(0 0 0 / 28%);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-result:not(.hidden) { position: absolute; z-index: 40; inset: 0; display: grid; align-content: center; justify-items: center; color: #fff8dd; background: rgb(28 23 25 / 88%); pointer-events: auto; }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-result h3,
+  body[data-game-scene="HouseRescueScene"] .house-rescue-result p { color: inherit; }
+}
+
+@media (max-height: 430px) and (orientation: landscape) {
+  body[data-game-scene="HouseRescueScene"] .house-rescue-room-geometry { inset: 10px; }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-item { width: 44px !important; min-height: 44px !important; }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-bins button { width: 44px; min-height: 44px !important; }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-stage-meta { top: 55px; }
+  body[data-game-scene="HouseRescueScene"] .house-rescue-status { max-width: calc(100% - 181px); font-size: 8px; }
+}
+
 /* Shared restaurant presentation polish.
    The illustrated kitchen fixtures remain visible and become the interaction
    surface; compact icon labels float over them instead of forming a second
@@ -3156,15 +3415,6 @@ body[data-game-scene="HouseRescueScene"] .control-hint { display: none; }
   .house-rescue-bins { gap: 2px; }
   .house-rescue-item { width: var(--kw-touch-min); min-height: var(--kw-touch-min) !important; }
   .house-rescue-item small { display: none; }
-  .house-rescue-item.compact-slot-1 { left: 10% !important; top: 36% !important; }
-  .house-rescue-item.compact-slot-2 { left: 30% !important; top: 36% !important; }
-  .house-rescue-item.compact-slot-3 { left: 50% !important; top: 36% !important; }
-  .house-rescue-item.compact-slot-4 { left: 70% !important; top: 36% !important; }
-  .house-rescue-item.compact-slot-5 { left: 90% !important; top: 36% !important; }
-  .house-rescue-item.compact-slot-6 { left: 20% !important; top: 78% !important; }
-  .house-rescue-item.compact-slot-7 { left: 40% !important; top: 78% !important; }
-  .house-rescue-item.compact-slot-8 { left: 60% !important; top: 78% !important; }
-  .house-rescue-item.compact-slot-9 { left: 80% !important; top: 78% !important; }
 }
 
 @media (max-width: 720px) and (orientation: portrait) {
