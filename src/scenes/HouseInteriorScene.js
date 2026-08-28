@@ -6,7 +6,9 @@ import { HOME_INTERIOR_VIEW, validateFurniturePlacement } from "../data/homeInte
 import { AQUARIUM_SPECIES_BY_ID } from "../data/aquarium.js";
 import { startLazyScene } from "./lazyScenes.js";
 
-const VIEW = Object.freeze({ x: 20, y: 78, scale: 0.89 });
+// Presentation transform only: enlarge the interactive room while preserving
+// the authored interior coordinates and the exact inverse pointer mapping.
+const VIEW = Object.freeze({ x: -175, y: 0, scale: 1.3 });
 const OBJECT_ICONS = Object.freeze({
   bed: "🛏️", table: "🍽️", kitchen: "🍳", wardrobe: "👕", rug: "🧶", sofa: "🛋️", armchair: "🪑",
   "coffee-table": "🟫", bookshelf: "📚", hearth: "🔥", plant: "🪴", picture: "🖼️", radio: "📻",
