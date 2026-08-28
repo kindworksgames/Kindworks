@@ -15,6 +15,7 @@ import { createBinSpillInto, placeNpcLandLitterInto, removeLandItemsInto, update
 import { NavigationGraph } from "./NavigationGraph.js";
 import { HARBOUR_GENERAL_CONFIG } from "../data/harbourGeneral.js";
 import { restorationFestivalActive } from "../state/restorationMilestoneState.js";
+import { CUSTOM_RESIDENT_ID } from "../data/customResident.js";
 
 const PHASES = new Set(["sleeping", "home", "commuting", "working", "leisure"]);
 const RIVER_RESTORATION_NODES = new Set(["dock", "mill", "rpar1", "rpar2", "rpar3"]);
@@ -452,6 +453,9 @@ export class NpcTownLifeService {
     this.npcState.residents = NPC_RESIDENTS.map((definition) => {
       const resident = savedResident(this.residents.get(definition.id));
       resident.residentLawnCareEvents = Math.max(resident.residentLawnCareEvents || 0, externalResidents.get(definition.id)?.residentLawnCareEvents || 0);
+      resident.relationships[CUSTOM_RESIDENT_ID] = Math.max(resident.relationships[CUSTOM_RESIDENT_ID] || 0, externalResidents.get(definition.id)?.relationships?.[CUSTOM_RESIDENT_ID] || 0);
+      resident.conversations = Math.max(resident.conversations || 0, externalResidents.get(definition.id)?.conversations || 0);
+      resident.completedActivities = Math.max(resident.completedActivities || 0, externalResidents.get(definition.id)?.completedActivities || 0);
       return resident;
     });
     this.npcState.publicBins = structuredClone(next.npcs.publicBins);
@@ -570,7 +574,7 @@ export class NpcTownLifeService {
       phaseCounts: counts,
       graph: this.graph.validate(),
       allHomesReachWork: NPC_RESIDENTS.every((resident) => this.graph.findPath(resident.homeNodeId, resident.workNodeId).length > 0),
-      needsAndRelationships: residents.every((resident) => resident.needs && Object.keys(resident.relationships || {}).length === 34),
+      needsAndRelationships: residents.every((resident) => resident.needs && Object.keys(resident.relationships || {}).length === 35),
       conversations: this.npcState.socialRuntime.conversationEvents,
       greetings: this.npcState.socialRuntime.greetingEvents,
       carryingCount: residents.filter((resident) => resident.carryItem).length,

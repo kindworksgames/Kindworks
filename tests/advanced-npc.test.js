@@ -47,7 +47,8 @@ test("fresh residents have bounded needs and symmetric persistent relationship s
   assert.deepEqual(maya.needs, { hunger: 24, social: 22, recreation: 18, errands: 12, rest: 18 });
   assert.equal(maya.relationships[ava.id], 35);
   assert.equal(ava.relationships[maya.id], 35);
-  assert.equal(Object.keys(maya.relationships).length, 34);
+  assert.equal(Object.keys(maya.relationships).length, 35);
+  assert.equal(maya.relationships["npc-kindly-member"], 12);
   assert.equal(validateNpcState(state, { day: 1, clockMinutes: 360 }).ok, true);
 });
 

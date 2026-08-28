@@ -2566,7 +2566,11 @@ export class TownScene extends Phaser.Scene {
       this.customResident?.setRuntimePosition?.({ x: this.customResidentCharacter.x, y: this.customResidentCharacter.y, facing });
       const personal = this.customResident.getResident();
       if (personal) this.customResidentCharacter?.applyResident(personal, delta, true);
-    } else this.player.setMovement(0, 0, false);
+    } else {
+      this.player.setMovement(0, 0, false);
+      const personal = this.customResident?.getResident?.();
+      if (personal) this.customResidentCharacter?.applyResident(personal, delta, false);
+    }
     this.refreshAnimalPresentations(delta);
     this.stateSyncElapsed += delta;
     this.farmingSyncElapsed += delta;
