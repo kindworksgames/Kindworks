@@ -1,4 +1,5 @@
 import { ensureLazyScene } from "../scenes/lazyScenes.js";
+import { HARBOUR_GENERAL_CONFIG, HARBOUR_GENERAL_STARTER_SLOTS } from "../data/harbourGeneral.js";
 import { FIDELITY_ACTIVITIES, getFidelityContract, prepareFidelityLevel } from "./fidelityContract.js";
 
 const ACTIVITY_DATA = Object.freeze({
@@ -18,6 +19,7 @@ const ACTIVITY_DATA = Object.freeze({
   "house-interior": Object.freeze({ scene: "HouseInteriorScene", houseId: "house-20" }),
   "village-grocer": Object.freeze({ scene: "VillageGrocerScene", focusItemId: "carrot-seeds" }),
   "fresh-market": Object.freeze({ scene: "TownScene", shopId: "fresh-market", itemId: "river-trout" }),
+  "harbour-general": Object.freeze({ scene: "HarbourGeneralScene", slot: 0, itemId: "umbrella" }),
 });
 
 function visible(element) {
@@ -127,6 +129,15 @@ export class FidelityQaHarness {
     if (!activity || !route) return { ok: false, code: "unknown-activity", message: `Unknown fidelity activity: ${activityId}` };
     let state = this.gameState.getSnapshot();
     if (activity.levels) state = prepareFidelityLevel(state, activityId, levelValue);
+    if (activityId === "harbour-general") {
+      const extraCoins = Math.max(0, 20_000 - state.economy.coins);
+      state.economy.coins += extraCoins;
+      state.economy.lifetimeCoinsEarned += extraCoins;
+      state.harbourGeneral.owned = true;
+      state.harbourGeneral.purchasedDay = state.world.day;
+      state.harbourGeneral.slots = [...HARBOUR_GENERAL_STARTER_SLOTS];
+      for (const itemId of HARBOUR_GENERAL_STARTER_SLOTS) state.harbourGeneral.stock[itemId] = Math.max(state.harbourGeneral.stock[itemId], HARBOUR_GENERAL_CONFIG.caseSize);
+    }
     state.player.scene = route.scene;
     state.updatedAt = new Date().toISOString();
     const replaced = this.gameState.replace(state);
@@ -154,6 +165,8 @@ export class FidelityQaHarness {
       requestedLevel: Number(levelValue) || null,
       houseId: route.houseId,
       focusItemId: route.focusItemId,
+      slot: route.slot,
+      itemId: route.itemId,
       returnPosition: { x: 640, y: 610 },
       returnFacing: "down",
     });

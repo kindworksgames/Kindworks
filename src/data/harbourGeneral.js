@@ -69,21 +69,23 @@ export function createInitialHarbourWardrobe(residentId) {
 }
 
 export const HARBOUR_GENERAL_INTERIOR = Object.freeze({
-  room: Object.freeze({ x: 46, y: 82, width: 1188, height: 600 }),
-  spawn: Object.freeze({ x: 640, y: 635, facing: "up" }),
-  exit: Object.freeze({ x: 640, y: 665, radius: 64 }),
-  counter: Object.freeze({ x: 932, y: 510, width: 238, height: 92, label: "AMELIA · COUNTER" }),
+  room: Object.freeze({ x: 8, y: 80, width: 928, height: 632 }),
+  spawn: Object.freeze({ x: 465, y: 615, facing: "up" }),
+  exit: Object.freeze({ x: 465, y: 694, radius: 58 }),
+  counter: Object.freeze({ x: 682, y: 558, width: 205, height: 104, label: "AMELIA · CHECKOUT" }),
   fixtures: Object.freeze([
-    Object.freeze({ id: "weather", x: 90, y: 150, width: 360, height: 350, label: "WEATHER READY" }),
-    Object.freeze({ id: "everyday", x: 505, y: 150, width: 360, height: 350, label: "EVERYDAY ESSENTIALS" }),
+    Object.freeze({ id: "left-wall-shelf", x: 14, y: 260, width: 104, height: 330, label: "TRAVEL ESSENTIALS" }),
+    Object.freeze({ id: "right-wall-shelf", x: 824, y: 260, width: 104, height: 310, label: "WEATHER GEAR" }),
+    Object.freeze({ id: "centre-display", x: 300, y: 328, width: 500, height: 104, label: "HARBOUR FINDS" }),
+    Object.freeze({ id: "towel-island", x: 305, y: 468, width: 430, height: 104, label: "SEASIDE TEXTILES" }),
   ]),
   slots: Object.freeze([
-    Object.freeze({ slot: 0, fixture: "weather", x: 118, y: 210, width: 304, height: 74 }),
-    Object.freeze({ slot: 1, fixture: "weather", x: 118, y: 310, width: 304, height: 74 }),
-    Object.freeze({ slot: 2, fixture: "weather", x: 118, y: 410, width: 304, height: 74 }),
-    Object.freeze({ slot: 3, fixture: "everyday", x: 533, y: 210, width: 304, height: 74 }),
-    Object.freeze({ slot: 4, fixture: "everyday", x: 533, y: 310, width: 304, height: 74 }),
-    Object.freeze({ slot: 5, fixture: "everyday", x: 533, y: 410, width: 304, height: 74 }),
+    Object.freeze({ slot: 0, fixture: "back-wall", x: 178, y: 184, width: 195, height: 78 }),
+    Object.freeze({ slot: 1, fixture: "back-wall", x: 382, y: 184, width: 195, height: 78 }),
+    Object.freeze({ slot: 2, fixture: "back-wall", x: 586, y: 184, width: 195, height: 78 }),
+    Object.freeze({ slot: 3, fixture: "centre-display", x: 310, y: 338, width: 152, height: 82 }),
+    Object.freeze({ slot: 4, fixture: "centre-display", x: 474, y: 338, width: 152, height: 82 }),
+    Object.freeze({ slot: 5, fixture: "centre-display", x: 638, y: 338, width: 152, height: 82 }),
   ]),
 });
 

@@ -15,8 +15,8 @@ import { MovementController } from "../systems/MovementController.js";
 const PLAYER_RADIUS = 17;
 const WALK_SPEED = 220;
 const SPRINT_SPEED = 330;
-const HARBOUR_GENERAL_REFERENCE_KEY = "legacy-harbour-general";
-const HARBOUR_GENERAL_REFERENCE_PATH = "/assets/legacy-reference/harbour-general.webp";
+const SHOP_WORLD_RIGHT = 936;
+const SHOP_HEADER_HEIGHT = 80;
 
 function circleTouchesRect(x, y, radius, rect) {
   const closestX = Math.max(rect.x, Math.min(x, rect.x + rect.width));
@@ -30,6 +30,13 @@ function demandLabel(value) {
   return "Low";
 }
 
+function labelVisual(object, label, kind = "shop-fixture") {
+  object?.setData?.("assetLabel", label);
+  object?.setData?.("spriteAiLabel", label);
+  object?.setData?.("spriteAiKind", kind);
+  return object;
+}
+
 export class HarbourGeneralScene extends Phaser.Scene {
   constructor() {
     super("HarbourGeneralScene");
@@ -41,10 +48,6 @@ export class HarbourGeneralScene extends Phaser.Scene {
     this.returnFacing = data.returnFacing || "down";
     this.selectedSlot = Math.max(0, Math.min(5, Number(data.slot) || 0));
     this.selectedItemId = data.itemId || null;
-  }
-
-  preload() {
-    if (!this.textures.exists(HARBOUR_GENERAL_REFERENCE_KEY)) this.load.image(HARBOUR_GENERAL_REFERENCE_KEY, HARBOUR_GENERAL_REFERENCE_PATH);
   }
 
   create() {
@@ -71,100 +74,154 @@ export class HarbourGeneralScene extends Phaser.Scene {
 
   drawInterior() {
     const room = HARBOUR_GENERAL_INTERIOR.room;
-    this.add.rectangle(640, 360, 1280, 720, 0x18383a);
-    const recoveredReference = this.textures.exists(HARBOUR_GENERAL_REFERENCE_KEY);
-    if (recoveredReference) {
-      this.add.image(640, 360, HARBOUR_GENERAL_REFERENCE_KEY)
-        .setDisplaySize(1280, 720)
-        .setDepth(1)
-        .setData("spriteAiLabel", "legacy-reference.harbour-general.complete-interior");
-    }
+    labelVisual(this.add.rectangle(640, 360, 1280, 720, 0x102d4b), "harbour-general.surface.full-screen", "shop-surface");
     const floor = this.add.graphics();
     floor.setDepth(2);
-    floor.fillStyle(0xa8ceca, recoveredReference ? 0.08 : 1);
-    floor.fillRoundedRect(room.x, room.y, room.width, room.height, 18);
-    floor.lineStyle(9, 0x29243a, 1);
-    floor.strokeRoundedRect(room.x, room.y, room.width, room.height, 18);
-    floor.lineStyle(2, 0x5f9ca0, recoveredReference ? 0.1 : 0.34);
-    for (let x = room.x + 40; x < room.x + room.width; x += 40) floor.lineBetween(x, room.y + 8, x, room.y + room.height - 8);
-    for (let y = room.y + 40; y < room.y + room.height; y += 40) floor.lineBetween(room.x + 8, y, room.x + room.width - 8, y);
-    if (!recoveredReference) {
-      this.add.text(640, 29, "HARBOUR GENERAL", { color: "#2d3240", fontFamily: "ui-monospace, monospace", fontSize: "28px", fontStyle: "bold", backgroundColor: "#fff5cf", padding: { x: 20, y: 8 } }).setOrigin(0.5).setDepth(60);
-      this.add.text(640, 68, "YOUR SHOP · WEATHER GEAR & EVERYDAY ESSENTIALS", { color: "#d6eeee", fontFamily: "system-ui", fontSize: "12px", fontStyle: "bold" }).setOrigin(0.5).setDepth(60);
+    floor.fillStyle(0xf5dfb7, 1);
+    floor.fillRect(room.x, room.y, room.width, 160);
+    floor.fillStyle(0x8fc7c8, 1);
+    floor.fillRect(room.x, room.y + 160, room.width, room.height - 160);
+    const tile = 46;
+    for (let row = 0, y = room.y + 160; y < room.y + room.height; row += 1, y += tile) {
+      for (let column = 0, x = room.x; x < room.x + room.width; column += 1, x += tile) {
+        floor.fillStyle((row + column) % 2 ? 0xaed8d5 : 0x86bdc1, 1);
+        floor.fillRect(x, y, Math.min(tile, room.x + room.width - x), Math.min(tile, room.y + room.height - y));
+      }
     }
+    floor.fillStyle(0x8c4c25, 1);
+    floor.fillRect(room.x, room.y + 150, room.width, 15);
+    floor.fillStyle(0x5d351f, 1);
+    floor.fillRect(room.x, room.y + 160, room.width, 5);
+    floor.lineStyle(7, 0x222b3e, 1);
+    floor.strokeRect(room.x, room.y, room.width, room.height);
+    labelVisual(floor, "harbour-general.floor.mint-checker-and-wood-wall", "shop-environment");
+
+    this.drawHarbourWindows();
+    this.drawStockroomCorner();
 
     this.fixtureRects = [];
     for (const fixture of HARBOUR_GENERAL_INTERIOR.fixtures) {
-      floor.fillStyle(fixture.id === "weather" ? 0x627f80 : 0x7b684c, recoveredReference ? 0.16 : 1);
-      floor.fillRoundedRect(fixture.x, fixture.y, fixture.width, fixture.height, 10);
-      floor.lineStyle(4, 0x29243a, 1);
-      floor.strokeRoundedRect(fixture.x, fixture.y, fixture.width, fixture.height, 10);
-      if (!recoveredReference) this.add.text(fixture.x + fixture.width / 2, fixture.y + 12, fixture.label, { color: "#fff7dc", fontFamily: "ui-monospace, monospace", fontSize: "10px", fontStyle: "bold" }).setOrigin(0.5, 0).setDepth(15);
+      this.drawFixture(fixture);
       this.fixtureRects.push({ ...fixture });
     }
 
     this.slotViews = new Map();
     for (const slot of HARBOUR_GENERAL_INTERIOR.slots) this.drawSlot(slot);
 
-    const counter = { x: 750, y: 530, width: 140, height: 78 };
-    floor.fillStyle(0x79737c, recoveredReference ? 0.14 : 1);
-    floor.fillRoundedRect(counter.x, counter.y, counter.width, counter.height, 8);
-    floor.lineStyle(4, 0x29243a, 1);
-    floor.strokeRoundedRect(counter.x, counter.y, counter.width, counter.height, 8);
+    const counter = HARBOUR_GENERAL_INTERIOR.counter;
+    floor.fillStyle(0x8b4d27, 1);
+    floor.fillRoundedRect(counter.x, counter.y, counter.width, counter.height, 7);
+    floor.fillStyle(0xbe7740, 1);
+    floor.fillRoundedRect(counter.x + 7, counter.y + 7, counter.width - 14, 22, 4);
+    floor.fillStyle(0x173e63, 1);
+    floor.fillRect(counter.x + 12, counter.y + 44, 96, 46);
+    floor.lineStyle(4, 0x2e2630, 1);
+    floor.strokeRoundedRect(counter.x, counter.y, counter.width, counter.height, 7);
     this.fixtureRects.push({ id: "counter", ...counter });
-    if (!recoveredReference) {
-      this.add.text(820, 542, "AMELIA · COUNTER", { color: "#2d3240", backgroundColor: "#fff5cf", fontFamily: "ui-monospace, monospace", fontSize: "9px", fontStyle: "bold", padding: { x: 6, y: 4 } }).setOrigin(0.5).setDepth(18);
-      this.add.text(820, 578, "👩‍💼", { fontSize: "32px" }).setOrigin(0.5).setDepth(19);
-    }
+    labelVisual(this.add.text(counter.x + 152, counter.y - 14, "👩🏻‍💼", { fontSize: "37px" }).setOrigin(0.5, 1).setDepth(28), "harbour-general.character.amelia-shopkeeper", "shop-character");
+    labelVisual(this.add.text(counter.x + 145, counter.y + 26, "▰", { color: "#20262d", fontSize: "35px" }).setOrigin(0.5).setDepth(28), "harbour-general.fixture.checkout-register", "shop-fixture");
+    labelVisual(this.add.text(counter.x + 42, counter.y + 68, "⚓", { color: "#f5dfad", fontSize: "25px" }).setOrigin(0.5).setDepth(28), "harbour-general.fixture.checkout-anchor-emblem", "shop-decoration");
+
+    labelVisual(this.add.text(245, 485, "🧑🏽", { fontSize: "35px" }).setOrigin(0.5).setDepth(27), "harbour-general.character.customer-one", "shop-character");
+    labelVisual(this.add.text(370, 592, "🧑🏻", { fontSize: "37px" }).setOrigin(0.5).setDepth(27), "harbour-general.character.customer-two", "shop-character");
 
     const exit = HARBOUR_GENERAL_INTERIOR.exit;
-    const door = this.add.rectangle(exit.x, room.y + room.height - 4, 150, 21, 0xf0c85e).setStrokeStyle(4, 0x3d3428).setDepth(30);
-    this.add.text(door.x, door.y - 24, "EXIT TO WILLOWMERE", { color: "#294637", fontFamily: "ui-monospace, monospace", fontSize: "11px", fontStyle: "bold" }).setOrigin(0.5).setDepth(31);
+    const door = labelVisual(this.add.rectangle(exit.x, room.y + room.height - 7, 160, 27, 0x2e7ca1).setStrokeStyle(4, 0x25334b).setDepth(30), "harbour-general.fixture.glass-entry-door", "shop-exit");
+    labelVisual(this.add.text(door.x, door.y - 26, "HARBOUR EXIT", { color: "#f7f0d4", backgroundColor: "#173f62", fontFamily: "ui-monospace, monospace", fontSize: "10px", fontStyle: "bold", padding: { x: 9, y: 4 } }).setOrigin(0.5).setDepth(31), "harbour-general.label.harbour-exit", "shop-sign");
     this.drawManagementPanel();
   }
 
-  drawSlot(slot) {
-    const zone = this.add.rectangle(slot.x + slot.width / 2, slot.y + slot.height / 2, slot.width, slot.height, 0xffffff, 0.06).setStrokeStyle(2, 0xfff3c2, 0.7).setDepth(20).setInteractive({ useHandCursor: true });
-    const icon = this.add.text(slot.x + 28, zone.y, "＋", { fontSize: "25px" }).setOrigin(0.5).setDepth(21);
-    const name = this.add.text(slot.x + 53, slot.y + 12, "Empty display", { color: "#fff7dc", fontFamily: "system-ui", fontSize: "12px", fontStyle: "bold", wordWrap: { width: 185 } }).setDepth(21);
-    const stock = this.add.text(slot.x + slot.width - 12, zone.y, "0", { color: "#2d3240", backgroundColor: "#fff5cf", fontFamily: "ui-monospace, monospace", fontSize: "14px", fontStyle: "bold", padding: { x: 7, y: 4 } }).setOrigin(1, 0.5).setDepth(22);
-    zone.on("pointerdown", () => this.selectSlot(slot.slot));
-    this.slotViews.set(slot.slot, { slot, zone, icon, name, stock });
+  drawHarbourWindows() {
+    const graphics = this.add.graphics().setDepth(5);
+    graphics.fillStyle(0x6b3c23, 1);
+    graphics.fillRect(325, 89, 475, 92);
+    graphics.fillStyle(0xbceafb, 1);
+    graphics.fillRect(334, 97, 457, 73);
+    for (let pane = 1; pane < 4; pane += 1) {
+      graphics.fillStyle(0xe8f6e7, 0.65);
+      graphics.fillRect(334 + pane * 114, 97, 5, 73);
+    }
+    graphics.fillStyle(0x4ca8d1, 1);
+    graphics.fillRect(334, 135, 457, 35);
+    graphics.fillStyle(0xeff2d7, 1);
+    graphics.fillTriangle(334, 135, 430, 116, 490, 135);
+    graphics.fillTriangle(580, 135, 680, 112, 790, 135);
+    labelVisual(graphics, "harbour-general.fixture.harbour-view-window", "shop-window");
+    labelVisual(this.add.text(560, 126, "⛵", { fontSize: "25px" }).setOrigin(0.5).setDepth(6), "harbour-general.window.sailing-boat", "shop-scenery");
+    labelVisual(this.add.text(749, 125, "🏘️", { fontSize: "24px" }).setOrigin(0.5).setDepth(6), "harbour-general.window.seaside-houses", "shop-scenery");
   }
 
-  makeButton(x, y, width, label, onPress, colour = 0x4d965d) {
-    const background = this.add.rectangle(x, y, width, 38, colour).setStrokeStyle(2, 0x29243a).setDepth(42).setInteractive({ useHandCursor: true });
-    const text = this.add.text(x, y, label, { color: "#fffbea", fontFamily: "ui-monospace, monospace", fontSize: "10px", fontStyle: "bold", align: "center", wordWrap: { width: width - 8 } }).setOrigin(0.5).setDepth(43);
+  drawStockroomCorner() {
+    const graphics = this.add.graphics().setDepth(6);
+    graphics.fillStyle(0x6d3d22, 1);
+    graphics.fillRect(26, 100, 134, 138);
+    graphics.fillStyle(0x173f62, 1);
+    graphics.fillRect(47, 132, 88, 106);
+    graphics.lineStyle(4, 0x2a2732, 1);
+    graphics.strokeRect(47, 132, 88, 106);
+    labelVisual(graphics, "harbour-general.fixture.stockroom-door", "shop-fixture");
+    labelVisual(this.add.text(93, 115, "STOCKROOM", { color: "#3c2a20", backgroundColor: "#f3d58a", fontFamily: "ui-monospace, monospace", fontSize: "9px", fontStyle: "bold", padding: { x: 6, y: 3 } }).setOrigin(0.5).setDepth(7), "harbour-general.sign.stockroom", "shop-sign");
+    labelVisual(this.add.text(211, 127, "🛟", { fontSize: "38px" }).setOrigin(0.5).setDepth(7), "harbour-general.decoration.life-ring", "shop-decoration");
+    labelVisual(this.add.text(269, 126, "🗼", { fontSize: "34px" }).setOrigin(0.5).setDepth(7), "harbour-general.decoration.lighthouse-print", "shop-decoration");
+  }
+
+  drawFixture(fixture) {
+    const graphics = this.add.graphics().setDepth(9);
+    const isWall = fixture.id.includes("wall-shelf");
+    graphics.fillStyle(0x8c4d25, 1);
+    graphics.fillRoundedRect(fixture.x, fixture.y, fixture.width, fixture.height, 7);
+    graphics.fillStyle(isWall ? 0xf0ddb0 : 0xb76d38, 1);
+    graphics.fillRoundedRect(fixture.x + 7, fixture.y + 7, fixture.width - 14, fixture.height - 14, 4);
+    graphics.lineStyle(4, 0x3c2a24, 1);
+    graphics.strokeRoundedRect(fixture.x, fixture.y, fixture.width, fixture.height, 7);
+    if (isWall) {
+      const rows = fixture.id.startsWith("left") ? [["🥾", "🥾"], ["🔦", "🔦", "🔦"], ["🧴", "🧴", "🧴"]] : [["☂️", "☂️", "☂️"], ["🧥", "🧤"], ["🧢", "🧣"]];
+      rows.forEach((icons, row) => {
+        const rowTop = fixture.y + 18 + row * ((fixture.height - 35) / 3);
+        graphics.fillStyle(0x63371f, 1);
+        graphics.fillRect(fixture.x + 7, rowTop + 70, fixture.width - 14, 7);
+        icons.forEach((icon, index) => labelVisual(this.add.text(fixture.x + 24 + index * 27, rowTop + 34, icon, { fontSize: "22px" }).setOrigin(0.5).setDepth(11), `harbour-general.fixture.${fixture.id}.stock-${row + 1}-${index + 1}`, "shop-stock-sprite"));
+      });
+    } else if (fixture.id === "towel-island") {
+      ["#4b77bd", "#73a954", "#d9574a", "#efb93c", "#3e9ac2"].forEach((color, index) => {
+        labelVisual(this.add.text(fixture.x + 52 + index * 79, fixture.y + 42, "▰", { color, fontSize: "54px", fontStyle: "bold" }).setOrigin(0.5).setDepth(11), `harbour-general.product-display.beach-towel-${index + 1}`, "shop-stock-sprite");
+      });
+    }
+    labelVisual(graphics, `harbour-general.fixture.${fixture.id}`, "shop-fixture");
+  }
+
+  drawSlot(slot) {
+    const zone = labelVisual(this.add.rectangle(slot.x + slot.width / 2, slot.y + slot.height / 2, slot.width, slot.height, 0xf3dfb4, 1).setStrokeStyle(3, 0x654024, 1).setDepth(20).setInteractive({ useHandCursor: true }), `harbour-general.display.slot-${slot.slot + 1}`, "interactive-shop-display");
+    const copies = Array.from({ length: HARBOUR_GENERAL_CONFIG.caseSize }, (_, index) => labelVisual(this.add.text(slot.x + 29 + index * ((slot.width - 58) / 3), zone.y - 4, "＋", { fontSize: slot.fixture === "back-wall" ? "27px" : "24px" }).setOrigin(0.5).setDepth(21), `harbour-general.display.slot-${slot.slot + 1}.product-${index + 1}`, "shop-stock-sprite"));
+    const stock = labelVisual(this.add.text(zone.x, slot.y + slot.height - 4, "0", { color: "#f7eecb", backgroundColor: "#173f62", fontFamily: "ui-monospace, monospace", fontSize: "11px", fontStyle: "bold", padding: { x: 8, y: 2 } }).setOrigin(0.5, 1).setDepth(22), `harbour-general.display.slot-${slot.slot + 1}.stock-count`, "shop-status-label");
+    zone.on("pointerdown", () => this.selectSlot(slot.slot));
+    this.slotViews.set(slot.slot, { slot, zone, copies, stock });
+  }
+
+  makeButton(x, y, width, label, onPress, colour = 0x4d965d, height = 44, assetId = null) {
+    const background = labelVisual(this.add.rectangle(x, y, width, height, colour).setStrokeStyle(3, 0x20283a).setDepth(42).setInteractive({ useHandCursor: true }), assetId || `harbour-general.control.${String(label).toLowerCase().replaceAll(/[^a-z0-9]+/g, "-")}`, "shop-control");
+    const text = this.add.text(x, y, label, { color: "#fffbea", fontFamily: "ui-monospace, monospace", fontSize: height >= 50 ? "18px" : "11px", fontStyle: "bold", align: "center", wordWrap: { width: width - 10 } }).setOrigin(0.5).setDepth(43);
     background.on("pointerdown", onPress);
     return { background, text, setEnabled(enabled) { background.disableInteractive(); if (enabled) background.setInteractive({ useHandCursor: true }); background.setAlpha(enabled ? 1 : 0.42); text.setAlpha(enabled ? 1 : 0.58); } };
   }
 
   drawManagementPanel() {
-    this.add.rectangle(1060, 370, 330, 570, 0xfff5d9).setStrokeStyle(5, 0x29243a).setDepth(35);
-    this.panelEyebrow = this.add.text(916, 96, "DISPLAY 1 · SELECTED PRODUCT", { color: "#6b5c48", fontFamily: "ui-monospace, monospace", fontSize: "9px", fontStyle: "bold" }).setDepth(36);
-    this.panelIcon = this.add.text(1060, 142, "☂️", { fontSize: "42px" }).setOrigin(0.5).setDepth(36);
-    this.panelName = this.add.text(916, 170, "Umbrella", { color: "#2d3240", fontSize: "18px", fontStyle: "bold", wordWrap: { width: 286 } }).setDepth(36);
-    this.panelDescription = this.add.text(916, 197, "", { color: "#655e50", fontSize: "10px", lineSpacing: 3, wordWrap: { width: 286 } }).setDepth(36);
-    this.panelStats = this.add.text(916, 248, "", { color: "#3f5d57", fontFamily: "ui-monospace, monospace", fontSize: "10px", lineSpacing: 4, wordWrap: { width: 286 } }).setDepth(36);
-    this.messageText = this.add.text(916, 309, "Choose a display, then select stock below.", { color: "#6c614f", fontSize: "10px", wordWrap: { width: 286 } }).setDepth(36);
-    this.assignButton = this.makeButton(968, 352, 94, "Place", () => this.assignSelected());
-    this.restockButton = this.makeButton(1071, 352, 104, "Restock", () => this.restockSelected(), 0xd39a3c);
-    this.clearButton = this.makeButton(1174, 352, 86, "Clear", () => this.clearSelected(), 0x807a72);
-
-    this.catalogButtons = new Map();
-    HARBOUR_GENERAL_ITEM_IDS.forEach((itemId, index) => {
-      const item = HARBOUR_GENERAL_CATALOG[itemId];
-      const column = index % 4;
-      const row = Math.floor(index / 4);
-      const x = 950 + column * 73;
-      const y = 411 + row * 49;
-      const button = this.add.rectangle(x, y, 66, 43, 0xfffaf0).setStrokeStyle(2, 0x29243a).setDepth(38).setInteractive({ useHandCursor: true });
-      const icon = this.add.text(x, y - 5, item.icon, { fontSize: "19px" }).setOrigin(0.5).setDepth(39);
-      const label = this.add.text(x, y + 13, item.name, { color: "#2d3240", fontSize: "6px", fontStyle: "bold", align: "center", wordWrap: { width: 60 } }).setOrigin(0.5).setDepth(39);
-      button.on("pointerdown", () => this.selectItem(itemId));
-      this.catalogButtons.set(itemId, { button, icon, label });
-    });
-    this.collectButton = this.makeButton(1060, 654, 286, "Collect till", () => this.collectTill(), 0x456f63);
+    labelVisual(this.add.rectangle(1108, 400, 336, 630, 0xfff1c8).setStrokeStyle(7, 0x172946).setDepth(35), "harbour-general.panel.selected-product", "shop-panel");
+    labelVisual(this.add.rectangle(1108, 192, 282, 184, 0xfff8df).setStrokeStyle(3, 0xb99a63).setDepth(36), "harbour-general.panel.product-art-frame", "shop-product-frame");
+    this.panelEyebrow = this.add.text(1108, 102, "SELECTED PRODUCT", { color: "#24304a", fontFamily: "ui-monospace, monospace", fontSize: "14px", fontStyle: "bold" }).setOrigin(0.5).setDepth(37);
+    this.panelIcon = labelVisual(this.add.text(1108, 192, "☂️", { fontSize: "78px" }).setOrigin(0.5).setDepth(37), "harbour-general.selected-product.umbrella", "shop-product-sprite");
+    this.previousProductButton = this.makeButton(987, 192, 44, "‹", () => this.cycleProduct(-1), 0x245f91, 52, "harbour-general.control.previous-product");
+    this.nextProductButton = this.makeButton(1229, 192, 44, "›", () => this.cycleProduct(1), 0x245f91, 52, "harbour-general.control.next-product");
+    this.panelName = this.add.text(1108, 301, "Umbrella", { color: "#20304b", fontFamily: "ui-monospace, monospace", fontSize: "24px", fontStyle: "bold", align: "center", wordWrap: { width: 285 } }).setOrigin(0.5).setDepth(36);
+    this.panelDescription = this.add.text(1108, 331, "", { color: "#665543", fontSize: "12px", align: "center", lineSpacing: 2, wordWrap: { width: 286 } }).setOrigin(0.5, 0).setDepth(36);
+    this.panelStats = this.add.text(974, 382, "", { color: "#26324a", fontFamily: "ui-monospace, monospace", fontSize: "14px", fontStyle: "bold", lineSpacing: 11 }).setDepth(36);
+    this.panelValues = this.add.text(1242, 382, "", { color: "#26324a", fontFamily: "ui-monospace, monospace", fontSize: "16px", fontStyle: "bold", align: "right", lineSpacing: 9 }).setOrigin(1, 0).setDepth(36);
+    this.panelDemand = this.add.text(1108, 522, "", { color: "#26324a", fontFamily: "ui-monospace, monospace", fontSize: "11px", fontStyle: "bold", align: "center" }).setOrigin(0.5).setDepth(36);
+    this.restockButton = this.makeButton(1108, 563, 282, "RESTOCK", () => this.restockSelected(), 0x1979b8, 56, "harbour-general.control.restock");
+    this.assignButton = this.makeButton(1108, 629, 282, "PLACE ON SHELF", () => this.assignSelected(), 0x53a842, 56, "harbour-general.control.place-on-shelf");
+    this.clearButton = this.makeButton(1108, 678, 126, "Clear display", () => this.clearSelected(), 0x766f68, 34, "harbour-general.control.clear-display");
+    this.messageText = this.add.text(1108, 704, "Choose a display, then browse products with the arrows.", { color: "#6c614f", fontSize: "8px", align: "center", wordWrap: { width: 292 } }).setOrigin(0.5, 1).setDepth(36);
+    this.collectButton = this.makeButton(782, 633, 176, "Till empty", () => this.collectTill(), 0x245f74, 40, "harbour-general.control.collect-till");
   }
 
   createPlayer() {
@@ -180,8 +237,9 @@ export class HarbourGeneralScene extends Phaser.Scene {
       radius: 78, label: `Manage display ${slot.slot + 1}`, detail: "Choose stock or restock a four-item case", onActivate: () => this.selectSlot(slot.slot),
     }));
     const exit = HARBOUR_GENERAL_INTERIOR.exit;
+    const counter = HARBOUR_GENERAL_INTERIOR.counter;
     this.interactions = new InteractionSystem({
-      interactables: [...shelves, { id: "harbour-counter", kind: "shop-counter", x: 820, y: 570, radius: 82, label: "Check the till", detail: "Collect saved in-person sales", onActivate: () => this.collectTill() }, { id: "harbour-exit", kind: "exit", x: exit.x, y: exit.y, radius: exit.radius, label: "Leave Harbour General", detail: "Return to Willowmere", onActivate: () => this.exitToTown() }],
+      interactables: [...shelves, { id: "harbour-counter", kind: "shop-counter", x: counter.x + counter.width / 2, y: counter.y + counter.height / 2, radius: 86, label: "Check the till", detail: "Collect saved in-person sales", onActivate: () => this.collectTill() }, { id: "harbour-exit", kind: "exit", x: exit.x, y: exit.y, radius: exit.radius, label: "Leave Harbour General", detail: "Return to Willowmere", onActivate: () => this.exitToTown() }],
       onChange: (current) => this.renderInteractionPrompt(current),
     });
   }
@@ -240,22 +298,30 @@ export class HarbourGeneralScene extends Phaser.Scene {
       const itemId = state.slots[slotIndex];
       const product = HARBOUR_GENERAL_CATALOG[itemId];
       const stock = product ? state.stock[itemId] : 0;
-      view.icon.setText(product?.icon || "＋");
-      view.name.setText(product?.name || "Empty display");
+      view.copies.forEach((copy, index) => {
+        copy.setText(product?.icon || "＋");
+        copy.setVisible(Boolean(product) ? index < Math.min(HARBOUR_GENERAL_CONFIG.caseSize, stock) : index === 0);
+        copy.setData("spriteAiLabel", product ? `harbour-general.display.slot-${slotIndex + 1}.${product.id}.${index + 1}` : `harbour-general.display.slot-${slotIndex + 1}.empty`);
+      });
       view.stock.setText(String(stock));
       view.zone.setStrokeStyle(slotIndex === this.selectedSlot ? 4 : 2, slotIndex === this.selectedSlot ? 0xffdf6b : 0xfff3c2, 0.92);
     }
-    for (const [itemId, view] of this.catalogButtons) view.button.setFillStyle(itemId === item.id ? 0xffe16f : 0xfffaf0);
     const weather = catalogue.weather;
     const quantity = Math.min(HARBOUR_GENERAL_CONFIG.caseSize, HARBOUR_GENERAL_CONFIG.maxPerItem - state.stock[item.id]);
     const caseCost = quantity * item.wholesale;
     const assigned = state.slots[this.selectedSlot] === item.id;
-    this.panelEyebrow.setText(`DISPLAY ${this.selectedSlot + 1} · ${item.category.toUpperCase()}`);
+    const displayedSlot = state.slots.indexOf(item.id);
+    const onShelf = displayedSlot >= 0 ? Math.min(HARBOUR_GENERAL_CONFIG.caseSize, state.stock[item.id]) : 0;
+    this.panelEyebrow.setText(`SELECTED PRODUCT · ${item.category.toUpperCase()}`);
     this.panelIcon.setText(item.icon);
+    this.panelIcon.setData("assetLabel", `harbour-general.product.${item.id}`);
+    this.panelIcon.setData("spriteAiLabel", `harbour-general.product.${item.id}`);
     this.panelName.setText(item.name);
     this.panelDescription.setText(item.description);
-    this.panelStats.setText(`Stock ${state.stock[item.id]} / ${HARBOUR_GENERAL_CONFIG.maxPerItem} · Case ${quantity} for 🪙 ${caseCost}\nSale 🪙 ${item.price} · Margin 🪙 ${item.price - item.wholesale}\n${weather.toUpperCase()} DEMAND · ${demandLabel(harbourDemand(item, weather))}`);
-    this.assignButton.text.setText(assigned ? "On display" : "Place");
+    this.panelStats.setText(`📦  IN STOCK\n🪵  ON SHELF\n🪙  RESTOCK ×${quantity || 0}\n🏷️  SELL PRICE`);
+    this.panelValues.setText(`${state.stock[item.id]}\n${onShelf}\n${caseCost}\n${item.price}`);
+    this.panelDemand.setText(`${weather.toUpperCase()} DEMAND · ${demandLabel(harbourDemand(item, weather))}`);
+    this.assignButton.text.setText(assigned ? "ON THIS SHELF" : "PLACE ON SHELF");
     this.assignButton.setEnabled(!assigned);
     this.restockButton.setEnabled(assigned && quantity > 0 && catalogue.balance >= caseCost);
     this.clearButton.setEnabled(Boolean(state.slots[this.selectedSlot]));
@@ -263,6 +329,14 @@ export class HarbourGeneralScene extends Phaser.Scene {
     this.collectButton.setEnabled(state.tillCoins > 0);
     const hud = document.querySelector("#harbour-hud-stats");
     if (hud) hud.textContent = `🪙 ${catalogue.balance.toLocaleString()} · Till ${state.tillCoins.toLocaleString()} · ${state.lifetimeSales} sales`;
+    const balance = document.querySelector("#harbour-balance");
+    if (balance) balance.textContent = catalogue.balance.toLocaleString();
+    const till = document.querySelector("#harbour-till");
+    if (till) till.textContent = state.tillCoins.toLocaleString();
+    const today = Number(this.gameState?.getSnapshot?.().world?.day) || 1;
+    const todaySales = state.recentSales.filter((sale) => sale.day === today).reduce((sum, sale) => sum + sale.price, 0);
+    const sales = document.querySelector("#harbour-today-sales");
+    if (sales) sales.textContent = todaySales.toLocaleString();
     const game = document.querySelector("#game");
     if (game) {
       game.dataset.harbourOwned = String(state.owned);
@@ -304,7 +378,7 @@ export class HarbourGeneralScene extends Phaser.Scene {
   isBlocked(x, y) {
     const room = HARBOUR_GENERAL_INTERIOR.room;
     if (x < room.x + PLAYER_RADIUS || x > room.x + room.width - PLAYER_RADIUS || y < room.y + PLAYER_RADIUS || y > room.y + room.height - PLAYER_RADIUS) return true;
-    if (x > 890 - PLAYER_RADIUS) return true;
+    if (x > SHOP_WORLD_RIGHT - PLAYER_RADIUS || y < SHOP_HEADER_HEIGHT + 158 + PLAYER_RADIUS) return true;
     return this.fixtureRects.some((rect) => circleTouchesRect(x, y, PLAYER_RADIUS, rect));
   }
 

@@ -142,9 +142,12 @@
         <button id="paws-exit" type="button">Return to Willowmere</button>
       </section>
       <section id="harbour-hud" class="harbour-hud hidden" aria-label="Harbour General information">
-        <div><small>MILESTONE 37 · PLAYER-OWNED BUSINESS</small><strong>🏪 Harbour General</strong><span>1–6 selects a display · [ ] changes product · P places · R restocks · C collects</span></div>
-        <span id="harbour-hud-stats">🪙 100 · Till 0 · 0 sales</span>
-        <button id="harbour-exit" type="button">Return to Willowmere</button>
+        <div class="harbour-hud-title" data-asset-label="KW-HARBOUR-GENERAL-HEADER" data-sprite-ai-label="harbour-general.header.shop-sign" data-sprite-ai-kind="shop-sign"><strong>⚓ HARBOUR GENERAL ⚓</strong></div>
+        <div class="harbour-hud-metric" data-asset-label="KW-HARBOUR-GENERAL-COINS"><small>COINS</small><strong>🪙 <span id="harbour-balance">100</span></strong></div>
+        <div class="harbour-hud-metric" data-asset-label="KW-HARBOUR-GENERAL-TODAY-SALES"><small>TODAY'S SALES</small><strong id="harbour-today-sales">0</strong></div>
+        <div class="harbour-hud-metric harbour-hud-till" data-asset-label="KW-HARBOUR-GENERAL-TILL"><small>TILL</small><strong id="harbour-till">0</strong></div>
+        <span id="harbour-hud-stats" class="sr-only">🪙 100 · Till 0 · 0 sales</span>
+        <button id="harbour-exit" type="button" aria-label="Return to Willowmere">✕</button>
       </section>
       <section id="interaction-prompt" class="interaction-prompt hidden" aria-label="Nearby interaction" aria-hidden="true">
         <span class="interaction-key" aria-hidden="true">E</span>

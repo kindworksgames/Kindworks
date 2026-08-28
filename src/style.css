@@ -6142,7 +6142,78 @@ body[data-game-scene="RiverClearoutScene"] .town-hud { display: none; }
 
 .grocer-hud, .paws-hud, .harbour-hud { top: max(14px,env(safe-area-inset-top)); left: max(14px,env(safe-area-inset-left)); right: max(14px,env(safe-area-inset-right)); z-index: 21; display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 2px solid rgba(255,244,193,.48); border-radius: 18px; background: rgba(35,73,52,.94); color: #fff7d1; box-shadow: 0 12px 34px rgba(9,30,20,.32); pointer-events: auto; }
 .paws-hud { background: rgba(48,85,63,.96); }
-.harbour-hud { background: rgba(38,83,80,.96); }
+.harbour-hud {
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 55;
+  display: grid;
+  height: clamp(48px, 11.1dvh, 80px);
+  grid-template-columns: minmax(0, 1fr) auto auto auto auto;
+  gap: clamp(5px, 1vw, 13px);
+  padding: max(4px, env(safe-area-inset-top)) max(6px, env(safe-area-inset-right)) 4px max(6px, env(safe-area-inset-left));
+  border: 0;
+  border-bottom: clamp(3px, .55dvh, 6px) solid #c4862e;
+  border-radius: 0;
+  background: #0d3356;
+  color: #fff3cc;
+  box-shadow: inset 0 -3px 0 #081f37, 0 4px 0 rgb(38 32 42 / 32%);
+}
+.harbour-hud > .harbour-hud-title {
+  min-width: 0;
+  display: grid;
+  margin-right: 0;
+  place-items: center;
+  padding: 0 clamp(7px, 1.5vw, 20px);
+  border: 3px solid #c4862e;
+  background: #103b61;
+  box-shadow: inset 0 0 0 2px #17304b;
+}
+.harbour-hud > .harbour-hud-title > strong {
+  overflow: hidden;
+  color: #fff3d1;
+  font: 950 clamp(14px, 4dvh, 35px)/1 ui-monospace, "SFMono-Regular", Menlo, monospace;
+  letter-spacing: .025em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-shadow: 0 3px #15304f;
+}
+.harbour-hud > .harbour-hud-metric {
+  min-width: clamp(74px, 13vw, 166px);
+  display: grid;
+  margin-right: 0;
+  align-content: center;
+  gap: 1px;
+  padding: 3px clamp(7px, 1vw, 14px);
+  border: 3px solid #284b70;
+  background: #0b2948;
+  color: #fff4d7;
+  text-align: left;
+  box-shadow: inset 0 0 0 2px #071b30;
+}
+.harbour-hud .harbour-hud-metric small {
+  display: block;
+  color: #fff4d7;
+  font: 900 clamp(7px, 1.5dvh, 12px)/1 ui-monospace, monospace;
+  letter-spacing: .035em;
+}
+.harbour-hud .harbour-hud-metric strong {
+  color: #fff;
+  font: 950 clamp(11px, 2.9dvh, 24px)/1 ui-monospace, monospace;
+}
+.harbour-hud #harbour-exit {
+  align-self: stretch;
+  width: clamp(42px, 7dvh, 60px);
+  min-height: 44px;
+  padding: 0;
+  border: 3px solid #422637;
+  border-radius: 5px;
+  background: linear-gradient(#e65c4e, #bc302e);
+  color: white;
+  font-size: clamp(17px, 3dvh, 26px);
+  text-shadow: 0 2px #79242a;
+  box-shadow: inset 0 -4px 0 #8a2629;
+}
 .grocer-hud.hidden, .paws-hud.hidden, .harbour-hud.hidden { display: none; }
 .grocer-hud > div, .paws-hud > div, .harbour-hud > div { min-width: 0; display: grid; gap: 1px; margin-right: auto; }
 .grocer-hud small, .paws-hud small, .harbour-hud small { color: #cbe0bd; font-size: 9px; font-weight: 850; letter-spacing: .1em; }
@@ -6161,14 +6232,23 @@ body[data-game-scene="PawsWondersScene"] .weather-effects { display: none; }
 body[data-game-scene="HarbourGeneralScene"] .town-hud,
 body[data-game-scene="HarbourGeneralScene"] .zoom-controls,
 body[data-game-scene="HarbourGeneralScene"] .world-lighting-overlay,
-body[data-game-scene="HarbourGeneralScene"] .weather-effects { display: none; }
+body[data-game-scene="HarbourGeneralScene"] .weather-effects,
+body[data-game-scene="HarbourGeneralScene"] .control-hint { display: none; }
 
 @media (max-width: 720px) {
   .orchard-tree-grid { grid-template-columns: 1fr; }
-  .grocer-hud, .paws-hud, .harbour-hud { padding: 8px 10px; }
+  .grocer-hud, .paws-hud { padding: 8px 10px; }
   .grocer-hud small, .grocer-hud > div > span, .paws-hud small, .paws-hud > div > span, .harbour-hud small, .harbour-hud > div > span { display: none; }
   .grocer-hud strong, .paws-hud strong, .harbour-hud strong { font-size: 16px; }
   .grocer-hud button, .paws-hud button, .harbour-hud button { min-height: 36px; padding: 6px 9px; font-size: 11px; }
+  .harbour-hud { gap: 4px; padding: 3px 5px; }
+  .harbour-hud-title { padding-inline: 5px; border-width: 2px; }
+  .harbour-hud-title strong { font-size: clamp(12px, 4.2dvh, 18px); }
+  .harbour-hud-metric { min-width: 58px; padding-inline: 5px; border-width: 2px; }
+  .harbour-hud .harbour-hud-metric small { display: block; font-size: 7px; }
+  .harbour-hud .harbour-hud-metric strong { font-size: clamp(10px, 3dvh, 14px); }
+  .harbour-hud-till { display: none; }
+  .harbour-hud #harbour-exit { width: 44px; min-height: 44px; padding: 0; font-size: 18px; }
 }
 
 @media (max-width: 720px) and (orientation: portrait) {
