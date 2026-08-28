@@ -7,6 +7,7 @@ import {
   HOUSE_RESCUE_TOTAL_LEVELS,
   generateHouseRescueDirt,
   generateHouseRescueItems,
+  houseExteriorDirtStage,
   houseRescueLevel,
   houseRescueReward,
   houseRescueStars,
@@ -57,7 +58,7 @@ test("all 750 levels deterministically preserve scaling, balanced categories and
     assert.equal(dirt.length, config.dirtCount);
     assert.deepEqual(items, generateHouseRescueItems({ houseId: "house-1", jobSerial: 3, level }));
     assert.deepEqual(dirt, generateHouseRescueDirt({ houseId: "house-1", jobSerial: 3, level }));
-    assert.ok(items.every((item) => HOUSE_RESCUE_CATEGORIES[item.category] && item.x >= 0 && item.x <= 75 && item.y >= 0 && item.y <= 100));
+    assert.ok(items.every((item) => HOUSE_RESCUE_CATEGORIES[item.category] && item.x >= 0 && item.x <= 100 && item.y >= 0 && item.y <= 100));
     for (const wave of new Set(items.map((item) => item.wave))) {
       const visible = items.filter((item) => item.wave === wave);
       assert.ok(visible.length <= HOUSE_RESCUE_RULES.visibleItemsPerWave);
@@ -88,9 +89,30 @@ test("fresh Milestone 16 state tracks all homes, four original dirty cottages an
   assert.equal(state.schemaVersion, 37);
   assert.equal(validateGameState(state).ok, true);
   assert.equal(Object.keys(state.houseRescue.homes).length, 19);
-  assert.deepEqual(Object.values(state.houseRescue.homes).filter((home) => home.dirty).map((home) => home.houseId), ["house-1", "house-6", "house-11", "house-16"]);
+  assert.deepEqual(Object.values(state.houseRescue.homes).filter((home) => home.dirty).map((home) => home.houseId).sort(), ["house-1", "house-11", "house-16", "house-6"].sort());
   assert.equal(state.houseRescue.homes["house-20"].dirty, false);
   assert.equal(state.houseRescue.unlockedLevel, 1);
+});
+
+test("house exteriors progress through clean, weathered and job-ready dirt without changing save schema", () => {
+  const home = { houseId: "house-2", dirty: false, lastCompletedDay: 10, nextDirtyDay: 16 };
+  assert.equal(houseExteriorDirtStage(home, 10), 0);
+  assert.equal(houseExteriorDirtStage(home, 12), 1);
+  assert.equal(houseExteriorDirtStage(home, 14), 2);
+  assert.equal(houseExteriorDirtStage({ ...home, dirty: true, nextDirtyDay: 0 }, 16), 3);
+  assert.equal(houseExteriorDirtStage({ ...home, houseId: "house-20", dirty: true }, 16), 0);
+});
+
+test("a first visit activates the original bounded House Rescue opportunity and never dirties the personal home", () => {
+  const { gameState, houseRescue } = runtime();
+  const activated = houseRescue.ensureFirstVisit("house-2");
+  assert.equal(activated.ok, true);
+  assert.equal(activated.activated, true);
+  assert.equal(gameState.getSnapshot().houseRescue.homes["house-2"].dirty, true);
+  assert.equal(houseRescue.dirtyHomes().length, HOUSE_RESCUE_RULES.maxDirtyHomes);
+  assert.equal(houseRescue.ensureFirstVisit("house-2").changed, false);
+  assert.equal(houseRescue.ensureFirstVisit("house-20").changed, false);
+  assert.equal(gameState.getSnapshot().houseRescue.homes["house-20"].dirty, false);
 });
 
 test("sorting is wave-bound, awards +2, charges −1, and unlocks vacuum only when complete", () => {

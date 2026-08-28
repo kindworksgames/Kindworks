@@ -16,6 +16,7 @@ function engineFields(engine) {
   const state = engine.snapshot();
   return {
     row: state.row, col: state.col, rakedCells: state.rakedCells, collectedCells: state.collectedCells,
+    rakePatterns: state.rakePatterns, entryDirection: state.entryDirection,
     collectedItems: state.collectedItems, earnedCoins: state.earnedCoins, bonusCoins: state.bonusCoins,
     moves: state.moves, undoUsed: state.undoUsed, steppedOnRaked: state.steppedOnRaked,
     challenges: state.challenges, undoStack: state.undoStack, won: false,
@@ -97,12 +98,12 @@ export class BeachCleanupService {
     });
   }
 
-  move(sessionId, direction) {
+  move(sessionId, direction, options = {}) {
     return this.commit((state) => {
       const session = state.beachCleanup.activeSession;
       if (!session || session.id !== sessionId) return { ok: false, code: "unknown-session", message: "That Beach Cleanup attempt is no longer active." };
       const engine = new BeachCleanupEngine(session.assignedLevel, session);
-      const moved = engine.move(direction);
+      const moved = engine.move(direction, options);
       if (!moved.ok) return moved;
       Object.assign(session, engineFields(engine));
       if (!engine.won) return { ...moved, beachState: engine.snapshot() };

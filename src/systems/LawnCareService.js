@@ -40,6 +40,7 @@ function engineFields(engine) {
     col: snapshot.col,
     facing: snapshot.facing,
     cutCells: snapshot.cutCells,
+    cutDirections: snapshot.cutDirections,
     moves: snapshot.moves,
     undoStack: snapshot.undoStack,
   };
@@ -124,7 +125,7 @@ export class LawnCareService {
   beginTownJob(targetId, { returnPosition = null, returnFacing = "down" } = {}) {
     const plot = LAWN_PLOTS.find((entry) => entry.id === targetId);
     const lawn = this.gameState.getSnapshot().farming.lawns[targetId];
-    if (!plot || !lawn) return { ok: false, code: "unknown-lawn", message: "That lawn does not exist." };
+    if (!plot?.active || !lawn) return { ok: false, code: "unknown-lawn", message: "That lawn does not exist." };
     if (!lawnNeedsCare(lawn)) return { ok: false, code: "lawn-tidy", message: "This lawn does not need care yet." };
     const level = this.getSnapshot().progress.nextLevel;
     return this.beginSession({ mode: "town-job", targetId, level, returnPosition, returnFacing });
@@ -174,7 +175,7 @@ export class LawnCareService {
       if (!engine.ended) return { ...moved, session: structuredClone(session), lawnState: engine.snapshot() };
       if (engine.stars < 1) {
         session.status = "failed";
-        return { ...moved, code: "lawn-attempt-failed", failed: true, result: this.resultFromEngine(engine), session: structuredClone(session) };
+        return { ...moved, code: moved.endReason ? `lawn-${moved.endReason}` : "lawn-attempt-failed", failed: true, result: this.resultFromEngine(engine), session: structuredClone(session) };
       }
       return this.applyResult(state, session, engine);
     });
@@ -225,7 +226,7 @@ export class LawnCareService {
       const verification = verifyLawnSolution(session.assignedLevel);
       if (!verification.ok) return { ok: false, code: "certificate-failed", message: verification.reason };
       const engine = new LawnCareEngine(session.assignedLevel);
-      for (const direction of getLawnLevel(session.assignedLevel).canonicalSolution) engine.move(direction);
+      for (const direction of getLawnLevel(session.assignedLevel).canonicalSolution) engine.move(direction, { checkRoute: false });
       return this.applyResult(state, session, engine);
     });
   }
@@ -386,7 +387,7 @@ export class LawnCareService {
       progress: this.getCampaignSnapshot(),
       activeSession: state.activeSession,
       mower: this.getMowerLoadout(),
-      townJobs: LAWN_PLOTS.filter((plot) => lawnNeedsCare(this.gameState.getSnapshot().farming.lawns[plot.id])).map((plot) => plot.id),
+      townJobs: LAWN_PLOTS.filter((plot) => plot.active && lawnNeedsCare(this.gameState.getSnapshot().farming.lawns[plot.id])).map((plot) => plot.id),
     };
   }
 }

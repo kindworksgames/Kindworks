@@ -84,7 +84,7 @@ export class FarmingController {
 
   open(tab = "allotment", targetId = null) {
     this.selectedTab = ["allotment", "orchard", "lawns"].includes(tab) ? tab : "allotment";
-    if (targetId && LAWN_PLOTS.some((plot) => plot.id === targetId)) this.selectedLawnId = targetId;
+    if (targetId && LAWN_PLOTS.some((plot) => plot.active && plot.id === targetId)) this.selectedLawnId = targetId;
     if (targetId && this.farming.getSnapshot().orchard.trees.some((tree) => tree.id === targetId)) this.selectedTreeId = targetId;
     this.farming.refresh({ persist: true });
     this.panel?.classList.remove("hidden");
@@ -182,13 +182,14 @@ export class FarmingController {
     if (appleCount) appleCount.textContent = `${this.farming.inventory.quantity(game.inventory, "orchard-apple")} in inventory`;
 
     const lawns = document.querySelector("#farming-lawns");
-    if (lawns) lawns.innerHTML = LAWN_PLOTS.map((plot) => {
+    const visibleLawns = LAWN_PLOTS.filter((plot) => plot.active);
+    if (lawns) lawns.innerHTML = visibleLawns.map((plot) => {
       const lawn = state.lawns[plot.id];
       const needsCare = lawnNeedsCare(lawn);
       return `<button type="button" data-lawn-id="${plot.id}" class="lawn-card ${plot.id === this.selectedLawnId ? "selected" : ""}" aria-pressed="${plot.id === this.selectedLawnId}"><span>${needsCare ? "🌾" : "🌱"}</span><strong>${plot.title}</strong><small>Grass ${Math.round(lawn.grassHeight)}% · weeds ${Math.round(lawn.weedPressure)}%</small><em>${needsCare ? "Job available" : "Looking tidy"}</em></button>`;
     }).join("");
     const selectedLawn = state.lawns[this.selectedLawnId];
-    const selectedPlot = LAWN_PLOTS.find((plot) => plot.id === this.selectedLawnId);
+    const selectedPlot = visibleLawns.find((plot) => plot.id === this.selectedLawnId);
     const lawnButton = document.querySelector("#farming-complete-lawn");
     if (lawnButton) {
       lawnButton.disabled = !lawnNeedsCare(selectedLawn);

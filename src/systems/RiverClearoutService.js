@@ -88,6 +88,8 @@ export class RiverClearoutService {
       rowsCleared: engine.rowsCleared,
       percent: engine.percent(),
       stars: engine.stars(),
+      starCap: engine.starCap(),
+      assistanceTier: engine.assistanceTier,
       remaining: engine.countOriginal(),
       undosRemaining: Math.max(0, session.level.maxUndos - engine.undoHistory.length),
       preview: engine.preview(RIVER_RULES.queue.previewCount),
@@ -99,6 +101,7 @@ export class RiverClearoutService {
       mode: session.mode,
       environmentTargetId: session.environmentTargetId,
       environmentItemIds: session.environmentItemIds,
+      canUndo: engine.undoHistory.length > 0,
     });
   }
 
@@ -205,12 +208,40 @@ export class RiverClearoutService {
 
   undo() {
     const session = this.activeSession;
-    if (!session || session.finished) return { ok: false, code: "no-active-river-level" };
+    if (!session) return { ok: false, code: "no-active-river-level" };
+    if (session.finished) return this.undoFinishedResult();
     const undone = session.engine.undo();
     if (!undone) return { ok: false, code: "nothing-to-undo", message: "No more placed pieces can be recovered." };
     session.fallAccumulator = 0;
     session.lockAccumulator = 0;
     const result = { ok: true, code: "river-undo", session: this.getActiveSession() };
+    this.emit(result);
+    return result;
+  }
+
+  undoFinishedResult() {
+    const session = this.activeSession;
+    if (!session?.finished || !session.engine.undoHistory.length) return { ok: false, code: "nothing-to-undo", message: "No finished placement can be recovered." };
+    const durableBeforeUndo = this.gameState.getSnapshot();
+    if (session.result?.won && session.durableCheckpoint) {
+      const restored = this.gameState.replace(session.durableCheckpoint);
+      if (!restored.ok) return { ok: false, code: "state-validation", errors: restored.errors };
+      const saved = this.repository.save(session.durableCheckpoint, { now: this.now() });
+      if (!saved.ok) {
+        this.gameState.replace(durableBeforeUndo);
+        return { ok: false, code: "persistence-failed", message: "The finished river result could not be reopened safely.", save: saved };
+      }
+    }
+    if (!session.engine.undo()) {
+      if (session.result?.won && session.durableCheckpoint) this.gameState.replace(durableBeforeUndo);
+      return { ok: false, code: "nothing-to-undo", message: "No finished placement can be recovered." };
+    }
+    session.finished = false;
+    session.result = null;
+    session.durableCheckpoint = null;
+    session.fallAccumulator = 0;
+    session.lockAccumulator = 0;
+    const result = { ok: true, code: "river-result-undo", session: this.getActiveSession() };
     this.emit(result);
     return result;
   }
@@ -280,6 +311,7 @@ export class RiverClearoutService {
       return outcome;
     }
 
+    const durableCheckpoint = this.gameState.getSnapshot();
     const transaction = this.commit((state) => {
       const progress = state.river;
       const level = session.level.id;
@@ -324,6 +356,7 @@ export class RiverClearoutService {
     if (!transaction.ok) return transaction;
     session.finished = true;
     session.result = transaction.result;
+    session.durableCheckpoint = durableCheckpoint;
     return transaction;
   }
 

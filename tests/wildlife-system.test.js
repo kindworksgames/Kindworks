@@ -4,7 +4,9 @@ import {
   AERIAL_SPECIES,
   ANIMAL_BY_ID,
   ANIMAL_DEFINITIONS,
+  ANIMAL_RELOCATION_CONFIG,
   ANIMAL_SPECIES,
+  ANIMAL_VISUAL_FIDELITY_VERSION,
   RARE_ANIMAL_ENCOUNTERS,
   SHOP_PET_DEFINITIONS,
   WATER_SPECIES,
@@ -55,6 +57,16 @@ test("day, night, crepuscular and all-day schedules remain distinct", () => {
   assert.equal(animalScheduleVisible(ANIMAL_BY_ID["animal-snail-1"],at(720)), true);
 });
 
+test("a cared-for town widens the exact wildlife appearance windows", () => {
+  const world = createFreshGameState({ now: 0 }).world;
+  const at = (clockMinutes) => ({ ...world, clockMinutes });
+  const cared = { cleanliness: { band: "cared-for" } };
+  assert.equal(animalScheduleVisible(ANIMAL_BY_ID["animal-dog-1"],at(345),null,cared),true);
+  assert.equal(animalScheduleVisible(ANIMAL_BY_ID["animal-dog-1"],at(345)),false);
+  assert.equal(animalScheduleVisible(ANIMAL_BY_ID["animal-hedgehog-1"],at(1110),null,cared),true);
+  assert.equal(animalScheduleVisible(ANIMAL_BY_ID["animal-fox-1"],at(1000),null,cared),true);
+});
+
 test("all five rare visitors keep their exact periods, windows and entry behaviour", () => {
   assert.deepEqual(Object.fromEntries(Object.entries(RARE_ANIMAL_ENCOUNTERS).map(([id,value]) => [id,[value.periodDays,value.offsetDay,value.startMinute,value.durationMinutes,value.entryMinutes,value.exitMinutes]])), {
     wolf:[6,2,360,180,32,36], sea_otter:[7,4,660,190,34,38], beaver:[8,2,510,210,34,38], capybara:[8,6,750,210,34,38], baby_pig:[5,3,480,210,28,34],
@@ -65,6 +77,18 @@ test("all five rare visitors keep their exact periods, windows and entry behavio
   assert.equal(rareVisitState(wolf,{day:2,clockMinutes:400},resident).phase,"visiting");
   assert.equal(rareVisitState(wolf,{day:2,clockMinutes:530},resident).phase,"returning");
   assert.equal(rareVisitState(wolf,{day:3,clockMinutes:400},resident).active,false);
+  assert.equal(Object.values(RARE_ANIMAL_ENCOUNTERS).every((config) => config.arrivalMessage.length > 20),true);
+});
+
+test("scheduled rare arrivals persist one notice per visit", () => {
+  const state = createFreshGameState({ now: 0 });
+  state.world = normalizeWorldState({...state.world,day:2,clockMinutes:360},{now:2000});
+  const gameState = new GameStateService(state);
+  const animals = new AnimalService(gameState,new SaveRepository(new MemoryStorage()),{now:() => 2000});
+  const first = animals.refreshRareVisits({persist:false});
+  assert.equal(first.code,"rare-animal-arrived");
+  assert.equal(first.notices.some((notice) => notice.animalId === "animal-wolf-1" && /woods/.test(notice.message)),true);
+  assert.equal(animals.refreshRareVisits({persist:false}).notices.length,0);
 });
 
 test("water and aerial species expose distinct environment, animation and depth handling", () => {
@@ -119,6 +143,26 @@ test("the live rotation is deterministic, species-diverse, bounded and hides una
   assert.equal(new Set(visibleWild.map((entry) => entry.definition.species)).size,visibleWild.length);
   assert.ok(visibleWild.every((entry) => Number.isFinite(entry.position.x) && Number.isFinite(entry.position.y)));
   assert.ok(first.every((entry) => !entry.definition.shopPet));
+});
+
+test("wildlife pauses by species, avoids placed objects and exposes protected transition timing", () => {
+  assert.deepEqual(ANIMAL_RELOCATION_CONFIG,{triggerDistance:520,fadeOutSeconds:.22,fadeInSeconds:.28});
+  assert.equal(ANIMAL_VISUAL_FIDELITY_VERSION,"v44-reference-master");
+  const state = createFreshGameState({ now: 0 });
+  const raw = worldAnimalPresentations(state.animals,state.world,state).find((entry) => entry.visible && !entry.definition.aerial && !entry.definition.water);
+  assert.ok(raw?.position);
+  const radius = 70;
+  const context = structuredClone(state);
+  context.townPlacement.objects = [{id:"placed-animal-test",x:raw.position.x,y:raw.position.y,hooks:{wildlifeObstacle:{radius}}}];
+  const avoided = worldAnimalPresentations(state.animals,state.world,context).find((entry) => entry.id === raw.id);
+  assert.ok(Math.hypot(avoided.position.x-raw.position.x,avoided.position.y-raw.position.y) >= radius);
+  let observedWait = false;
+  for (let minute = 0; minute < 1440 && !observedWait; minute += 1) {
+    const world = normalizeWorldState({...state.world,day:1,clockMinutes:minute},{now:minute});
+    const fox = worldAnimalPresentations(state.animals,world,state).find((entry) => entry.id === "animal-fox-1");
+    observedWait = fox.motionState.phase === "waiting" && fox.motionState.wait <= 3.8;
+  }
+  assert.equal(observedWait,true);
 });
 
 test("offline rare encounters receive one delayed replay instead of being silently lost", () => {

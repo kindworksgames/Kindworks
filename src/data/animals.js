@@ -1,4 +1,5 @@
 import { absoluteWorldMinute } from "./farming.js";
+import { RIVER_SECTIONS } from "./livingEnvironment.js";
 import { HOUSES, RIVER_PATH, SHOPS, WORLD } from "./town.js";
 
 export const ANIMAL_STATE_SCHEMA_VERSION = 2;
@@ -20,6 +21,27 @@ export const SOUTH_MEADOW = Object.freeze({
 });
 
 export const WILDLIFE_ROTATION = Object.freeze({ baseVisible: 3, maxVisible: 4, slotDurationMinutes: 240, slotStaggerMinutes: 80, transitionSeconds: 0.7 });
+export const ANIMAL_RELOCATION_CONFIG = Object.freeze({ triggerDistance: 520, fadeOutSeconds: 0.22, fadeInSeconds: 0.28 });
+export const ANIMAL_VISUAL_FIDELITY_VERSION = "v44-reference-master";
+export const ANIMAL_REFERENCE_TEXTURE_KEY = "animal-reference-master-v44";
+export const ANIMAL_REFERENCE_SHEET_PATH = "/assets/animals/reference-master-v44.png";
+export const ANIMAL_REFERENCE_FRAMES = Object.freeze({
+  dog:0, cat:1, raccoon:2, fox:3, wolf:4, baby_pig:5,
+  deer:6, squirrel:7, hedgehog:8, songbird:9, cow:10, sheep:11,
+  goat:12, chicken:13, goose:14, rabbit:15, owl:16, duck:17,
+  beaver:18, sea_otter:19, capybara:20, butterfly:21, bee:22, pigeon:23,
+  crow:24, macaw:25, turtle:26, frog:27, snail:28, pony:29,
+  "dog_labrador":30, "dog_spaniel":31, "dog_dachshund":32, "dog_corgi":33,
+  "dog_border-collie":34, "dog_husky":35, chinchilla:36, meerkat:37,
+  fennec_fox:38, baby_triceratops:39, mouse:40, donkey:41, fish:42,
+});
+
+export function animalReferenceFrame(definition) {
+  const key = definition?.shopPet && definition.species === "dog" && definition.breedId
+    ? `dog_${definition.breedId}`
+    : definition?.species;
+  return Number.isInteger(ANIMAL_REFERENCE_FRAMES[key]) ? ANIMAL_REFERENCE_FRAMES[key] : null;
+}
 
 const diets = {
   cat: [["river-minnows","fresh-sardines","river-trout","reedbank-roach","lily-perch","prepared-meat","chicken-pieces"],["fresh-sardines","lily-perch","prepared-meat"]],
@@ -124,11 +146,11 @@ export const SHOP_ONLY_SPECIES = Object.freeze(new Set(["chinchilla","meerkat","
 export const TERRITORY_RADII = Object.freeze({cat:135,dog:175,rabbit:155,hedgehog:100,duck:170,raccoon:145,fox:220,crow:235,songbird:215,wolf:260,sea_otter:190,beaver:185,capybara:195,baby_pig:155,sheep:150,goat:175,donkey:190,cow:165,chicken:120,goose:175,frog:105,squirrel:190,deer:240,owl:230,bee:120,butterfly:145,mouse:95,snail:65,fish:210,pigeon:210,turtle:115,pony:210,chinchilla:110,meerkat:140,fennec_fox:180,macaw:210,baby_triceratops:185});
 
 export const RARE_ANIMAL_ENCOUNTERS = Object.freeze({
-  wolf:Object.freeze({periodDays:6,offsetDay:2,startMinute:360,durationMinutes:180,entryMinutes:32,exitMinutes:36,forest:Object.freeze([4160,1660]),town:Object.freeze([3900,1660]),runMultiplier:1.65,replayDelayMinutes:10}),
-  sea_otter:Object.freeze({periodDays:7,offsetDay:4,startMinute:660,durationMinutes:190,entryMinutes:34,exitMinutes:38,forest:Object.freeze([2720,2780]),town:Object.freeze([2680,2500]),runMultiplier:1.55,replayDelayMinutes:10}),
-  beaver:Object.freeze({periodDays:8,offsetDay:2,startMinute:510,durationMinutes:210,entryMinutes:34,exitMinutes:38,forest:Object.freeze([2600,20]),town:Object.freeze([2650,300]),runMultiplier:1.55,replayDelayMinutes:10}),
-  capybara:Object.freeze({periodDays:8,offsetDay:6,startMinute:750,durationMinutes:210,entryMinutes:34,exitMinutes:38,forest:Object.freeze([2720,2780]),town:Object.freeze([2690,2500]),runMultiplier:1.5,replayDelayMinutes:10}),
-  baby_pig:Object.freeze({periodDays:5,offsetDay:3,startMinute:480,durationMinutes:210,entryMinutes:28,exitMinutes:34,forest:Object.freeze([35,1515]),town:Object.freeze([185,1515]),runMultiplier:1.75,replayDelayMinutes:10}),
+  wolf:Object.freeze({periodDays:6,offsetDay:2,startMinute:360,durationMinutes:180,entryMinutes:32,exitMinutes:36,forest:Object.freeze([4160,1660]),town:Object.freeze([3900,1660]),runMultiplier:1.65,replayDelayMinutes:10,arrivalMessage:"🌲 Something large is stirring near the eastern woods…"}),
+  sea_otter:Object.freeze({periodDays:7,offsetDay:4,startMinute:660,durationMinutes:190,entryMinutes:34,exitMinutes:38,forest:Object.freeze([2720,2780]),town:Object.freeze([2680,2500]),runMultiplier:1.55,replayDelayMinutes:10,arrivalMessage:"🌊 A rare splash echoes from the southern river reeds…"}),
+  beaver:Object.freeze({periodDays:8,offsetDay:2,startMinute:510,durationMinutes:210,entryMinutes:34,exitMinutes:38,forest:Object.freeze([2600,20]),town:Object.freeze([2650,300]),runMultiplier:1.55,replayDelayMinutes:10,arrivalMessage:"🪵 Fresh wood chips and a broad tail splash appear in the upper river…"}),
+  capybara:Object.freeze({periodDays:8,offsetDay:6,startMinute:750,durationMinutes:210,entryMinutes:34,exitMinutes:38,forest:Object.freeze([2720,2780]),town:Object.freeze([2690,2500]),runMultiplier:1.5,replayDelayMinutes:10,arrivalMessage:"🌿 A remarkably calm rare visitor is swimming up from the southern reeds…"}),
+  baby_pig:Object.freeze({periodDays:5,offsetDay:3,startMinute:480,durationMinutes:210,entryMinutes:28,exitMinutes:34,forest:Object.freeze([35,1515]),town:Object.freeze([185,1515]),runMultiplier:1.75,replayDelayMinutes:10,arrivalMessage:"🌳 The western forest edge is rustling with tiny footsteps…"}),
 });
 
 const wildTemplates = [
@@ -280,16 +302,37 @@ export function rareVisitState(definition, world, resident = null) {
   return {rare:true,active,phase:!active ? "away" : elapsed < config.entryMinutes ? "entering" : elapsed >= config.durationMinutes - config.exitMinutes ? "returning" : "visiting",source:"scheduled",startAbsoluteMinute:scheduledRareStart(config,world.day),elapsed};
 }
 
-export function animalScheduleVisible(definition, world, resident = null) {
+export function townWelcomesWildlife(environment) {
+  return ["cared-for", "calm"].includes(environment?.cleanliness?.band);
+}
+
+function riverSectionPollution(environment, sectionId) {
+  const items = (environment?.river?.items || []).filter((item) => item.sectionId === sectionId);
+  const stuck = items.filter((item) => item.status === "stuck").length;
+  if (stuck >= 3 || items.length >= 7) return 3;
+  if (stuck >= 2 || items.length >= 5) return 2;
+  if (stuck >= 1 || items.length >= 3) return 1;
+  return 0;
+}
+
+export function animalEnvironmentBonus(definition, state) {
+  if (!definition) return 0;
+  if (!WATER_SPECIES.has(definition.species)) return townWelcomesWildlife(state?.environment) ? 2 : 0;
+  const pollution = RIVER_SECTIONS.reduce((sum, section) => sum + riverSectionPollution(state?.environment, section.id), 0) / Math.max(1, RIVER_SECTIONS.length);
+  return pollution < 1.5 ? 2 : 0;
+}
+
+export function animalScheduleVisible(definition, world, resident = null, environment = null) {
   if (!definition || definition.shopPet) return Boolean(resident?.adopted);
   if (resident?.adopted) return true;
   if (speciesFor(definition)?.rare) return rareVisitState(definition,world,resident).active;
   const hour = world.clockMinutes / 60;
   const schedule = speciesFor(definition)?.schedule;
+  const welcoming = townWelcomesWildlife(environment);
   if (schedule === "all") return true;
-  if (schedule === "night") return hour >= 19 || hour < 6.5;
-  if (schedule === "crepuscular") return hour < 9 || hour >= 17.5;
-  return hour >= 6 && hour < 20.5;
+  if (schedule === "night") return hour >= (welcoming ? 18 : 19) || hour < (welcoming ? 7 : 6.5);
+  if (schedule === "crepuscular") return hour < (welcoming ? 10 : 9) || hour >= (welcoming ? 16.5 : 17.5);
+  return hour >= (welcoming ? 5.5 : 6) && hour < (welcoming ? 21 : 20.5);
 }
 
 function hashUnit(value) {
@@ -313,20 +356,66 @@ function weightedChoice(candidates, key) {
   return candidates.at(-1);
 }
 
-function positionOnRoute(routePoints, absoluteMinute, speed, offset = 0) {
-  if (!routePoints?.length) return { x: 0, y: 0 };
-  if (routePoints.length === 1) return { ...routePoints[0] };
-  const segmentMinutes = Math.max(12, 54 - speed * .55);
-  const progress = absoluteMinute / segmentMinutes + offset;
-  const routeIndex = ((Math.floor(progress) % routePoints.length) + routePoints.length) % routePoints.length;
-  const nextIndex = (routeIndex + 1) % routePoints.length;
-  const fraction = progress - Math.floor(progress);
-  const from = routePoints[routeIndex];
-  const to = routePoints[nextIndex];
-  return {
-    x: Math.round((from.x + (to.x - from.x) * fraction) * 10) / 10,
-    y: Math.round((from.y + (to.y - from.y) * fraction) * 10) / 10,
-  };
+function routeWaitMinutes(definition, routeIndex) {
+  if (["fox", "wolf"].includes(definition?.species)) return 3.8;
+  if (["songbird", "crow"].includes(definition?.species)) return 0.9;
+  return 1.6 + (routeIndex % 3) * 0.7;
+}
+
+function routeMotionState(routePoints, absoluteMinute, speed, offset = 0, definition = null) {
+  if (!routePoints?.length) return { position: { x: 0, y: 0 }, routeIndex: 0, wait: 0, phase: "idle" };
+  if (routePoints.length === 1) return { position: { ...routePoints[0] }, routeIndex: 0, wait: 0, phase: "idle" };
+  const segments = routePoints.map((from, routeIndex) => {
+    const to = routePoints[(routeIndex + 1) % routePoints.length];
+    const travel = Math.max(0.35, Math.hypot(to.x - from.x, to.y - from.y) / Math.max(1, speed));
+    const wait = routeWaitMinutes(definition, routeIndex);
+    return { from, to, routeIndex, travel, wait, duration: travel + wait };
+  });
+  const cycle = segments.reduce((sum, segment) => sum + segment.duration, 0);
+  let cursor = ((absoluteMinute + offset * WILDLIFE_ROTATION.slotDurationMinutes) % cycle + cycle) % cycle;
+  for (const segment of segments) {
+    if (cursor <= segment.travel) {
+      const fraction = clamp(cursor / segment.travel, 0, 1);
+      return {
+        position: {
+          x: Math.round((segment.from.x + (segment.to.x - segment.from.x) * fraction) * 10) / 10,
+          y: Math.round((segment.from.y + (segment.to.y - segment.from.y) * fraction) * 10) / 10,
+        },
+        routeIndex: segment.routeIndex,
+        wait: 0,
+        phase: "moving",
+      };
+    }
+    cursor -= segment.travel;
+    if (cursor <= segment.wait) return { position: { ...segment.to }, routeIndex: (segment.routeIndex + 1) % routePoints.length, wait: Math.round((segment.wait - cursor) * 10) / 10, phase: "waiting" };
+    cursor -= segment.wait;
+  }
+  return { position: { ...routePoints[0] }, routeIndex: 0, wait: 0, phase: "idle" };
+}
+
+function positionOnRoute(routePoints, absoluteMinute, speed, offset = 0, definition = null) {
+  return routeMotionState(routePoints, absoluteMinute, speed, offset, definition).position;
+}
+
+function placedObjectRadius(object) {
+  return Math.max(18, Number(object?.hooks?.wildlifeObstacle?.radius) || 30);
+}
+
+function pointBlockedByPlacements(point, objects) {
+  return (objects || []).some((object) => Math.hypot(point.x - Number(object.x), point.y - Number(object.y)) < placedObjectRadius(object));
+}
+
+function avoidPlacedObjects(definition, point, objects) {
+  if (!point || definition?.aerial || definition?.water || !pointBlockedByPlacements(point, objects)) return point;
+  const seed = Math.floor(hashUnit(`${definition.id}:${Math.round(point.x)}:${Math.round(point.y)}`) * 360);
+  for (let radius = 26; radius <= 150; radius += 18) {
+    for (let step = 0; step < 20; step += 1) {
+      const angle = (seed + step * 18) * Math.PI / 180;
+      const candidate = { x: clamp(point.x + Math.cos(angle) * radius, 18, WORLD.width - 18), y: clamp(point.y + Math.sin(angle) * radius, 18, WORLD.height - 18) };
+      if (!groundPointBlocked(candidate.x, candidate.y) && !pointBlockedByPlacements(candidate, objects)) return candidate;
+    }
+  }
+  return point;
 }
 
 export function wildlifeEnvironmentResponse(definition, world) {
@@ -392,7 +481,7 @@ function animationPresentation(definition, environment, position, previousPositi
 
 function rareEncounterPosition(definition, visit, absoluteMinute, speed, offset = 0) {
   const config = RARE_ANIMAL_ENCOUNTERS[definition.species];
-  if (!config) return positionOnRoute(definition.route,absoluteMinute,speed,offset);
+  if (!config) return positionOnRoute(definition.route,absoluteMinute,speed,offset,definition);
   const forestPoint = WATER_SPECIES.has(definition.species) ? nearestRiverPoint(config.forest[0],config.forest[1]) : {x:config.forest[0],y:config.forest[1]};
   const forest = {x:Math.round(forestPoint.x),y:Math.round(forestPoint.y)};
   const town = definition.habitatAnchor;
@@ -405,16 +494,18 @@ function rareEncounterPosition(definition, visit, absoluteMinute, speed, offset 
     const amount = clamp((visit.elapsed - (config.durationMinutes - config.exitMinutes)) / config.exitMinutes,0,1);
     return {x:Math.round((town.x + (forest.x - town.x) * amount) * 10) / 10,y:Math.round((town.y + (forest.y - town.y) * amount) * 10) / 10};
   }
-  return positionOnRoute(definition.route,absoluteMinute,speed,offset);
+  return positionOnRoute(definition.route,absoluteMinute,speed,offset,definition);
 }
 
-export function worldAnimalPresentations(animalState, world) {
+export function worldAnimalPresentations(animalState, world, context = {}) {
   const residents = animalState?.residents || {};
+  const environmentState = context?.environment || null;
+  const placedObjects = context?.townPlacement?.objects || [];
   const absolute = absoluteWorldMinute(world);
   const adopted = ANIMAL_DEFINITIONS.filter(definition => residents[definition.id]?.adopted);
   const regularCandidates = WILDLIFE_DEFINITIONS.filter(definition => {
     const resident = residents[definition.id];
-    return !speciesFor(definition)?.rare && !resident?.adopted && animalScheduleVisible(definition,world,resident);
+    return !speciesFor(definition)?.rare && !resident?.adopted && animalScheduleVisible(definition,world,resident,environmentState);
   }).sort((left,right) => left.id.localeCompare(right.id));
   const roster = [];
   const usedSpecies = new Set(adopted.map(definition => definition.species));
@@ -432,7 +523,7 @@ export function worldAnimalPresentations(animalState, world) {
     .sort((left,right) => Number(WATER_SPECIES.has(right.species)) - Number(WATER_SPECIES.has(left.species)) || left.id.localeCompare(right.id));
   for (const definition of activeRareVisitors) {
     const resident = residents[definition.id];
-    if (!resident?.adopted && animalScheduleVisible(definition,world,resident) && roster.length < WILDLIFE_ROTATION.maxVisible) {
+    if (!resident?.adopted && animalScheduleVisible(definition,world,resident,environmentState) && roster.length < WILDLIFE_ROTATION.maxVisible) {
       roster.push(definition);
     }
   }
@@ -448,21 +539,24 @@ export function worldAnimalPresentations(animalState, world) {
       const rareVisit = rareVisitState(definition,world,resident);
       const routeOffset = index * WILDLIFE_ROTATION.slotStaggerMinutes / WILDLIFE_ROTATION.slotDurationMinutes;
       const following = Boolean(resident?.active);
-      const position = following
+      const rawPosition = following
         ? null
         : !resident?.adopted && rareVisit.rare
           ? rareEncounterPosition(definition,rareVisit,absolute,speed,routeOffset)
-          : positionOnRoute(route,absolute,speed,routeOffset);
-      const previousPosition = following
+          : positionOnRoute(route,absolute,speed,routeOffset,definition);
+      const rawPreviousPosition = following
         ? null
         : !resident?.adopted && rareVisit.rare
           ? rareEncounterPosition(definition,{...rareVisit,elapsed:rareVisit.elapsed - .1},absolute - .1,speed,routeOffset)
-          : positionOnRoute(route,absolute - .1,speed,routeOffset);
+          : positionOnRoute(route,absolute - .1,speed,routeOffset,definition);
+      const position = avoidPlacedObjects(definition,rawPosition,placedObjects);
+      const previousPosition = avoidPlacedObjects(definition,rawPreviousPosition,placedObjects);
       const animation = following
         ? animationPresentation(definition,environment,{x:1,y:0},{x:0,y:0})
         : animationPresentation(definition,environment,position,previousPosition);
       const visible = Boolean(resident?.adopted || visibleIds.has(definition.id));
       const depth = !position ? 300 : environment.aerial ? 620 + position.y / 100 : environment.water ? 130 + position.y / 20 : 180 + position.y / 10;
+      const motionState = following ? { routeIndex: 0, wait: 0, phase: "following" } : routeMotionState(route,absolute,speed,routeOffset,definition);
       return Object.freeze({
         id: definition.id,
         definition,
@@ -473,6 +567,8 @@ export function worldAnimalPresentations(animalState, world) {
         position,
         environment,
         animation,
+        motionState: Object.freeze(motionState),
+        homeSlot: resident?.adopted ? adopted.findIndex((candidate) => candidate.id === definition.id) : -1,
         rareVisit,
         depth,
       });

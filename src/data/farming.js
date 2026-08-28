@@ -1,3 +1,5 @@
+import { HOUSES } from "./town.js";
+
 export const FARMING_SCHEMA_VERSION = 3;
 
 export const ALLOTMENT_CONFIG = Object.freeze({
@@ -67,14 +69,16 @@ const lawnLocations = [
 
 export const LAWN_PLOTS = Object.freeze(lawnLocations.map(([number, x, y, gate, active = true], index) => {
   const id = `lawn-house-${number}`;
+  const house = HOUSES.find((entry) => Number(entry.id.split("-")[1]) === number) || null;
   const initial = index === 0 ? [82, 48] : index === 1 ? [54, 27] : index === 2 ? [9, 3] : [trait(id, "grass", 4, 11), trait(id, "weeds", 0, 7)];
   return Object.freeze({
     id,
     legacyId: `lawn-${String(number).padStart(2, "0")}`,
-    houseSourceId: `house-${String(number).padStart(2, "0")}`,
+    houseSourceId: house?.id || `house-${number}`,
     homeNodeId: `home${String(number).padStart(2, "0")}`,
     title: `House ${number} Front Lawn`,
     x, y, radius: 105, gate, active,
+    yard: house?.yard || null,
     initialGrass: initial[0], initialWeeds: initial[1], initialMoisture: trait(id, "moisture", 42, 70),
     soilHealth: trait(id, "soil", 72, 94),
     growthRate: trait(id, "growth", 0.78, 1.18),

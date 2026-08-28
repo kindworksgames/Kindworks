@@ -1,5 +1,7 @@
 import Phaser from "phaser";
 import { BEACH_TILE, BEACH_TOTAL_LEVELS, BeachCleanupEngine, beachLevelSummary, generateBeachLevel } from "../data/beachCleanup.js";
+import { cardinalDirection } from "../input/mobileGestures.js";
+import { renderBeachRakeGrooves } from "../ui/BeachRakePattern.js";
 
 const ROOM = Object.freeze({ width: 1280, height: 720 });
 const KEYS = Object.freeze({ U: "up", D: "down", L: "left", R: "right" });
@@ -11,7 +13,7 @@ function show(selector, visible) { document.querySelector(selector)?.classList.t
 
 export class BeachCleanupScene extends Phaser.Scene {
   constructor() { super("BeachCleanupScene"); this.entryData = {}; }
-  init(data = {}) { this.entryData = data; this.transitioning = false; this.exitArmedUntil = 0; this.lastResultContext = null; this.pointerStart = null; this.hintDirection = null; }
+  init(data = {}) { this.entryData = data; this.transitioning = false; this.exitArmedUntil = 0; this.lastResultContext = null; this.pointerStart = null; this.pointerDirection = null; this.pointerHoldTimer = null; this.pointerRunSequence = 0; this.hintDirection = null; }
 
   create() {
     this.beachCleanup = this.registry.get("beachCleanup");
@@ -38,13 +40,12 @@ export class BeachCleanupScene extends Phaser.Scene {
 
   bindInterface() {
     this.hud = document.querySelector("#beach-cleanup-hud"); this.levelSelect = document.querySelector("#beach-level-select"); this.board = document.querySelector("#beach-board");
-    this.buttons = { start: document.querySelector("#beach-level-start"), exit: document.querySelector("#beach-exit"), U: document.querySelector("#beach-up"), D: document.querySelector("#beach-down"), L: document.querySelector("#beach-left"), R: document.querySelector("#beach-right"), undo: document.querySelector("#beach-undo"), hint: document.querySelector("#beach-hint"), retry: document.querySelector("#beach-retry"), qa: document.querySelector("#beach-qa-complete"), replay: document.querySelector("#beach-replay"), next: document.querySelector("#beach-next"), return: document.querySelector("#beach-return") };
+    this.buttons = { start: document.querySelector("#beach-level-start"), exit: document.querySelector("#beach-exit"), undo: document.querySelector("#beach-undo"), hint: document.querySelector("#beach-hint"), retry: document.querySelector("#beach-retry"), qa: document.querySelector("#beach-qa-complete"), replay: document.querySelector("#beach-replay"), next: document.querySelector("#beach-next"), return: document.querySelector("#beach-return") };
     this.onStart = () => this.startLevel(Number(this.levelSelect?.value || 1));
     this.onLevelChange = () => { if (this.buttons.start) this.buttons.start.textContent = `Start Level ${this.levelSelect.value}`; };
-    this.onExit = () => this.requestExit(); this.onUndo = () => { const undone = this.runAction(() => this.beachCleanup.undo(this.beachCleanup.getActiveSession()?.id)); if (undone) { this.setMessage("Step undone.", "hint"); this.render(); } return undone; };
+    this.onExit = () => this.requestExit(); this.onUndo = () => { const undone = this.runAction(() => this.beachCleanup.undo(this.beachCleanup.getActiveSession()?.id)); if (undone) { this.setMessage("Run undone.", "hint"); this.render(); } return undone; };
     this.onHint = () => this.showHint(); this.onRetry = () => this.restart(); this.onQa = () => this.runCertifiedCompletion();
     this.onReplay = () => this.startLevel(this.lastResultContext?.level || 1); this.onNext = () => this.startLevel(this.beachCleanup.getCampaignSnapshot().nextLevel); this.onReturn = () => this.returnToTown(true);
-    this.directionHandlers = Object.fromEntries(Object.keys(KEYS).map((direction) => [direction, () => this.walk(direction)]));
     this.challengeHandlers = {};
     for (const button of document.querySelectorAll("[data-beach-challenge]")) {
       const challenge = button.dataset.beachChallenge; const handler = () => this.toggleChallenge(challenge);
@@ -56,16 +57,51 @@ export class BeachCleanupScene extends Phaser.Scene {
       const direction = event.key === "ArrowUp" || key === "w" ? "U" : event.key === "ArrowDown" || key === "s" ? "D" : event.key === "ArrowLeft" || key === "a" ? "L" : event.key === "ArrowRight" || key === "d" ? "R" : null;
       if (direction) { event.preventDefault(); this.walk(direction); } else if (key === "z") { event.preventDefault(); this.onUndo(); } else if (key === "h") { event.preventDefault(); this.onHint(); } else if (key === "r") { event.preventDefault(); this.onRetry(); }
     };
-    this.onPointerDown = (event) => { this.pointerStart = { x: event.clientX, y: event.clientY, id: event.pointerId }; };
-    this.onPointerUp = (event) => { if (!this.pointerStart || this.pointerStart.id !== event.pointerId) return; const dx = event.clientX - this.pointerStart.x; const dy = event.clientY - this.pointerStart.y; this.pointerStart = null; if (Math.max(Math.abs(dx), Math.abs(dy)) >= 24) this.walk(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "R" : "L") : (dy > 0 ? "D" : "U")); };
+    this.stopPointerHold = () => { this.pointerHoldTimer?.remove?.(false); this.pointerHoldTimer = null; };
+    this.startPointerHold = (direction) => {
+      this.stopPointerHold();
+      if (!direction || this.beachCleanup.getSessionState()?.won) return;
+      this.pointerHoldTimer = this.time.addEvent({ delay: 140, loop: true, callback: () => {
+        if (!this.pointerStart || this.pointerDirection !== direction || !this.walk(direction, { batchId: this.pointerStart.runId }) || this.beachCleanup.getSessionState()?.won) this.stopPointerHold();
+      } });
+    };
+    this.onPointerDown = (event) => {
+      if (!this.beachCleanup.getActiveSession() || this.transitioning) return;
+      event.preventDefault();
+      this.board?.setPointerCapture?.(event.pointerId);
+      this.stopPointerHold();
+      this.pointerDirection = null;
+      this.pointerRunSequence += 1;
+      this.pointerStart = { x: event.clientX, y: event.clientY, id: event.pointerId, runId: `swipe-${this.pointerRunSequence}` };
+    };
+    this.onPointerMove = (event) => {
+      if (!this.pointerStart || this.pointerStart.id !== event.pointerId) return;
+      event.preventDefault();
+      const direction = cardinalDirection(event.clientX - this.pointerStart.x, event.clientY - this.pointerStart.y, 18);
+      if (!direction || direction === this.pointerDirection) return;
+      this.pointerStart.x = event.clientX; this.pointerStart.y = event.clientY; this.pointerDirection = direction;
+      if (this.walk(direction, { batchId: this.pointerStart.runId })) this.startPointerHold(direction); else this.stopPointerHold();
+    };
+    this.onPointerUp = (event) => {
+      if (!this.pointerStart || this.pointerStart.id !== event.pointerId) return;
+      event.preventDefault();
+      const direction = this.pointerDirection || cardinalDirection(event.clientX - this.pointerStart.x, event.clientY - this.pointerStart.y, 18);
+      const alreadyMoved = Boolean(this.pointerDirection); const runId = this.pointerStart.runId;
+      this.stopPointerHold(); this.pointerStart = null; this.pointerDirection = null;
+      if (!alreadyMoved && direction) this.walk(direction, { batchId: runId });
+    };
+    this.onPointerCancel = (event) => {
+      if (!this.pointerStart || (event?.pointerId !== undefined && this.pointerStart.id !== event.pointerId)) return;
+      this.stopPointerHold(); this.pointerStart = null; this.pointerDirection = null;
+    };
     this.buttons.start?.addEventListener("click", this.onStart); this.levelSelect?.addEventListener("change", this.onLevelChange); this.buttons.exit?.addEventListener("click", this.onExit);
-    for (const direction of Object.keys(KEYS)) this.buttons[direction]?.addEventListener("click", this.directionHandlers[direction]);
     this.buttons.undo?.addEventListener("click", this.onUndo); this.buttons.hint?.addEventListener("click", this.onHint); this.buttons.retry?.addEventListener("click", this.onRetry); this.buttons.qa?.addEventListener("click", this.onQa); this.buttons.replay?.addEventListener("click", this.onReplay); this.buttons.next?.addEventListener("click", this.onNext); this.buttons.return?.addEventListener("click", this.onReturn);
-    this.board?.addEventListener("pointerdown", this.onPointerDown); this.board?.addEventListener("pointerup", this.onPointerUp); window.addEventListener("keydown", this.onKeyDown);
+    this.board?.addEventListener("pointerdown", this.onPointerDown); this.board?.addEventListener("pointermove", this.onPointerMove); this.board?.addEventListener("pointerup", this.onPointerUp);
+    this.board?.addEventListener("pointercancel", this.onPointerCancel); this.board?.addEventListener("lostpointercapture", this.onPointerCancel); window.addEventListener("blur", this.onPointerCancel); window.addEventListener("keydown", this.onKeyDown);
     this.buttons.qa?.classList.toggle("hidden", !this.qaMode); this.hud?.classList.remove("hidden");
     if (this.buttons.exit) this.buttons.exit.textContent = "Exit";
     const session = this.beachCleanup.getActiveSession(); show("#beach-picker", !session); show("#beach-gameplay", Boolean(session)); show("#beach-result", false);
-    this.setMessage(session?.mode === "town-job" ? "Rake the beach and find every item." : session ? "Swipe or use the arrows to rake." : "Choose a level.", session ? "success" : "neutral");
+    this.setMessage(session?.mode === "town-job" ? "Rake the beach and find every item." : session ? "Swipe across the sand to rake." : "Choose a level.", session ? "success" : "neutral");
   }
 
   setSceneInterface() {
@@ -81,10 +117,10 @@ export class BeachCleanupScene extends Phaser.Scene {
     this.lastResultContext = null; this.hintDirection = null; show("#beach-picker", false); show("#beach-gameplay", true); show("#beach-result", false); this.setMessage("Rake every tile. Find every item.", "success"); this.render(); return true;
   }
 
-  walk(direction) {
+  walk(direction, options = {}) {
     const session = this.beachCleanup.getActiveSession(); if (!session || this.transitioning) return false;
     const before = this.beachCleanup.getSessionState(); this.hintDirection = null;
-    const moved = this.runAction(() => this.beachCleanup.move(session.id, direction));
+    const moved = this.runAction(() => this.beachCleanup.move(session.id, direction, options));
     const after = this.beachCleanup.getSessionState();
     if (moved && after) {
       if (after.collectedRubbish > before.collectedRubbish) this.setMessage(`Item found! ${after.totalRubbish - after.collectedRubbish} left.`, "success");
@@ -127,12 +163,12 @@ export class BeachCleanupScene extends Phaser.Scene {
       for (let row = 0; row < level.height; row += 1) for (let col = 0; col < level.width; col += 1) {
         const tile = level.rows[row][col]; const key = `${row},${col}`; const player = state.row === row && state.col === col;
         const classes = ["beach-cell", tile === BEACH_TILE.boardwalk || tile === BEACH_TILE.player ? "boardwalk" : tile === BEACH_TILE.sand || tile === BEACH_TILE.rubbish ? raked.has(key) ? "raked" : "sand" : tile === BEACH_TILE.tide ? "tide" : "obstacle", player ? "beach-player" : ""].filter(Boolean).join(" ");
-        const content = player ? "🧑‍🌾" : tile === BEACH_TILE.rubbish && !collected.has(key) ? "·" : ICONS[tile] || "";
-        cells.push(`<span class="${classes}" role="gridcell" aria-label="${player ? "Beach raker" : raked.has(key) ? "Raked sand" : tile === BEACH_TILE.rubbish ? "Sand with hidden rubbish" : "Beach tile"}">${content}</span>`);
+        const grooves = raked.has(key) ? renderBeachRakeGrooves(state.rakePatterns[key] || "h") : "";
+        const content = player ? '<span class="beach-player-icon" aria-hidden="true">🧑‍🌾</span>' : tile === BEACH_TILE.rubbish && !collected.has(key) ? "·" : ICONS[tile] || "";
+        cells.push(`<span class="${classes}" role="gridcell" data-rake-pattern="${raked.has(key) ? state.rakePatterns[key] || "h" : ""}" aria-label="${player ? "Beach raker" : raked.has(key) ? "Raked sand" : tile === BEACH_TILE.rubbish ? "Sand with hidden rubbish" : "Beach tile"}">${grooves}${content}</span>`);
       }
       this.board.style.setProperty("--beach-columns", level.width); this.board.style.setProperty("--beach-rows", level.height); this.board.innerHTML = cells.join(""); this.board.setAttribute("aria-label", `Beach Cleanup Level ${session.assignedLevel}, ${state.rakedCount} of ${state.totalSand} sand tiles raked`);
     }
-    for (const direction of Object.keys(KEYS)) { this.buttons[direction].disabled = state.won; this.buttons[direction].classList.toggle("hinted", this.hintDirection === direction); }
     this.buttons.undo.disabled = state.won || !session.undoStack.length; this.buttons.undo.classList.toggle("hidden", !session.undoStack.length); this.buttons.retry.disabled = state.moves === 0; this.buttons.retry.classList.toggle("hidden", state.moves === 0); this.buttons.hint.disabled = state.won; if (this.buttons.qa) this.buttons.qa.disabled = state.won;
     for (const button of document.querySelectorAll("[data-beach-challenge]")) button.classList.toggle("active", Boolean(state.challenges[button.dataset.beachChallenge]));
     this.updateDomState();
@@ -150,6 +186,6 @@ export class BeachCleanupScene extends Phaser.Scene {
 
   requestExit() { const session = this.beachCleanup.getActiveSession(); if (session && Date.now() > this.exitArmedUntil) { this.exitArmedUntil = Date.now() + 3000; if (this.buttons.exit) this.buttons.exit.textContent = "Confirm Exit"; this.setMessage("Tap Confirm Exit to leave this attempt.", "error"); return false; } return this.returnToTown(false); }
   returnToTown(complete) { if (this.transitioning) return false; this.transitioning = true; const active = this.beachCleanup.getActiveSession(); const context = active || this.lastResultContext || {}; if (active) this.beachCleanup.cancel(active.id); const position = context.returnPosition || this.entryData.returnPosition || { x: 3220, y: 2320 }; const facing = context.returnFacing || this.entryData.returnFacing || "down"; this.gameState.updatePlayer({ scene: "TownScene", x: position.x, y: position.y, facing }); document.querySelector("#game")?.setAttribute("data-transition", complete ? "beach-cleanup-complete" : "leaving-beach-cleanup"); this.cameras.main.fadeOut(220, 20, 49, 70); this.time.delayedCall(240, () => this.scene.start("TownScene", { returnPosition: position, returnFacing: facing, transitionCount: Number(this.entryData.transitionCount || 0) + 1 })); return true; }
-  shutdownScene() { this.buttons.start?.removeEventListener("click", this.onStart); this.levelSelect?.removeEventListener("change", this.onLevelChange); this.buttons.exit?.removeEventListener("click", this.onExit); for (const direction of Object.keys(KEYS)) this.buttons[direction]?.removeEventListener("click", this.directionHandlers[direction]); for (const button of document.querySelectorAll("[data-beach-challenge]")) button.removeEventListener("click", this.challengeHandlers[button.dataset.beachChallenge]); this.buttons.undo?.removeEventListener("click", this.onUndo); this.buttons.hint?.removeEventListener("click", this.onHint); this.buttons.retry?.removeEventListener("click", this.onRetry); this.buttons.qa?.removeEventListener("click", this.onQa); this.buttons.replay?.removeEventListener("click", this.onReplay); this.buttons.next?.removeEventListener("click", this.onNext); this.buttons.return?.removeEventListener("click", this.onReturn); this.board?.removeEventListener("pointerdown", this.onPointerDown); this.board?.removeEventListener("pointerup", this.onPointerUp); window.removeEventListener("keydown", this.onKeyDown); this.hud?.classList.add("hidden"); this.worldSimulation?.setPaused("activity", false); this.npcTownLife?.setPaused("activity", false); }
-  getMilestoneState() { return { scene: this.scene.key, gameplayConnected: true, landscapeRequired: true, keyboardControls: true, touchSwipeControls: true, ...this.beachCleanup.getDiagnostics(), session: this.beachCleanup.getActiveSession(), legacySaveUntouched: true }; }
+  shutdownScene() { this.stopPointerHold?.(); this.buttons.start?.removeEventListener("click", this.onStart); this.levelSelect?.removeEventListener("change", this.onLevelChange); this.buttons.exit?.removeEventListener("click", this.onExit); for (const button of document.querySelectorAll("[data-beach-challenge]")) button.removeEventListener("click", this.challengeHandlers[button.dataset.beachChallenge]); this.buttons.undo?.removeEventListener("click", this.onUndo); this.buttons.hint?.removeEventListener("click", this.onHint); this.buttons.retry?.removeEventListener("click", this.onRetry); this.buttons.qa?.removeEventListener("click", this.onQa); this.buttons.replay?.removeEventListener("click", this.onReplay); this.buttons.next?.removeEventListener("click", this.onNext); this.buttons.return?.removeEventListener("click", this.onReturn); this.board?.removeEventListener("pointerdown", this.onPointerDown); this.board?.removeEventListener("pointermove", this.onPointerMove); this.board?.removeEventListener("pointerup", this.onPointerUp); this.board?.removeEventListener("pointercancel", this.onPointerCancel); this.board?.removeEventListener("lostpointercapture", this.onPointerCancel); window.removeEventListener("blur", this.onPointerCancel); window.removeEventListener("keydown", this.onKeyDown); this.pointerStart = null; this.pointerDirection = null; this.hud?.classList.add("hidden"); this.worldSimulation?.setPaused("activity", false); this.npcTownLife?.setPaused("activity", false); }
+  getMilestoneState() { return { scene: this.scene.key, gameplayConnected: true, landscapeRequired: true, keyboardControls: true, touchSwipeControls: true, continuousHeldSwipe: true, ...this.beachCleanup.getDiagnostics(), session: this.beachCleanup.getActiveSession(), legacySaveUntouched: true }; }
 }

@@ -9,7 +9,7 @@ import {
   validateFurniturePlacement,
 } from "../data/homeInteriors.js";
 import { ANIMAL_BY_ID } from "../data/animals.js";
-import { PERSONAL_HOME_HOUSE_ID, personalHomeCapacity } from "../data/customResident.js";
+import { PERSONAL_HOME_HOUSE_ID } from "../data/customResident.js";
 import { ITEM_CATALOG } from "../data/items.js";
 import { COIN_LEDGER_LIMIT } from "../state/economyState.js";
 import { normalizeHomeInteriorState } from "../state/homeInteriorState.js";
@@ -124,10 +124,9 @@ export class HomeInteriorService {
     if (houseId === PERSONAL_HOME_HOUSE_ID) {
       const controlling = Boolean(this.customResident?.getSnapshot?.().controlling);
       if (state.customResident?.profile && !controlling) occupants.push({ id: state.customResident.residentId, name: state.customResident.profile.name, role: "Your resident", activity: "Spending time at home", actionState: "HOME", phase: "home", kind: "resident" });
-      const capacity = personalHomeCapacity(state.customResident?.home?.level || 1);
-      for (const animal of Object.values(state.animals?.residents || {}).filter((entry) => entry.adopted && !entry.active).slice(0, capacity)) {
+      for (const animal of Object.values(state.animals?.residents || {}).filter((entry) => entry.adopted && entry.active && !controlling).slice(0, 1)) {
         const definition = ANIMAL_BY_ID[animal.id];
-        animals.push({ id: animal.id, name: animal.name, species: definition?.species || "companion", icon: definition ? ({ cat: "🐈", dog: "🐕", rabbit: "🐇", hedgehog: "🦔", duck: "🦆", fox: "🦊", crow: "🐦‍⬛", wolf: "🐺" }[definition.species] || "🐾") : "🐾", kind: "animal", activity: "Resting safely at home" });
+        animals.push({ id: animal.id, name: animal.name, species: definition?.species || "companion", color: definition?.color || 0x9b7d64, accent: definition?.accent || 0xe8d4b5, kind: "animal", activity: "At home with your resident", active: true });
       }
     }
     return { occupants, animals };

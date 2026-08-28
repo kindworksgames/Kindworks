@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { CAFE_APPLIANCES, CAFE_RECIPES, cafeStep } from "../data/cafe.js";
+import { createRestaurantPresentation, updateRestaurantPresentation } from "../ui/RestaurantPresentation.js";
 
 const ROOM = Object.freeze({ width: 1280, height: 720 });
 
@@ -10,7 +11,6 @@ export class CafeScene extends Phaser.Scene {
     this.entryData = data;
     this.transitioning = false;
     this.exitArmedUntil = 0;
-    this.station = null;
     this.lastTickResult = null;
     this.renderElapsed = 0;
   }
@@ -33,29 +33,7 @@ export class CafeScene extends Phaser.Scene {
   }
 
   drawInterior() {
-    this.add.rectangle(ROOM.width / 2, ROOM.height / 2, ROOM.width, ROOM.height, 0x9db7a0);
-    const art = this.add.graphics();
-    art.fillStyle(0x6f8e72, 1); art.fillRect(0, 0, 500, ROOM.height);
-    art.fillStyle(0xc49463, 1); art.fillRect(500, 0, 390, ROOM.height);
-    art.fillStyle(0x789aa0, 1); art.fillRect(890, 0, 390, ROOM.height);
-    art.lineStyle(7, 0x292238, 1); art.lineBetween(500, 0, 500, ROOM.height); art.lineBetween(890, 0, 890, ROOM.height);
-    art.fillStyle(0x292238, 1); art.fillRect(0, 0, ROOM.width, 68);
-    for (const [x, y] of [[105, 190], [350, 190], [105, 465], [350, 465]]) {
-      art.fillStyle(0x8a5b45, 1); art.fillRoundedRect(x - 64, y - 44, 128, 88, 14);
-      art.fillStyle(0xf5e2b9, 1); art.fillCircle(x, y, 17);
-      art.fillStyle(0x55546a, 1); art.fillRect(x - 5, y - 17, 10, 25);
-    }
-    art.fillStyle(0x9b6547, 1); art.fillRoundedRect(535, 120, 320, 185, 13); art.fillRoundedRect(535, 385, 320, 210, 13);
-    art.fillStyle(0xe4cc9b, 1); art.fillRoundedRect(560, 415, 270, 145, 10);
-    for (const x of [945, 1040, 1135, 1230]) {
-      art.fillStyle(0xa9b8b7, 1); art.fillRoundedRect(x - 34, 155, 68, 82, 8);
-    }
-    this.add.text(28, 24, "CORNER CAFÉ · DINING ROOM", { color: "#fff1c9", fontFamily: "ui-monospace, monospace", fontSize: "17px", fontStyle: "bold" }).setDepth(5);
-    this.add.text(535, 24, "ORDER COUNTER & THREE PREP TRAYS", { color: "#fff1c9", fontFamily: "ui-monospace, monospace", fontSize: "16px", fontStyle: "bold" }).setDepth(5);
-    this.add.text(915, 24, "CAFÉ KITCHEN", { color: "#fff1c9", fontFamily: "ui-monospace, monospace", fontSize: "17px", fontStyle: "bold" }).setDepth(5);
-    this.customerVisual = this.add.text(250, 330, "🧑  ☕  🧑", { fontSize: "48px", backgroundColor: "#fff1c9", padding: { x: 16, y: 10 }, color: "#292238" }).setOrigin(0.5).setDepth(6);
-    this.prepVisual = this.add.text(695, 485, "☕  ① ② ③", { fontSize: "52px" }).setOrigin(0.5).setDepth(6);
-    this.chefVisual = this.add.text(1080, 505, "🧑‍🍳", { fontSize: "78px" }).setOrigin(0.5).setDepth(6);
+    createRestaurantPresentation(this, "cafe");
   }
 
   bindInterface() {
@@ -83,15 +61,15 @@ export class CafeScene extends Phaser.Scene {
     this.onStart = () => this.startLevel(Number(this.levelSelect?.value || 1));
     this.onLevelChange = () => { if (this.startButton) this.startButton.textContent = `Open for Level ${Number(this.levelSelect?.value || 1)}`; };
     this.onExit = () => this.requestExit();
-    this.onUndo = () => { const result = this.cafe.undoStep(); this.setMessage(result.ok ? `${cafeStep(result.removed).name} removed.` : result.message, result.ok ? "neutral" : "error"); this.render(); };
+    this.onUndo = () => { const result = this.cafe.undoStep(); this.setMessage(result.ok ? result.message || `${cafeStep(result.removed).name} removed.` : result.message, result.ok ? "neutral" : "error"); this.render(); };
     this.onDiscard = () => { const result = this.cafe.discardTray(); this.setMessage(result.ok ? "Tray cleared. Start again." : result.message, result.ok ? "error" : "neutral"); this.render(); };
     this.onServe = () => this.serveActive();
     this.onNext = () => this.startLevel(Math.min(150, (this.cafe.getActiveSession()?.level.level || 1) + 1));
     this.onReplay = () => this.startLevel(this.cafe.getActiveSession()?.level.level || 1);
     this.onReturn = () => this.returnToTown(true);
     this.onSteps = (event) => { const button = event.target.closest?.("[data-cafe-step]"); if (button) this.useStep(button.dataset.cafeStep); };
-    this.onTrays = (event) => { const button = event.target.closest?.("[data-cafe-tray]"); if (button && !this.station) { const result = this.cafe.selectTray(Number(button.dataset.cafeTray)); this.setMessage(result.ok ? `${result.order.customerName}'s tray selected.` : result.message, result.ok ? "neutral" : "error"); this.render(); } };
-    this.onOrders = (event) => { const button = event.target.closest?.("[data-cafe-order-tray]"); if (button && !this.station) { this.cafe.selectTray(Number(button.dataset.cafeOrderTray)); this.render(); } };
+    this.onTrays = (event) => { const button = event.target.closest?.("[data-cafe-tray]"); if (button) { const result = this.cafe.selectTray(Number(button.dataset.cafeTray)); this.setMessage(result.ok ? `${result.order.customerName}'s tray selected.` : result.message, result.ok ? "neutral" : "error"); this.render(); } };
+    this.onOrders = (event) => { const button = event.target.closest?.("[data-cafe-order-tray]"); if (button) { this.cafe.selectTray(Number(button.dataset.cafeOrderTray)); this.render(); } };
     this.startButton?.addEventListener("click", this.onStart); this.levelSelect?.addEventListener("change", this.onLevelChange); this.exitButton?.addEventListener("click", this.onExit);
     this.undoButton?.addEventListener("click", this.onUndo); this.discardButton?.addEventListener("click", this.onDiscard);
     this.serveButton?.addEventListener("click", this.onServe); this.nextButton?.addEventListener("click", this.onNext);
@@ -114,7 +92,7 @@ export class CafeScene extends Phaser.Scene {
 
   startLevel(level) {
     if (this.cafe.getActiveSession()) this.cafe.cancel();
-    this.lastTickResult = null; this.renderElapsed = 0; this.station = null;
+    this.lastTickResult = null; this.renderElapsed = 0;
     const result = this.cafe.startLevel(level, { returnPosition: this.entryData.returnPosition, returnFacing: this.entryData.returnFacing || "down", instantOrders: this.qaMode });
     if (!result.ok) { this.setMessage(result.message, "error"); return false; }
     document.querySelector("#cafe-picker")?.classList.add("hidden");
@@ -128,31 +106,15 @@ export class CafeScene extends Phaser.Scene {
   }
 
   useStep(stepId) {
-    if (this.station && this.station.id !== stepId) return false;
     const definition = cafeStep(stepId);
     if (!definition) return false;
     if (CAFE_APPLIANCES[stepId]) {
-      if (this.cafe.expectedStep() !== stepId) {
-        const rejected = this.cafe.applyStep(stepId);
-        this.setMessage(rejected.message, "error"); this.render(); return false;
-      }
-      if (this.station?.status === "ready") {
-        this.station = null; this.chefVisual.setText("🧑‍🍳");
-        return this.finishStep(stepId);
-      }
-      if (this.station) return false;
-      this.station = { id: stepId, status: "working" };
-      this.chefVisual.setText("🧑‍🍳💨");
-      this.setMessage(`${definition.name} working…`, "working");
+      const result = this.cafe.useAppliance(stepId, undefined, { durationScale: this.timingScale });
+      if (result.code === "appliance-started") this.setMessage(`${definition.name} cooking on its own station.`, "working");
+      else if (result.code === "appliance-collected") this.setMessage(result.complete ? `${result.recipe.name} is ready. Finish it.` : `${definition.name} returned to the tray.`, "success");
+      else this.setMessage(result.message, result.code === "station-cooking" ? "working" : "error");
       this.render();
-      this.time.delayedCall(Math.max(90, definition.seconds * 1000 * this.timingScale), () => {
-        if (this.transitioning || !this.station || this.station.id !== stepId) return;
-        this.station.status = "ready";
-        this.chefVisual.setText("🧑‍🍳✨");
-        this.setMessage(`${definition.name} ready. Tap it again.`, "success");
-        this.render();
-      });
-      return true;
+      return result.ok;
     }
     return this.finishStep(stepId);
   }
@@ -167,7 +129,7 @@ export class CafeScene extends Phaser.Scene {
   }
 
   serveActive() {
-    if (this.station) return false;
+    if (this.cafe.activeAppliance()) { this.setMessage("Collect or stop this tray's active station first.", "working"); return false; }
     const result = this.cafe.serveActive();
     if (!result.ok) { this.setMessage(result.message, "error"); this.render(); return false; }
     if (result.result) { this.showResult(result.result); return true; }
@@ -207,7 +169,7 @@ export class CafeScene extends Phaser.Scene {
     }
     document.querySelector("#cafe-progress-summary").textContent = `${Object.keys(progress.completed).length} cleared · ${progress.totalStars} stars · ${progress.lifetimeServed} served`;
     document.querySelector("#cafe-balance").textContent = `🪙 ${this.gameState.getSnapshot().economy.coins}`;
-    if (!session) { this.updateDomState(); return; }
+    if (!session) { updateRestaurantPresentation(this); this.updateDomState(); return; }
     const tray = session.trays[session.activeTray]; const order = tray?.orderId ? session.orders.find((candidate) => candidate.id === tray.orderId) : null;
     const recipe = order ? CAFE_RECIPES[order.recipes[tray.recipeIndex]] : null; const expected = recipe?.steps?.[tray.stepIndex] || null;
     document.querySelector("#cafe-level-name").textContent = `Level ${session.level.level} · ${session.level.name}`;
@@ -221,20 +183,33 @@ export class CafeScene extends Phaser.Scene {
     if (sequence) sequence.innerHTML = recipe ? recipe.steps.map((step, index) => `<span class="${index < tray.stepIndex ? "done" : index === tray.stepIndex ? "next" : ""}">${cafeStep(step).icon}<small>${cafeStep(step).name}</small></span>`).join("") : "";
     const availableIds = [...new Set(session.level.menu.flatMap((id) => CAFE_RECIPES[id].steps))];
     availableIds.sort((a, b) => a === expected ? -1 : b === expected ? 1 : (CAFE_APPLIANCES[a] ? 1 : 0) - (CAFE_APPLIANCES[b] ? 1 : 0));
-    if (this.stepList) this.stepList.innerHTML = availableIds.map((id) => { const item = cafeStep(id); const station = Boolean(CAFE_APPLIANCES[id]); const stationState = this.station?.id === id ? this.station.status : ""; return `<button type="button" data-cafe-step="${id}" class="${id === expected ? "next" : ""} ${station ? "station" : "ingredient"} ${stationState}" ${this.station && this.station.id !== id ? "disabled" : ""}><span>${item.icon}</span><strong>${item.name}</strong><small>${stationState === "working" ? "Working…" : stationState === "ready" ? "Ready · tap" : station ? "Station" : "Ingredient"}</small></button>`; }).join("");
-    const canRevise = !this.station && Boolean(tray?.orderId) && Boolean(expected) && (tray.stepIndex > 0 || tray.completedRecipes.length > 0);
-    if (this.undoButton) { this.undoButton.disabled = !canRevise || tray.stepIndex < 1; this.undoButton.classList.toggle("hidden", !canRevise || tray.stepIndex < 1); }
+    if (this.stepList) this.stepList.innerHTML = availableIds.map((id) => { const item = cafeStep(id); const station = Boolean(CAFE_APPLIANCES[id]); const stationState = session.appliances?.[id]?.status || "idle"; return `<button type="button" data-cafe-step="${id}" class="${id === expected ? "next" : ""} ${station ? "station" : "ingredient"} ${stationState}"><span>${item.icon}</span><strong>${item.name}</strong><small>${stationState === "cooking" ? "Cooking…" : stationState === "ready" ? "Ready · tap" : stationState === "burnt" ? "Burnt · clear" : station ? "Station" : "Ingredient"}</small></button>`; }).join("");
+    const activeAppliance = this.cafe.activeAppliance();
+    const canRevise = Boolean(tray?.orderId) && Boolean(expected) && (tray.stepIndex > 0 || tray.completedRecipes.length > 0 || activeAppliance);
+    if (this.undoButton) { this.undoButton.disabled = !canRevise || (!activeAppliance && tray.stepIndex < 1); this.undoButton.classList.toggle("hidden", !canRevise || (!activeAppliance && tray.stepIndex < 1)); }
     if (this.discardButton) { this.discardButton.disabled = !canRevise; this.discardButton.classList.toggle("hidden", !canRevise); }
     if (this.serveButton) {
-      const canServe = !this.station && Boolean(recipe) && !expected;
+      const canServe = !activeAppliance && Boolean(recipe) && !expected;
       this.serveButton.disabled = !canServe;
       this.serveButton.classList.toggle("hidden", !canServe);
       this.serveButton.textContent = tray?.recipeIndex < (order?.recipes.length || 0) - 1 ? "Finish dish" : "Serve";
     }
     this.worktop?.classList.toggle("hidden", !expected);
     this.controls?.classList.toggle("hidden", !canRevise && Boolean(expected));
-    this.customerVisual.setText(session.activeOrderIds.length ? `🧑 × ${session.activeOrderIds.length}  →  ☕` : "😊  ✓");
-    this.prepVisual.setText(recipe ? expected ? cafeStep(expected).icon : recipe.icon : "✨");
+    updateRestaurantPresentation(this, {
+      orders: session.activeOrderIds.map((id) => session.orders.find((candidate) => candidate.id === id)).filter(Boolean).map((candidate) => ({
+        icons: candidate.recipes.map((id) => CAFE_RECIPES[id].icon).join(" "),
+        patience: candidate.patience / candidate.maxPatience,
+      })),
+      trays: session.trays.map((candidate) => {
+        const customer = candidate.orderId ? session.orders.find((entry) => entry.id === candidate.orderId) : null;
+        const item = customer ? CAFE_RECIPES[customer.recipes[candidate.recipeIndex]] : null;
+        return { active: candidate.index === session.activeTray, icon: item?.icon || "" };
+      }),
+      workerState: activeAppliance?.status || "idle",
+      expectedIcon: expected ? cafeStep(expected).icon : recipe?.icon,
+      appliances: Object.values(session.appliances || {}).filter((appliance) => appliance.status !== "idle").map((appliance) => ({ ...appliance, icon: cafeStep(appliance.id).icon, name: cafeStep(appliance.id).name })),
+    });
     this.updateDomState();
   }
 
@@ -242,7 +217,7 @@ export class CafeScene extends Phaser.Scene {
     const game = document.querySelector("#game"); if (!game) return;
     const session = this.cafe.getActiveSession(); const diagnostics = this.cafe.getDiagnostics();
     game.dataset.scene = this.scene.key; game.dataset.cafeLevel = String(session?.level.level || diagnostics.unlockedLevel);
-    game.dataset.cafePhase = session?.finished ? "result" : session ? this.station?.status || "playing" : "picker";
+    game.dataset.cafePhase = session?.finished ? "result" : session ? this.cafe.activeAppliance()?.status || "playing" : "picker";
     game.dataset.cafeExpectedStep = this.cafe.expectedStep() || "none"; game.dataset.cafeServed = String(session?.served || 0);
     game.dataset.cafeActiveOrders = String(session?.activeOrderIds.length || 0); game.dataset.cafeUnlocked = String(diagnostics.unlockedLevel); game.dataset.cafeCompleted = String(diagnostics.completedLevels);
   }
@@ -280,7 +255,7 @@ export class CafeScene extends Phaser.Scene {
       if (result?.result && !this.lastTickResult) { this.lastTickResult = result.result; this.showResult(result.result); }
       else {
         this.renderElapsed += delta;
-        if (result?.spawned) { this.renderElapsed = 0; this.render(); }
+        if (result?.spawned || result?.applianceChanges?.length) { this.renderElapsed = 0; this.render(); }
         else if (this.renderElapsed >= 100) { this.renderElapsed = 0; this.renderLiveMetrics(); }
       }
     }

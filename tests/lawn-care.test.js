@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   LAWN_ENGINE_VERSION,
+  LAWN_CELL_TRAVEL_MS,
   LAWN_MOWER_PROFILES,
   LAWN_PAYLOAD_SHA256,
   LAWN_SOURCE_SHA256,
@@ -9,6 +10,7 @@ import {
   LawnCareEngine,
   getLawnLevel,
   lawnLevelSummary,
+  lawnTravelPlan,
   validateLawnCatalogue,
   verifyLawnSolution,
 } from "../src/data/lawnCare.js";
@@ -61,6 +63,33 @@ test("the mower slides to a hedge, cuts every crossed cell and keeps five undos"
   assert.equal(engine.undo().code, "nothing-to-undo");
 });
 
+test("every move keeps a completable route or ends immediately with a distinct reason", () => {
+  const level = getLawnLevel(1);
+  const engine = new LawnCareEngine(1);
+  const moved = engine.move(level.canonicalSolution[0]);
+  assert.equal(moved.ok, true);
+  if (!moved.endReason) assert.equal(engine.hint().status, "solved");
+  const exhausted = new LawnCareEngine(1, { ...engine.snapshot(), moves: engine.moveLimit - 1 });
+  const available = Object.keys({ U: 1, D: 1, L: 1, R: 1 }).find((direction) => exhausted.level.moves.has(`${exhausted.row},${exhausted.col},${direction}`));
+  const final = exhausted.move(available);
+  assert.equal(final.endReason, final.state.won ? null : "out-of-gas");
+});
+
+test("lawn travel preserves 55 ms cell timing, directional stripes and mower upgrade resistance", () => {
+  assert.equal(LAWN_CELL_TRAVEL_MS, 55);
+  const level = getLawnLevel(750);
+  const weedCell = [...level.weeds.keys()].find((cell) => level.weeds.get(cell) === "woody");
+  const starter = lawnTravelPlan(750, [weedCell], "R", LAWN_MOWER_PROFILES["starter-mower"])[0];
+  const vintage = lawnTravelPlan(750, [weedCell], "R", LAWN_MOWER_PROFILES["vintage-special-mower"])[0];
+  assert.equal(starter.direction, "R");
+  assert.ok(starter.durationMs > LAWN_CELL_TRAVEL_MS);
+  assert.ok(vintage.durationMs < starter.durationMs);
+  const engine = new LawnCareEngine(1);
+  const moved = engine.move(getLawnLevel(1).canonicalSolution[0], { checkRoute: false });
+  for (const cell of moved.crossed) assert.equal(moved.state.cutDirections[cell], moved.direction);
+  assert.deepEqual(new LawnCareEngine(1, moved.state).snapshot().cutDirections, moved.state.cutDirections);
+});
+
 test("move limits, star thresholds and mower upgrades preserve the original rules", () => {
   assert.deepEqual([new LawnCareEngine(1).moveLimit, new LawnCareEngine(750).moveLimit], [11, 27]);
   assert.equal(calculateLawnReward(49, 750), 0);
@@ -109,6 +138,17 @@ test("town jobs apply the exact proportional lawn effect and pay each new occurr
   assert.equal(lawnCare.completeCertified(second.session.id).rewardCoins, 100);
   assert.equal(gameState.getSnapshot().economy.coins, 300);
   assert.equal(gameState.getSnapshot().farming.lawns[plot.id].completedJobs, 2);
+});
+
+test("the protected unused house-19 lawn slot can never surface as a playable town job", () => {
+  const { gameState, lawnCare } = runtime();
+  const inactivePlot = LAWN_PLOTS.find((plot) => !plot.active);
+  const state = gameState.getSnapshot();
+  state.farming.lawns[inactivePlot.id].grassHeight = 100;
+  state.farming.lawns[inactivePlot.id].weedPressure = 100;
+  assert.equal(gameState.replace(state).ok, true);
+  assert.equal(lawnCare.beginTownJob(inactivePlot.id).code, "unknown-lawn");
+  assert.equal(lawnCare.getDiagnostics().townJobs.includes(inactivePlot.id), false);
 });
 
 test("an in-progress campaign reloads its board, undo stack and town return point", () => {

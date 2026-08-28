@@ -16,16 +16,22 @@ test("makes River Clear-Out a portrait-only activity with a board-first shell", 
   assert.match(styles, /\.river-status \{ grid-row: 3; \}/);
 });
 
-test("keeps portrait River controls finger-sized and its repeated feedback short", async () => {
+test("keeps portrait River gesture-first with no visible movement controls", async () => {
   const [markup, styles, scene] = await Promise.all([readText("index.html"), readText("src/style.css"), readText("src/scenes/RiverClearoutScene.js")]);
   assert.match(markup, /id="river-exit"[^>]*>Exit<\/button>/);
-  assert.match(markup, /id="river-undo"[^>]*aria-label="Undo last river move"[^>]*>↶<\/button>/);
+  assert.match(markup, /id="river-undo"[^>]*aria-label="Undo last river gesture"[^>]*>↶ Undo<\/button>/);
+  assert.doesNotMatch(markup, /class="river-controls"|id="river-(?:left|right|down|rotate|drop)"/);
+  assert.match(markup, /id="river-result-undo"[^>]*>↶ Undo last<\/button>/);
   assert.match(markup, /Restore 750 river stretches/);
   assert.match(markup, /Place recovery shapes to clear rubbish\. First clears earn coins\./);
-  assert.match(styles, /\.river-controls button \{ min-height: var\(--kw-touch-min\)/);
+  assert.doesNotMatch(styles, /\.river-controls/);
+  assert.match(styles, /\.river-secondary-actions button \{ min-height: var\(--kw-touch-min\)/);
   assert.match(styles, /\.river-hud-header button \{ min-width: var\(--kw-touch-min\); min-height: var\(--kw-touch-min\)/);
   assert.match(styles, /@media \(max-width: 360px\) and \(orientation: portrait\)/);
   assert.match(styles, /\.river-side-panel \{ grid-template-columns: 44px 68px 92px 78px; \}/);
   assert.match(scene, /textContent = "Confirm Exit"/);
   for (const copy of ["Choose a river level.", "Clear rows. Recover at least 50%.", "River saved.", "Try another placement."]) assert.ok(scene.includes(copy), copy);
+  assert.match(scene, /Hint 1 · Try the/);
+  assert.match(scene, /Hint 2 · Aim for column/);
+  assert.match(scene, /Hint 3 · Column/);
 });

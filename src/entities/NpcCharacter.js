@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { npcActivityVisual } from "../data/legacyVisualStates.js";
 import { setSpriteAiLabelHint } from "../plugins/SpriteAiLabelPlugin.js";
 
 export class NpcCharacter extends Phaser.GameObjects.Container {
@@ -14,6 +15,8 @@ export class NpcCharacter extends Phaser.GameObjects.Container {
     this.leftLeg = scene.add.rectangle(-6, 13, 8, 15, resident.palette.pants);
     this.rightLeg = scene.add.rectangle(6, 13, 8, 15, resident.palette.pants);
     this.body = scene.add.rectangle(0, -1, 25, 27, resident.palette.shirt).setStrokeStyle(2, 0x294637, 0.55);
+    this.leftArm = scene.add.rectangle(-16, 0, 7, 23, resident.palette.skin).setStrokeStyle(1, 0x294637, 0.45);
+    this.rightArm = scene.add.rectangle(16, 0, 7, 23, resident.palette.skin).setStrokeStyle(1, 0x294637, 0.45);
     this.head = scene.add.circle(0, -22, 13, resident.palette.skin).setStrokeStyle(2, 0x294637, 0.55);
     this.hair = scene.add.graphics();
     this.accessory = scene.add.text(0, -29, "", { fontFamily: "system-ui", fontSize: "14px" }).setOrigin(0.5);
@@ -30,7 +33,7 @@ export class NpcCharacter extends Phaser.GameObjects.Container {
       padding: { x: 6, y: 3 },
     }).setOrigin(0.5, 1).setVisible(false);
 
-    this.add([this.shadow, this.leftLeg, this.rightLeg, this.body, this.head, this.hair, this.face, this.accessory, this.carry, this.reaction, this.label]);
+    this.add([this.shadow, this.leftLeg, this.rightLeg, this.body, this.leftArm, this.rightArm, this.head, this.hair, this.face, this.accessory, this.carry, this.reaction, this.label]);
     this.setSize(42, 66).setInteractive({ useHandCursor: true });
     this.on("pointerover", () => { this.hovered = true; this.label.setVisible(true); });
     this.on("pointerout", () => { this.hovered = false; this.label.setVisible(false); });
@@ -50,12 +53,26 @@ export class NpcCharacter extends Phaser.GameObjects.Container {
     this.leftLeg.y = 13 + step;
     this.rightLeg.y = 13 - step;
     this.body.y = walking ? -1 + Math.abs(Math.sin(this.walkPhase)) * -1.4 : -1;
+    const activityVisual = npcActivityVisual(resident.activity, resident.actionState);
+    const seated = !walking && activityVisual.pose === "seated";
+    const working = !walking && ["lean", "work"].includes(activityVisual.pose);
+    const waving = !walking && activityVisual.pose === "wave";
+    this.body.y += seated ? 7 : working ? 2 : 0;
+    this.head.y = -22 + (seated ? 5 : working ? 2 : 0);
+    this.hair.y = seated ? 5 : working ? 2 : 0;
+    this.face.y = -21 + (seated ? 5 : working ? 2 : 0);
+    this.leftLeg.setPosition(-6, seated ? 18 : 13 + step).setAngle(seated ? -28 : 0);
+    this.rightLeg.setPosition(6, seated ? 18 : 13 - step).setAngle(seated ? 28 : 0);
+    this.leftArm.setPosition(-16, this.body.y).setAngle(working ? -22 : waving ? -55 : 0);
+    this.rightArm.setPosition(16, this.body.y).setAngle(working ? 22 : waving ? 115 + Math.sin(this.walkPhase * 0.7) * 12 : 0);
     this.scaleX = resident.facingX < -0.15 ? -1 : 1;
     this.label.scaleX = this.scaleX;
     this.accessory.scaleX = this.scaleX;
     this.carry.scaleX = this.scaleX;
     const carryIcons = { cup: "🥤", wrapper: "🍬", bottle: "🧴", bag: "🛍️", paper: "📰" };
-    this.carry.setText(resident.carryItem ? carryIcons[resident.carryItem] || "📦" : "");
+    this.carry.setText(resident.carryItem ? carryIcons[resident.carryItem] || "📦" : activityVisual.prop);
+    this.carry.setPosition(working ? 23 : 17, working ? 8 : seated ? 10 : 4);
+    setSpriteAiLabelHint(this.carry, { id: activityVisual.assetId, label: `${resident.name} ${activityVisual.id} activity prop`, kind: "activity-prop" });
     this.reaction.setText(resident.greetingIcon || (resident.actionState === "HELPING" ? resident.reactionIcon : ""));
     this.reaction.setVisible(resident.visible && Boolean(this.reaction.text));
     this.label.setText(`${resident.name}\n${resident.activity || resident.role}`);

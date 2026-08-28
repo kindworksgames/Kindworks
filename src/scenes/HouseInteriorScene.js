@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { ANIMAL_BY_ID, ANIMAL_REFERENCE_TEXTURE_KEY, animalReferenceFrame } from "../data/animals.js";
 import { ITEM_CATALOG } from "../data/items.js";
 import { PERSONAL_HOME_HOUSE_ID } from "../data/customResident.js";
 import { HOME_INTERIOR_VIEW, validateFurniturePlacement } from "../data/homeInteriors.js";
@@ -245,11 +246,33 @@ export class HouseInteriorScene extends Phaser.Scene {
       const y = layout.y + layout.h * (0.50 + Math.floor(index / 4) * 0.12);
       const mapped = { x: VIEW.x + x * VIEW.scale, y: VIEW.y + y * VIEW.scale };
       graphics.fillStyle(0x294637, 0.2); graphics.fillEllipse(mapped.x, mapped.y + 14, 36, 12);
-      const icon = this.add.text(mapped.x, mapped.y, occupant.icon || "🧑", { fontSize: "30px" }).setOrigin(0.5).setDepth(8);
+      let icon = null;
+      if (occupant.kind === "animal") icon = this.drawAnimalOccupant(graphics, occupant, mapped.x, mapped.y);
+      else icon = this.add.text(mapped.x, mapped.y, "🧑", { fontSize: "30px" }).setOrigin(0.5).setDepth(8);
       const label = this.add.text(mapped.x, mapped.y - 27, occupant.name, { color: "#294637", backgroundColor: "rgba(255,253,235,.9)", fontSize: "10px", fontStyle: "bold", padding: { x: 4, y: 2 } }).setOrigin(0.5).setDepth(9);
-      this.visuals.push(icon, label);
+      this.visuals.push(...(icon ? [icon] : []), label);
       this.hitAreas.push({ id: occupant.id, kind: occupant.kind, x: mapped.x - 24, y: mapped.y - 34, w: 48, h: 58 });
     });
+  }
+
+  drawAnimalOccupant(graphics, occupant, x, y) {
+    const frame = animalReferenceFrame(ANIMAL_BY_ID[occupant.id]);
+    if (frame !== null && this.textures.exists(ANIMAL_REFERENCE_TEXTURE_KEY)) {
+      return this.add.image(x, y + 18, ANIMAL_REFERENCE_TEXTURE_KEY, frame).setOrigin(0.5, 1).setScale(0.78).setDepth(8);
+    }
+    const body = Number(occupant.color) || 0x9b7d64;
+    const accent = Number(occupant.accent) || 0xe8d4b5;
+    const longEars = ["rabbit"].includes(occupant.species);
+    const pointedEars = ["cat", "dog", "fox", "fennec_fox", "wolf"].includes(occupant.species);
+    const bird = ["duck", "crow", "songbird", "chicken", "goose", "owl", "pigeon", "macaw"].includes(occupant.species);
+    graphics.fillStyle(body, 1); graphics.fillEllipse(x - 3, y + 1, 31, 20); graphics.fillCircle(x + 10, y - 9, 10);
+    if (longEars) { graphics.fillEllipse(x + 5, y - 22, 5, 18); graphics.fillEllipse(x + 14, y - 22, 5, 18); }
+    else if (pointedEars) { graphics.fillTriangle(x + 2, y - 14, x + 5, y - 26, x + 10, y - 15); graphics.fillTriangle(x + 10, y - 16, x + 17, y - 25, x + 19, y - 11); }
+    if (bird) { graphics.fillStyle(accent, 1); graphics.fillEllipse(x - 6, y, 16, 11); graphics.fillTriangle(x + 18, y - 10, x + 28, y - 6, x + 18, y - 3); }
+    else { graphics.fillStyle(accent, 0.92); graphics.fillEllipse(x + 14, y - 5, 10, 7); }
+    graphics.fillStyle(0x22312a, 1); graphics.fillCircle(x + 13, y - 12, 1.5);
+    graphics.lineStyle(3, body, 1); graphics.lineBetween(x - 10, y + 8, x - 12, y + 17); graphics.lineBetween(x + 4, y + 8, x + 6, y + 17);
+    return null;
   }
 
   renderInterface(interior) {

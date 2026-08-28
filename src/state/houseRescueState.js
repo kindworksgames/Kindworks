@@ -9,6 +9,11 @@ import {
   houseRescueCoverage,
   houseRescueLevel,
 } from "../data/houseRescue.js";
+import {
+  buildHouseRescueGeometry,
+  houseRescueGeometryBlocked,
+  houseRescueVacuumStart,
+} from "../data/houseRescueGeometry.js";
 
 function whole(value, minimum = 0, maximum = Number.MAX_SAFE_INTEGER) {
   const number = Math.floor(Number(value));
@@ -111,10 +116,12 @@ function normalizeActive(value, homes, selectedLevel) {
     return { ...stain, remaining: saved ? Math.max(0, Math.min(stain.strength, Number(saved.remaining ?? (saved.clean ? 0 : stain.strength)) || 0)) : stain.strength };
   });
   const phase = correct === items.length ? "vacuum" : "sorting";
-  const vacuum = {
-    x: Math.max(0, Math.min(100, Number(value.vacuum?.x) || 8)),
-    y: Math.max(0, Math.min(100, Number(value.vacuum?.y) || 92)),
-  };
+  const geometry = buildHouseRescueGeometry(houseId);
+  const fallbackVacuum = houseRescueVacuumStart(geometry);
+  const savedVacuum = { x: Number(value.vacuum?.x), y: Number(value.vacuum?.y) };
+  const vacuum = Number.isFinite(savedVacuum.x) && Number.isFinite(savedVacuum.y) && !houseRescueGeometryBlocked(geometry, savedVacuum.x, savedVacuum.y)
+    ? savedVacuum
+    : fallbackVacuum;
   return {
     format: 1,
     id: `house-rescue-${houseId}-${home.jobSerial}-level-${level}`,

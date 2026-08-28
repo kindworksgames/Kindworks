@@ -18,13 +18,14 @@ test("keeps Riverside Kitchen trays, exact-heat workbench and feedback inside sh
 
 test("preserves resumable Save & Exit and exact-heat states while using contextual meal actions", async () => {
   const scene = await readText("src/scenes/RiversideKitchenScene.js");
-  for (const copy of ["Choose a restaurant shift.", "Choose a meal. Follow the highlight.", "burnt. Tap to clear it.", "Turn your device sideways to play."]) assert.ok(scene.includes(copy), copy);
+  for (const copy of ["Choose a restaurant shift.", "Choose a meal. Follow the highlight.", "Burnt · clear", "Turn your device sideways to play."]) assert.ok(scene.includes(copy), copy);
   assert.match(scene, /this\.onExit = \(\) => this\.returnToTown\(false\)/);
   assert.match(scene, /const suspended = this\.riversideKitchen\.suspend\(\)/);
-  assert.match(scene, /this\.undoButton\.classList\.toggle\("hidden", !canRevise \|\| tray\.stepIndex < 1\)/);
+  assert.match(scene, /const activeAppliance = this\.riversideKitchen\.activeAppliance\(\)/);
+  assert.match(scene, /!activeAppliance && tray\.stepIndex < 1/);
   assert.match(scene, /this\.serveButton\.classList\.toggle\("hidden", !canServe\)/);
   assert.match(scene, /this\.nextButton\.classList\.toggle\("hidden", !result\.won\)/);
-  for (const stationState of ["working", "ready", "burnt"]) assert.ok(scene.includes(`stationState === "${stationState}"`), stationState);
+  for (const stationState of ["cooking", "ready", "burnt"]) assert.ok(scene.includes(`stationState === "${stationState}"`), stationState);
 });
 
 test("retains the protected 150-shift Riverside Kitchen first-clear engine", async () => {

@@ -5,9 +5,11 @@ import { readFile } from "node:fs/promises";
 import {
   BEACH_BUILD_VERSION,
   BEACH_PAYLOAD_SHA256,
+  BEACH_RAKE_PATTERNS,
   BEACH_SOURCE_SHA256,
   BEACH_TOTAL_LEVELS,
   BeachCleanupEngine,
+  beachRakePattern,
   beachCertifiedRoute,
   beachLevelSummary,
   generateBeachLevel,
@@ -65,6 +67,58 @@ test("walking rakes the tile being left, reveals rubbish, caps rewards and suppo
   assert.ok(certified.earnedCoins > 0 && certified.earnedCoins <= 170);
 });
 
+test("one Undo restores an entire continuous swipe run while separate inputs remain separate", () => {
+  const engine = new BeachCleanupEngine(1);
+  const start = engine.snapshot();
+  assert.equal(engine.move("R", { batchId: "swipe-1" }).ok, true);
+  assert.equal(engine.move("U", { batchId: "swipe-1" }).ok, true);
+  assert.equal(engine.move("U", { batchId: "swipe-1" }).ok, true);
+  assert.equal(engine.snapshot().undoStack.length, 1);
+  assert.equal(engine.undo().ok, true);
+  assert.deepEqual([engine.row, engine.col, engine.moves], [start.row, start.col, start.moves]);
+
+  assert.equal(engine.move("R", { batchId: "swipe-2" }).ok, true);
+  assert.equal(engine.move("U", { batchId: "swipe-3" }).ok, true);
+  assert.equal(engine.snapshot().undoStack.length, 2);
+  assert.equal(engine.undo().ok, true);
+  assert.deepEqual([engine.row, engine.col], [start.row, start.col + 1]);
+});
+
+test("continuous swipe history survives save and reload", () => {
+  const first = runtime();
+  const started = first.beachCleanup.beginCampaign(1);
+  assert.equal(first.beachCleanup.move(started.session.id, "R", { batchId: "held-run" }).ok, true);
+  assert.equal(first.beachCleanup.move(started.session.id, "U", { batchId: "held-run" }).ok, true);
+  const restored = runtime({ state: first.gameState.getSnapshot(), repository: first.repository });
+  assert.equal(restored.beachCleanup.getActiveSession().undoStack.length, 1);
+  assert.equal(restored.beachCleanup.undo(started.session.id).ok, true);
+  const state = restored.beachCleanup.getSessionState();
+  assert.deepEqual([state.row, state.col, state.moves], [5, 0, 0]);
+});
+
+test("rake grooves preserve the protected straight, corner, revisit and undo patterns", () => {
+  assert.deepEqual(BEACH_RAKE_PATTERNS, ["h", "v", "ne", "nw", "se", "sw"]);
+  assert.equal(beachRakePattern(null, "R"), "h");
+  assert.equal(beachRakePattern("R", "R"), "h");
+  assert.equal(beachRakePattern("R", "L"), "h");
+  assert.equal(beachRakePattern("D", "U"), "v");
+  assert.equal(beachRakePattern("R", "U"), "nw");
+  assert.equal(beachRakePattern("L", "U"), "ne");
+  assert.equal(beachRakePattern("R", "D"), "sw");
+  assert.equal(beachRakePattern("L", "D"), "se");
+
+  const engine = new BeachCleanupEngine(1);
+  assert.equal(engine.move("R").ok, true);
+  assert.equal(engine.move("U").ok, true);
+  assert.equal(engine.snapshot().rakePatterns["5,1"], "nw");
+  assert.equal(engine.move("D").ok, true);
+  assert.equal(engine.snapshot().rakePatterns["4,1"], "v");
+  assert.equal(engine.move("R").ok, true);
+  assert.equal(engine.snapshot().rakePatterns["5,1"], "ne");
+  assert.equal(engine.undo().ok, true);
+  assert.equal(engine.snapshot().rakePatterns["5,1"], "nw");
+});
+
 test("campaign first clears use the shared level formula and replays never pay twice", () => {
   assert.equal(calculateBeachCampaignReward(1), 100);
   assert.equal(calculateBeachCampaignReward(750), 170);
@@ -117,9 +171,33 @@ test("an in-progress beach and its return point survive a safe reload", () => {
   assert.equal(session.assignedLevel, 25);
   assert.equal(session.moves, 1);
   assert.equal(session.undoStack.length, 1);
+  assert.equal(session.entryDirection, "R");
+  assert.deepEqual(session.rakePatterns, {});
+  assert.equal(resumed.beachCleanup.move(session.id, "U").ok, true);
+  assert.equal(resumed.beachCleanup.getActiveSession().rakePatterns[`${session.row},${session.col}`], "nw");
   assert.deepEqual(session.returnPosition, { x: 3200, y: 2310 });
   assert.equal(session.returnFacing, "right");
   assert.equal(validateGameState(resumed.gameState.getSnapshot()).ok, true);
+});
+
+test("active saves created before rake-path metadata remain valid and upgrade on the next move", () => {
+  const { gameState, beachCleanup } = runtime();
+  const started = beachCleanup.beginCampaign(1);
+  assert.equal(beachCleanup.move(started.session.id, "R").ok, true);
+  const oldSave = gameState.getSnapshot();
+  delete oldSave.beachCleanup.activeSession.rakePatterns;
+  delete oldSave.beachCleanup.activeSession.entryDirection;
+  for (const frame of oldSave.beachCleanup.activeSession.undoStack) {
+    delete frame.rakePatterns;
+    delete frame.entryDirection;
+  }
+  assert.equal(validateGameState(oldSave).ok, true);
+  const restored = runtime({ state: oldSave });
+  assert.equal(restored.beachCleanup.move(started.session.id, "U").ok, true);
+  const upgraded = restored.beachCleanup.getActiveSession();
+  assert.equal(upgraded.entryDirection, "U");
+  assert.equal(upgraded.rakePatterns["5,1"], "v");
+  assert.equal(validateGameState(restored.gameState.getSnapshot()).ok, true);
 });
 
 test("schema 15 saves and original beach progress upgrade through schema 19", () => {

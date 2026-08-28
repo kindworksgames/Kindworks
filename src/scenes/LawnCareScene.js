@@ -3,6 +3,7 @@ import {
   LAWN_TOTAL_LEVELS,
   LAWN_WEED_TYPES,
   getLawnLevel,
+  lawnTravelPlan,
   lawnCellKey,
   lawnLevelSummary,
 } from "../data/lawnCare.js";
@@ -31,6 +32,8 @@ export class LawnCareScene extends Phaser.Scene {
     this.exitArmedUntil = 0;
     this.lastResultContext = null;
     this.pointerStart = null;
+    this.mowerAnimating = false;
+    this.queuedDirection = null;
   }
 
   create() {
@@ -75,8 +78,6 @@ export class LawnCareScene extends Phaser.Scene {
     this.exitButton = document.querySelector("#lawn-care-exit");
     this.boardElement = document.querySelector("#lawn-board");
     this.buttons = {
-      U: document.querySelector("#lawn-up"), D: document.querySelector("#lawn-down"),
-      L: document.querySelector("#lawn-left"), R: document.querySelector("#lawn-right"),
       undo: document.querySelector("#lawn-undo"), hint: document.querySelector("#lawn-hint"),
       retry: document.querySelector("#lawn-retry"), qa: document.querySelector("#lawn-qa-complete"),
       replay: document.querySelector("#lawn-replay"), next: document.querySelector("#lawn-next"),
@@ -92,7 +93,6 @@ export class LawnCareScene extends Phaser.Scene {
     this.onReplay = () => this.startLevel(this.lastResultContext?.level || 1);
     this.onNext = () => this.startLevel(this.lawnCare.getCampaignSnapshot().nextLevel);
     this.onReturn = () => this.returnToTown(true);
-    this.directionHandlers = Object.fromEntries(Object.keys(DIRECTION_KEYS).map((direction) => [direction, () => this.mow(direction)]));
     this.onKeyDown = (event) => {
       if (event.key === "Escape") { this.requestExit(); return; }
       const key = event.key.toLowerCase();
@@ -115,7 +115,6 @@ export class LawnCareScene extends Phaser.Scene {
     this.startButton?.addEventListener("click", this.onStart);
     this.levelSelect?.addEventListener("change", this.onLevelChange);
     this.exitButton?.addEventListener("click", this.onExit);
-    for (const direction of Object.keys(DIRECTION_KEYS)) this.buttons[direction]?.addEventListener("click", this.directionHandlers[direction]);
     this.buttons.undo?.addEventListener("click", this.onUndo);
     this.buttons.hint?.addEventListener("click", this.onHint);
     this.buttons.retry?.addEventListener("click", this.onRetry);
@@ -168,7 +167,38 @@ export class LawnCareScene extends Phaser.Scene {
   mow(direction) {
     const session = this.lawnCare.getActiveSession();
     if (!session || session.status === "failed" || this.transitioning) return false;
-    return this.runServiceAction(() => this.lawnCare.move(session.id, direction));
+    if (this.mowerAnimating) { this.queuedDirection = direction; return true; }
+    const before = this.lawnCare.getSessionState();
+    const result = this.lawnCare.move(session.id, direction);
+    if (!result.ok) { this.setMessage(result.message || "That mower move is not available.", "error"); return false; }
+    this.animateMowerMove(before, result, session);
+    return true;
+  }
+
+  async animateMowerMove(before, result, context) {
+    this.mowerAnimating = true;
+    this.boardElement?.classList.add("mower-moving");
+    const level = getLawnLevel(context.assignedLevel);
+    const cutCells = new Set(before.cutCells);
+    const cutDirections = { ...(before.cutDirections || {}) };
+    const plan = lawnTravelPlan(context.assignedLevel, result.crossed, result.direction, this.lawnCare.getMowerLoadout());
+    for (const step of plan) {
+      const [row, col] = step.cell.split(",").map(Number);
+      cutCells.add(step.cell); cutDirections[step.cell] = step.direction;
+      this.boardElement?.classList.toggle("mower-straining", step.strain);
+      this.renderBoard({ ...before, row, col, facing: step.direction, cutCells: [...cutCells], cutDirections }, context.assignedLevel);
+      await new Promise((resolve) => this.time.delayedCall(step.durationMs, resolve));
+    }
+    this.boardElement?.classList.remove("mower-moving", "mower-straining");
+    this.mowerAnimating = false;
+    if (result.result) this.showResult(result.result, context, Boolean(result.failed));
+    else {
+      if (result.endReason === "dead-end") this.setMessage("Dead end. Undo or restart this route.", "error");
+      else if (result.endReason === "out-of-gas") this.setMessage("Out of moves. Restart to try another route.", "error");
+      this.render();
+    }
+    const queued = this.queuedDirection; this.queuedDirection = null;
+    if (queued && this.lawnCare.getActiveSession()?.status === "playing") this.mow(queued);
   }
 
   runServiceAction(action) {
@@ -186,7 +216,7 @@ export class LawnCareScene extends Phaser.Scene {
     for (const button of Object.values(this.buttons)) button?.classList.remove("hinted");
     const result = this.lawnCare.hint(session.id);
     if (!result.ok) { this.setMessage(result.message, "error"); return false; }
-    this.buttons[result.direction]?.classList.add("hinted");
+    this.boardElement?.setAttribute("data-hint-direction", DIRECTION_KEYS[result.direction] || "");
     this.setMessage(result.message, "hint");
     return true;
   }
@@ -227,7 +257,8 @@ export class LawnCareScene extends Phaser.Scene {
         }
         const isMower = sessionState.row === row && sessionState.col === col;
         const weed = level.weeds.get(key);
-        const classes = ["lawn-cell", cut.has(key) ? "cut" : "tall", weed ? `weed-${weed}` : "", isMower ? `mower facing-${sessionState.facing.toLowerCase()}` : ""].filter(Boolean).join(" ");
+        const cutDirection = sessionState.cutDirections?.[key];
+        const classes = ["lawn-cell", cut.has(key) ? "cut" : "tall", cutDirection ? `cut-${["L", "R"].includes(cutDirection) ? "horizontal" : "vertical"}` : "", weed ? `weed-${weed}` : "", isMower ? `mower facing-${sessionState.facing.toLowerCase()}` : ""].filter(Boolean).join(" ");
         const icon = isMower || cut.has(key) ? "" : weed === LAWN_WEED_TYPES.woody ? "🪵" : weed === LAWN_WEED_TYPES.tough ? "🌿" : "";
         const label = isMower ? `Mower, ${cut.has(key) ? "cut grass" : "tall grass"}` : weed ? `${weed} weed, ${cut.has(key) ? "cut" : "uncut"}` : cut.has(key) ? "Cut grass" : "Tall grass";
         cells.push(`<span class="${classes}" role="gridcell" aria-label="${label}">${icon}</span>`);
@@ -268,7 +299,6 @@ export class LawnCareScene extends Phaser.Scene {
     setText("#lawn-optimal", state.moves <= summary.optimalMoves ? summary.optimalMoves : `${summary.optimalMoves} par`);
     setText("#lawn-live-stars", `${"★".repeat(state.stars)}${"☆".repeat(3 - state.stars)}`);
     setText("#lawn-mower", mower.label);
-    for (const direction of Object.keys(DIRECTION_KEYS)) this.buttons[direction].disabled = state.ended;
     this.buttons.undo.disabled = state.ended || session.undoStack.length === 0;
     this.buttons.hint.disabled = state.ended;
     this.buttons.retry.disabled = state.moves === 0 && session.status !== "failed";
@@ -354,7 +384,6 @@ export class LawnCareScene extends Phaser.Scene {
     this.startButton?.removeEventListener("click", this.onStart);
     this.levelSelect?.removeEventListener("change", this.onLevelChange);
     this.exitButton?.removeEventListener("click", this.onExit);
-    for (const direction of Object.keys(DIRECTION_KEYS)) this.buttons[direction]?.removeEventListener("click", this.directionHandlers[direction]);
     this.buttons.undo?.removeEventListener("click", this.onUndo);
     this.buttons.hint?.removeEventListener("click", this.onHint);
     this.buttons.retry?.removeEventListener("click", this.onRetry);

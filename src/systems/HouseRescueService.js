@@ -14,6 +14,11 @@ import {
 import { COIN_LEDGER_LIMIT } from "../state/economyState.js";
 import { ITEM_CATALOG } from "../data/items.js";
 import { queueHomeownerGiftInto } from "./HomeownerGiftService.js";
+import {
+  buildHouseRescueGeometry,
+  constrainHouseRescueVacuum,
+  houseRescueVacuumStart,
+} from "../data/houseRescueGeometry.js";
 
 function appendLedger(state, now, details) {
   const id = `coin-${String(state.economy.nextTransactionId).padStart(6, "0")}`;
@@ -63,6 +68,7 @@ export class HouseRescueService {
   getSnapshot() { return structuredClone(this.gameState.getSnapshot().houseRescue); }
   getActiveSession() { return this.getSnapshot().active; }
   getLastResult() { return this.lastResult ? structuredClone(this.lastResult) : null; }
+  getGeometry(houseId = this.getActiveSession()?.houseId) { return structuredClone(buildHouseRescueGeometry(houseId)); }
 
   getVacuumLoadout(stateOverride = null) {
     const state = stateOverride || this.gameState.getSnapshot();
@@ -119,6 +125,34 @@ export class HouseRescueService {
     return Object.values(this.getSnapshot().homes).filter((home) => home.dirty).map((home) => structuredClone(home));
   }
 
+  ensureFirstVisit(houseId) {
+    const snapshot = this.getSnapshot();
+    const home = snapshot.homes[houseId];
+    if (!home || houseId === "house-20") return { ok: true, code: "house-rescue-first-visit-ineligible", changed: false };
+    if (home.dirty || home.completionCount > 0) return { ok: true, code: "house-rescue-first-visit-current", changed: false, activated: home.dirty };
+    return this.commit((state) => {
+      const target = state.houseRescue.homes[houseId];
+      const activeId = state.houseRescue.active?.houseId || null;
+      const dirty = Object.values(state.houseRescue.homes).filter((entry) => entry.dirty);
+      let displacedHouseId = null;
+      if (dirty.length >= HOUSE_RESCUE_RULES.maxDirtyHomes) {
+        const candidate = dirty
+          .filter((entry) => entry.houseId !== activeId)
+          .sort((left, right) => Number(right.houseId.split("-")[1]) - Number(left.houseId.split("-")[1]))[0];
+        if (!candidate) {
+          target.nextDirtyDay = Math.max(1, Math.min(target.nextDirtyDay || state.world.day, state.world.day));
+          return { ok: true, code: "house-rescue-first-visit-queued", changed: true, activated: false, queued: true, displacedHouseId: null };
+        }
+        candidate.dirty = false;
+        candidate.nextDirtyDay = Math.max(1, Math.min(candidate.nextDirtyDay || state.world.day, state.world.day));
+        displacedHouseId = candidate.houseId;
+      }
+      target.dirty = true;
+      target.nextDirtyDay = 0;
+      return { ok: true, code: "house-rescue-first-visit-activated", changed: true, activated: true, queued: false, displacedHouseId };
+    });
+  }
+
   startLevel(level = 1, { houseId, returnPosition, returnFacing = "down" } = {}) {
     const requested = Math.floor(Number(level));
     if (!Number.isInteger(requested) || requested < 1 || requested > HOUSE_RESCUE_TOTAL_LEVELS) return { ok: false, code: "invalid-level", message: "Choose a House Rescue level from 1 to 750." };
@@ -146,7 +180,7 @@ export class HouseRescueService {
         correct: 0,
         items: generateHouseRescueItems({ houseId, jobSerial: home.jobSerial, level: requested }).map((item) => ({ ...item })),
         dirt: generateHouseRescueDirt({ houseId, jobSerial: home.jobSerial, level: requested }).map((stain) => ({ ...stain })),
-        vacuum: { x: 8, y: 92 },
+        vacuum: houseRescueVacuumStart(buildHouseRescueGeometry(houseId)),
         vacuumContacts: [],
         returnPosition: validPosition(returnPosition),
         returnFacing: ["up", "down", "left", "right"].includes(returnFacing) ? returnFacing : "down",
@@ -180,13 +214,15 @@ export class HouseRescueService {
   }
 
   moveVacuum(x, y) {
-    const targetX = Math.max(0, Math.min(100, Number(x) || 0));
-    const targetY = Math.max(0, Math.min(100, Number(y) || 0));
     return this.commit((state) => {
       const session = state.houseRescue.active;
       if (!session || session.phase !== "vacuum") return { ok: false, code: "vacuum-unavailable", message: "Sort every rubbish item before vacuuming." };
       const loadout = this.getVacuumLoadout(state);
       const from = { ...session.vacuum };
+      const geometry = buildHouseRescueGeometry(session.houseId);
+      const target = constrainHouseRescueVacuum(geometry, from, { x, y });
+      const targetX = target.x;
+      const targetY = target.y;
       const distance = Math.hypot(targetX - from.x, targetY - from.y);
       const steps = Math.max(1, Math.ceil(distance / 1.5));
       const contacted = new Set();

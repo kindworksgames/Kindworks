@@ -3,6 +3,7 @@ export const BEACH_TOTAL_LEVELS = 750;
 export const BEACH_REWARD_CAP = 170;
 export const BEACH_SOURCE_SHA256 = "0b85bd71385b83e7a13676f7593ce376245959fa4ebf1a6b9a0e6765297aa5a5";
 export const BEACH_PAYLOAD_SHA256 = "a933de6e550e08a8aecd240b5f19ab9514b90e44bc73bec54c9ce725bbf478bd";
+export const BEACH_RAKE_PATTERNS = Object.freeze(["h", "v", "ne", "nw", "se", "sw"]);
 
 export const BEACH_TILE = Object.freeze({
   boardwalk: "#",
@@ -29,6 +30,26 @@ export const BEACH_RUBBISH_ITEMS = Object.freeze([
 
 const DIRECTIONS = Object.freeze({ U: [-1, 0], D: [1, 0], L: [0, -1], R: [0, 1] });
 const DIRECTION_FROM_DELTA = new Map(Object.entries(DIRECTIONS).map(([key, value]) => [value.join(","), key]));
+
+export function beachRakePattern(entryDirection, exitDirection) {
+  if (!Object.hasOwn(DIRECTIONS, exitDirection)) return null;
+  if (!Object.hasOwn(DIRECTIONS, entryDirection)) return ["L", "R"].includes(exitDirection) ? "h" : "v";
+  if (["L", "R"].includes(entryDirection) === ["L", "R"].includes(exitDirection)) return ["L", "R"].includes(exitDirection) ? "h" : "v";
+  const edges = new Set();
+  if (entryDirection === "R") edges.add("w");
+  else if (entryDirection === "L") edges.add("e");
+  else if (entryDirection === "D") edges.add("n");
+  else if (entryDirection === "U") edges.add("s");
+  if (exitDirection === "R") edges.add("e");
+  else if (exitDirection === "L") edges.add("w");
+  else if (exitDirection === "D") edges.add("s");
+  else if (exitDirection === "U") edges.add("n");
+  if (edges.has("n") && edges.has("e")) return "ne";
+  if (edges.has("n") && edges.has("w")) return "nw";
+  if (edges.has("s") && edges.has("e")) return "se";
+  if (edges.has("s") && edges.has("w")) return "sw";
+  return ["L", "R"].includes(exitDirection) ? "h" : "v";
+}
 
 function clampLevel(value) {
   return Math.max(1, Math.min(BEACH_TOTAL_LEVELS, Math.floor(Number(value) || 1)));
@@ -140,6 +161,7 @@ function itemForRubbish(level, row, col, rakedCount) {
 function copyFrame(engine) {
   return {
     row: engine.row, col: engine.col, rakedCells: [...engine.rakedCells], collectedCells: [...engine.collectedCells],
+    rakePatterns: { ...engine.rakePatterns }, entryDirection: engine.entryDirection,
     collectedItems: engine.collectedItems.map((item) => ({ ...item })), earnedCoins: engine.earnedCoins,
     moves: engine.moves, undoUsed: engine.undoUsed, steppedOnRaked: engine.steppedOnRaked,
   };
@@ -151,6 +173,9 @@ export class BeachCleanupEngine {
     this.row = Number.isInteger(saved?.row) ? saved.row : this.level.start[0];
     this.col = Number.isInteger(saved?.col) ? saved.col : this.level.start[1];
     this.rakedCells = new Set(Array.isArray(saved?.rakedCells) ? saved.rakedCells : []);
+    this.rakePatterns = Object.fromEntries(Object.entries(saved?.rakePatterns && typeof saved.rakePatterns === "object" ? saved.rakePatterns : {})
+      .filter(([key, pattern]) => this.rakedCells.has(key) && BEACH_RAKE_PATTERNS.includes(pattern)));
+    this.entryDirection = Object.hasOwn(DIRECTIONS, saved?.entryDirection) ? saved.entryDirection : null;
     this.collectedCells = new Set(Array.isArray(saved?.collectedCells) ? saved.collectedCells : []);
     this.collectedItems = Array.isArray(saved?.collectedItems) ? saved.collectedItems.map((item) => ({ ...item })) : [];
     this.earnedCoins = Math.max(0, Math.min(BEACH_REWARD_CAP, Math.floor(Number(saved?.earnedCoins) || 0)));
@@ -167,21 +192,25 @@ export class BeachCleanupEngine {
   tileAt(row, col) { return this.level.rows[row]?.[col] ?? null; }
   passable(row, col) { return this.tileAt(row, col) !== null && ![BEACH_TILE.umbrella, BEACH_TILE.chair, BEACH_TILE.tide].includes(this.tileAt(row, col)); }
 
-  move(direction) {
+  move(direction, { batchId = null } = {}) {
     if (this.won) return { ok: false, code: "level-complete", message: "This beach is already clean." };
     const delta = DIRECTIONS[direction];
     if (!delta) return { ok: false, code: "invalid-direction", message: "Choose a valid walking direction." };
     const nextRow = this.row + delta[0];
     const nextCol = this.col + delta[1];
     if (!this.passable(nextRow, nextCol)) return { ok: false, code: "blocked", message: "An obstacle blocks that step." };
-    this.history.push(copyFrame(this));
-    this.history = this.history.slice(-30);
+    const normalizedBatchId = typeof batchId === "string" && batchId ? batchId : null;
+    if (!normalizedBatchId || this.history.at(-1)?.batchId !== normalizedBatchId) {
+      this.history.push({ ...copyFrame(this), ...(normalizedBatchId ? { batchId: normalizedBatchId } : {}) });
+      this.history = this.history.slice(-30);
+    }
     const fromTile = this.tileAt(this.row, this.col);
     const fromKey = beachCellKey(this.row, this.col);
     if (this.rakedCells.has(beachCellKey(nextRow, nextCol))) this.steppedOnRaked = true;
     this.moves += 1;
-    if ([BEACH_TILE.sand, BEACH_TILE.rubbish].includes(fromTile) && !this.rakedCells.has(fromKey)) {
-      this.rakedCells.add(fromKey);
+    if ([BEACH_TILE.sand, BEACH_TILE.rubbish].includes(fromTile)) {
+      this.rakePatterns[fromKey] = beachRakePattern(this.entryDirection, direction);
+      if (!this.rakedCells.has(fromKey)) this.rakedCells.add(fromKey);
       if (fromTile === BEACH_TILE.rubbish && !this.collectedCells.has(fromKey)) {
         this.collectedCells.add(fromKey);
         const item = itemForRubbish(this.level.level, this.row, this.col, this.rakedCells.size);
@@ -192,6 +221,7 @@ export class BeachCleanupEngine {
     }
     this.row = nextRow;
     this.col = nextCol;
+    this.entryDirection = direction;
     if (this.rakedCells.size === this.level.totalSand && this.collectedCells.size === this.level.totalRubbish) this.finish();
     return { ok: true, code: this.won ? "level-cleared" : "step", state: this.snapshot() };
   }
@@ -249,6 +279,7 @@ export class BeachCleanupEngine {
   snapshot() {
     return {
       level: this.level.level, row: this.row, col: this.col, rakedCells: [...this.rakedCells], collectedCells: [...this.collectedCells],
+      rakePatterns: { ...this.rakePatterns }, entryDirection: this.entryDirection,
       collectedItems: this.collectedItems.map((item) => ({ ...item })), earnedCoins: this.earnedCoins, bonusCoins: this.bonusCoins,
       moves: this.moves, moveLimit: this.moveLimit, undoUsed: this.undoUsed, steppedOnRaked: this.steppedOnRaked,
       challenges: { ...this.challenges }, undoStack: this.history.map((frame) => structuredClone(frame)),

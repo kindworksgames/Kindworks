@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { cardinalDirection } from "../input/mobileGestures.js";
 
 const DIRECTION_VECTORS = Object.freeze({
   up: [0, -1],
@@ -12,7 +13,6 @@ export class MovementController {
     this.scene = scene;
     this.onTouchStep = onTouchStep;
     this.enabled = true;
-    this.touchDirections = new Set();
     this.cursors = scene.input.keyboard.createCursorKeys();
     this.keys = scene.input.keyboard.addKeys({
       up: Phaser.Input.Keyboard.KeyCodes.W,
@@ -23,42 +23,46 @@ export class MovementController {
       interact: Phaser.Input.Keyboard.KeyCodes.E,
       interactAlt: Phaser.Input.Keyboard.KeyCodes.SPACE,
     });
-    this.bindTouchControls();
+    this.bindSwipeControls();
   }
 
-  bindTouchControls() {
-    this.buttons = [...document.querySelectorAll("[data-move]")];
-    this.onPointerDown = (event) => {
+  bindSwipeControls() {
+    this.swipeTarget = this.scene.game.canvas;
+    this.swipeStart = null;
+    this.swipePulse = null;
+    this.onSwipePointerDown = (event) => {
+      if (!this.enabled || event.button !== 0 || this.swipeStart) return;
+      this.swipeStart = { pointerId: event.pointerId, x: event.clientX, y: event.clientY };
+    };
+    this.onSwipePointerUp = (event) => {
+      const start = this.swipeStart;
+      if (!start || start.pointerId !== event.pointerId) return;
+      this.swipeStart = null;
       if (!this.enabled) return;
-      event.preventDefault();
-      event.currentTarget.setPointerCapture?.(event.pointerId);
-      this.touchDirections.add(event.currentTarget.dataset.move);
-      event.currentTarget.classList.add("is-active");
+      const dx = event.clientX - start.x;
+      const dy = event.clientY - start.y;
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < 24) return;
+      const direction = { U: "up", D: "down", L: "left", R: "right" }[cardinalDirection(dx, dy, 24)];
+      if (!direction) return;
+      const [stepX, stepY] = DIRECTION_VECTORS[direction];
+      if (this.onTouchStep) this.onTouchStep(stepX, stepY);
+      else this.swipePulse = { direction, until: performance.now() + 220 };
     };
-    this.onPointerUp = (event) => {
-      this.touchDirections.delete(event.currentTarget.dataset.move);
-      event.currentTarget.classList.remove("is-active");
+    this.onSwipePointerCancel = (event) => {
+      if (!this.swipeStart || (event?.pointerId !== undefined && this.swipeStart.pointerId !== event.pointerId)) return;
+      this.swipeStart = null;
     };
-    this.onClick = (event) => {
-      if (!this.enabled || !this.onTouchStep) return;
-      const [dx, dy] = DIRECTION_VECTORS[event.currentTarget.dataset.move] || [0, 0];
-      this.onTouchStep(dx, dy);
-    };
-
-    for (const button of this.buttons) {
-      button.addEventListener("pointerdown", this.onPointerDown);
-      button.addEventListener("pointerup", this.onPointerUp);
-      button.addEventListener("pointercancel", this.onPointerUp);
-      button.addEventListener("lostpointercapture", this.onPointerUp);
-      button.addEventListener("click", this.onClick);
-    }
+    this.swipeTarget?.addEventListener("pointerdown", this.onSwipePointerDown);
+    this.swipeTarget?.addEventListener("pointerup", this.onSwipePointerUp);
+    this.swipeTarget?.addEventListener("pointercancel", this.onSwipePointerCancel);
+    this.swipeTarget?.addEventListener("lostpointercapture", this.onSwipePointerCancel);
   }
 
   setEnabled(enabled) {
     this.enabled = Boolean(enabled);
     if (!this.enabled) {
-      this.touchDirections.clear();
-      this.buttons?.forEach((button) => button.classList.remove("is-active"));
+      this.swipeStart = null;
+      this.swipePulse = null;
     }
   }
 
@@ -66,10 +70,12 @@ export class MovementController {
     if (!this.enabled) return { dx: 0, dy: 0, sprinting: false };
     let dx = 0;
     let dy = 0;
-    if (this.cursors.left.isDown || this.keys.left.isDown || this.touchDirections.has("left")) dx -= 1;
-    if (this.cursors.right.isDown || this.keys.right.isDown || this.touchDirections.has("right")) dx += 1;
-    if (this.cursors.up.isDown || this.keys.up.isDown || this.touchDirections.has("up")) dy -= 1;
-    if (this.cursors.down.isDown || this.keys.down.isDown || this.touchDirections.has("down")) dy += 1;
+    const swipeDirection = this.swipePulse && performance.now() <= this.swipePulse.until ? this.swipePulse.direction : null;
+    if (this.swipePulse && !swipeDirection) this.swipePulse = null;
+    if (this.cursors.left.isDown || this.keys.left.isDown || swipeDirection === "left") dx -= 1;
+    if (this.cursors.right.isDown || this.keys.right.isDown || swipeDirection === "right") dx += 1;
+    if (this.cursors.up.isDown || this.keys.up.isDown || swipeDirection === "up") dy -= 1;
+    if (this.cursors.down.isDown || this.keys.down.isDown || swipeDirection === "down") dy += 1;
     return { dx, dy, sprinting: this.keys.sprint.isDown };
   }
 
@@ -80,13 +86,11 @@ export class MovementController {
   }
 
   destroy() {
-    for (const button of this.buttons || []) {
-      button.removeEventListener("pointerdown", this.onPointerDown);
-      button.removeEventListener("pointerup", this.onPointerUp);
-      button.removeEventListener("pointercancel", this.onPointerUp);
-      button.removeEventListener("lostpointercapture", this.onPointerUp);
-      button.removeEventListener("click", this.onClick);
-    }
-    this.touchDirections.clear();
+    this.swipeTarget?.removeEventListener("pointerdown", this.onSwipePointerDown);
+    this.swipeTarget?.removeEventListener("pointerup", this.onSwipePointerUp);
+    this.swipeTarget?.removeEventListener("pointercancel", this.onSwipePointerCancel);
+    this.swipeTarget?.removeEventListener("lostpointercapture", this.onSwipePointerCancel);
+    this.swipeStart = null;
+    this.swipePulse = null;
   }
 }

@@ -1,0 +1,15 @@
+{
+  "source": "protected-legacy-html",
+  "assets": {
+    "POWERWASH_MASTER_ART": {
+      "filename": "playground-master.png",
+      "sha256": "0679fe2c14f28b750f61415641b73e6d17d1f35cbaadfc1a470a011d3cdd0f24",
+      "bytes": 2561213
+    },
+    "POWERWASH_REFERENCE_DIRT_ART": {
+      "filename": "playground-reference-dirt.png",
+      "sha256": "5db4c213d34d1e435f74f03a49590f766e172f01d8ac97703dc090ded7d36736",
+      "bytes": 1998003
+    }
+  }
+}

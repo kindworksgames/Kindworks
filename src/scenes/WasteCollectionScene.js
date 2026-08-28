@@ -6,6 +6,7 @@ import {
   WasteCollectionEngine,
   wasteLevelSummary,
 } from "../data/wasteCollection.js";
+import { fitWasteCardLayout } from "../ui/WasteCardLayout.js";
 
 const ROOM = Object.freeze({ width: 1280, height: 720 });
 
@@ -181,22 +182,30 @@ export class WasteCollectionScene extends Phaser.Scene {
     setText("#waste-level-remaining", state.remaining); setText("#waste-level-matches", state.matches); setText("#waste-level-tray-count", `${state.tray.length} / 5`);
     if (this.boardElement) {
       const fragment = document.createDocumentFragment();
-      for (const tile of engine.tiles.filter((entry) => !entry.removed).sort((a, b) => a.layer - b.layer || a.id - b.id)) {
+      const remainingTiles = engine.tiles.filter((entry) => !entry.removed);
+      const fitted = fitWasteCardLayout(remainingTiles, WASTE_WORLD);
+      const cardLayout = new Map(fitted.cards.map((card) => [card.id, card]));
+      this.boardElement.style.setProperty("--waste-layout-scale", fitted.scale.toFixed(4));
+      for (const tile of remainingTiles.sort((a, b) => a.layer - b.layer || a.id - b.id)) {
         const button = document.createElement("button");
+        const layout = cardLayout.get(tile.id);
         const isExposed = exposed.has(tile.id);
         button.type = "button";
         button.className = `waste-card${isExposed ? "" : " blocked"}${this.hintTileId === tile.id ? " safe-hint" : ""}`;
         button.dataset.wasteTile = String(tile.id);
         button.disabled = !isExposed || this.session.status === "failed";
-        button.style.left = `${(tile.x / WASTE_WORLD.width) * 100}%`;
-        button.style.top = `${(tile.y / WASTE_WORLD.height) * 100}%`;
+        button.style.left = `${(layout.x / WASTE_WORLD.width) * 100}%`;
+        button.style.top = `${(layout.y / WASTE_WORLD.height) * 100}%`;
+        button.style.width = `${(layout.width / WASTE_WORLD.width) * 100}%`;
+        button.style.height = `${(layout.height / WASTE_WORLD.height) * 100}%`;
         button.style.zIndex = String(10 + tile.layer * 150 + tile.id);
         button.style.setProperty("--card-rotation", `${tile.rotation}deg`);
         button.title = tile.label;
         button.setAttribute("aria-label", isExposed ? `Select ${tile.label}` : `${tile.label}, blocked`);
+        const hitArea = document.createElement("i"); hitArea.className = "waste-card-hit"; hitArea.setAttribute("aria-hidden", "true");
         const icon = document.createElement("span"); icon.setAttribute("aria-hidden", "true"); icon.textContent = tile.icon;
         const layer = document.createElement("small"); layer.textContent = String(tile.layer + 1);
-        button.append(icon, layer); fragment.appendChild(button);
+        button.append(hitArea, icon, layer); fragment.appendChild(button);
       }
       this.boardElement.replaceChildren(fragment);
       this.boardElement.setAttribute("aria-label", `Waste Collection Level ${summary.level}, ${state.remaining} of ${state.total} cards remaining, ${state.tray.length} of 5 tray slots filled`);

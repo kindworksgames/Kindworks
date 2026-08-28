@@ -8,6 +8,7 @@ import {
 import { ITEM_CATALOG } from "./items.js";
 import { NPC_HOME_DEFINITIONS, NPC_RESIDENTS } from "./npcTownLife.js";
 import { HOUSES } from "./town.js";
+import { houseArchitectureKit } from "./legacyVisualStates.js";
 
 export const HOME_INTERIOR_STATE_SCHEMA_VERSION = 1;
 export const HOME_FURNITURE_LIMIT = 60;
@@ -127,9 +128,10 @@ export function buildHouseInteriorLayout(state, houseId) {
   if (!house) return null;
   const personal = house.id === PERSONAL_HOME_HOUSE_ID;
   const number = houseNumber(house);
-  const level = personal ? Math.max(1, Math.min(4, Number(state.customResident?.home?.level) || 1)) : Math.min(3, 1 + (number % 3));
-  const width = personal ? [620, 700, 790, 850][level - 1] : [720, 770, 800][level - 1];
-  const height = personal ? [390, 430, 480, 510][level - 1] : [440, 470, 485][level - 1];
+  const architecture = houseArchitectureKit(house.architectureKit);
+  const level = personal ? Math.max(1, Math.min(4, Number(state.customResident?.home?.level) || 1)) : architecture.interior.level;
+  const width = personal ? [620, 700, 790, 850][level - 1] : architecture.interior.width;
+  const height = personal ? [390, 430, 480, 510][level - 1] : architecture.interior.height;
   const x = (HOME_INTERIOR_VIEW.width - width) / 2;
   const y = (HOME_INTERIOR_VIEW.height - height) / 2 + 8;
   const residentDefinitions = residentDefinitionsForHouse(house);
@@ -168,7 +170,7 @@ export function buildHouseInteriorLayout(state, houseId) {
     }
   }
   return {
-    house, personal, level, x, y, w: width, h: height, theme,
+    house, architecture, personal, level, x, y, w: width, h: height, theme,
     metadata: houseInteriorMetadata(house), residentDefinitions,
     pets: adopted.map((animal) => ({ ...animal, definition: ANIMAL_BY_ID[animal.id] || null })),
     furniture, partitions,

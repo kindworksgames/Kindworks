@@ -1,9 +1,11 @@
 import {
+  RIVERSIDE_KITCHEN_APPLIANCES,
   RIVERSIDE_KITCHEN_CONFIG,
   RIVERSIDE_KITCHEN_RECIPES,
   RIVERSIDE_KITCHEN_STATE_SCHEMA_VERSION,
   riversideKitchenLevel,
 } from "../data/riversideKitchen.js";
+import { createRestaurantAppliances } from "../systems/RestaurantApplianceRuntime.js";
 
 function whole(value, minimum = 0, maximum = Number.MAX_SAFE_INTEGER) {
   const number = Math.floor(Number(value));
@@ -53,6 +55,10 @@ function normalizeActiveShift(value) {
       completedRecipes: customerOrder ? [...customerOrder.recipes.slice(0, recipeIndex)] : [],
     };
   });
+  const appliances = createRestaurantAppliances(RIVERSIDE_KITCHEN_APPLIANCES, value.appliances, RIVERSIDE_KITCHEN_CONFIG.trayCount);
+  for (const appliance of Object.values(appliances)) {
+    if (appliance.status !== "idle" && !trays[appliance.trayIndex]?.orderId) Object.assign(appliance, { status: "idle", trayIndex: null, readyIn: 0, burnIn: 0 });
+  }
   return {
     id: String(value.id || `riverside-kitchen-shift-${level.level}`).slice(0, 80),
     level,
@@ -60,6 +66,7 @@ function normalizeActiveShift(value) {
     spawnIndex: whole(value.spawnIndex, 0, orders.length),
     activeOrderIds,
     trays,
+    appliances,
     activeTray: whole(value.activeTray, 0, RIVERSIDE_KITCHEN_CONFIG.trayCount - 1),
     elapsed: decimal(value.elapsed, 0, level.duration, 0),
     served: whole(value.served, 0, level.target),

@@ -4,7 +4,7 @@ const JOB_LABELS = Object.freeze({ resident: "a neighbour", lawn: "Lawn Care", w
 
 export function firstSessionStep(state) {
   if (!state?.complete || state.journey?.freePlay) return null;
-  if (!state.journey?.moved) return { id: "move", number: 1, icon: "🧭", title: "Move around town", detail: "Use the arrows to take a few steps.", action: null };
+  if (!state.journey?.moved) return { id: "move", number: 1, icon: "🧭", title: "Explore the town", detail: "Drag the map to look around.", action: null };
   if (!state.journey?.metResident) return { id: "resident", number: 2, icon: "💬", title: "Meet a neighbour", detail: "Say hello and hear their story.", action: "resident" };
   if (!state.journey?.completed?.lawn) return { id: "lawn", number: 3, icon: "🌱", title: state.tried?.lawn ? "Finish Lawn Care" : "Restore a lawn", detail: "Cut at least half of the grass.", action: "lawn" };
   if (!state.journey?.completed?.waste) return { id: "waste", number: 4, icon: "🪙", title: state.tried?.waste ? "Finish Waste Collection" : "Try another activity", detail: "Rewards buy useful town items.", action: "waste" };

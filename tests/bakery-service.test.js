@@ -22,12 +22,15 @@ function runtime({ state = createFreshGameState({ now: 0 }), repository = new Sa
 }
 
 function completeShift(bakery, level = 1) {
-  assert.equal(bakery.startLevel(level).ok, true);
+  assert.equal(bakery.startLevel(level, { instantOrders: true }).ok, true);
   let last;
   while (!bakery.getActiveSession().finished) {
+    const tray = bakery.getActiveSession().trays.find((candidate) => candidate.orderId);
+    assert.ok(tray);
+    assert.equal(bakery.selectTray(tray.index).ok, true);
     const recipe = bakery.currentRecipe();
-    for (const step of recipe.steps) assert.equal(bakery.applyStep(step).ok, true);
-    last = bakery.serveRecipe();
+    for (const step of recipe.steps) assert.equal(bakery.applyStep(step, tray.index).ok, true);
+    last = bakery.serveRecipe(tray.index);
     assert.equal(last.ok, true);
   }
   return last;
@@ -59,6 +62,9 @@ test("locked shifts cannot start and level one assigns a named customer", () => 
   const started = bakery.startLevel(1, { returnPosition: { x: 805, y: 1180 }, returnFacing: "left" });
   assert.equal(started.ok, true);
   assert.equal(started.session.orders.length, 3);
+  assert.equal(started.session.trays.length, 3);
+  assert.equal(started.session.activeOrderIds.length, 1);
+  assert.equal(started.session.trays.filter((tray) => tray.orderId).length, 1);
   assert.equal(typeof started.session.orders[0].customerName, "string");
   assert.deepEqual(started.session.returnPosition, { x: 805, y: 1180 });
 });
@@ -72,7 +78,7 @@ test("the play loop accepts only the exact highlighted recipe sequence", () => {
   assert.equal(rejected.code, "wrong-step");
   assert.equal(bakery.getActiveSession().mistakes, 1);
   for (const step of recipe.steps) assert.equal(bakery.applyStep(step).ok, true);
-  assert.equal(bakery.getActiveSession().stepIndex, recipe.steps.length);
+  assert.equal(bakery.tray().stepIndex, recipe.steps.length);
   assert.equal(bakery.serveRecipe().code, "customer-served");
 });
 
@@ -87,7 +93,47 @@ test("undo and discard modify only the active preparation and count waste honest
   assert.equal(discarded.ok, true);
   assert.equal(bakery.getActiveSession().waste, 1);
   assert.equal(bakery.getActiveSession().mistakes, 1);
-  assert.equal(bakery.getActiveSession().stepIndex, 0);
+  assert.equal(bakery.tray().stepIndex, 0);
+});
+
+test("scheduled arrivals create three simultaneous customers with independent patience", () => {
+  const { bakery } = runtime();
+  bakery.startLevel(1);
+  const firstPatience = bakery.activeOrders()[0].patience;
+  for (let second = 0; second < 24; second += 1) bakery.tick(1);
+  let session = bakery.getActiveSession();
+  assert.equal(session.activeOrderIds.length, 2);
+  assert.equal(session.trays.filter((tray) => tray.orderId).length, 2);
+  assert.ok(bakery.activeOrders()[0].patience < firstPatience);
+  assert.ok(bakery.activeOrders()[1].patience > bakery.activeOrders()[0].patience);
+  for (let second = 0; second < 24; second += 1) bakery.tick(1);
+  session = bakery.getActiveSession();
+  assert.equal(session.activeOrderIds.length, 3);
+  assert.equal(session.trays.filter((tray) => tray.orderId).length, 3);
+});
+
+test("each preparation tray keeps its own recipe progress", () => {
+  const { bakery } = runtime();
+  bakery.startLevel(1, { instantOrders: true });
+  assert.equal(bakery.getActiveSession().activeOrderIds.length, 3);
+  const firstStep = bakery.expectedStep(bakery.tray(1));
+  assert.equal(bakery.applyStep(firstStep, 1).ok, true);
+  assert.equal(bakery.tray(1).stepIndex, 1);
+  assert.equal(bakery.tray(0).stepIndex, 0);
+  assert.equal(bakery.tray(2).stepIndex, 0);
+});
+
+test("serving one tray leaves the other active customers in progress", () => {
+  const { bakery } = runtime();
+  bakery.startLevel(1, { instantOrders: true });
+  bakery.selectTray(0);
+  for (const step of bakery.currentRecipe().steps) bakery.applyStep(step, 0);
+  const result = bakery.serveRecipe(0);
+  assert.equal(result.code, "customer-served");
+  const session = bakery.getActiveSession();
+  assert.equal(session.served, 1);
+  assert.equal(session.activeOrderIds.length, 2);
+  assert.equal(session.trays.filter((tray) => tray.orderId).length, 2);
 });
 
 test("a perfect first clear serves all customers, unlocks level two and pays once", () => {
@@ -144,18 +190,20 @@ test("a save failure restores coins, unlocks and bakery progress without duplica
   let shouldFail = true;
   const repository = { save: () => shouldFail ? { ok: false, status: "write-failed" } : { ok: true, status: "saved" } };
   const { gameState, bakery } = runtime({ repository });
-  bakery.startLevel(1);
+  bakery.startLevel(1, { instantOrders: true });
   let result;
   for (let order = 0; order < 3; order += 1) {
-    for (const step of bakery.currentRecipe().steps) bakery.applyStep(step);
-    result = bakery.serveRecipe();
+    const tray = bakery.getActiveSession().trays.find((candidate) => candidate.orderId);
+    bakery.selectTray(tray.index);
+    for (const step of bakery.currentRecipe().steps) bakery.applyStep(step, tray.index);
+    result = bakery.serveRecipe(tray.index);
   }
   assert.equal(result.code, "persistence-failed");
   assert.equal(gameState.getSnapshot().economy.coins, 100);
   assert.equal(gameState.getSnapshot().bakery.unlockedLevel, 1);
   assert.equal(gameState.getSnapshot().bakery.shifts, 0);
   assert.equal(bakery.getActiveSession().finished, false);
-  assert.equal(bakery.currentRecipe().steps.length, bakery.getActiveSession().stepIndex);
+  assert.equal(bakery.currentRecipe().steps.length, bakery.tray().stepIndex);
   shouldFail = false;
   const retry = bakery.serveRecipe();
   assert.equal(retry.ok, true);

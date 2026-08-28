@@ -4,11 +4,14 @@ import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import {
   POWERWASH_BUILD_VERSION,
+  POWERWASH_CANVAS,
+  POWERWASH_GRID,
   POWERWASH_MASTER_ART_SHA256,
   POWERWASH_MINIMUM_CLEAN_PERCENT,
   POWERWASH_NOZZLES,
   POWERWASH_PAYLOAD_SHA256,
   POWERWASH_REFERENCE_DIRT_SHA256,
+  POWERWASH_SIMULATION_REVISION,
   POWERWASH_SOURCE_SHA256,
   POWERWASH_TOTAL_LEVELS,
   POWERWASH_VISUAL_REVISION,
@@ -23,6 +26,7 @@ import { powerwashDirtyInterval, projectLegacyPlaygroundPowerwash } from "../src
 import { SaveRepository } from "../src/state/SaveRepository.js";
 import { advanceWorldState } from "../src/state/worldState.js";
 import { PlaygroundPowerwashService, calculatePowerwashCampaignReward } from "../src/systems/PlaygroundPowerwashService.js";
+import { LEGACY_POWERWASH_RENDER_REVISION } from "../src/rendering/LegacyPowerwashRenderer.js";
 import { MemoryStorage } from "./helpers/MemoryStorage.js";
 
 function runtime({ state = createFreshGameState({ now: 0 }), repository = new SaveRepository(new MemoryStorage()), now = () => 1000 } = {}) {
@@ -52,9 +56,17 @@ test("pins the protected Playground Power Wash source, actual payload and approv
     assert.ok(encoded, `${name} is embedded`);
     assert.equal(sha256(Buffer.from(encoded, "base64")), expected);
   }
+  assert.deepEqual(POWERWASH_CANVAS, { width: 1536, height: 1024, wash: { x: 54, y: 117, width: 1428, height: 706 } });
+  const [master, dirt] = await Promise.all([
+    readFile(new URL("../public/assets/powerwash/playground-master.png", import.meta.url)),
+    readFile(new URL("../public/assets/powerwash/playground-reference-dirt.png", import.meta.url)),
+  ]);
+  assert.equal(sha256(master), POWERWASH_MASTER_ART_SHA256);
+  assert.equal(sha256(dirt), POWERWASH_REFERENCE_DIRT_SHA256);
 });
 
 test("recreates all 750 deterministic difficulty levels and exact tool constants", () => {
+  assert.equal(POWERWASH_SIMULATION_REVISION, "phase-3-continuous-spray-v1");
   assert.deepEqual(POWERWASH_NOZZLES.precision, { radius: 0.64, drain: 8.5, power: 1.15, label: "Precision" });
   assert.deepEqual(POWERWASH_NOZZLES.standard, { radius: 1, drain: 12, power: 1, label: "Standard" });
   assert.deepEqual(POWERWASH_NOZZLES.wide, { radius: 1.48, drain: 17, power: 0.82, label: "Wide" });
@@ -64,6 +76,62 @@ test("recreates all 750 deterministic difficulty levels and exact tool constants
   assert.equal(generatePowerwashLevel(375).fingerprint, generatePowerwashLevel(375).fingerprint);
   assert.notEqual(generatePowerwashLevel(1).fingerprint, generatePowerwashLevel(750).fingerprint);
   assert.deepEqual(validatePowerwashCatalogue(), { ok: true, issues: [], levels: 750, uniqueLevels: 750, version: POWERWASH_BUILD_VERSION, visualRevision: POWERWASH_VISUAL_REVISION });
+});
+
+test("continuous spraying interpolates movement and keeps cleaning a stationary resistant cell", () => {
+  const engine = new PlaygroundPowerwashEngine(750);
+  engine.selectTool("water", "precision");
+  const normalIndex = engine.snapshot().normal[0][0];
+  const row = Math.floor(normalIndex / POWERWASH_GRID.columns);
+  const col = normalIndex % POWERWASH_GRID.columns;
+  const before = new Map(engine.snapshot().normal).get(normalIndex);
+  engine.spraySegment(row, col, row, col, { deltaMs: 55 });
+  const first = new Map(engine.snapshot().normal).get(normalIndex) || 0;
+  engine.spraySegment(row, col, row, col, { deltaMs: 55 });
+  const second = new Map(engine.snapshot().normal).get(normalIndex) || 0;
+  assert.ok(first < before);
+  assert.ok(second < first);
+
+  const midpoint = row * POWERWASH_GRID.columns + Math.min(POWERWASH_GRID.columns - 1, col + 5);
+  const path = new PlaygroundPowerwashEngine(1, { normal: [[normalIndex, 1], [midpoint, 1]], resistant: [], water: 100, soap: 100 });
+  path.selectTool("water", "standard");
+  const result = path.spraySegment(row, col, row, Math.min(POWERWASH_GRID.columns - 1, col + 5), { deltaMs: 180 });
+  assert.ok(result.samples > 2);
+  assert.ok((new Map(path.snapshot().normal).get(midpoint) || 0) < 1);
+});
+
+test("full-resolution completion defers the grid tolerance to the approved pixel mask", () => {
+  const engine = new PlaygroundPowerwashEngine(1);
+  const dirty = engine.snapshot().normal[0][0];
+  const row = Math.floor(dirty / POWERWASH_GRID.columns);
+  const col = dirty % POWERWASH_GRID.columns;
+  const deferred = engine.spraySegment(row, col, row, col, { deltaMs: 180, autoComplete: false });
+  assert.equal(deferred.ok, true);
+  assert.equal(engine.snapshot().won, false);
+
+  const { gameState, powerwash } = runtime();
+  const started = powerwash.beginCampaign(1);
+  assert.equal(powerwash.completeVisual(started.session.id, 96).code, "not-clean-enough");
+  assert.equal(powerwash.getActiveSession().id, started.session.id);
+  const completed = powerwash.completeVisual(started.session.id, 97);
+  assert.equal(completed.ok, true);
+  assert.equal(completed.result.rawPercent, 97);
+  assert.equal(completed.result.percent, 100);
+  assert.equal(gameState.getSnapshot().economy.coins, 200);
+});
+
+test("ports the protected layered dirt, radial wash, foam, wetness, mist and wand renderer", async () => {
+  assert.equal(LEGACY_POWERWASH_RENDER_REVISION, "phase-3-full-resolution-layers-v1");
+  const renderer = await readFile(new URL("../src/rendering/LegacyPowerwashRenderer.js", import.meta.url), "utf8");
+  for (const contract of ["restoreFullyDirtyReference", "addBalancedDirtCoverage", "addLevelDirtDetail", "addSoapRequiredStains", "destination-out", "createRadialGradient", "spawnMist", "drawNozzle", "rehydrateVisualCheckpoint"]) assert.match(renderer, new RegExp(contract));
+});
+
+test("water and soap recover by elapsed idle time without switching tools", () => {
+  const engine = new PlaygroundPowerwashEngine(750, { water: 0, soap: 0 });
+  const recovered = engine.recover(1000);
+  assert.equal(recovered.changed, true);
+  assert.equal(engine.snapshot().water, 2.8);
+  assert.equal(engine.snapshot().soap, 2.02);
 });
 
 test("soap-resistant stains ignore plain water, then release after soap and rinsing", () => {
@@ -148,6 +216,20 @@ test("an exact active washer, supplies, tool and return point survive a safe rel
   assert.deepEqual(session.returnPosition, { x: 1900, y: 1170 });
   assert.equal(session.returnFacing, "right");
   assert.equal(validateGameState(resumed.gameState.getSnapshot()).ok, true);
+});
+
+test("the exact full-resolution wash path survives reload independently of the coarse grid", () => {
+  const storage = new MemoryStorage(); const repository = new SaveRepository(storage);
+  const first = runtime({ repository }); const started = first.powerwash.beginCampaign(375);
+  const segment = { from: { x: 345.25, y: 250.5 }, to: { x: 410.75, y: 286.25 } };
+  const state = first.powerwash.getSessionState(); const index = state.normal[0][0];
+  const row = Math.floor(index / POWERWASH_GRID.columns); const col = index % POWERWASH_GRID.columns;
+  assert.equal(first.powerwash.sprayPath(started.session.id, { row, col }, { row, col }, 55, { autoComplete: false, visualSegment: segment }).ok, true);
+  const savedCheckpoint = first.powerwash.getActiveSession().visualCheckpoint;
+  assert.deepEqual(savedCheckpoint.paths[0].points, [[345.25, 250.5], [410.75, 286.25]]);
+  const loaded = repository.load(); assert.equal(loaded.ok, true);
+  const resumed = runtime({ state: loaded.state, repository });
+  assert.deepEqual(resumed.powerwash.getActiveSession().visualCheckpoint, savedCheckpoint);
 });
 
 test("schema 16 and legacy playground data upgrade to schema 19 while failed saves roll back exactly", () => {

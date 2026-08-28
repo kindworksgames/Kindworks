@@ -46,6 +46,7 @@ export const ROADS = Object.freeze([
 export const PATHS = Object.freeze([
   { id: "commons-main", width: 26, points: [[1050, 1100], [1145, 965], [1270, 875], [1450, 840], [1615, 890], [1710, 990], [1650, 1130], [1540, 1245], [1380, 1290], [1220, 1220], [1115, 1110], [1050, 1100]] },
   { id: "commons-play", width: 25, points: [[1615, 890], [1775, 850], [1950, 855], [2110, 930], [2185, 1065], [2150, 1200], [2020, 1320], [1840, 1340], [1650, 1130], [1710, 990], [1615, 890]] },
+  { id: "mill-walk", width: 25, points: [[2185, 1065], [2325, 1050], [2440, 1010], [2525, 1000]] },
   { id: "south-pond-walk", width: 25, points: [[1670, 1545], [1670, 2050], [1700, 2260], [1850, 2390], [2040, 2460], [2200, 2440]] },
   { id: "harbour-walk", width: 25, points: [[3710, 1545], [3710, 2020], [3740, 2100], [3740, 2260]] },
 ]);
@@ -69,23 +70,31 @@ export const DISTRICTS = Object.freeze([
   { title: "SOUTH SHORE", x: 3060, y: 2050, width: 1050, height: 710 },
 ]);
 
+// Stable property identities copied from the protected HTML. Keep these explicit:
+// the legacy layout is not numerically ordered after house 8, and lawn, resident,
+// gift and House Rescue ownership all depend on the authored house number.
 export const HOUSES = Object.freeze([
-  [208, 215, 195, 145, 0xb95746], [598, 215, 195, 145, 0xd08b4f], [988, 215, 195, 145, 0x627e96],
-  [1378, 215, 195, 145, 0xb95746], [1768, 215, 195, 145, 0xd08b4f], [2158, 215, 195, 145, 0x627e96],
-  [208, 1680, 195, 145, 0xd08b4f], [598, 1680, 195, 145, 0xb95746], [988, 1680, 195, 145, 0xd08b4f],
-  [1378, 1680, 195, 145, 0xb95746], [1768, 1680, 195, 145, 0x627e96],
-  [2790, 1280, 190, 140, 0xd78363], [3120, 1280, 190, 140, 0x6f91aa], [3450, 1280, 190, 140, 0x9b79a9], [3780, 1280, 190, 140, 0x78a16c],
-  [2790, 1680, 190, 140, 0xb95746], [3120, 1680, 190, 140, 0xd2a04f], [3450, 1680, 190, 140, 0xc96b73], [3780, 1680, 190, 140, 0x6489a6],
-].map(([x, y, width, height, roof], index) => ({
-  // The preserved HTML has no authored physical house-19. Its nineteenth rendered
-  // cottage is the personal house-20/home20 on South Shore.
-  id: index === 18 ? "house-20" : `house-${index + 1}`,
-  x,
-  y,
-  width,
-  height,
-  roof,
-})));
+  { id: "house-1", x: 208, y: 215, width: 195, height: 145, roof: 0xb95746, gate: "south", yard: { x: 150, y: 150, width: 310, height: 340 }, architectureKit: "starter-cottage" },
+  { id: "house-2", x: 598, y: 215, width: 195, height: 145, roof: 0xd08b4f, gate: "south", yard: { x: 540, y: 150, width: 310, height: 340 }, architectureKit: "bay-cottage" },
+  { id: "house-3", x: 988, y: 215, width: 195, height: 145, roof: 0x627e96, gate: "south", yard: { x: 930, y: 150, width: 310, height: 340 }, architectureKit: "cross-gable" },
+  { id: "house-4", x: 1378, y: 215, width: 195, height: 145, roof: 0xb95746, gate: "south", yard: { x: 1320, y: 150, width: 310, height: 340 }, architectureKit: "two-storey" },
+  { id: "house-5", x: 1768, y: 215, width: 195, height: 145, roof: 0xd08b4f, gate: "south", yard: { x: 1710, y: 150, width: 310, height: 340 }, architectureKit: "grand-veranda" },
+  { id: "house-6", x: 2158, y: 215, width: 195, height: 145, roof: 0x627e96, gate: "south", yard: { x: 2100, y: 150, width: 310, height: 340 }, architectureKit: "bay-cottage" },
+  { id: "house-13", x: 2790, y: 1280, width: 190, height: 140, roof: 0xd78363, gate: "south", yard: { x: 2735, y: 1230, width: 300, height: 290 }, architectureKit: "starter-cottage" },
+  { id: "house-14", x: 3120, y: 1280, width: 190, height: 140, roof: 0x6f91aa, gate: "south", yard: { x: 3065, y: 1230, width: 300, height: 290 }, architectureKit: "two-storey" },
+  { id: "house-15", x: 3450, y: 1280, width: 190, height: 140, roof: 0x9b79a9, gate: "south", yard: { x: 3395, y: 1230, width: 300, height: 290 }, architectureKit: "grand-veranda" },
+  { id: "house-16", x: 3780, y: 1280, width: 190, height: 140, roof: 0x78a16c, gate: "south", yard: { x: 3725, y: 1230, width: 300, height: 290 }, architectureKit: "bay-cottage" },
+  { id: "house-7", x: 208, y: 1680, width: 195, height: 145, roof: 0xd08b4f, gate: "north", yard: { x: 150, y: 1600, width: 310, height: 410 }, architectureKit: "cross-gable" },
+  { id: "house-8", x: 598, y: 1680, width: 195, height: 145, roof: 0xb95746, gate: "north", yard: { x: 540, y: 1600, width: 310, height: 410 }, architectureKit: "starter-cottage" },
+  { id: "house-11", x: 988, y: 1680, width: 195, height: 145, roof: 0xd08b4f, gate: "north", yard: { x: 930, y: 1600, width: 310, height: 410 }, architectureKit: "bay-cottage" },
+  { id: "house-12", x: 1378, y: 1680, width: 195, height: 145, roof: 0xb95746, gate: "north", yard: { x: 1320, y: 1600, width: 310, height: 410 }, architectureKit: "cross-gable" },
+  { id: "house-9", x: 1768, y: 1680, width: 195, height: 145, roof: 0x627e96, gate: "north", yard: { x: 1710, y: 1600, width: 310, height: 410 }, architectureKit: "two-storey" },
+  { id: "house-10", x: 2790, y: 1680, width: 190, height: 140, roof: 0xb95746, gate: "north", yard: { x: 2735, y: 1600, width: 300, height: 410 }, architectureKit: "grand-veranda" },
+  { id: "house-17", x: 3120, y: 1680, width: 190, height: 140, roof: 0xd2a04f, gate: "north", yard: { x: 3065, y: 1600, width: 300, height: 410 }, architectureKit: "cross-gable" },
+  { id: "house-18", x: 3450, y: 1680, width: 190, height: 140, roof: 0xc96b73, gate: "north", yard: { x: 3395, y: 1600, width: 300, height: 410 }, architectureKit: "two-storey" },
+  // House 19 is reserved but unauthored; the nineteenth physical property is home20.
+  { id: "house-20", x: 3780, y: 1680, width: 190, height: 140, roof: 0x6489a6, gate: "north", yard: { x: 3725, y: 1600, width: 300, height: 410 }, architectureKit: "starter-cottage" },
+].map((house) => Object.freeze({ ...house, yard: Object.freeze(house.yard) })));
 
 export const SHOPS = Object.freeze([
   { title: "Corner Café", icon: "☕", x: 190, y: 890, width: 230, height: 210, color: 0xd99a59 },

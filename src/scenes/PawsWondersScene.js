@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { ANIMAL_BY_ID, ANIMAL_SPECIES } from "../data/animals.js";
+import { ANIMAL_BY_ID, ANIMAL_REFERENCE_TEXTURE_KEY, ANIMAL_SPECIES, animalReferenceFrame } from "../data/animals.js";
 import { ITEM_CATALOG } from "../data/items.js";
 import {
   PAWS_WONDERS_CATALOG,
@@ -102,7 +102,11 @@ export class PawsWondersScene extends Phaser.Scene {
     const zone = this.add.rectangle(rect.x + rect.width / 2, rect.y + rect.height / 2, rect.width, rect.height, 0xfff8dc, 0.12).setStrokeStyle(2, 0xf6e39a, 0.85).setDepth(14).setInteractive({ useHandCursor: true });
     zone.on("pointerdown", () => this.selectCompanion(item.id));
     const bed = this.add.ellipse(zone.x, rect.y + rect.height * 0.72, Math.max(36, rect.width * 0.55), Math.max(12, rect.height * 0.22), item.category === "dog" ? 0xead092 : 0xc7dba5, 0.95).setDepth(15);
-    const icon = this.add.text(zone.x, rect.y + rect.height * 0.45, item.icon, { fontFamily: "Apple Color Emoji, system-ui", fontSize: item.category === "featured" ? "35px" : "28px" }).setOrigin(0.5).setDepth(17);
+    const definition = ANIMAL_BY_ID[item.animalId];
+    const referenceFrame = animalReferenceFrame(definition);
+    const icon = referenceFrame === null || !this.textures.exists(ANIMAL_REFERENCE_TEXTURE_KEY)
+      ? this.add.text(zone.x, rect.y + rect.height * 0.45, item.icon, { fontFamily: "Apple Color Emoji, system-ui", fontSize: item.category === "featured" ? "35px" : "28px" }).setOrigin(0.5).setDepth(17)
+      : this.add.image(zone.x, rect.y + rect.height * 0.62, ANIMAL_REFERENCE_TEXTURE_KEY, referenceFrame).setOrigin(0.5, 1).setScale(item.category === "featured" ? 0.68 : 0.58).setDepth(17);
     const label = this.add.text(zone.x, rect.y + rect.height - 3, item.name, { color: "#263d30", fontFamily: "system-ui", fontSize: "9px", fontStyle: "bold", backgroundColor: "rgba(255,250,225,.9)", padding: { x: 4, y: 2 } }).setOrigin(0.5, 1).setDepth(18);
     const status = this.add.text(rect.x + rect.width - 3, rect.y + 3, "", { color: "#fff", fontSize: "8px", fontStyle: "bold", backgroundColor: "#47785a", padding: { x: 4, y: 2 } }).setOrigin(1, 0).setDepth(19);
     this.petDisplays.set(item.id, { item, rect, zone, bed, icon, label, status });
@@ -120,7 +124,7 @@ export class PawsWondersScene extends Phaser.Scene {
   drawDetailPanel() {
     this.add.rectangle(1062, 360, 330, 570, 0xfffbeb, 1).setStrokeStyle(5, 0x42684f).setDepth(25);
     this.detailEyebrow = this.add.text(925, 96, "SELECTED COMPANION", { color: "#78856f", fontFamily: "ui-monospace, monospace", fontSize: "10px", fontStyle: "bold" }).setDepth(26);
-    this.detailIcon = this.add.text(1062, 158, "🐕", { fontFamily: "Apple Color Emoji, system-ui", fontSize: "64px" }).setOrigin(0.5).setDepth(26);
+    this.detailIcon = this.add.image(1062, 192, ANIMAL_REFERENCE_TEXTURE_KEY, animalReferenceFrame(ANIMAL_BY_ID["pet-dog-labrador"])).setOrigin(0.5, 1).setScale(1.25).setDepth(26);
     this.detailName = this.add.text(925, 208, "Sunny · Labrador", { color: "#244c36", fontFamily: "system-ui", fontSize: "22px", fontStyle: "bold", wordWrap: { width: 275 } }).setDepth(26);
     this.detailPersonality = this.add.text(925, 244, "Warm, bouncy and people-focused", { color: "#4f6c59", fontSize: "13px", fontStyle: "bold", wordWrap: { width: 275 } }).setDepth(26);
     this.detailDescription = this.add.text(925, 284, "", { color: "#5c6c61", fontSize: "12px", lineSpacing: 4, wordWrap: { width: 275 } }).setDepth(26);
@@ -160,7 +164,7 @@ export class PawsWondersScene extends Phaser.Scene {
 
   renderProduct(product) {
     const { item, resident } = product;
-    this.detailIcon.setText(item.icon);
+    this.detailIcon.setFrame(animalReferenceFrame(ANIMAL_BY_ID[item.animalId]));
     this.detailName.setText(itemLabel(item));
     this.detailPersonality.setText(item.personality);
     this.detailDescription.setText(product.unlocked ? item.description : `The egg is still sleeping. Restore ${product.requiredMilestones - product.milestones} more part${product.requiredMilestones - product.milestones === 1 ? "" : "s"} of town to wake it.`);
