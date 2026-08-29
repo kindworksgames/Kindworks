@@ -18,15 +18,16 @@ This directory is the evidence register for the staged functional QA cycle that 
 | --- | --- | --- | --- | --- |
 | 01 | Authoritative baseline, complete inventory, and protected HTML-to-Phaser parity | AUDIT COMPLETE — CONDITIONAL PASS; 0 P0/P1/P2, 1 P3 identified | REPAIR VERIFIED — F-01 fixed; stale autonomy status corrected; 611/611 tests and both parity validators pass | [Baseline report](stage-01-authoritative-baseline-parity/REPORT.md), [repair report](stage-01-authoritative-baseline-parity/REPAIR_REPORT.md), [inventory](stage-01-authoritative-baseline-parity/GAME_INVENTORY.md), [parity matrix](stage-01-authoritative-baseline-parity/HTML_PHASER_PARITY_MATRIX.md) |
 | 01A | Supplemental save integrity, schema migration, persistence, progression, economy, and duplicate protection gate | PASS for browser/runtime contract | No repair required in that focused gate | [Save/economy report](stage-01-save-migration-economy/REPORT.md) |
-| 02 | Town, world simulation, time, navigation, and environment | NOT STARTED | Not started | — |
-| 03 | NPCs, custom resident, onboarding, narrative, and control hand-off | NOT STARTED | Not started | — |
-| 04 | Animals, adoption, companion care, food, following, and aquarium | NOT STARTED | Not started | — |
-| 05 | Shops, inventory, equipment, placement, farming, and personal home | NOT STARTED | Not started | — |
-| 06 | Cleanup games: Waste, Lawn, River, House, Beach, and Power Wash | NOT STARTED | Not started | — |
-| 07 | Venue games: Café, Bakery, Morning Mug, Riverside Kitchen, and South Shore Scoops | NOT STARTED | Not started | — |
-| 08 | Fishing, Magnet Fishing, Fresh Market, and Harbour General | NOT STARTED | Not started | — |
-| 09 | Cross-system mobile, offline, transition, and release-candidate regression | NOT STARTED | Not started | — |
+| 02 | Every scene and screen: lifecycle, navigation, interaction, state, cleanup, runtime errors, and mobile-layout evidence | AUDIT COMPLETE — 0 P0/P1, 1 P2, 1 P3; live-device gates documented | Not started | [Stage 2 report](stage-02-scenes-screens/REPORT.md), [coverage matrix](stage-02-scenes-screens/SCENE_SCREEN_COVERAGE_MATRIX.md), [findings](stage-02-scenes-screens/FINDINGS_REGISTER.md) |
+| 03 | Town, world simulation, time, navigation, and environment | NOT STARTED | Not started | — |
+| 04 | NPCs, custom resident, onboarding, narrative, and control hand-off | NOT STARTED | Not started | — |
+| 05 | Animals, adoption, companion care, food, following, and aquarium | NOT STARTED | Not started | — |
+| 06 | Shops, inventory, equipment, placement, farming, and personal home | NOT STARTED | Not started | — |
+| 07 | Cleanup games: Waste, Lawn, River, House, Beach, and Power Wash | NOT STARTED | Not started | — |
+| 08 | Venue games: Café, Bakery, Morning Mug, Riverside Kitchen, and South Shore Scoops | NOT STARTED | Not started | — |
+| 09 | Fishing, Magnet Fishing, Fresh Market, and Harbour General | NOT STARTED | Not started | — |
+| 10 | Cross-system mobile, offline, transition, and release-candidate regression | NOT STARTED | Not started | — |
 
 ## Current gate
 
-The authoritative Stage 01 repair is complete. Beach Cleanup's hidden exit confirmation is fixed and verified, and the stale owned-resident P1 wording is corrected without rewriting its historical context. There are no open confirmed P0, P1, P2 or P3 functional defects from Stage 01. Visual-art fidelity, physical-device touch/pinch, native packaging and external billing remain explicitly documented gates or user decisions; they were not altered by this repair.
+Stage 02's audit is complete and made no production-code changes. It confirmed one P2 player-facing internal-copy defect and one P3 stale House Interior scene-marker defect. Its reusable repair prompt has not yet been run, so the current gate is **NOT READY — STAGE 2 REPAIR REQUIRED**. Visual-art fidelity, live physical-device touch/pinch, native packaging and external billing remain explicitly documented gates or user decisions.
