@@ -16,7 +16,7 @@ This directory is the evidence register for the staged functional QA cycle that 
 
 | Stage | System group | QA status | Repair status | Evidence |
 | --- | --- | --- | --- | --- |
-| 01 | Authoritative baseline, complete inventory, and protected HTML-to-Phaser parity | AUDIT COMPLETE — CONDITIONAL PASS; 0 P0/P1, 1 P3, visual/device gates open | Repair not performed in audit stage | [Baseline report](stage-01-authoritative-baseline-parity/REPORT.md), [inventory](stage-01-authoritative-baseline-parity/GAME_INVENTORY.md), [parity matrix](stage-01-authoritative-baseline-parity/HTML_PHASER_PARITY_MATRIX.md) |
+| 01 | Authoritative baseline, complete inventory, and protected HTML-to-Phaser parity | AUDIT COMPLETE — CONDITIONAL PASS; 0 P0/P1/P2, 1 P3 identified | REPAIR VERIFIED — F-01 fixed; stale autonomy status corrected; 611/611 tests and both parity validators pass | [Baseline report](stage-01-authoritative-baseline-parity/REPORT.md), [repair report](stage-01-authoritative-baseline-parity/REPAIR_REPORT.md), [inventory](stage-01-authoritative-baseline-parity/GAME_INVENTORY.md), [parity matrix](stage-01-authoritative-baseline-parity/HTML_PHASER_PARITY_MATRIX.md) |
 | 01A | Supplemental save integrity, schema migration, persistence, progression, economy, and duplicate protection gate | PASS for browser/runtime contract | No repair required in that focused gate | [Save/economy report](stage-01-save-migration-economy/REPORT.md) |
 | 02 | Town, world simulation, time, navigation, and environment | NOT STARTED | Not started | — |
 | 03 | NPCs, custom resident, onboarding, narrative, and control hand-off | NOT STARTED | Not started | — |
@@ -29,4 +29,4 @@ This directory is the evidence register for the staged functional QA cycle that 
 
 ## Current gate
 
-The authoritative Stage 01 audit is complete. Functional/data parity has strong current evidence, but the result is conditional: Beach Cleanup has one confirmed P3 exit-confirmation defect, older Phase 3 documentation contains a resolved/stale P1 statement, and visual/physical-device gates remain open. No repair was made because Stage 01 was audit-only. A separate repair prompt may address those confirmed findings before or alongside the separately scoped Stage 02 audit.
+The authoritative Stage 01 repair is complete. Beach Cleanup's hidden exit confirmation is fixed and verified, and the stale owned-resident P1 wording is corrected without rewriting its historical context. There are no open confirmed P0, P1, P2 or P3 functional defects from Stage 01. Visual-art fidelity, physical-device touch/pinch, native packaging and external billing remain explicitly documented gates or user decisions; they were not altered by this repair.

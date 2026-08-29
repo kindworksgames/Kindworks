@@ -27,7 +27,7 @@ Status vocabulary:
 | `HouseRescueScene` | `src/scenes/HouseRescueScene.js` | Dirty-house marker from a house interior/exterior flow | `house-rescue-exit` | Selected home is dirty; only one saved active house session | 750-level progress, dirty homes, sort/vacuum checkpoint, gifts/rewards | LIVE; normal cancellation return operated |
 | `WasteCollectionScene` | `src/scenes/WasteCollectionScene.js` | Waste campaign/current cleanup job | Menu → `waste-campaign-exit` | Current/unlocked campaign level | 750-level progress, active board/tray checkpoint, rewards | LIVE; active board and normal return operated |
 | `LawnCareScene` | `src/scenes/LawnCareScene.js` | Overgrown lawn plot | `lawn-care-exit` two-tap safe cancellation | Lawn has work available; equipped mower affects performance | 750-level progress, lawn ecology, active route/checkpoint, mower, rewards | LIVE; board-only activity and return operated |
-| `BeachCleanupScene` | `src/scenes/BeachCleanupScene.js` | Dirty South Shore/beach interaction | Menu → Exit → reopen menu → Confirm Exit | Beach is dirty/current level available | 750-level progress, rake run/grooves, found items, active checkpoint, rewards | LIVE; return works, but P3 F-01 confirmed because confirmation becomes hidden |
+| `BeachCleanupScene` | `src/scenes/BeachCleanupScene.js` | Dirty South Shore/beach interaction | Menu → Exit → visible Confirm Exit | Beach is dirty/current level available | 750-level progress, rake run/grooves, found items, active checkpoint, rewards | LIVE; F-01 fixed and the visible two-step return operated successfully |
 | `PlaygroundPowerwashScene` | `src/scenes/PlaygroundPowerwashScene.js` | Dirty Commons Playground | `powerwash-exit` two-tap safe cancellation | Playground cleanup available | 750-level progress, pixel dirt mask, tools/supplies/checkpoint, rewards | LIVE; board and normal return operated |
 | `FishingScene` (`fish`) | `src/scenes/FishingScene.js` | One of 3 fishing spots | `fishing-exit` | Daily cast limit; inventory/aquarium capacity | Catches, casts/day, streak, aquarium/inventory, active cast | LIVE; normal return operated |
 | `FishingScene` (`magnet`) | `src/scenes/FishingScene.js` | Mill Bridge magnet spot | `fishing-exit` | Daily magnet pulls; bridge spot | Pulls/day, pity counters, recent finds, restoration contribution | LIVE; normal return operated |
@@ -81,7 +81,7 @@ Other interiors: 19 house instances use 6 interior themes/variants; Meadowlight 
 | Lawn Care | 750 | swipe/queued route mowing with mower performance | Landscape | LIVE; exhaustive parity PASS |
 | River Clear-Out | 750 | tap/swipe falling-block river restoration | Portrait only | Scene LIVE behind correct rotate gate; exhaustive parity PASS |
 | House Rescue | 750 | rubbish sorting then obstacle-aware vacuuming | Landscape | LIVE; exhaustive parity PASS |
-| Beach Cleanup | 750 | directional swipe raking, groove runs, hidden finds | Landscape | LIVE; exhaustive parity PASS; F-01 exit UX defect |
+| Beach Cleanup | 750 | directional swipe raking, groove runs, hidden finds | Landscape | LIVE; exhaustive parity PASS; F-01 exit UX repair verified |
 | Playground Power Wash | 750 | continuous pixel-mask washing, soap/nozzles/pressure | Landscape | LIVE; exhaustive parity PASS |
 | Little Bakery | 150 | concurrent orders, recipes, trays, appliances | Landscape | LIVE picker; exhaustive parity PASS |
 | Corner Café | 150 | concurrent service/preparation | Landscape | LIVE picker; exhaustive parity PASS |
@@ -131,7 +131,7 @@ Other interiors: 19 house instances use 6 interior themes/variants; Meadowlight 
 | Waste gameplay/result/menu | Minigame HUD/sub-screens | `WasteCollectionScene` | Campaign entry / return | Board/tray/reward state | LIVE gameplay; result automated |
 | Lawn gameplay/result | Minigame HUD/sub-screens | `LawnCareScene` | Lawn entry / return | Route/reward state | LIVE gameplay; result automated |
 | River gameplay/result | Minigame HUD/sub-screens | `RiverClearoutScene` | River entry / return | Board/reward state | Scene LIVE; portrait gameplay/result automated |
-| Beach gameplay/result/menu | Minigame HUD/sub-screens | `BeachCleanupScene` | Beach entry / return | Rake/reward state | LIVE gameplay; result automated; F-01 |
+| Beach gameplay/result/menu | Minigame HUD/sub-screens | `BeachCleanupScene` | Beach entry / visible two-step return | Rake/reward state | LIVE gameplay; result automated; F-01 FIXED |
 | Power Wash gameplay/result | Minigame HUD/sub-screens | `PlaygroundPowerwashScene` | Playground entry / return | Pixel mask/tools/reward | LIVE gameplay; result automated |
 | Café picker/shift/result | Level/progression/gameplay/result | `CafeScene` | Venue entry / exit | 150-level state | LIVE picker; shift/result automated |
 | Bakery picker/shift/result | Level/progression/gameplay/result | `BakeryScene` | Venue entry / exit | 150-level state | LIVE picker; shift/result automated |

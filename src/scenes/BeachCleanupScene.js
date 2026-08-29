@@ -49,8 +49,9 @@ export class BeachCleanupScene extends Phaser.Scene {
   bindInterface() {
     this.hud = document.querySelector("#beach-cleanup-hud"); this.board = document.querySelector("#beach-board");
     this.buttons = { exit: document.querySelector("#beach-exit"), undo: document.querySelector("#beach-undo"), hint: document.querySelector("#beach-hint"), retry: document.querySelector("#beach-retry"), qa: document.querySelector("#beach-qa-complete"), return: document.querySelector("#beach-return") };
+    this.menu = document.querySelector(".beach-menu");
     this.closeMenu = () => { document.querySelector(".beach-challenges")?.removeAttribute("open"); document.querySelector(".beach-menu")?.removeAttribute("open"); };
-    this.onExit = () => { this.closeMenu(); return this.requestExit(); }; this.onUndo = () => { const undone = this.runAction(() => this.beachCleanup.undo(this.beachCleanup.getActiveSession()?.id)); if (undone) { this.setMessage("Run undone.", "hint"); this.render(); } return undone; };
+    this.onExit = () => { const exited = this.requestExit(); if (exited) this.closeMenu(); else this.menu?.setAttribute("open", ""); return exited; }; this.onUndo = () => { const undone = this.runAction(() => this.beachCleanup.undo(this.beachCleanup.getActiveSession()?.id)); if (undone) { this.setMessage("Run undone.", "hint"); this.render(); } return undone; };
     this.onHint = () => { this.closeMenu(); return this.showHint(); }; this.onRetry = () => this.restart(); this.onQa = () => this.runCertifiedCompletion();
     this.onReturn = () => this.returnToTown(true);
     this.challengeHandlers = {};
@@ -195,7 +196,23 @@ export class BeachCleanupScene extends Phaser.Scene {
   setMessage(message, status = "neutral") { const element = document.querySelector("#beach-status"); if (element) { element.textContent = message || "Continue cleaning."; element.dataset.status = status; } }
   updateDomState() { const game = document.querySelector("#game"); if (!game) return; const session = this.beachCleanup.getActiveSession(); const state = this.beachCleanup.getSessionState(); const diagnostics = this.beachCleanup.getDiagnostics(); game.dataset.scene = this.scene.key; game.dataset.beachLevel = String(session?.assignedLevel || diagnostics.nextLevel); game.dataset.beachMode = session?.mode || this.lastResultContext?.mode || "loading"; game.dataset.beachPhase = this.lastResultContext ? "result" : session?.status || "loading"; game.dataset.beachRaked = String(state?.rakedCount || 0); game.dataset.beachRubbish = String(state?.collectedRubbish || 0); game.dataset.beachEarned = String(state?.earnedCoins || 0); game.dataset.beachCompleted = String(diagnostics.completed); game.dataset.beachCatalogue = String(diagnostics.totalLevels); game.dataset.beachCatalogueValid = String(diagnostics.catalogueValid); }
 
-  requestExit() { const session = this.beachCleanup.getActiveSession(); if (session && Date.now() > this.exitArmedUntil) { this.exitArmedUntil = Date.now() + 3000; if (this.buttons.exit) this.buttons.exit.textContent = "Confirm Exit"; this.setMessage("Tap Confirm Exit to leave this attempt.", "error"); return false; } return this.returnToTown(false); }
+  requestExit() {
+    const session = this.beachCleanup.getActiveSession();
+    if (session && Date.now() > this.exitArmedUntil) {
+      this.exitArmedUntil = Date.now() + 3000;
+      const armedUntil = this.exitArmedUntil;
+      if (this.buttons.exit) { this.buttons.exit.textContent = "Confirm Exit"; this.buttons.exit.setAttribute("aria-label", "Confirm exit Beach Cleanup"); }
+      this.time.delayedCall(3000, () => {
+        if (!this.buttons.exit || this.transitioning || this.exitArmedUntil !== armedUntil) return;
+        this.exitArmedUntil = 0;
+        this.buttons.exit.textContent = "Exit";
+        this.buttons.exit.setAttribute("aria-label", "Exit Beach Cleanup safely");
+      });
+      this.setMessage("Tap Confirm Exit to leave this attempt.", "error");
+      return false;
+    }
+    return this.returnToTown(false);
+  }
   returnToTown(complete) { if (this.transitioning) return false; this.transitioning = true; const active = this.beachCleanup.getActiveSession(); const context = active || this.lastResultContext || {}; if (active) this.beachCleanup.cancel(active.id); const position = context.returnPosition || this.entryData.returnPosition || { x: 3220, y: 2320 }; const facing = context.returnFacing || this.entryData.returnFacing || "down"; this.gameState.updatePlayer({ scene: "TownScene", x: position.x, y: position.y, facing }); document.querySelector("#game")?.setAttribute("data-transition", complete ? "beach-cleanup-complete" : "leaving-beach-cleanup"); this.cameras.main.fadeOut(220, 20, 49, 70); this.time.delayedCall(240, () => this.scene.start("TownScene", { returnPosition: position, returnFacing: facing, transitionCount: Number(this.entryData.transitionCount || 0) + 1 })); return true; }
   shutdownScene() { this.stopPointerHold?.(); this.buttons.exit?.removeEventListener("click", this.onExit); for (const button of document.querySelectorAll("[data-beach-challenge]")) button.removeEventListener("click", this.challengeHandlers[button.dataset.beachChallenge]); this.buttons.undo?.removeEventListener("click", this.onUndo); this.buttons.hint?.removeEventListener("click", this.onHint); this.buttons.retry?.removeEventListener("click", this.onRetry); this.buttons.qa?.removeEventListener("click", this.onQa); this.buttons.return?.removeEventListener("click", this.onReturn); this.board?.removeEventListener("pointerdown", this.onPointerDown); this.board?.removeEventListener("pointermove", this.onPointerMove); this.board?.removeEventListener("pointerup", this.onPointerUp); this.board?.removeEventListener("pointercancel", this.onPointerCancel); this.board?.removeEventListener("lostpointercapture", this.onPointerCancel); window.removeEventListener("blur", this.onPointerCancel); window.removeEventListener("keydown", this.onKeyDown); this.pointerStart = null; this.pointerDirection = null; this.hud?.classList.add("hidden"); this.worldSimulation?.setPaused("activity", false); this.npcTownLife?.setPaused("activity", false); }
   getMilestoneState() { return { scene: this.scene.key, gameplayConnected: true, landscapeRequired: true, keyboardControls: true, touchSwipeControls: true, continuousHeldSwipe: true, ...this.beachCleanup.getDiagnostics(), session: this.beachCleanup.getActiveSession(), legacySaveUntouched: true }; }

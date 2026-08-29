@@ -1,8 +1,9 @@
 {
   "qaStage": "01-authoritative-baseline-html-phaser-parity",
   "recordedAtUtc": "2026-08-28T23:31:12Z",
-  "auditOnly": true,
-  "productionCodeChanged": false,
+  "repairedAtUtc": "2026-08-29T00:05:52Z",
+  "auditOnly": false,
+  "productionCodeChanged": true,
   "branch": "phase-2-ui-simplification",
   "startingCommit": "421c9bd1b41c5d8e677637bbf7b07da43331b207",
   "protectedHtml": {
@@ -33,11 +34,11 @@
     "dependencies": { "command": "pnpm install --frozen-lockfile", "status": "PASS", "changed": false },
     "typecheck": { "status": "NOT_CONFIGURED" },
     "lint": { "status": "NOT_CONFIGURED" },
-    "tests": { "command": "pnpm test", "passed": 610, "failed": 0, "skipped": 0 },
+    "tests": { "command": "pnpm test", "passed": 611, "failed": 0, "skipped": 0 },
     "minigameParity": { "command": "pnpm parity:minigames", "status": "PASS", "games": 14, "comparisons": 75, "deterministicInstances": 105795 },
     "differentialParity": { "command": "pnpm parity:differential", "status": "PASS", "activities": 13, "campaignLevels": 5850, "sharedDomains": 19, "sourceConstants": 12, "exactScalarRules": 85 },
     "developmentServer": { "command": "pnpm dev", "status": "PASS" },
-    "productionBuild": { "command": "pnpm build", "status": "PASS", "modules": 178, "totalJavascriptBytes": 4811996, "performanceBudget": "PASS" },
+    "productionBuild": { "command": "pnpm build", "status": "PASS", "modules": 178, "totalJavascriptBytes": 4812437, "performanceBudget": "PASS" },
     "productionPreview": { "command": "pnpm preview", "status": "PASS" }
   },
   "sourceInventory": {
@@ -101,7 +102,7 @@
       { "activity": "river", "scene": "RiverClearoutScene", "opened": true, "expectedOrientation": "portrait", "rotateGateObservedInLandscape": true },
       { "activity": "waste", "scene": "WasteCollectionScene", "opened": true, "expectedOrientation": "landscape" },
       { "activity": "house-rescue", "scene": "HouseRescueScene", "opened": true, "returnedToTown": true },
-      { "activity": "beach", "scene": "BeachCleanupScene", "opened": true, "returnedToTown": true, "defect": "F-01" },
+      { "activity": "beach", "scene": "BeachCleanupScene", "opened": true, "returnedToTown": true, "fixedFinding": "F-01", "confirmationVisible": true, "timeoutReset": true },
       { "activity": "powerwash", "scene": "PlaygroundPowerwashScene", "opened": true, "returnedToTown": true },
       { "activity": "fishing", "scene": "FishingScene", "mode": "fish", "opened": true, "returnedToTown": true },
       { "activity": "magnet", "scene": "FishingScene", "mode": "magnet", "opened": true, "returnedToTown": true },
@@ -120,20 +121,29 @@
     "p0": 0,
     "p1": 0,
     "p2": 0,
-    "p3": 1,
+    "p3": 0,
     "visualOnlyManualGates": 4,
     "observations": 5,
     "userDecisionsRequired": 3,
-    "confirmed": [
+    "confirmed": [],
+    "fixed": [
       {
         "id": "F-01",
         "severity": "P3",
         "classification": "regressed",
         "system": "Beach Cleanup",
         "summary": "The first Exit tap collapses the menu, hiding the required Confirm Exit action until the menu is reopened.",
-        "saveImpact": "none observed"
+        "status": "FIXED",
+        "saveImpact": "none"
       }
     ]
   },
-  "verdict": "CONDITIONAL_PASS_REPAIR_REQUIRED"
+  "repair": {
+    "startingCommit": "52b8c62ac282034513437b2da94ebe59e530a4ae",
+    "focusedTests": { "passed": 5, "failed": 0 },
+    "productionPreview": { "townBooted": true, "onboardingVisible": true, "errors": 0, "warnings": 0 },
+    "runtime": { "confirmationVisible": true, "confirmedReturnToTown": true, "timeoutReset": true, "consoleErrors": 0 },
+    "staleDocumentationCorrected": true
+  },
+  "verdict": "SAFE_TO_CONTINUE_WITH_DOCUMENTED_USER_DECISIONS"
 }

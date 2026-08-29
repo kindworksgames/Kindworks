@@ -2,13 +2,13 @@
 
 ## Audit verdict
 
-**STAGE 1 AUDIT COMPLETE — CONDITIONAL PASS, REPAIR REQUIRED BEFORE A CLEAN PARITY SIGN-OFF.**
+**STAGE 1 REPAIR VERIFIED — SAFE TO CONTINUE WITH DOCUMENTED USER DECISIONS.**
 
-The current Phaser repository has a coherent, buildable, test-backed functional baseline. The protected HTML checksum matches the repository contract; all 610 automated tests pass; the exhaustive minigame comparison passes 105,795 deterministic level/seed instances; the differential audit maps all 218 protected public API entries and compares 85 scalar rules without a mismatch. All 18 Phaser scenes are registered, and the development runtime opened Town plus all 17 activity/interior routes exposed by the isolated fidelity harness.
+The current Phaser repository has a coherent, buildable, test-backed functional baseline. The protected HTML checksum matches the repository contract; all 611 automated tests pass; the exhaustive minigame comparison passes 105,795 deterministic level/seed instances; the differential audit maps all 218 protected public API entries and compares 85 scalar rules without a mismatch. All 18 Phaser scenes remain registered, and the Stage 1 inventory/runtime coverage remains intact.
 
-This is not a claim of complete visual fidelity. The repository itself explicitly leaves final sprite appearance, animation/audio feel, physical-device touch ergonomics, and pixel-level composition as manual gates. One P3 runtime defect was confirmed in Beach Cleanup's exit-confirmation flow. There are no confirmed P0 or P1 defects in this stage.
+This is not a claim of complete visual fidelity. The repository itself explicitly leaves final sprite appearance, animation/audio feel, physical-device touch ergonomics, and pixel-level composition as manual gates. The one confirmed P3 runtime defect in Beach Cleanup's exit-confirmation flow is now fixed and verified. There are no open confirmed P0, P1, P2 or P3 functional defects from this stage.
 
-No production code, gameplay rule, save, economy value, progression value, or visual implementation was changed during this audit.
+The audit itself changed no production behavior. Its dedicated repair changed only Beach Cleanup's exit-confirmation UI state and added a regression test; gameplay rules, saves, economy, progression, rewards and visuals were not changed. See [REPAIR_REPORT.md](REPAIR_REPORT.md).
 
 ## Baseline identity
 
@@ -42,13 +42,13 @@ Only one legacy game HTML file exists at repository root besides the Phaser shel
 | Development server | `pnpm dev` | PASS; Vite ready on the local QA origin |
 | Type checking | — | NOT CONFIGURED; project is JavaScript and has no TypeScript check script/configuration |
 | Linting | — | NOT CONFIGURED; no lint script or ESLint configuration/dependency exists |
-| Full automated tests | `pnpm test` | PASS: 610 passed, 0 failed, 0 skipped |
+| Full automated tests | `pnpm test` | PASS: 611 passed, 0 failed, 0 skipped |
 | Minigame source parity | `pnpm parity:minigames` | PASS: 14 games, 75 comparisons, 105,795 deterministic instances |
 | Differential parity | `pnpm parity:differential` | PASS: 13 activities, 5,850 levels, 19 shared domains, 85 exact rules |
 | Production build | `pnpm build` | PASS; 178 modules transformed; performance budget PASS |
 | Production preview | `pnpm preview` | PASS; Town and first-run onboarding rendered |
 
-Production output contained the Phaser engine, main application, and 16 lazy-scene chunks. The total emitted JavaScript was 4,811,996 bytes and remained within the repository's configured performance budget.
+Production output contained the Phaser engine, main application, and 16 lazy-scene chunks. The repaired build emitted 4,812,437 JavaScript bytes and remained within the repository's configured performance budget.
 
 The absence of type checking and linting is an assurance gap, not a failed command. It is recorded as an Observation and must not be described as a pass.
 
@@ -84,7 +84,7 @@ The absence of type checking and linting is an assurance gap, not a failed comma
 - Landscape activities reported landscape orientation. River Clear-Out reported portrait and correctly paused behind the rotate-device state at the landscape audit viewport.
 - House Rescue, Power Wash, Fishing, Magnet Fishing, all five venue games, House Interior, Fresh Market, and Harbour General returned to Town through their normal controls.
 - Village Grocer returned after its selected-product modal was closed, then its exit was used.
-- Beach Cleanup returned only after the menu was opened, Exit tapped, the now-collapsed menu reopened, and Confirm Exit tapped. This is Finding F-01.
+- Beach Cleanup now keeps its menu open after the first Exit tap, exposes a visible and correctly named Confirm Exit action, resets safely after three seconds, and returns to Town on confirmation without a console error. Finding F-01 is FIXED.
 
 ### Production preview
 
@@ -101,7 +101,7 @@ This stage opened all fidelity-harness routes, but did not manually complete eve
 
 ### Automated coverage found
 
-- 610 Node tests across save/state migration, economy, shops, placement, world simulation, NPCs, custom resident autonomy, animals, farming, homes, all minigames, mobile gestures/layout contracts, orientation, recovery, accessibility, release gates, and performance-related contracts.
+- 611 Node tests across save/state migration, economy, shops, placement, world simulation, NPCs, custom resident autonomy, animals, farming, homes, all minigames, mobile gestures/layout contracts, orientation, recovery, accessibility, release gates, and performance-related contracts.
 - Exhaustive generated-level tests for all 5,850 campaign levels.
 - Protected-source differential inspection: 1,704 unique named functions, 80 validators, and 218 public API entries; no public API entry is unmapped to a Phaser activity/shared domain.
 - Exact source-to-Phaser probes compare 85 scalar rules across 12 protected constants.
@@ -137,7 +137,7 @@ None confirmed.
 
 ### P1
 
-None confirmed. Historic Phase 3 reports still state that the owned resident lacks autonomy, but current code and passing tests show that repair was implemented in commit `f249c0d`: schedule, needs, 35 relationships, conversations, shopping/community counters, direct-control pause, and graph return are present. The old report text is stale documentation, not a current P1 gameplay defect.
+None confirmed. Historic Phase 3 reports previously stated that the owned resident lacked autonomy, but current code and passing tests show that repair was implemented in commit `f249c0d`: schedule, needs, 35 relationships, conversations, shopping/community counters, direct-control pause, and graph return are present. Those reports now carry an explicit post-audit resolution and no longer present the gap as current.
 
 ### P2
 
@@ -145,16 +145,19 @@ None confirmed as a functional defect in this stage.
 
 ### P3
 
-#### F-01 — Beach Cleanup confirmation is hidden after the first Exit tap
+#### F-01 — Beach Cleanup confirmation is hidden after the first Exit tap — **FIXED**
 
+- Final status: **FIXED**.
 - Classification: **regressed interaction / P3**.
 - Reproduction: enter Beach Cleanup; open the menu; tap Exit.
 - Expected: the confirmation action remains visible and immediately actionable.
-- Actual: the `<details>` menu collapses, status says “Tap Confirm Exit,” but Confirm Exit is hidden inside the collapsed menu. The player must reopen the menu and tap it again within the confirmation window.
-- Workaround: reopen the Beach Cleanup menu and tap Confirm Exit.
+- Previous actual: the `<details>` menu collapsed, status said “Tap Confirm Exit,” but Confirm Exit was hidden inside the collapsed menu.
+- Root cause: the click handler closed the menu before arming confirmation, so the newly relabelled action was immediately hidden.
+- Correction: request confirmation first, keep the menu open while confirmation is armed, expose the correct accessible name, and reset the button deterministically if the window expires.
 - Data/save impact: none observed; the activity can still be cancelled safely.
 - Suspected owner: `src/scenes/BeachCleanupScene.js` plus Beach menu markup/styles in `index.html`/`src/style.css`.
-- Required repair regression: verify one intentional Exit tap plus one visible confirmation action returns to Town without hiding the confirmation control.
+- Regression: `tests/beach-mobile-ux.test.js` prevents the close-before-arm ordering from returning and checks the visible-menu, accessible-name and timeout-reset contract.
+- Verification: live development operation proved the first action visible, the second action returned to Town, timeout reset restored `Exit`, and console errors remained zero. The full 611-test suite, both parity validators, production build/performance budget and production preview all pass.
 
 ### Visual-only / manual-gate findings
 
@@ -166,7 +169,7 @@ None confirmed as a functional defect in this stage.
 ### Observations
 
 - O-01: no type-check or lint gate is configured.
-- O-02: old Phase 3 documents contain a resolved owned-resident P1 statement and should be corrected in a documentation repair so they do not mislead future audits.
+- O-02: **FIXED** — the Phase 3 documents now preserve the historical finding while clearly recording its `f249c0d` resolution and current test coverage.
 - O-03: differential coverage is broad but not a proof that all 1,704 legacy functions were independently behaviorally replayed. It proves API ownership, file/marker presence, exact selected rules, exhaustive campaigns, and the tested service behaviors.
 - O-04: two map businesses—The Willow Arms and Riverstone Restaurant—are ambient business destinations rather than player interiors. The same locations exist as business/navigation nodes in the protected HTML, so this is classified intentional rather than missing.
 - O-05: the map label “South Shore Café” leads to the game titled “South Shore Scoops.” The protected HTML contains the same café business and Scoops activity, but the player-facing naming bridge is a small data/presentation mismatch worth clarifying in a later content pass.
@@ -185,4 +188,4 @@ None confirmed as a functional defect in this stage.
 
 ## Stage exit decision
 
-The authoritative baseline is now established. The codebase may proceed to a narrowly scoped repair prompt for F-01 and stale-document correction, or to Stage 2 while those items remain explicitly open. It must not be described as unconditional full visual parity, and no visual-readiness refactor should treat the manual visual/device gates as already passed.
+The authoritative baseline and its dedicated repair are complete. The codebase is safe to proceed to the next separately requested QA stage with U-01 through U-03 and the visual/physical-device gates still documented. It must not be described as unconditional full visual parity, and no visual-readiness refactor should treat those manual gates as already passed.
