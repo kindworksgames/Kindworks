@@ -4,6 +4,10 @@ import {
   VISUAL_CAPTURE_CASES,
   validateVisualComparisonContracts,
 } from "../src/qa/visualComparisonContracts.js";
+import {
+  SUPPORTED_VISUAL_BASELINE_PLATFORMS,
+  baselineIdentity,
+} from "./lib/visual-comparison.mjs";
 
 const root = new URL("../", import.meta.url);
 const manifestUrl = new URL("docs/qa/visual-readiness/phase-01/BASELINE_MANIFEST.json", root);
@@ -43,8 +47,11 @@ if (process.argv.includes("--print-source-fingerprint")) {
 const sourceFingerprintChanged = sourceFingerprint !== manifest.sourceFingerprint;
 const contractValidation = validateVisualComparisonContracts();
 if (!contractValidation.ok) failures.push(...contractValidation.errors);
-if (manifest.version < 2 || manifest.captureContractVersion !== 2) failures.push("Baseline manifest does not use capture contract version 2.");
+if (manifest.version < 3 || manifest.captureContractVersion !== 2) failures.push("Baseline manifest does not use manifest version 3 and capture contract version 2.");
 if (!manifest.approvalPolicy || !manifest.approvedBatch?.reviewer) failures.push("Baseline approval provenance or policy is missing.");
+if (JSON.stringify(manifest.supportedPlatforms) !== JSON.stringify(SUPPORTED_VISUAL_BASELINE_PLATFORMS)) {
+  failures.push(`Baseline manifest supportedPlatforms must be ${SUPPORTED_VISUAL_BASELINE_PLATFORMS.join(", ")}.`);
+}
 
 function imageDimensions(buffer) {
   const signature = buffer.subarray(0, 8).toString("hex");
@@ -68,15 +75,19 @@ function imageDimensions(buffer) {
 const seenFiles = new Set();
 const seenFamilies = new Set();
 const seenProfiles = new Set();
-const seenCaptureIds = new Set();
+const seenBaselineIdentities = new Set();
+const coverageByPlatform = new Map(SUPPORTED_VISUAL_BASELINE_PLATFORMS.map((platform) => [platform, new Set()]));
 for (const baseline of manifest.baselines || []) {
   if (seenFiles.has(baseline.file)) failures.push(`Duplicate baseline file: ${baseline.file}`);
   seenFiles.add(baseline.file);
   seenFamilies.add(baseline.family);
   seenProfiles.add(baseline.profile);
   if (!baseline.captureId) failures.push(`${baseline.file} has no capture contract association.`);
-  if (seenCaptureIds.has(baseline.captureId)) failures.push(`Duplicate capture contract association: ${baseline.captureId}`);
-  seenCaptureIds.add(baseline.captureId);
+  if (!SUPPORTED_VISUAL_BASELINE_PLATFORMS.includes(baseline.platform)) failures.push(`${baseline.file} has unsupported platform ${baseline.platform || "(missing)"}.`);
+  const identity = baselineIdentity(baseline);
+  if (seenBaselineIdentities.has(identity)) failures.push(`Duplicate capture contract/platform association: ${identity}`);
+  seenBaselineIdentities.add(identity);
+  coverageByPlatform.get(baseline.platform)?.add(baseline.captureId);
   const captureCase = VISUAL_CAPTURE_CASES.find(({ id }) => id === baseline.captureId);
   if (!captureCase) failures.push(`${baseline.file} references unknown capture contract ${baseline.captureId}.`);
   else if (captureCase.scene !== baseline.scene || captureCase.profile !== baseline.profile || captureCase.viewport.width !== baseline.width || captureCase.viewport.height !== baseline.height) {
@@ -98,13 +109,18 @@ for (const baseline of manifest.baselines || []) {
 
 for (const family of requiredFamilies) if (!seenFamilies.has(family)) failures.push(`Missing scene-family baseline: ${family}`);
 for (const profile of requiredProfiles) if (!seenProfiles.has(profile)) failures.push(`Missing viewport baseline: ${profile}`);
-for (const captureCase of VISUAL_CAPTURE_CASES) if (!seenCaptureIds.has(captureCase.id)) failures.push(`Missing approved baseline for ${captureCase.id}.`);
+for (const platform of SUPPORTED_VISUAL_BASELINE_PLATFORMS) {
+  const platformCoverage = coverageByPlatform.get(platform);
+  for (const captureCase of VISUAL_CAPTURE_CASES) {
+    if (!platformCoverage.has(captureCase.id)) failures.push(`Missing approved ${platform} baseline for ${captureCase.id}.`);
+  }
+}
 
 if (failures.length) {
   console.error(`Visual regression baseline check failed (${failures.length}):`);
   for (const failure of failures) console.error(`- ${failure}`);
   process.exitCode = 1;
 } else {
-  console.log(`Visual regression baseline contracts verified: ${seenFiles.size} immutable images, ${seenFamilies.size} scene families, ${seenProfiles.size} landscape profiles.`);
+  console.log(`Visual regression baseline contracts verified: ${seenFiles.size} immutable images across ${SUPPORTED_VISUAL_BASELINE_PLATFORMS.length} platforms, ${seenFamilies.size} scene families, ${seenProfiles.size} landscape profiles.`);
   if (sourceFingerprintChanged) console.log(`Visual source fingerprint changed (${sourceFingerprint}); live visual:compare is required and is the authoritative regression gate.`);
 }

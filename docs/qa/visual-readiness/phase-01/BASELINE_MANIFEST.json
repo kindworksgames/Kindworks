@@ -1,7 +1,7 @@
 {
-  "version": 2,
+  "version": 3,
   "captureContractVersion": 2,
-  "approvalPolicy": "Capture output is immutable review evidence. A baseline can change only through visual:approve with one capture ID, a named reviewer, and the candidate SHA-256 token.",
+  "approvalPolicy": "Capture output is immutable review evidence. A platform-specific baseline can change only through visual:approve with one capture ID, the exact rendering platform, a named reviewer, and the candidate SHA-256 token.",
   "approvedBatch": {
     "reviewer": "Phase 1 visual-regression review",
     "approvedAt": "2026-08-29T23:10:00.000Z",
@@ -9,8 +9,8 @@
     "files": 10
   },
   "capturedAt": "2026-08-29T23:10:00.000Z",
-  "lastReviewedAt": "2026-08-30T09:19:25.833Z",
-  "lastReviewedChange": "The development-only Asset Lab was repaired to consume the generated production inventory, validator diagnostics, semantic usage data, animation metadata and responsive preview profiles. Production scene code and the ten approved baseline images were not changed; browser verification confirmed the repaired tool at 568x320, 1024x768 and 1280x720, and the production-surface guard confirmed that Asset Lab code remains excluded from the shipped build.",
+  "lastReviewedAt": "2026-08-30T20:03:00.000Z",
+  "lastReviewedChange": "Reviewed GitHub Actions run 33332275967 against the approved macOS captures. Layout and gameplay state matched; only operating-system text and emoji rasterization differed. Added strict Linux baselines without changing comparison thresholds or macOS baselines.",
   "environment": "Codex in-app Chromium browser emulation against Vite development build",
   "fixture": "visual-regression-v1",
   "route": "?qa=visual-regression&capture={captureId}&scenario={scenario}",
@@ -31,7 +31,7 @@
     "src/qa/visualComparisonContracts.js",
     "src/qa/VisualCaptureRuntime.js"
   ],
-  "sourceFingerprint": "679cdfd7b230f0a5fed5db4e6b4db50d8f7a3b3f784f4c55e31e3db9d3d26b3d",
+  "sourceFingerprint": "36f4cc5adfb06e161a8ce859a4df64bd7cd07e00ecf184832e88e4f8ce264384",
   "baselines": [
     {
       "file": "baselines/town__narrow-phone__568x320.jpg",
@@ -48,8 +48,10 @@
         "reviewer": "Repository-owner-authorized-repair",
         "approvedAt": "2026-08-30T09:17:57.701Z",
         "candidateSha256": "f86bf44fdd2def95abf9ca6b95a238893ee6688b5f8c5b592a2b53072ae006f8",
-        "token": "f86bf44fdd2d"
-      }
+        "token": "f86bf44fdd2d",
+        "platform": "darwin"
+      },
+      "platform": "darwin"
     },
     {
       "file": "baselines/town__modern-phone__844x390.jpg",
@@ -66,8 +68,10 @@
         "reviewer": "Repository-owner-authorized-repair",
         "approvedAt": "2026-08-30T09:19:24.211Z",
         "candidateSha256": "479e730faef289272a0d69c1da607f7d8bef532e43aca99faef699b623e48835",
-        "token": "479e730faef2"
-      }
+        "token": "479e730faef2",
+        "platform": "darwin"
+      },
+      "platform": "darwin"
     },
     {
       "file": "baselines/town__tablet-4x3__1024x768.jpg",
@@ -84,8 +88,10 @@
         "reviewer": "Repository-owner-authorized-repair",
         "approvedAt": "2026-08-30T09:19:24.753Z",
         "candidateSha256": "ab7b638ca57e770d71c6ddebff47738604cc65f7487f30520e2ad04c39dce7b9",
-        "token": "ab7b638ca57e"
-      }
+        "token": "ab7b638ca57e",
+        "platform": "darwin"
+      },
+      "platform": "darwin"
     },
     {
       "file": "baselines/town__reference__1280x720.jpg",
@@ -102,8 +108,10 @@
         "reviewer": "Repository-owner-authorized-repair",
         "approvedAt": "2026-08-30T09:19:25.293Z",
         "candidateSha256": "b14db81a577b6287c7c4239a2c28d84bcc8ec3589dfe8cd02a1635a0b4e41671",
-        "token": "b14db81a577b"
-      }
+        "token": "b14db81a577b",
+        "platform": "darwin"
+      },
+      "platform": "darwin"
     },
     {
       "file": "baselines/town__desktop__1366x768.jpg",
@@ -120,8 +128,10 @@
         "reviewer": "Repository-owner-authorized-repair",
         "approvedAt": "2026-08-30T09:19:25.833Z",
         "candidateSha256": "a08071e5e44c2422648c360694d4b03954899ed640655d32ef20d9cb723d64a7",
-        "token": "a08071e5e44c"
-      }
+        "token": "a08071e5e44c",
+        "platform": "darwin"
+      },
+      "platform": "darwin"
     },
     {
       "file": "baselines/house-interior__tablet-4x3__1024x768.jpg",
@@ -138,8 +148,10 @@
         "reviewer": "Repository-owner-authorized-repair",
         "approvedAt": "2026-08-30T09:14:06.917Z",
         "candidateSha256": "2b0540a56765500684a2f4ab07b89b1edb2b1455b92292d1aa142bf1881a0e1b",
-        "token": "2b0540a56765"
-      }
+        "token": "2b0540a56765",
+        "platform": "darwin"
+      },
+      "platform": "darwin"
     },
     {
       "file": "baselines/village-grocer__modern-phone__844x390.jpg",
@@ -156,8 +168,10 @@
         "reviewer": "Repository-owner-authorized-repair",
         "approvedAt": "2026-08-30T09:14:07.452Z",
         "candidateSha256": "f996591a1ebfd34cfa756a2bd61681ccb984d12bdec6526cb79fe64f4f31f660",
-        "token": "f996591a1ebf"
-      }
+        "token": "f996591a1ebf",
+        "platform": "darwin"
+      },
+      "platform": "darwin"
     },
     {
       "file": "baselines/corner-cafe__modern-phone__844x390.jpg",
@@ -174,8 +188,10 @@
         "reviewer": "Repository-owner-authorized-repair",
         "approvedAt": "2026-08-30T09:14:07.984Z",
         "candidateSha256": "334eef5d5ccc40cd410841103c03a14beb84ffae0173078d11df0b45556d18c7",
-        "token": "334eef5d5ccc"
-      }
+        "token": "334eef5d5ccc",
+        "platform": "darwin"
+      },
+      "platform": "darwin"
     },
     {
       "file": "baselines/lawn-care__narrow-phone__568x320.jpg",
@@ -192,8 +208,10 @@
         "reviewer": "Repository-owner-authorized-repair",
         "approvedAt": "2026-08-30T09:14:08.509Z",
         "candidateSha256": "374626fc0bef5d31f4a9f4d4edb923c79645057dad9d8b4a1ef3b925f8ee415f",
-        "token": "374626fc0bef"
-      }
+        "token": "374626fc0bef",
+        "platform": "darwin"
+      },
+      "platform": "darwin"
     },
     {
       "file": "baselines/powerwash__tablet-4x3__1024x768.jpg",
@@ -210,8 +228,214 @@
         "reviewer": "Repository-owner-authorized-repair",
         "approvedAt": "2026-08-30T09:14:09.033Z",
         "candidateSha256": "b5baee91a996184040e95cb20a76c8414159a3f51b7540206953c4f131afcdb5",
-        "token": "b5baee91a996"
-      }
+        "token": "b5baee91a996",
+        "platform": "darwin"
+      },
+      "platform": "darwin"
+    },
+    {
+      "file": "baselines/linux/town__narrow-phone__568x320.jpg",
+      "captureId": "town--narrow-phone",
+      "scenario": "town",
+      "family": "world",
+      "scene": "TownScene",
+      "profile": "narrow-phone",
+      "width": 568,
+      "height": 320,
+      "sha256": "44f45bf87ea2a451f582418c8b4f632f842b4a2f9be51505a7776d3cab5e13f9",
+      "overflow": false,
+      "approval": {
+        "reviewer": "Repository-owner-authorized-CI-repair",
+        "approvedAt": "2026-08-30T20:03:00.000Z",
+        "candidateSha256": "44f45bf87ea2a451f582418c8b4f632f842b4a2f9be51505a7776d3cab5e13f9",
+        "token": "44f45bf87ea2",
+        "platform": "linux"
+      },
+      "platform": "linux"
+    },
+    {
+      "file": "baselines/linux/town__modern-phone__844x390.jpg",
+      "captureId": "town--modern-phone",
+      "scenario": "town",
+      "family": "world",
+      "scene": "TownScene",
+      "profile": "modern-phone",
+      "width": 844,
+      "height": 390,
+      "sha256": "63acd614c7d0ce8e20969d8a61ef4b4050ea9cc6b18092e40507f03ba4e89290",
+      "overflow": false,
+      "approval": {
+        "reviewer": "Repository-owner-authorized-CI-repair",
+        "approvedAt": "2026-08-30T20:03:00.000Z",
+        "candidateSha256": "63acd614c7d0ce8e20969d8a61ef4b4050ea9cc6b18092e40507f03ba4e89290",
+        "token": "63acd614c7d0",
+        "platform": "linux"
+      },
+      "platform": "linux"
+    },
+    {
+      "file": "baselines/linux/town__tablet-4x3__1024x768.jpg",
+      "captureId": "town--tablet-4x3",
+      "scenario": "town",
+      "family": "world",
+      "scene": "TownScene",
+      "profile": "tablet-4x3",
+      "width": 1024,
+      "height": 768,
+      "sha256": "ccd21580cc18945a04038787b28e405fa43f4d83005ed2c3583c7a6970a0b512",
+      "overflow": false,
+      "approval": {
+        "reviewer": "Repository-owner-authorized-CI-repair",
+        "approvedAt": "2026-08-30T20:03:00.000Z",
+        "candidateSha256": "ccd21580cc18945a04038787b28e405fa43f4d83005ed2c3583c7a6970a0b512",
+        "token": "ccd21580cc18",
+        "platform": "linux"
+      },
+      "platform": "linux"
+    },
+    {
+      "file": "baselines/linux/town__reference__1280x720.jpg",
+      "captureId": "town--reference",
+      "scenario": "town",
+      "family": "world",
+      "scene": "TownScene",
+      "profile": "reference",
+      "width": 1280,
+      "height": 720,
+      "sha256": "9b54e68f242e4eb07dbf45338d1395b4febdfb9fb278030a370f473c5aadbb6f",
+      "overflow": false,
+      "approval": {
+        "reviewer": "Repository-owner-authorized-CI-repair",
+        "approvedAt": "2026-08-30T20:03:00.000Z",
+        "candidateSha256": "9b54e68f242e4eb07dbf45338d1395b4febdfb9fb278030a370f473c5aadbb6f",
+        "token": "9b54e68f242e",
+        "platform": "linux"
+      },
+      "platform": "linux"
+    },
+    {
+      "file": "baselines/linux/town__desktop__1366x768.jpg",
+      "captureId": "town--desktop",
+      "scenario": "town",
+      "family": "world",
+      "scene": "TownScene",
+      "profile": "desktop",
+      "width": 1366,
+      "height": 768,
+      "sha256": "d1573aecff85fb1dc7e52b7171a8fe4d9f778b59c3f7e8e051a270c000d5e649",
+      "overflow": false,
+      "approval": {
+        "reviewer": "Repository-owner-authorized-CI-repair",
+        "approvedAt": "2026-08-30T20:03:00.000Z",
+        "candidateSha256": "d1573aecff85fb1dc7e52b7171a8fe4d9f778b59c3f7e8e051a270c000d5e649",
+        "token": "d1573aecff85",
+        "platform": "linux"
+      },
+      "platform": "linux"
+    },
+    {
+      "file": "baselines/linux/house-interior__tablet-4x3__1024x768.jpg",
+      "captureId": "house-interior--tablet-4x3",
+      "scenario": "house-interior",
+      "family": "interior",
+      "scene": "HouseInteriorScene",
+      "profile": "tablet-4x3",
+      "width": 1024,
+      "height": 768,
+      "sha256": "7dfdfc428deec7c33fc18c1d2c15346a7b3e2c82c8be5ddb8161cc7a19f2040c",
+      "overflow": false,
+      "approval": {
+        "reviewer": "Repository-owner-authorized-CI-repair",
+        "approvedAt": "2026-08-30T20:03:00.000Z",
+        "candidateSha256": "7dfdfc428deec7c33fc18c1d2c15346a7b3e2c82c8be5ddb8161cc7a19f2040c",
+        "token": "7dfdfc428dee",
+        "platform": "linux"
+      },
+      "platform": "linux"
+    },
+    {
+      "file": "baselines/linux/village-grocer__modern-phone__844x390.jpg",
+      "captureId": "village-grocer--modern-phone",
+      "scenario": "village-grocer",
+      "family": "shop",
+      "scene": "VillageGrocerScene",
+      "profile": "modern-phone",
+      "width": 844,
+      "height": 390,
+      "sha256": "eace3ea4ff7dc06cc36974acbd52056cb94b042c9aa3d66937366e44b0826d4f",
+      "overflow": false,
+      "approval": {
+        "reviewer": "Repository-owner-authorized-CI-repair",
+        "approvedAt": "2026-08-30T20:03:00.000Z",
+        "candidateSha256": "eace3ea4ff7dc06cc36974acbd52056cb94b042c9aa3d66937366e44b0826d4f",
+        "token": "eace3ea4ff7d",
+        "platform": "linux"
+      },
+      "platform": "linux"
+    },
+    {
+      "file": "baselines/linux/corner-cafe__modern-phone__844x390.jpg",
+      "captureId": "corner-cafe--modern-phone",
+      "scenario": "corner-cafe",
+      "family": "restaurant",
+      "scene": "CafeScene",
+      "profile": "modern-phone",
+      "width": 844,
+      "height": 390,
+      "sha256": "b9c1136653476a79c70520295400e2153a208f2b266c70212e0fda745a46a282",
+      "overflow": false,
+      "approval": {
+        "reviewer": "Repository-owner-authorized-CI-repair",
+        "approvedAt": "2026-08-30T20:03:00.000Z",
+        "candidateSha256": "b9c1136653476a79c70520295400e2153a208f2b266c70212e0fda745a46a282",
+        "token": "b9c113665347",
+        "platform": "linux"
+      },
+      "platform": "linux"
+    },
+    {
+      "file": "baselines/linux/lawn-care__narrow-phone__568x320.jpg",
+      "captureId": "lawn-care--narrow-phone",
+      "scenario": "lawn-care",
+      "family": "cleanup",
+      "scene": "LawnCareScene",
+      "profile": "narrow-phone",
+      "width": 568,
+      "height": 320,
+      "sha256": "c82c03c839b3e041f18db3617c75010185cc0d7c966b47adbb4ee1f55d9587dd",
+      "overflow": false,
+      "approval": {
+        "reviewer": "Repository-owner-authorized-CI-repair",
+        "approvedAt": "2026-08-30T20:03:00.000Z",
+        "candidateSha256": "c82c03c839b3e041f18db3617c75010185cc0d7c966b47adbb4ee1f55d9587dd",
+        "token": "c82c03c839b3",
+        "platform": "linux"
+      },
+      "platform": "linux"
+    },
+    {
+      "file": "baselines/linux/powerwash__tablet-4x3__1024x768.jpg",
+      "captureId": "powerwash--tablet-4x3",
+      "scenario": "powerwash",
+      "family": "special-renderer",
+      "scene": "PlaygroundPowerwashScene",
+      "profile": "tablet-4x3",
+      "width": 1024,
+      "height": 768,
+      "sha256": "0128f77cbe852bbe81eda6465fe2662942b2714a147d6b271b8c27a4fd992293",
+      "overflow": false,
+      "approval": {
+        "reviewer": "Repository-owner-authorized-CI-repair",
+        "approvedAt": "2026-08-30T20:03:00.000Z",
+        "candidateSha256": "0128f77cbe852bbe81eda6465fe2662942b2714a147d6b271b8c27a4fd992293",
+        "token": "0128f77cbe85",
+        "platform": "linux"
+      },
+      "platform": "linux"
     }
+  ],
+  "supportedPlatforms": [
+    "darwin",
+    "linux"
   ]
 }

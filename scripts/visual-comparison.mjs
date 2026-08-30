@@ -13,6 +13,8 @@ import {
   approvalToken,
   approveVisualCandidate,
   compareVisualFiles,
+  resolveVisualBaselinePlatform,
+  selectVisualBaseline,
   sha256File,
 } from "./lib/visual-comparison.mjs";
 
@@ -29,18 +31,14 @@ const value = (flag) => {
 };
 const requestedCase = value("--case");
 const selectedCases = requestedCase ? [getVisualCaptureCase(requestedCase)].filter(Boolean) : VISUAL_CAPTURE_CASES;
+const baselinePlatform = resolveVisualBaselinePlatform(value("--baseline-platform") || process.platform);
 
 const contractValidation = validateVisualComparisonContracts();
 if (!contractValidation.ok) throw new Error(contractValidation.errors.join("\n"));
 if (requestedCase && selectedCases.length === 0) throw new Error(`Unknown capture case: ${requestedCase}.`);
 
 function baselineFor(captureCase) {
-  const baseline = manifest.baselines.find((entry) => entry.scenario === captureCase.scenario && entry.profile === captureCase.profile);
-  if (!baseline) throw new Error(`No approved baseline is associated with ${captureCase.id}.`);
-  if (baseline.scene !== captureCase.scene || baseline.width !== captureCase.viewport.width || baseline.height !== captureCase.viewport.height) {
-    throw new Error(`${captureCase.id} does not match its approved baseline scene or viewport.`);
-  }
-  return baseline;
+  return selectVisualBaseline({ manifest, captureCase, platform: baselinePlatform });
 }
 
 async function waitForServer(url, processHandle) {
@@ -118,6 +116,7 @@ async function captureCandidates() {
       schemaVersion: 2,
       generatedAt: new Date().toISOString(),
       command: "compare",
+      baselinePlatform,
       immutableBaselines: true,
       passed: results.filter((entry) => entry.comparison.ok).length,
       failed: results.filter((entry) => !entry.comparison.ok).length,

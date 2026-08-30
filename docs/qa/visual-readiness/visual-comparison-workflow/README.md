@@ -8,6 +8,8 @@ Capture cases live in `src/qa/visualComparisonContracts.js`. Each case fixes the
 
 The ten representative cases cover world, interior, shop, restaurant, cleanup, and special-renderer scenes at 568×320, 844×390, 1024×768, 1280×720, and 1366×768. Captures use the isolated QA save, a fixed clock, a seeded random source, fixed camera contracts, completed asset/font readiness, normalized town NPC/animal presentation phases, and paused scene time. Debug-only panels are hidden with `visibility`, so their removal cannot reflow the game.
 
+Approved baselines are platform-specific for macOS (`darwin`) and GitHub Actions (`linux`). Browser text and emoji rasterization differ between operating systems even when the layout and gameplay are identical, so each platform is compared only with its separately reviewed screenshot. The thresholds remain unchanged and strict. An unsupported platform fails closed instead of silently selecting a mismatched baseline. Use `--baseline-platform darwin|linux` only when deliberately reviewing or approving evidence captured on that platform.
+
 ## Capture and compare
 
 1. Install dependencies and the pinned Playwright Chromium browser.
@@ -24,9 +26,9 @@ Approval is deliberately separate and single-case only:
 1. Run `pnpm run visual:capture -- --case <capture-id>`.
 2. Review the candidate and heatmap.
 3. Read the candidate SHA-256 token reported by an approval attempt without a token.
-4. Run `pnpm run visual:approve -- --case <capture-id> --reviewer <name> --token <12-character-token>`.
+4. Run `pnpm run visual:approve -- --case <capture-id> --reviewer <name> --token <12-character-token>`. Add `--baseline-platform <platform>` only when the candidate was captured on that exact platform.
 
-There is no approve-all or silent update flag. Missing reviewer, missing/wrong token, unknown case, mismatched scene, or mismatched viewport aborts without changing the baseline. Approval records reviewer, time, full candidate hash, and token in `BASELINE_MANIFEST.json`.
+There is no approve-all or silent update flag. Missing reviewer, missing/wrong token, unknown case, unsupported/missing platform, mismatched scene, or mismatched viewport aborts without changing the baseline. Approval records reviewer, time, full candidate hash, token, and platform in `BASELINE_MANIFEST.json`.
 
 ## Adding a capture case
 
