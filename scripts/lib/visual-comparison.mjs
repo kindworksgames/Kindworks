@@ -3,6 +3,38 @@ import { copyFile, mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
 
+export const SUPPORTED_VISUAL_BASELINE_PLATFORMS = Object.freeze(["darwin", "linux"]);
+
+export function resolveVisualBaselinePlatform(platform = process.platform) {
+  if (!SUPPORTED_VISUAL_BASELINE_PLATFORMS.includes(platform)) {
+    throw new Error(`Unsupported visual baseline platform: ${platform}. Supported platforms: ${SUPPORTED_VISUAL_BASELINE_PLATFORMS.join(", ")}.`);
+  }
+  return platform;
+}
+
+export function baselineIdentity(entry) {
+  return `${entry.platform || "legacy"}:${entry.captureId || "missing"}`;
+}
+
+export function selectVisualBaseline({ manifest, captureCase, platform = process.platform }) {
+  const resolvedPlatform = resolveVisualBaselinePlatform(platform);
+  const matches = (manifest.baselines || []).filter((entry) => entry.captureId === captureCase.id && entry.platform === resolvedPlatform);
+  if (matches.length === 0) {
+    throw new Error(`No approved ${resolvedPlatform} baseline is associated with ${captureCase.id}.`);
+  }
+  if (matches.length > 1) {
+    throw new Error(`Duplicate approved ${resolvedPlatform} baselines are associated with ${captureCase.id}.`);
+  }
+  const baseline = matches[0];
+  if (baseline.scene !== captureCase.scene
+    || baseline.profile !== captureCase.profile
+    || baseline.width !== captureCase.viewport.width
+    || baseline.height !== captureCase.viewport.height) {
+    throw new Error(`${captureCase.id} does not match its approved ${resolvedPlatform} baseline scene, profile, or viewport.`);
+  }
+  return baseline;
+}
+
 export async function sha256File(file) {
   return createHash("sha256").update(await readFile(file)).digest("hex");
 }
@@ -85,8 +117,14 @@ export async function approveVisualCandidate({ root, manifest, baseline, candida
   await copyFile(candidateFile, temporaryFile);
   await rename(temporaryFile, baselineFile);
   baseline.sha256 = candidateSha256;
-  baseline.approval = { reviewer: reviewer.trim(), approvedAt: now, candidateSha256, token: expectedToken };
-  manifest.version = Math.max(2, Number(manifest.version || 1));
+  baseline.approval = {
+    reviewer: reviewer.trim(),
+    approvedAt: now,
+    candidateSha256,
+    token: expectedToken,
+    platform: baseline.platform || null,
+  };
+  manifest.version = Math.max(3, Number(manifest.version || 1));
   manifest.lastReviewedAt = now;
   const manifestFile = path.join(root, "docs/qa/visual-readiness/phase-01/BASELINE_MANIFEST.json");
   await writeFile(manifestFile, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");

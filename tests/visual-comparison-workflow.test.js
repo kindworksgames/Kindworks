@@ -18,6 +18,8 @@ import {
 import {
   approvalToken,
   approveVisualCandidate,
+  resolveVisualBaselinePlatform,
+  selectVisualBaseline,
   compareVisualFiles,
   sha256File,
 } from "../scripts/lib/visual-comparison.mjs";
@@ -34,6 +36,26 @@ test("the visual seed produces a stable random sequence", () => {
   const left = createSeededRandom();
   const right = createSeededRandom();
   assert.deepEqual(Array.from({ length: 16 }, () => left()), Array.from({ length: 16 }, () => right()));
+});
+
+test("visual baselines are selected strictly by capture ID and rendering platform", () => {
+  const captureCase = VISUAL_CAPTURE_CASES[0];
+  const common = {
+    captureId: captureCase.id,
+    scene: captureCase.scene,
+    profile: captureCase.profile,
+    width: captureCase.viewport.width,
+    height: captureCase.viewport.height,
+  };
+  const manifest = { baselines: [
+    { ...common, platform: "darwin", file: "mac.jpg" },
+    { ...common, platform: "linux", file: "linux.jpg" },
+  ] };
+  assert.equal(selectVisualBaseline({ manifest, captureCase, platform: "darwin" }).file, "mac.jpg");
+  assert.equal(selectVisualBaseline({ manifest, captureCase, platform: "linux" }).file, "linux.jpg");
+  assert.throws(() => selectVisualBaseline({ manifest: { baselines: [manifest.baselines[0]] }, captureCase, platform: "linux" }), /No approved linux baseline/);
+  assert.throws(() => selectVisualBaseline({ manifest: { baselines: [manifest.baselines[1], { ...manifest.baselines[1] }] }, captureCase, platform: "linux" }), /Duplicate approved linux baselines/);
+  assert.throws(() => resolveVisualBaselinePlatform("win32"), /Unsupported visual baseline platform/);
 });
 
 test("reference association rejects unrelated and misaligned artwork", () => {

@@ -6,13 +6,14 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
 import { getVisualCaptureCase } from "../src/qa/visualComparisonContracts.js";
-import { compareVisualFiles } from "./lib/visual-comparison.mjs";
+import { compareVisualFiles, resolveVisualBaselinePlatform, selectVisualBaseline } from "./lib/visual-comparison.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const baselineRoot = path.join(root, "docs/qa/visual-readiness/phase-01");
 const manifestFile = path.join(baselineRoot, "BASELINE_MANIFEST.json");
 const outputRoot = path.join(root, "artifacts/visual-regression/stage-06-independent-retest");
 const manifest = JSON.parse(await readFile(manifestFile, "utf8"));
+const baselinePlatform = resolveVisualBaselinePlatform(process.env.KW_VISUAL_BASELINE_PLATFORM || process.platform);
 const port = Number(process.env.KW_STAGE6_PORT || 4180);
 const baseUrl = `http://127.0.0.1:${port}`;
 const exactPolicy = Object.freeze({
@@ -31,21 +32,14 @@ const TEST_CASES = Object.freeze([
 ]);
 
 function baselineFor(captureCase) {
-  const baseline = manifest.baselines.find((entry) => entry.captureId === captureCase.id);
-  if (!baseline) throw new Error(`No approved baseline is associated with ${captureCase.id}.`);
-  if (baseline.scene !== captureCase.scene
-    || baseline.width !== captureCase.viewport.width
-    || baseline.height !== captureCase.viewport.height) {
-    throw new Error(`${captureCase.id} does not match its approved baseline scene or viewport.`);
-  }
-  return baseline;
+  return selectVisualBaseline({ manifest, captureCase, platform: baselinePlatform });
 }
 
 async function baselineIntegrityDigest() {
   const hash = createHash("sha256");
   hash.update(await readFile(manifestFile));
-  for (const entry of [...manifest.baselines].sort((left, right) => left.captureId.localeCompare(right.captureId))) {
-    hash.update(entry.captureId);
+  for (const entry of [...manifest.baselines].sort((left, right) => `${left.platform}:${left.captureId}`.localeCompare(`${right.platform}:${right.captureId}`))) {
+    hash.update(`${entry.platform}:${entry.captureId}`);
     hash.update(await readFile(path.join(baselineRoot, entry.file)));
   }
   return hash.digest("hex");
@@ -307,6 +301,7 @@ const report = {
     independentBrowserContextsPerRepeat: true,
     repeatsPerCase: 3,
     controlledDisplacementCssPixels: 12,
+    baselinePlatform,
   },
   policy: {
     approvedPolicyUnchanged: true,
