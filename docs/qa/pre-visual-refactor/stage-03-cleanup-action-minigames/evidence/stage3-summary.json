@@ -1,0 +1,33 @@
+{
+  "auditDate": "2026-08-29",
+  "startingCommit": "3387bcb48964c41edbdc26f4257d2990fcdaf8d5",
+  "productionChanged": false,
+  "campaigns": 6,
+  "campaignLevelsEnumerated": 4500,
+  "structuralValidationFailures": 0,
+  "focusedTests": { "passed": 137, "failed": 0, "skipped": 0 },
+  "fullTests": { "passed": 616, "failed": 0, "skipped": 0 },
+  "repairFocusedTests": { "passed": 25, "failed": 0, "skipped": 0 },
+  "build": { "passed": true, "modules": 179, "performanceBudgetPassed": true },
+  "runtimeConsole": { "errors": 0, "warnings": 0 },
+  "runtimeLevels": {
+    "lawn": [1, 2, 9, 10, 49, 50, 100, 250, 500, 749, 750],
+    "river": [1, 10, 25, 50, 55, 56, 60, 61, 100, 250, 500, 750],
+    "waste": [1, 2, 10, 50, 100, 250, 500, 749, 750],
+    "houseRescue": [1, 2, 10, 50, 100, 250, 500, 749, 750],
+    "beach": [1, 2, 10, 50, 125, 375, 625, 749, 750],
+    "powerwash": [1, 2, 10, 50, 100, 250, 500, 749, 750]
+  },
+  "emulatedViewports": {
+    "landscape": ["568x320", "844x390", "1024x768", "1280x720"],
+    "riverPortrait": ["390x844", "768x1024"],
+    "riverLandscapeBarrier": "568x320"
+  },
+  "findings": {
+    "p0": 0,
+    "p1": 0,
+    "p2": 0,
+    "p3": 0,
+    "cannotReproduce": ["S3-F01"]
+  }
+}

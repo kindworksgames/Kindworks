@@ -16,6 +16,7 @@ import { NavigationGraph } from "./NavigationGraph.js";
 import { HARBOUR_GENERAL_CONFIG } from "../data/harbourGeneral.js";
 import { restorationFestivalActive } from "../state/restorationMilestoneState.js";
 import { CUSTOM_RESIDENT_ID } from "../data/customResident.js";
+import { npcNavigationDetour, npcNavigationEdgeBlockedByPlacements } from "../data/townPlacement.js";
 
 const PHASES = new Set(["sleeping", "home", "commuting", "working", "leisure"]);
 const RIVER_RESTORATION_NODES = new Set(["dock", "mill", "rpar1", "rpar2", "rpar3"]);
@@ -95,6 +96,50 @@ function savedResident(resident) {
   return structuredClone(resident);
 }
 
+export const NPC_PRESENTATION_SEPARATION = Object.freeze({
+  slotsPerRing: 6,
+  firstRingRadius: 24,
+  ringStep: 22,
+  coordinatePrecision: 2,
+});
+
+/**
+ * Separates residents that share an exact simulation coordinate without
+ * changing their saved routes or authoritative world positions.
+ */
+export function npcPresentationPositions(residents = []) {
+  const result = new Map();
+  const groups = new Map();
+  const precision = NPC_PRESENTATION_SEPARATION.coordinatePrecision;
+  for (const resident of residents) {
+    const position = { x: Number(resident?.x) || 0, y: Number(resident?.y) || 0 };
+    result.set(resident.id, position);
+    if (!resident?.visible) continue;
+    const key = `${position.x.toFixed(precision)}:${position.y.toFixed(precision)}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(resident);
+  }
+  for (const [key, group] of groups) {
+    if (group.length < 2) continue;
+    const ordered = [...group].sort((left, right) => left.id.localeCompare(right.id));
+    const base = result.get(ordered[0].id);
+    const angleOffset = hashUnit(`npc-presentation:${key}`) * Math.PI * 2;
+    for (let index = 0; index < ordered.length; index += 1) {
+      const ring = Math.floor(index / NPC_PRESENTATION_SEPARATION.slotsPerRing);
+      const firstInRing = ring * NPC_PRESENTATION_SEPARATION.slotsPerRing;
+      const ringCount = Math.min(NPC_PRESENTATION_SEPARATION.slotsPerRing, ordered.length - firstInRing);
+      const slot = index - firstInRing;
+      const radius = NPC_PRESENTATION_SEPARATION.firstRingRadius + ring * NPC_PRESENTATION_SEPARATION.ringStep;
+      const angle = angleOffset + slot * Math.PI * 2 / ringCount;
+      result.set(ordered[index].id, {
+        x: Math.round((base.x + Math.cos(angle) * radius) * 10) / 10,
+        y: Math.round((base.y + Math.sin(angle) * radius) * 10) / 10,
+      });
+    }
+  }
+  return result;
+}
+
 export class NpcTownLifeService {
   constructor(gameState, repository, { now = () => Date.now(), harbourGeneral = null } = {}) {
     this.gameState = gameState;
@@ -112,6 +157,7 @@ export class NpcTownLifeService {
     this.lastWorldMinute = null;
     this.pauseReasons = new Set();
     this.lastResult = { ok: true, status: "ready" };
+    this.navigationDetours = new Map();
   }
 
   nearestNode(x, y) {
@@ -119,6 +165,23 @@ export class NpcTownLifeService {
       .filter((node) => !NPC_INDOOR_NODE_KINDS.has(node.kind))
       .map((node) => ({ node, distance: Math.hypot(node.x - x, node.y - y) }))
       .sort((a, b) => a.distance - b.distance || a.node.id.localeCompare(b.node.id))[0]?.node || null;
+  }
+
+  routeFor(startNodeId, targetNodeId, state = this.gameState.getSnapshot()) {
+    const objects = state?.townPlacement?.objects || [];
+    const unobstructed = this.graph.findPath(startNodeId, targetNodeId, {
+      blockedEdge: (from, to) => npcNavigationEdgeBlockedByPlacements(from, to, objects),
+    });
+    return unobstructed.length ? unobstructed : this.graph.findPath(startNodeId, targetNodeId);
+  }
+
+  remainingRouteBlocked(resident, state = this.gameState.getSnapshot()) {
+    const ids = [resident.currentNodeId, ...resident.route.slice(resident.routeIndex)];
+    return ids.slice(1).some((id, index) => {
+      const from = this.graph.getNode(ids[index]);
+      const to = this.graph.getNode(id);
+      return from && to && npcNavigationEdgeBlockedByPlacements(from, to, state?.townPlacement?.objects || []);
+    });
   }
 
   availableBins(state, resident) {
@@ -143,7 +206,7 @@ export class NpcTownLifeService {
   routeResident(resident, targetNodeId, intent, activity) {
     const start = this.graph.hasNode(resident.currentNodeId) ? resident.currentNodeId : this.definitions.get(resident.id).homeNodeId;
     resident.targetNodeId = targetNodeId;
-    resident.route = this.graph.findPath(start, targetNodeId);
+    resident.route = this.routeFor(start, targetNodeId);
     resident.routeIndex = resident.route.length > 1 ? 1 : 0;
     resident.intent = intent;
     resident.phase = resident.route.length > 1 ? "commuting" : "leisure";
@@ -374,7 +437,7 @@ export class NpcTownLifeService {
     resident.x = current.x;
     resident.y = current.y;
     resident.targetNodeId = schedule.targetNodeId;
-    resident.route = this.graph.findPath(current.id, schedule.targetNodeId);
+    resident.route = this.routeFor(current.id, schedule.targetNodeId);
     resident.routeIndex = resident.route.length > 1 ? 1 : 0;
     resident.phase = resident.route.length > 1 ? "commuting" : schedule.phase;
     resident.activity = resident.phase === "commuting" ? `Walking to ${this.graph.getNode(schedule.targetNodeId).label}` : schedule.activity;
@@ -387,8 +450,16 @@ export class NpcTownLifeService {
     while (remaining > 0 && resident.routeIndex < resident.route.length) {
       const targetId = resident.route[resident.routeIndex];
       const target = this.graph.getNode(targetId);
-      const dx = target.x - resident.x;
-      const dy = target.y - resident.y;
+      let detour = this.navigationDetours.get(resident.id);
+      if (!detour || detour.targetId !== targetId) {
+        const points = npcNavigationDetour(resident, target, this.gameState.getSnapshot()?.townPlacement?.objects || [], `${resident.id}:${targetId}`);
+        detour = points.length ? { targetId, points: [...points] } : null;
+        if (detour) this.navigationDetours.set(resident.id, detour);
+        else this.navigationDetours.delete(resident.id);
+      }
+      const movementTarget = detour?.points[0] || target;
+      const dx = movementTarget.x - resident.x;
+      const dy = movementTarget.y - resident.y;
       const distance = Math.hypot(dx, dy);
       if (distance > 0.001) {
         resident.facingX = dx / distance;
@@ -402,11 +473,19 @@ export class NpcTownLifeService {
         resident.phase = "commuting";
         break;
       }
+      resident.x = movementTarget.x;
+      resident.y = movementTarget.y;
+      remaining -= distance;
+      if (detour?.points.length) {
+        detour.points.shift();
+        if (detour.points.length) continue;
+        this.navigationDetours.delete(resident.id);
+        continue;
+      }
       resident.x = target.x;
       resident.y = target.y;
       resident.currentNodeId = targetId;
       resident.routeIndex += 1;
-      remaining -= distance;
     }
     if (resident.currentNodeId === schedule.targetNodeId && resident.routeIndex >= resident.route.length) {
       const node = this.graph.getNode(schedule.targetNodeId);
@@ -426,7 +505,7 @@ export class NpcTownLifeService {
     const clockMinutes = world.clockMinutes;
     const elapsedSeconds = Math.max(0, Math.min(1, Number(deltaMilliseconds) / 1000 || 0));
     const weatherSpeed = WEATHER_CONFIG.npcSpeed?.[world.weather?.current?.kind] || 1;
-    const currentState = this.gameState.getSnapshot();
+    const currentState = this.gameState.getDomainsSnapshot("world", "restorationMilestones", "harbourGeneral");
     for (const definition of NPC_RESIDENTS) {
       const resident = this.residents.get(definition.id);
       const regular = getNpcSchedule(definition, day, clockMinutes, currentState);
@@ -486,6 +565,10 @@ export class NpcTownLifeService {
     return NPC_RESIDENTS.map((definition) => ({ ...definition, ...savedResident(this.residents.get(definition.id)) }));
   }
 
+  getPresentationResidents() {
+    return NPC_RESIDENTS.map((definition) => Object.freeze({ ...definition, ...this.residents.get(definition.id) }));
+  }
+
   setNarrativeState(residentId, narrativeState) {
     const resident = this.residents.get(residentId);
     if (!resident || !narrativeState) return false;
@@ -508,7 +591,7 @@ export class NpcTownLifeService {
   updatePlayerProximity(x, y, world) {
     if (!Number.isFinite(x) || !Number.isFinite(y) || !world || this.pauseReasons.size) return 0;
     const now = absoluteMinute(world);
-    const townReaction = reactionFor(this.gameState.getSnapshot());
+    const townReaction = reactionFor({ environment: this.gameState.getDomainSnapshot("environment") });
     let greetings = 0;
     for (const definition of NPC_RESIDENTS) {
       const resident = this.residents.get(definition.id);

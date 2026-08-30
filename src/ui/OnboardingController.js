@@ -47,6 +47,7 @@ export class OnboardingController {
     this.toastClose = document.querySelector("#login-reward-toast-close");
     this.townLabel = document.querySelector("#town-name-label");
     this.previousFocus = null;
+    this.editingTownName = false;
     this.townTextTemplates = new WeakMap();
     this.townAttributeTemplates = new WeakMap();
 
@@ -65,25 +66,27 @@ export class OnboardingController {
     return Boolean(this.panel && !this.panel.classList.contains("hidden"));
   }
 
-  open() {
+  open({ editTownName = false } = {}) {
     if (!this.panel || !this.canOpen()) return { ok: false, code: "onboarding-unavailable" };
     this.previousFocus = document.activeElement;
+    this.editingTownName = Boolean(editTownName);
     this.render();
     this.panel.classList.remove("hidden");
     this.panel.setAttribute("aria-hidden", "false");
     this.onModalChange(true);
     const state = this.service.getSnapshot();
-    (state.townNamed ? this.residentButton : this.input)?.focus?.({ preventScroll: true });
-    if (!state.townNamed) this.input?.select?.();
+    (this.editingTownName || !state.townNamed ? this.input : this.residentButton)?.focus?.({ preventScroll: true });
+    if (this.editingTownName || !state.townNamed) this.input?.select?.();
     return { ok: true };
   }
 
   close({ force = false } = {}) {
     if (!this.isOpen()) return { ok: false };
-    if (!force && !this.service.getSnapshot().townNamed) return { ok: false, code: "town-name-required" };
+    if (!force && !this.service.getSnapshot().complete) return { ok: false, code: "setup-required" };
     this.panel.classList.add("hidden");
     this.panel.setAttribute("aria-hidden", "true");
     this.onModalChange(false);
+    this.editingTownName = false;
     this.previousFocus?.focus?.({ preventScroll: true });
     return { ok: true };
   }
@@ -91,7 +94,12 @@ export class OnboardingController {
   startFirstRun() {
     const state = this.service.getSnapshot();
     if (state.complete || !this.canOpen()) return false;
+    if (state.townNamed && !state.complete) return Boolean(this.openResidentCreator()?.ok);
     return this.open().ok;
+  }
+
+  openTownNameEditor() {
+    return this.open({ editTownName: true });
   }
 
   clearError() {
@@ -108,7 +116,10 @@ export class OnboardingController {
       return result;
     }
     this.clearError();
+    const returnToCreator = this.editingTownName && !result.state.complete;
+    this.editingTownName = false;
     this.render();
+    if (returnToCreator) return this.openResidentCreator();
     this.residentButton?.focus?.({ preventScroll: true });
     return result;
   }
@@ -117,7 +128,11 @@ export class OnboardingController {
     const state = this.service.getSnapshot();
     if (!state.townNamed) return this.input?.focus?.();
     this.close({ force: true });
-    return this.onCreateResident();
+    return this.onCreateResident({
+      onboarding: !state.complete,
+      creatorStep: state.creatorStep,
+      creatorDraft: state.creatorDraft,
+    });
   }
 
   notifyResidentSaved() {
@@ -185,16 +200,17 @@ export class OnboardingController {
     document.title = `KindWorks — ${state.townName} Living Town`;
     if (this.openButton) this.openButton.textContent = state.complete ? "🎁 Welcome" : "🏡 Welcome";
     if (this.input && document.activeElement !== this.input) this.input.value = state.townName;
-    this.form?.classList.toggle("hidden", state.townNamed);
-    this.residentButton?.classList.toggle("hidden", !state.townNamed || state.residentCreated);
-    this.closeButton?.classList.toggle("hidden", !state.townNamed);
-    if (this.title) this.title.textContent = !state.townNamed ? "Name your town" : !state.residentCreated ? `Welcome to ${state.townName}` : `${state.townName} is yours`;
-    if (this.description) this.description.textContent = !state.townNamed
+    const showTownForm = !state.townNamed || this.editingTownName;
+    this.form?.classList.toggle("hidden", !showTownForm);
+    this.residentButton?.classList.toggle("hidden", showTownForm || !state.townNamed || state.residentCreated);
+    this.closeButton?.classList.toggle("hidden", !state.complete);
+    if (this.title) this.title.textContent = showTownForm ? (state.townNamed ? "Edit your town name" : "Name your town") : !state.residentCreated ? `Welcome to ${state.townName}` : `${state.townName} is yours`;
+    if (this.description) this.description.textContent = showTownForm
       ? "Choose the name shown around your town."
       : !state.residentCreated
         ? "Create your resident and starter home."
         : "Your resident and home are ready.";
-    if (this.setupProgress) this.setupProgress.textContent = state.townNamed ? "STEP 2 OF 2 · CREATE YOUR RESIDENT" : "STEP 1 OF 2 · NAME YOUR TOWN";
+    if (this.setupProgress) this.setupProgress.textContent = showTownForm ? "STEP 1 OF 2 · NAME YOUR TOWN" : "STEP 2 OF 2 · CREATE YOUR RESIDENT";
     if (this.rewardSummary) this.rewardSummary.textContent = `Starter gift: +${LOGIN_REWARD_CONFIG.starterCoins} coins · Daily: +${LOGIN_REWARD_CONFIG.dailyCoins} · Return after ${LOGIN_REWARD_CONFIG.returnAfterDays} days: +${LOGIN_REWARD_CONFIG.returnBonusCoins}`;
     if (this.rewardHistory) this.rewardHistory.textContent = `${state.loginRewards.loginDays} login day${state.loginRewards.loginDays === 1 ? "" : "s"} · ${state.loginRewards.dailyClaims} daily reward${state.loginRewards.dailyClaims === 1 ? "" : "s"} · ${state.loginRewards.returnBonuses} return bonus${state.loginRewards.returnBonuses === 1 ? "" : "es"}`;
 

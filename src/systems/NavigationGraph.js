@@ -26,7 +26,7 @@ export class NavigationGraph {
     return Boolean(this.edges.get(a)?.has(b));
   }
 
-  findPath(startId, targetId) {
+  findPath(startId, targetId, { blockedEdge = null } = {}) {
     if (startId === targetId && this.nodes.has(startId)) return [startId];
     if (!this.nodes.has(startId) || !this.nodes.has(targetId)) return [];
     const queue = [startId];
@@ -34,6 +34,7 @@ export class NavigationGraph {
     for (let index = 0; index < queue.length; index += 1) {
       const current = queue[index];
       for (const next of this.edges.get(current) || []) {
+        if (blockedEdge?.(this.nodes.get(current), this.nodes.get(next))) continue;
         if (previous.has(next)) continue;
         previous.set(next, current);
         if (next === targetId) {

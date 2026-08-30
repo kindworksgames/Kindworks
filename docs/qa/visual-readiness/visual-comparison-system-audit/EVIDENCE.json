@@ -1,0 +1,150 @@
+{
+  "schemaVersion": 1,
+  "audit": "visual-comparison-system",
+  "date": "2026-08-30",
+  "branch": "phase-2-ui-simplification",
+  "commit": "3387bcb48964c41edbdc26f4257d2990fcdaf8d5",
+  "environment": {
+    "browser": "Codex in-app Chromium",
+    "deviceTesting": "emulated viewports only",
+    "server": "Vite development preview at 127.0.0.1:5174"
+  },
+  "verification": {
+    "baselineVerifier": {
+      "status": "PASS",
+      "images": 10,
+      "families": 6,
+      "profiles": 5,
+      "fingerprintedSourceFiles": 85
+    },
+    "focusedTests": {
+      "status": "PASS",
+      "passed": 16,
+      "failed": 0,
+      "files": [
+        "tests/visual-readiness-phase-1.test.js",
+        "tests/visual-readiness-phase-4.test.js"
+      ]
+    },
+    "consoleWarningOrErrorCount": 0
+  },
+  "routeContractFailures": [
+    {
+      "case": "unknown scenario",
+      "request": "?qa=visual-regression&scenario=not-a-real-scene",
+      "observed": {
+        "scenario": "unknown",
+        "ready": "true",
+        "scene": "TownScene",
+        "viewport": "844x390"
+      }
+    },
+    {
+      "case": "wrong viewport",
+      "request": "?qa=visual-regression&scenario=house-interior at 568x320",
+      "expectedProfile": "tablet-4x3 1024x768",
+      "observed": {
+        "scenario": "house-interior",
+        "ready": "true",
+        "scene": "HouseInteriorScene",
+        "viewport": "568x320"
+      }
+    }
+  ],
+  "referenceMismatch": {
+    "scene": "FishingScene",
+    "canonicalSize": "1280x720",
+    "suppliedReference": "village-grocer__modern-phone__844x390.jpg",
+    "statusMessage": "village-grocer__modern-phone__844x390.jpg fitted to 1280x720.",
+    "result": "accepted and stretched without scene/aspect warning"
+  },
+  "repeatCaptureResults": [
+    {
+      "surface": "Town immediate-ready workflow",
+      "viewport": "1280x720",
+      "byteEqual": false,
+      "changedExactPct": 99.9382,
+      "changedGt8Pct": 93.594,
+      "changedGt20Pct": 59.705,
+      "mae": 15.6743,
+      "rms": 16.825
+    },
+    {
+      "surface": "Town post-stabilization",
+      "viewport": "1280x720",
+      "byteEqual": false,
+      "changedExactPct": 1.6139,
+      "changedGt8Pct": 0.5704,
+      "changedGt20Pct": 0.2185,
+      "mae": 0.1393,
+      "rms": 2.5452
+    },
+    {
+      "surface": "Town approved baseline vs post-stabilization live",
+      "viewport": "1280x720",
+      "byteEqual": false,
+      "changedExactPct": 1.6673,
+      "changedGt8Pct": 0.5831,
+      "changedGt20Pct": 0.2314,
+      "mae": 0.1426,
+      "rms": 2.4945
+    },
+    {
+      "surface": "Town Menu popup",
+      "viewport": "844x390",
+      "byteEqual": false,
+      "changedExactPct": 1.626,
+      "changedGt8Pct": 0.4196,
+      "changedGt20Pct": 0.0969,
+      "mae": 0.0842,
+      "rms": 1.3232,
+      "approvedBaseline": false
+    },
+    {
+      "surface": "House Interior",
+      "viewport": "1024x768",
+      "byteEqual": true,
+      "matchesApprovedBaseline": true
+    },
+    {
+      "surface": "Village Grocer",
+      "viewport": "844x390",
+      "byteEqual": true,
+      "matchesApprovedBaseline": true
+    },
+    {
+      "surface": "Corner Cafe entry",
+      "viewport": "844x390",
+      "byteEqual": true,
+      "matchesApprovedBaseline": true
+    },
+    {
+      "surface": "Lawn Care level 1 entry",
+      "viewport": "568x320",
+      "byteEqual": true,
+      "matchesApprovedBaseline": true
+    },
+    {
+      "surface": "Power Wash level 1 entry",
+      "viewport": "1024x768",
+      "byteEqual": true,
+      "matchesApprovedBaseline": true
+    }
+  ],
+  "referenceOverlay": {
+    "scene": "FishingScene",
+    "layout": "layout.scene.fishing",
+    "viewport": "1280x720",
+    "canvas": "1280x720",
+    "panelBounds": {
+      "x": 922,
+      "y": 8,
+      "width": 350,
+      "height": 530.8125
+    },
+    "modesOperated": ["live", "overlay", "reference", "split", "difference"],
+    "debugUiIncludedInScreenshots": true,
+    "differenceIsMeasured": false
+  },
+  "verdict": "FAIL_REPAIR_REQUIRED"
+}

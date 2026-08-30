@@ -1,0 +1,160 @@
+{
+  "schemaVersion": 2,
+  "id": "kindworks.artwork-production",
+  "revision": 1,
+  "artBibleVersion": "KindWorks Visual Style Bible v4",
+  "workflowStatuses": [
+    "specified",
+    "generation-ready",
+    "generated",
+    "review",
+    "revision",
+    "approval",
+    "runtime-ready",
+    "integrated",
+    "verified"
+  ],
+  "runtimeFallbackSemanticIds": [
+    "system.fallback.development",
+    "system.fallback.production"
+  ],
+  "contractPolicy": {
+    "schemaVersion": 2,
+    "catalogId": "kindworks.asset-category-contracts",
+    "scope": "approved-runtime-artwork",
+    "requiredSemanticIds": ["scene.fishing.reedbank.background"],
+    "allowUncontractedAssets": false,
+    "generationBlockedUntilArtBibleLocked": true
+  },
+  "assets": [
+    {
+      "schemaVersion": 2,
+      "semanticId": "scene.fishing.reedbank.background",
+      "familyId": "minigame.fishing-magnet-pack",
+      "version": "1.0.0",
+      "category": "scene-background",
+      "categoryContractId": "category.minigame",
+      "categoryMetadata": {
+        "minigameId": "fishing",
+        "playfieldScale": "1280x720-logical-scene",
+        "stateMapping": { "default": "background" }
+      },
+      "gameplayPurpose": "Decorative Reedbank Fishing environment behind the protected casting and targeting geometry.",
+      "intendedScenes": ["FishingScene"],
+      "output": {
+        "type": "single-image",
+        "format": "webp",
+        "canvas": { "width": 720, "height": 405 },
+        "alpha": false,
+        "colourMode": "RGB",
+        "bitDepth": 8,
+        "pixelArt": true,
+        "textureFiltering": "nearest",
+        "smoothing": false,
+        "trimFrames": false,
+        "spriteSheet": null
+      },
+      "camera": {
+        "projection": "fixed-2d-scene",
+        "perspective": "authored-environment-view",
+        "viewDirection": "toward-water",
+        "cameraMotion": "none"
+      },
+      "masterScale": {
+        "nativePixelsPerLogicalUnit": 0.5625,
+        "logicalDisplay": { "width": 1280, "height": 720 },
+        "scalePolicy": "fit-declared-logical-bounds-never-source-size"
+      },
+      "anchor": {
+        "name": "scene-centre",
+        "normalized": { "x": 0.5, "y": 0.5 },
+        "groundContact": null
+      },
+      "sockets": [
+        { "id": "sceneCenter", "logical": { "x": 640, "y": 360 } }
+      ],
+      "geometry": {
+        "visual": { "kind": "rectangle", "x": 0, "y": 0, "width": 1280, "height": 720 },
+        "collision": null,
+        "navigation": null,
+        "interaction": null,
+        "touch": null
+      },
+      "states": ["default"],
+      "variants": ["default"],
+      "directions": [],
+      "layers": [
+        {
+          "id": "background",
+          "order": 0,
+          "states": ["default"],
+          "canvasAlignment": "full-canvas",
+          "alphaAlignment": "opaque-canvas"
+        }
+      ],
+      "animations": [],
+      "artRules": {
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "palette": "KindWorks natural greens, river blues, warm timber and cream highlights",
+        "outline": "Consistent dark pixel outline; no vector-soft edge",
+        "lighting": "Soft daylight from upper-left; coherent across the full canvas",
+        "shadow": "Environment-authored shadows only; do not add a separate runtime shadow",
+        "texture": "Crisp pixel clusters with no interpolation or photographic noise"
+      },
+      "expectedFilenames": {
+        "staging": "artwork/staging/scene/fishing/reedbank-background/v1/fishing-reedbank-background.v1.webp",
+        "master": "artwork/masters/scene/fishing/reedbank-background/v1/fishing-reedbank-background.v1.webp",
+        "runtime": "public/assets/runtime/scene/fishing/fishing-reedbank-background.v1.webp"
+      },
+      "filenameStem": "fishing-reedbank-background",
+      "forbiddenOutput": [
+        "embedded UI or text",
+        "automatic frame trimming",
+        "smoothed resizing",
+        "changed camera angle",
+        "moved gameplay targets",
+        "provider watermark or signature"
+      ],
+      "validation": {
+        "requireFiles": ["staging", "master", "runtime"],
+        "requireExactDimensions": true,
+        "requireAlpha": false,
+        "requireUntrimmedFrames": true,
+        "requireNearestNeighbour": true,
+        "requireStateNames": ["default"],
+        "requireDirections": [],
+        "maximumRuntimeBytes": 400000,
+        "maximumTransparentPadding": { "top": 0, "right": 0, "bottom": 0, "left": 0 },
+        "maximumVisibleBounds": { "x": 0, "y": 0, "width": 720, "height": 405 },
+        "gameplayGeometrySha256": "6e7d75175c4fdd5143249a42510ff3860dab1ba8e9e61a4981005043b92472d4",
+        "fallbackSemanticId": "system.fallback.production"
+      },
+      "productionStatus": "verified",
+      "workflow": {
+        "currentStatus": "verified",
+        "history": [
+          { "status": "specified", "version": "1.0.0", "evidence": "Phase 6 production specification" },
+          { "status": "generation-ready", "version": "1.0.0", "evidence": "Specification validator passed" },
+          { "status": "generated", "version": "1.0.0", "evidence": "Approved existing asset copied into staging as a neutral pipeline fixture" },
+          { "status": "review", "version": "1.0.0", "evidence": "Byte identity and visual baseline reviewed" },
+          { "status": "approval", "version": "1.0.0", "evidence": "No visual change approved" },
+          { "status": "runtime-ready", "version": "1.0.0", "evidence": "Dimensions, alpha and texture budget passed" },
+          { "status": "integrated", "version": "1.0.0", "evidence": "Generated runtime mapping selected by semantic registry" },
+          { "status": "verified", "version": "1.0.0", "evidence": "Fishing runtime and regression checks passed" }
+        ]
+      },
+      "provenance": {
+        "originType": "approved-existing-artwork-pipeline-fixture",
+        "provider": "generator-neutral",
+        "sourceSemanticId": "scene.fishing.reedbank.background",
+        "sourceSha256": "ade1c03c8ae32dad0b98ded9c1d6e485cf9422560777f5d8f3a41c6189b8c5bb",
+        "specificationVersion": 1,
+        "assetVersion": "1.0.0",
+        "licenseReview": "project-owned-existing-asset",
+        "reviewedAt": "2026-08-30"
+      },
+      "dependencies": [],
+      "scenePackId": "pack.scene.fishing"
+    }
+  ]
+}

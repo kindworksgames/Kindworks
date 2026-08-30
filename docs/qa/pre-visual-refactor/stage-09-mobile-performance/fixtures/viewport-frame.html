@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>KindWorks Stage 9 viewport fixture</title>
+    <style>
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-width: 100%; min-height: 100%; background: #111; }
+      iframe { position: fixed; top: 0; left: 0; display: block; border: 0; background: #000; }
+    </style>
+  </head>
+  <body>
+    <output id="kindworks-stage9-diagnostics" hidden></output>
+    <script>
+      const params = new URLSearchParams(location.search);
+      const width = Math.max(1, Number(params.get("width")) || 1280);
+      const height = Math.max(1, Number(params.get("height")) || 720);
+      const frame = document.createElement("iframe");
+      frame.id = "kindworks-stage9-frame";
+      frame.title = `KindWorks ${width} by ${height} test viewport`;
+      frame.width = String(width);
+      frame.height = String(height);
+      frame.style.width = `${width}px`;
+      frame.style.height = `${height}px`;
+      frame.addEventListener("load", () => {
+        const diagnostics = document.querySelector("#kindworks-stage9-diagnostics");
+        const frameDurations = [];
+        let previousFrame = 0;
+        let sampleStartedAt = 0;
+        const loadedAt = frame.contentWindow.performance.now();
+        let gameReadyAt = null;
+        let firstSceneAt = null;
+        const sampleFrame = (timestamp) => {
+          if (!sampleStartedAt) sampleStartedAt = timestamp;
+          if (previousFrame) frameDurations.push(timestamp - previousFrame);
+          previousFrame = timestamp;
+          if (frameDurations.length > 1_800) frameDurations.shift();
+          frame.contentWindow.requestAnimationFrame(sampleFrame);
+        };
+        frame.contentWindow.requestAnimationFrame(sampleFrame);
+        window.setInterval(() => {
+          const windowRef = frame.contentWindow;
+          const game = windowRef.__KINDWORKS_PHASER_GAME__;
+          const sorted = [...frameDurations].sort((left, right) => left - right);
+          const scenes = game?.scene?.getScenes?.(true) || [];
+          if (game && gameReadyAt === null) gameReadyAt = windowRef.performance.now() - loadedAt;
+          if (scenes.length && firstSceneAt === null) firstSceneAt = windowRef.performance.now() - loadedAt;
+          const resources = windowRef.performance?.getEntriesByType?.("resource") || [];
+          diagnostics.textContent = JSON.stringify({
+            viewport: [windowRef.innerWidth, windowRef.innerHeight],
+            elapsedMilliseconds: sampleStartedAt ? windowRef.performance.now() - sampleStartedAt : 0,
+            gameReadyMilliseconds: gameReadyAt,
+            firstSceneMilliseconds: firstSceneAt,
+            frameCount: frameDurations.length,
+            frameTiming: frameDurations.length ? {
+              averageMilliseconds: frameDurations.reduce((total, value) => total + value, 0) / frameDurations.length,
+              p95Milliseconds: sorted[Math.floor(sorted.length * 0.95)],
+              p99Milliseconds: sorted[Math.floor(sorted.length * 0.99)],
+              maximumMilliseconds: sorted.at(-1),
+              over20Milliseconds: frameDurations.filter((value) => value > 20).length,
+              over33Milliseconds: frameDurations.filter((value) => value > 33.34).length,
+              over50Milliseconds: frameDurations.filter((value) => value > 50).length,
+            } : null,
+            phaserLoop: game ? { actualFps: game.loop.actualFps, delta: game.loop.delta } : null,
+            activeScenes: scenes.map((scene) => ({
+              key: scene.scene.key,
+              children: scene.children?.list?.length || 0,
+              timers: scene.time?.getAllEvents?.().length || 0,
+            })),
+            textures: game?.textures?.list ? Object.keys(game.textures.list).length : 0,
+            canvases: frame.contentDocument.querySelectorAll("canvas").length,
+            domNodes: frame.contentDocument.getElementsByTagName("*").length,
+            resources: {
+              count: resources.length,
+              durationMilliseconds: resources.reduce((maximum, entry) => Math.max(maximum, entry.responseEnd || 0), 0),
+              transferBytes: resources.reduce((total, entry) => total + (entry.transferSize || 0), 0),
+            },
+            memory: windowRef.performance?.memory ? {
+              usedBytes: windowRef.performance.memory.usedJSHeapSize,
+              totalBytes: windowRef.performance.memory.totalJSHeapSize,
+              limitBytes: windowRef.performance.memory.jsHeapSizeLimit,
+            } : null,
+          });
+        }, 250);
+        const style = frame.contentDocument.createElement("style");
+        style.textContent = "#fidelity-qa-panel{top:8px!important;bottom:auto!important}";
+        frame.contentDocument.head.append(style);
+      });
+      frame.src = `/?qa=fidelity&stage=9&viewport=${width}x${height}`;
+      document.body.append(frame);
+    </script>
+  </body>
+</html>

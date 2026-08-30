@@ -1,4 +1,6 @@
 import Phaser from "phaser";
+import { getTownBinVisualFactory } from "../visual/renderers/TownBinVisualFactory.js";
+import { resolveTownSceneDepth, TOWN_DEPTH_POLICY_IDS } from "../visual/layouts/sceneLayoutCatalog.js";
 
 function drawTruck(scene) {
   const container = scene.add.container(0, 0).setVisible(false);
@@ -40,21 +42,10 @@ function drawCollector(scene) {
   return container;
 }
 
-function drawLiftedBin(scene) {
-  const container = scene.add.container(0, 0).setVisible(false);
-  const graphics = scene.add.graphics();
-  graphics.fillStyle(0x294637, 0.2).fillEllipse(-18, 16, 36, 12);
-  graphics.fillStyle(0x294637, 1).fillRoundedRect(-16, -22, 32, 8, 3);
-  graphics.fillStyle(0x426b58, 1).fillRoundedRect(-13, -15, 26, 35, 5);
-  graphics.fillStyle(0xe7e3cf, 0.9).fillCircle(0, 1, 5);
-  container.add(graphics);
-  return container;
-}
-
 export function createMunicipalCollectionVehicle(scene) {
   const truck = drawTruck(scene);
   const collector = drawCollector(scene);
-  const activeBin = drawLiftedBin(scene);
+  const activeBin = getTownBinVisualFactory(scene).createCollectionBin();
   const label = scene.add.text(0, 0, "WEEKLY COLLECTION", {
     color: "#294637",
     fontFamily: "system-ui",
@@ -78,15 +69,15 @@ export function createMunicipalCollectionVehicle(scene) {
       }
       const heading = presentation.truck || { headingX: 1, headingY: 0, x: 0, y: 0 };
       truck.setPosition(heading.x, heading.y).setRotation(Math.atan2(heading.headingY || 0, heading.headingX || 1));
-      truck.setDepth(178 + heading.y / 10);
-      label.setPosition(heading.x, heading.y - 52).setDepth(440 + heading.y / 10);
+      truck.setDepth(resolveTownSceneDepth(TOWN_DEPTH_POLICY_IDS.COLLECTION_TRUCK, heading.y));
+      label.setPosition(heading.x, heading.y - 52).setDepth(resolveTownSceneDepth(TOWN_DEPTH_POLICY_IDS.COLLECTION_LABEL, heading.y));
       label.setText(`WEEKLY COLLECTION ${Math.min(presentation.stopIndex + 1, presentation.totalBins)}/${presentation.totalBins}`);
       const worker = presentation.collector;
       collector.setVisible(Boolean(worker?.visible && !worker?.onTruck));
-      if (worker) collector.setPosition(worker.x, worker.y).setDepth(184 + worker.y / 10);
+      if (worker) collector.setPosition(worker.x, worker.y).setDepth(resolveTownSceneDepth(TOWN_DEPTH_POLICY_IDS.COLLECTION_WORKER, worker.y));
       const bin = presentation.activeBin;
       activeBin.setVisible(Boolean(bin));
-      if (bin) activeBin.setPosition(bin.x, bin.y).setRotation(bin.rotation || 0).setDepth(182 + bin.y / 10);
+      if (bin) activeBin.setPosition(bin.x, bin.y).setRotation(bin.rotation || 0).setDepth(resolveTownSceneDepth(TOWN_DEPTH_POLICY_IDS.COLLECTION_BIN, bin.y));
     },
     destroy() {
       for (const object of [truck, collector, activeBin, label]) object.destroy();

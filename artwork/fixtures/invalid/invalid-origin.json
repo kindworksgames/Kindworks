@@ -1,0 +1,8 @@
+{
+  "description": "Places the normalized origin outside the asset canvas.",
+  "assetId": "scene.fishing.reedbank.background",
+  "operation": "set",
+  "path": "anchor.normalized.x",
+  "value": 1.25,
+  "expectedCodes": ["invalid-anchor"]
+}

@@ -404,6 +404,88 @@
   }
 }
 
+/* Stage 7 repair — narrow-landscape companion and business controls. The DOM
+   panels cover only the existing fixed-canvas detail column and preserve the
+   world/shop artwork while keeping essential actions at 44 CSS pixels. */
+@media (max-width: 900px) and (max-height: 500px) and (orientation: landscape) {
+  .paws-mobile-panel,
+  .harbour-mobile-panel {
+    position: fixed;
+    z-index: 56;
+    right: max(4px, env(safe-area-inset-right));
+    display: none;
+    width: 176px;
+    padding: 4px;
+    border: 3px solid #26354c;
+    border-radius: 7px;
+    background: rgb(255 246 216 / 97%);
+    color: #23334a;
+    box-shadow: 0 4px 14px rgb(0 0 0 / 36%);
+    pointer-events: auto;
+  }
+  body[data-game-scene="PawsWondersScene"] .paws-mobile-panel {
+    top: 68px;
+    bottom: 4px;
+    display: grid;
+    grid-template-rows: 44px auto auto 44px minmax(22px, 1fr);
+    gap: 3px;
+    border-color: #42684f;
+    background: rgb(255 251 235 / 97%);
+    color: #244c36;
+  }
+  body[data-game-scene="HarbourGeneralScene"] .harbour-mobile-panel {
+    top: clamp(49px, 11.1dvh, 80px);
+    bottom: 3px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 44px 44px auto 44px 44px 44px minmax(16px, 1fr);
+    gap: 2px;
+  }
+  .mobile-shop-cycle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+  }
+  .paws-mobile-panel .mobile-shop-cycle,
+  .paws-mobile-panel > strong,
+  .paws-mobile-panel > span,
+  .paws-mobile-panel > button,
+  .paws-mobile-panel > small,
+  .harbour-mobile-panel .mobile-shop-cycle,
+  .harbour-mobile-panel > .mobile-shop-product,
+  .harbour-mobile-panel > small { grid-column: 1 / -1; }
+  .harbour-mobile-panel > label { align-self: center; padding-left: 3px; font-size: 12px; font-weight: 900; }
+  .harbour-mobile-panel > select { min-width: 0; }
+  .harbour-mobile-panel > .mobile-shop-secondary,
+  .harbour-mobile-panel > .mobile-shop-primary { grid-column: 1 / -1; }
+  .mobile-shop-cycle button,
+  .paws-mobile-panel > button,
+  .harbour-mobile-panel > button,
+  .harbour-mobile-panel > select {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 3px 5px;
+    border: 2px solid #34455c;
+    border-radius: 6px;
+    background: #fff9e5;
+    color: #24354d;
+    font: 900 12px/1 ui-monospace, monospace;
+  }
+  .mobile-shop-cycle button { font-size: 25px; }
+  .mobile-shop-primary { background: #3f8b49 !important; color: #fff !important; }
+  .mobile-shop-secondary { background: #287eb3 !important; color: #fff !important; }
+  .paws-mobile-panel > strong,
+  .mobile-shop-product > strong { overflow: hidden; font: 950 13px/1.15 ui-monospace, monospace; text-overflow: ellipsis; white-space: nowrap; }
+  .paws-mobile-panel > span,
+  .mobile-shop-product > span { overflow: hidden; font: 800 11px/1.15 system-ui, sans-serif; }
+  .mobile-shop-product { display: grid; min-width: 0; align-content: center; gap: 2px; overflow: hidden; }
+  .paws-mobile-panel > small,
+  .harbour-mobile-panel > small { overflow: hidden; align-self: center; font: 750 10px/1.15 system-ui, sans-serif; }
+  .paws-mobile-panel button:disabled,
+  .harbour-mobile-panel button:disabled { opacity: .5; }
+  .mobile-shop-footer button { min-width: 0; font-size: 10px; }
+}
+
 @media (orientation: landscape) and (max-width: 700px) {
   body:is([data-game-scene="BakeryScene"], [data-game-scene="CafeScene"], [data-game-scene="MorningMugScene"], [data-game-scene="RiversideKitchenScene"]) :is(
     #bakery-hud[data-bakery-view="shift"],
@@ -1289,7 +1371,7 @@ body[data-game-scene="FishingScene"] .fishing-actions { padding: 6px !important;
   body[data-game-scene="HouseInteriorScene"] .home-interior-actions button:not(.hidden) {
     flex: 1 1 0 !important;
     min-width: 0 !important;
-    min-height: 40px !important;
+    min-height: 44px !important;
     padding: 3px !important;
     font-size: 8px !important;
   }
@@ -1465,6 +1547,10 @@ body {
   min-height: 100dvh;
   overflow: hidden;
   background: radial-gradient(circle at top, #315843, #10241a 72%);
+}
+
+[data-scene-layout-surface] {
+  translate: var(--kw-layout-offset-x, 0px) var(--kw-layout-offset-y, 0px);
 }
 
 .game-shell {
@@ -5512,8 +5598,11 @@ body[data-game-scene="FishingScene"] .interaction-prompt { display: none !import
 }
 .animal-friends-panel.hidden { display: none; }
 .animal-friends-card {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   width: min(980px, 100%);
-  max-height: min(690px, calc(100vh - 24px));
+  height: min(690px, calc(100dvh - clamp(24px, 6vw, 68px)));
+  max-height: min(690px, calc(100vh - clamp(24px, 6vw, 68px)));
   overflow: hidden;
   color: #294637;
   background: linear-gradient(145deg, #fffdf2, #edf6db);
@@ -5535,8 +5624,8 @@ body[data-game-scene="FishingScene"] .interaction-prompt { display: none !import
 .animal-friends-header h2 { margin-top: 3px; font-size: clamp(21px, 3vw, 29px); }
 .animal-friends-header > span { padding: 8px 11px; border-radius: 999px; background: rgba(255,255,255,.16); font-size: 13px; font-weight: 800; }
 .animal-friends-header > button { width: 44px; height: 44px; border: 0; border-radius: 50%; color: #294637; background: #fffdf2; font-weight: 900; }
-.animal-friends-layout { display: grid; grid-template-columns: minmax(255px, .9fr) minmax(0, 1.6fr); min-height: 470px; max-height: 555px; }
-.animal-friends-list { overflow: auto; padding: 13px; background: rgba(213, 232, 190, .65); border-right: 1px solid #b8ce9e; }
+.animal-friends-layout { display: grid; grid-template-columns: minmax(255px, .9fr) minmax(0, 1.6fr); min-width: 0; min-height: 0; overflow: hidden; }
+.animal-friends-list { min-width: 0; min-height: 0; overflow: auto; padding: 13px; background: rgba(213, 232, 190, .65); border-right: 1px solid #b8ce9e; }
 .animal-list-card { width: 100%; display: grid; grid-template-columns: 42px 1fr auto; align-items: center; gap: 8px; margin-bottom: 7px; padding: 9px; text-align: left; color: #294637; border: 2px solid transparent; border-radius: 14px; background: rgba(255,255,255,.76); }
 .animal-list-card.selected { border-color: #4f8556; background: #fffdf2; box-shadow: 0 5px 16px rgba(47,87,49,.13); }
 .animal-list-card > span { font-size: 28px; text-align: center; }
@@ -5544,7 +5633,7 @@ body[data-game-scene="FishingScene"] .interaction-prompt { display: none !import
 .animal-list-card div { display: grid; gap: 2px; min-width: 0; }
 .animal-list-card small { overflow: hidden; color: #627565; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
 .animal-list-card em { color: #6c7b55; font-size: 10px; font-style: normal; font-weight: 850; text-transform: uppercase; }
-.animal-detail { overflow: auto; padding: 18px 20px; }
+.animal-detail { min-width: 0; min-height: 0; overflow: auto; padding: 18px 20px; }
 .animal-detail-heading { display: flex; align-items: center; gap: 14px; }
 .animal-detail-heading > span { display: grid; place-items: center; width: 68px; height: 68px; border-radius: 50%; background: #e6f0cd; font-size: 42px; }
 .animal-detail-heading > .animal-reference-detail { flex: 0 0 auto; background-color: #e6f0cd; background-repeat: no-repeat; background-size: 600% 800%; image-rendering: pixelated; }
@@ -5572,7 +5661,7 @@ body[data-game-scene="FishingScene"] .interaction-prompt { display: none !import
 
 @media (max-width: 720px) {
   .animal-friends-panel { padding: 8px; align-items: end; }
-  .animal-friends-card { max-height: 91vh; border-radius: 20px 20px 0 0; overflow: auto; }
+  .animal-friends-card { display: block; height: auto; max-height: 91dvh; border-radius: 20px 20px 0 0; overflow: auto; }
   .animal-friends-header { position: sticky; top: 0; z-index: 2; grid-template-columns: 1fr 44px; padding: 12px 13px; }
   .animal-friends-header p, .animal-friends-header > span { display: none; }
   .animal-friends-layout { display: block; max-height: none; }
@@ -6265,7 +6354,7 @@ body[data-game-scene="RiverClearoutScene"] .town-hud { display: none; }
 }
 .harbour-hud #harbour-exit {
   align-self: stretch;
-  width: clamp(42px, 7dvh, 60px);
+  width: clamp(var(--kw-touch-min, 44px), 7dvh, 60px);
   min-height: 44px;
   padding: 0;
   border: 3px solid #422637;
@@ -6283,6 +6372,8 @@ body[data-game-scene="RiverClearoutScene"] .town-hud { display: none; }
 .grocer-hud span, .paws-hud span, .harbour-hud span { color: #e1efd8; font-size: 12px; }
 .grocer-hud > span, .paws-hud > span, .harbour-hud > span { flex: 0 0 auto; padding: 8px 11px; border-radius: 999px; background: rgba(255,255,255,.1); color: #fff3b8; font-weight: 850; }
 .grocer-hud button, .paws-hud button, .harbour-hud button { min-height: 40px; padding: 8px 12px; border: 2px solid #f0d176; border-radius: 12px; background: #fff3bd; color: #294637; font-weight: 850; cursor: pointer; }
+.paws-mobile-panel,
+.harbour-mobile-panel { display: none; }
 body[data-game-scene="VillageGrocerScene"] .town-hud,
 body[data-game-scene="VillageGrocerScene"] .zoom-controls,
 body[data-game-scene="VillageGrocerScene"] .world-lighting-overlay,
@@ -6407,6 +6498,42 @@ body[data-game-scene="HarbourGeneralScene"] .control-hint { display: none; }
 .lawn-cell.weed-tough, .lawn-cell.weed-woody { isolation: isolate; }
 .lawn-cell.mower { z-index: 3; overflow: visible; color: transparent; background-color: #c3dc80; }
 .lawn-cell.mower::before { content: "🚜"; position: absolute; z-index: 2; display: grid; place-items: center; inset: -12%; color: initial; filter: drop-shadow(2px 2px 0 rgb(28 64 38 / 48%)); }
+.lawn-care-hud[data-approved-semantic-art="true"] .lawn-cell {
+  background-image: var(--kw-approved-lawn);
+  background-repeat: no-repeat;
+  background-size: 400% 100%;
+  image-rendering: pixelated;
+}
+.lawn-care-hud[data-approved-semantic-art="true"] .lawn-cell.tall { background-position: 0 0; }
+.lawn-care-hud[data-approved-semantic-art="true"] .lawn-cell.cut-vertical { background-position: 33.333% 0; }
+.lawn-care-hud[data-approved-semantic-art="true"] .lawn-cell.cut-horizontal { background-position: 66.666% 0; }
+.lawn-care-hud[data-approved-semantic-art="true"] .lawn-cell.hedge { background-position: 100% 0; }
+.lawn-care-hud[data-approved-semantic-art="true"] .lawn-cell.tall::after { display: none; }
+.lawn-care-hud[data-approved-semantic-art="true"] .lawn-cell.weed-tough::after,
+.lawn-care-hud[data-approved-semantic-art="true"] .lawn-cell.weed-woody::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 8%;
+  display: block;
+  background-image: var(--kw-approved-weeds);
+  background-repeat: no-repeat;
+  background-size: 200% 100%;
+  image-rendering: pixelated;
+}
+.lawn-care-hud[data-approved-semantic-art="true"] .lawn-cell.weed-woody::after { background-position: 100% 0; }
+.lawn-care-hud[data-approved-semantic-art="true"] .lawn-cell.mower::before {
+  content: "";
+  background-image: var(--kw-approved-mower);
+  background-position: 0 0;
+  background-repeat: no-repeat;
+  background-size: 400% 100%;
+  image-rendering: pixelated;
+}
+.lawn-care-hud[data-approved-semantic-art="true"] .lawn-cell.mower.facing-d::before { background-position: 0 0; transform: none; }
+.lawn-care-hud[data-approved-semantic-art="true"] .lawn-cell.mower.facing-l::before { background-position: 33.333% 0; transform: none; }
+.lawn-care-hud[data-approved-semantic-art="true"] .lawn-cell.mower.facing-r::before { background-position: 66.666% 0; transform: none; }
+.lawn-care-hud[data-approved-semantic-art="true"] .lawn-cell.mower.facing-u::before { background-position: 100% 0; transform: none; }
 .lawn-cell.mower.facing-u::before { transform: rotate(-90deg); }
 .lawn-cell.mower.facing-d::before { transform: rotate(90deg); }
 .lawn-cell.mower.facing-l::before { transform: scaleX(-1); }
@@ -6537,7 +6664,7 @@ body[data-game-scene="HouseInteriorScene"] .town-hud { display: none; }
   .home-interior-readout strong { font-size: 12px; }
   .home-interior-readout p { font-size: 9px; margin-top: 2px; }
   .home-interior-actions { grid-row: 2; display: flex; gap: 4px; overflow-x: auto; }
-  .home-interior-actions button { min-width: 112px; min-height: 40px; padding: 4px 6px; font-size: 10px; }
+  .home-interior-actions button { min-width: 112px; min-height: 44px; padding: 4px 6px; font-size: 10px; }
   .home-interior-status { grid-column: 2; grid-row: 1; font-size: 9px; padding: 5px; min-height: 0; }
   .home-furniture-placement { grid-column: 2; grid-row: 2; padding: 4px; }
   .home-furniture-placement p { display: none; }

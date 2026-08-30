@@ -379,7 +379,7 @@ export class ShopController {
     if (this.detailIcon) this.detailIcon.dataset.spriteAiKind = "selected-product-art";
     if (this.detailName) this.detailName.textContent = product.item.name;
     if (this.detailDescription) {
-      const base = product.item.description || `${product.item.shopGroup} stock from the original Kindworks catalogue.`;
+      const base = product.item.description || `${product.item.shopGroup} stock available in Willowmere.`;
       const aquarium = product.item.aquarium ? aquariumSnapshot(this.runtime.gameState.getSnapshot()) : null;
       const aquariumStatus = !aquarium ? "" : aquarium.placed
         ? ` ${aquarium.totalFish} ornamental fish currently live in your placed home aquarium.`

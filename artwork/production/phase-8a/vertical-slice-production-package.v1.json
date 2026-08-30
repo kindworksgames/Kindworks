@@ -1,0 +1,5297 @@
+{
+  "schemaVersion": 2,
+  "id": "kindworks.phase-8a.premium-vertical-slice",
+  "revision": 1,
+  "status": "production-package-ready-no-artwork-generated",
+  "artBibleVersion": "KindWorks Visual Style Bible v4",
+  "scope": {
+    "townWorldOrigin": {
+      "x": 1880,
+      "y": 0
+    },
+    "townCanonicalSize": {
+      "width": 1280,
+      "height": 720
+    },
+    "representativeHouseId": "house-6",
+    "representativeLawnId": "lawn-house-6",
+    "representativeLawnLevel": 1
+  },
+  "familyContracts": [
+    {
+      "id": "family.town-terrain.slice",
+      "categoryContractId": "category.terrain",
+      "purpose": "Seamless, top-down Willowmere terrain surfaces.",
+      "projection": "top-down orthographic",
+      "scaleRule": "64 logical-unit tile on an untrimmed 64px canvas",
+      "anchorRule": "top-left tile origin",
+      "shadowRule": "no-shadow"
+    },
+    {
+      "id": "family.house-exterior.slice",
+      "categoryContractId": "category.building",
+      "purpose": "State-aligned cottage exterior with protected door and footprint.",
+      "projection": "three-quarter top-down town exterior",
+      "scaleRule": "256×192 logical canvas; visible cottage remains aligned across states",
+      "anchorRule": "ground contact at canvas (128,176)",
+      "shadowRule": "custom-authored-shadow"
+    },
+    {
+      "id": "family.world-lawn.slice",
+      "categoryContractId": "category.terrain",
+      "purpose": "Four state-aligned lawn surfaces for the authored house-6 yard.",
+      "projection": "top-down orthographic",
+      "scaleRule": "320×352 canvas mapped to the protected 310×340 yard",
+      "anchorRule": "canvas centre",
+      "shadowRule": "no-shadow"
+    },
+    {
+      "id": "family.layered-tree.slice",
+      "categoryContractId": "category.vegetation",
+      "purpose": "Occluding tree split into shadow, trunk/body, and foreground canopy.",
+      "projection": "three-quarter top-down town prop",
+      "scaleRule": "128×160 aligned canvases; 87×97 logical visual target",
+      "anchorRule": "ground contact at canvas (64,144)",
+      "shadowRule": "custom-authored-shadow"
+    },
+    {
+      "id": "family.small-town-prop.slice",
+      "categoryContractId": "category.prop",
+      "purpose": "Compact, ground-anchored town props with independent interaction footprints.",
+      "projection": "three-quarter top-down town prop",
+      "scaleRule": "declared logical footprint, never inferred from PNG dimensions",
+      "anchorRule": "bottom-centre ground contact",
+      "shadowRule": "custom-authored-shadow"
+    },
+    {
+      "id": "family.resident-character.slice",
+      "categoryContractId": "category.character",
+      "purpose": "Player and NPC directional walk sheets sharing one stable frame grid.",
+      "projection": "three-quarter top-down resident",
+      "scaleRule": "64×64 frame; character displays at 40×54 logical units",
+      "anchorRule": "ground contact at frame (32,56)",
+      "shadowRule": "shared-ground-shadow"
+    },
+    {
+      "id": "family.animal-character.slice",
+      "categoryContractId": "category.animal",
+      "purpose": "Directional companion animal sheet.",
+      "projection": "three-quarter top-down animal",
+      "scaleRule": "48×40 frame; animal displays at 36×30 logical units",
+      "anchorRule": "ground contact at frame (24,35)",
+      "shadowRule": "shared-ground-shadow"
+    },
+    {
+      "id": "family.feedback-ui.slice",
+      "categoryContractId": "category.ui",
+      "purpose": "Small touch-readable interaction and reward feedback, never a persistent HUD.",
+      "projection": "screen-facing pixel UI",
+      "scaleRule": "native-size within declared 64px frame",
+      "anchorRule": "centre",
+      "shadowRule": "no-shadow"
+    },
+    {
+      "id": "family.lawn-minigame.slice",
+      "categoryContractId": "category.minigame",
+      "purpose": "Full-board Lawn Care tiles, mower, weeds, and three essential controls.",
+      "projection": "top-down orthographic board",
+      "scaleRule": "64px untrimmed cells aligned to the existing DOM grid",
+      "anchorRule": "cell centre",
+      "shadowRule": "no-shadow"
+    }
+  ],
+  "assets": [
+    {
+      "schemaVersion": 2,
+      "semanticId": "terrain.town.slice.grass",
+      "version": "1.0.0",
+      "familyId": "family.town-terrain.slice",
+      "categoryContractId": "category.terrain",
+      "gameplayPurpose": "seamless grass foundation for the representative town block",
+      "intendedScenes": [
+        "TownScene"
+      ],
+      "output": {
+        "type": "single-image",
+        "format": "png",
+        "canvas": {
+          "width": 64,
+          "height": 64
+        },
+        "alpha": false,
+        "colourMode": "RGB",
+        "bitDepth": 8,
+        "pixelArt": true,
+        "textureFiltering": "nearest",
+        "smoothing": false,
+        "trimFrames": false,
+        "spriteSheet": null,
+        "atlas": null
+      },
+      "camera": {
+        "projection": "top-down orthographic",
+        "viewDirection": "south-facing map view",
+        "cameraMotion": "none authored into asset"
+      },
+      "masterScale": {
+        "nativePixelsPerLogicalUnit": 1,
+        "logicalDisplay": {
+          "width": 64,
+          "height": 64
+        },
+        "scalePolicy": "fit-declared-logical-bounds-never-source-size"
+      },
+      "anchor": {
+        "name": "tile-top-left",
+        "normalized": {
+          "x": 0,
+          "y": 0
+        },
+        "groundContact": null
+      },
+      "geometry": {
+        "visual": {
+          "kind": "rectangle",
+          "x": 0,
+          "y": 0,
+          "width": 64,
+          "height": 64
+        },
+        "collision": null,
+        "navigation": null,
+        "interaction": null,
+        "touch": null
+      },
+      "sockets": [],
+      "states": [
+        "default"
+      ],
+      "variants": [
+        "default"
+      ],
+      "layers": [
+        {
+          "id": "main",
+          "order": 0,
+          "states": [
+            "default"
+          ],
+          "canvasAlignment": "full-canvas"
+        }
+      ],
+      "directions": [],
+      "animations": [],
+      "artRules": {
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "palette": "Willowmere natural greens, river blues, warm timber, cream highlights",
+        "outline": "consistent dark pixel outline with crisp pixel clusters",
+        "lighting": "soft daylight from upper-left",
+        "shadow": "follow the family shadow contract",
+        "texture": "pixel-authored clusters; no photographic noise"
+      },
+      "expectedFilenames": {
+        "staging": "artwork/staging/phase-8a/town-grass-tile/v1/town-grass-tile.v1.png",
+        "master": "artwork/masters/phase-8a/town-grass-tile/v1/town-grass-tile.v1.png",
+        "runtime": "public/assets/runtime/phase-8a/town-grass-tile.v1.png"
+      },
+      "filenameStem": "town-grass-tile",
+      "promptPackage": {
+        "providerNeutral": true,
+        "positivePrompt": "Create one production-ready KindWorks pixel-art asset for seamless grass foundation for the representative town block A quiet mid-green village lawn tile with restrained natural pixel variation; edges must tile seamlessly on all four sides. Use KindWorks Visual Style Bible v4. Exact output: 64×64px PNG, fully opaque, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.",
+        "negativePrompt": "provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; flowers, paths, stones, objects, baked shadows, or visible seams",
+        "deliveryInstruction": "Return only town-grass-tile.v1.png plus provenance metadata; do not composite it into a screenshot or rename it."
+      },
+      "forbiddenOutput": [
+        "provider watermark, signature, logo, caption, or embedded text",
+        "photorealism, vector-soft edges, antialiasing, blur, or resampling noise",
+        "automatic trimming, cropped canvas, changed frame order, or unequal frame alignment",
+        "unrequested UI, characters, props, scenery, shadows, or background colour",
+        "perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4",
+        "flowers, paths, stones, objects, baked shadows, or visible seams"
+      ],
+      "validation": {
+        "checklist": [
+          "semantic ID is unique and matches the approved manifest entry",
+          "filename and file format exactly match the contract",
+          "canvas, frame grid, frame count, alpha mode, and untrimmed alignment are exact",
+          "nearest-neighbour sampling is preserved and no smoothing metadata is introduced",
+          "ground anchor, sockets, visual bounds, and gameplay geometry remain independently addressable",
+          "all required states, layers, directions, and animation frames are present",
+          "texture budget, scene-pack dependency, fallback, and orphan-reference checks pass"
+        ],
+        "requireExactDimensions": true,
+        "requireAlpha": false,
+        "requireUntrimmedFrames": true,
+        "requireNearestNeighbour": true,
+        "requireFrameCount": 1,
+        "requireStateNames": [
+          "default"
+        ],
+        "requireDirections": [],
+        "maximumTransparentPadding": {
+          "top": 64,
+          "right": 64,
+          "bottom": 64,
+          "left": 64
+        },
+        "maximumVisibleBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 64,
+          "height": 64
+        },
+        "gameplayGeometrySignature": "b1e3a260",
+        "maximumRuntimeBytes": 30000,
+        "fallbackSemanticId": "system.fallback.production"
+      },
+      "accessibility": null,
+      "dependencies": [],
+      "scenePlacement": [
+        {
+          "layoutId": "layout.phase-8a.town-block.house-6",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.terrain.grass",
+          "position": {
+            "x": 640,
+            "y": 360
+          },
+          "worldOrigin": {
+            "x": 1880,
+            "y": 0
+          },
+          "gameplayGeometryLocked": true,
+          "repeat": "cover-canonical-block"
+        }
+      ],
+      "prefabId": "prefab.phase-8a.terrain.grass",
+      "stateMapId": "state.phase-8a.terrain.grass",
+      "placeholder": {
+        "mode": "semantic-registry-generated-fallback",
+        "development": "labelled checker placeholder in Asset Lab",
+        "production": "transparent safe fallback with recorded registry failure"
+      },
+      "productionStatus": "specified",
+      "provenance": {
+        "provider": "generator-neutral",
+        "specificationVersion": 2,
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "generatedArtworkPresent": false
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "semanticId": "terrain.town.slice.pavement",
+      "version": "1.0.0",
+      "familyId": "family.town-terrain.slice",
+      "categoryContractId": "category.terrain",
+      "gameplayPurpose": "pavement edge between the house lawn and north road",
+      "intendedScenes": [
+        "TownScene"
+      ],
+      "output": {
+        "type": "single-image",
+        "format": "png",
+        "canvas": {
+          "width": 64,
+          "height": 64
+        },
+        "alpha": false,
+        "colourMode": "RGB",
+        "bitDepth": 8,
+        "pixelArt": true,
+        "textureFiltering": "nearest",
+        "smoothing": false,
+        "trimFrames": false,
+        "spriteSheet": null,
+        "atlas": null
+      },
+      "camera": {
+        "projection": "top-down orthographic",
+        "viewDirection": "south-facing map view",
+        "cameraMotion": "none authored into asset"
+      },
+      "masterScale": {
+        "nativePixelsPerLogicalUnit": 1,
+        "logicalDisplay": {
+          "width": 64,
+          "height": 64
+        },
+        "scalePolicy": "fit-declared-logical-bounds-never-source-size"
+      },
+      "anchor": {
+        "name": "tile-top-left",
+        "normalized": {
+          "x": 0,
+          "y": 0
+        },
+        "groundContact": null
+      },
+      "geometry": {
+        "visual": {
+          "kind": "rectangle",
+          "x": 0,
+          "y": 0,
+          "width": 64,
+          "height": 64
+        },
+        "collision": null,
+        "navigation": null,
+        "interaction": null,
+        "touch": null
+      },
+      "sockets": [],
+      "states": [
+        "default"
+      ],
+      "variants": [
+        "default"
+      ],
+      "layers": [
+        {
+          "id": "main",
+          "order": 0,
+          "states": [
+            "default"
+          ],
+          "canvasAlignment": "full-canvas"
+        }
+      ],
+      "directions": [],
+      "animations": [],
+      "artRules": {
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "palette": "Willowmere natural greens, river blues, warm timber, cream highlights",
+        "outline": "consistent dark pixel outline with crisp pixel clusters",
+        "lighting": "soft daylight from upper-left",
+        "shadow": "follow the family shadow contract",
+        "texture": "pixel-authored clusters; no photographic noise"
+      },
+      "expectedFilenames": {
+        "staging": "artwork/staging/phase-8a/town-pavement-tile/v1/town-pavement-tile.v1.png",
+        "master": "artwork/masters/phase-8a/town-pavement-tile/v1/town-pavement-tile.v1.png",
+        "runtime": "public/assets/runtime/phase-8a/town-pavement-tile.v1.png"
+      },
+      "filenameStem": "town-pavement-tile",
+      "promptPackage": {
+        "providerNeutral": true,
+        "positivePrompt": "Create one production-ready KindWorks pixel-art asset for pavement edge between the house lawn and north road Warm pale Willowmere paving stones with a readable 32-unit rhythm and fully seamless edges. Use KindWorks Visual Style Bible v4. Exact output: 64×64px PNG, fully opaque, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.",
+        "negativePrompt": "provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; road markings, grass border, objects, baked characters, or perspective tilt",
+        "deliveryInstruction": "Return only town-pavement-tile.v1.png plus provenance metadata; do not composite it into a screenshot or rename it."
+      },
+      "forbiddenOutput": [
+        "provider watermark, signature, logo, caption, or embedded text",
+        "photorealism, vector-soft edges, antialiasing, blur, or resampling noise",
+        "automatic trimming, cropped canvas, changed frame order, or unequal frame alignment",
+        "unrequested UI, characters, props, scenery, shadows, or background colour",
+        "perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4",
+        "road markings, grass border, objects, baked characters, or perspective tilt"
+      ],
+      "validation": {
+        "checklist": [
+          "semantic ID is unique and matches the approved manifest entry",
+          "filename and file format exactly match the contract",
+          "canvas, frame grid, frame count, alpha mode, and untrimmed alignment are exact",
+          "nearest-neighbour sampling is preserved and no smoothing metadata is introduced",
+          "ground anchor, sockets, visual bounds, and gameplay geometry remain independently addressable",
+          "all required states, layers, directions, and animation frames are present",
+          "texture budget, scene-pack dependency, fallback, and orphan-reference checks pass"
+        ],
+        "requireExactDimensions": true,
+        "requireAlpha": false,
+        "requireUntrimmedFrames": true,
+        "requireNearestNeighbour": true,
+        "requireFrameCount": 1,
+        "requireStateNames": [
+          "default"
+        ],
+        "requireDirections": [],
+        "maximumTransparentPadding": {
+          "top": 64,
+          "right": 64,
+          "bottom": 64,
+          "left": 64
+        },
+        "maximumVisibleBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 64,
+          "height": 64
+        },
+        "gameplayGeometrySignature": "b1e3a260",
+        "maximumRuntimeBytes": 35000,
+        "fallbackSemanticId": "system.fallback.production"
+      },
+      "accessibility": null,
+      "dependencies": [
+        "terrain.town.slice.grass"
+      ],
+      "scenePlacement": [
+        {
+          "layoutId": "layout.phase-8a.town-block.house-6",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.terrain.pavement",
+          "position": {
+            "x": 640,
+            "y": 493
+          },
+          "worldOrigin": {
+            "x": 1880,
+            "y": 0
+          },
+          "gameplayGeometryLocked": true,
+          "repeat": "horizontal-strip"
+        }
+      ],
+      "prefabId": "prefab.phase-8a.terrain.pavement",
+      "stateMapId": "state.phase-8a.terrain.pavement",
+      "placeholder": {
+        "mode": "semantic-registry-generated-fallback",
+        "development": "labelled checker placeholder in Asset Lab",
+        "production": "transparent safe fallback with recorded registry failure"
+      },
+      "productionStatus": "specified",
+      "provenance": {
+        "provider": "generator-neutral",
+        "specificationVersion": 2,
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "generatedArtworkPresent": false
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "semanticId": "terrain.town.slice.road",
+      "version": "1.0.0",
+      "familyId": "family.town-terrain.slice",
+      "categoryContractId": "category.terrain",
+      "gameplayPurpose": "north-road surface under the slice",
+      "intendedScenes": [
+        "TownScene"
+      ],
+      "output": {
+        "type": "single-image",
+        "format": "png",
+        "canvas": {
+          "width": 64,
+          "height": 64
+        },
+        "alpha": false,
+        "colourMode": "RGB",
+        "bitDepth": 8,
+        "pixelArt": true,
+        "textureFiltering": "nearest",
+        "smoothing": false,
+        "trimFrames": false,
+        "spriteSheet": null,
+        "atlas": null
+      },
+      "camera": {
+        "projection": "top-down orthographic",
+        "viewDirection": "south-facing map view",
+        "cameraMotion": "none authored into asset"
+      },
+      "masterScale": {
+        "nativePixelsPerLogicalUnit": 1,
+        "logicalDisplay": {
+          "width": 64,
+          "height": 64
+        },
+        "scalePolicy": "fit-declared-logical-bounds-never-source-size"
+      },
+      "anchor": {
+        "name": "tile-top-left",
+        "normalized": {
+          "x": 0,
+          "y": 0
+        },
+        "groundContact": null
+      },
+      "geometry": {
+        "visual": {
+          "kind": "rectangle",
+          "x": 0,
+          "y": 0,
+          "width": 64,
+          "height": 64
+        },
+        "collision": null,
+        "navigation": null,
+        "interaction": null,
+        "touch": null
+      },
+      "sockets": [],
+      "states": [
+        "default"
+      ],
+      "variants": [
+        "default"
+      ],
+      "layers": [
+        {
+          "id": "main",
+          "order": 0,
+          "states": [
+            "default"
+          ],
+          "canvasAlignment": "full-canvas"
+        }
+      ],
+      "directions": [],
+      "animations": [],
+      "artRules": {
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "palette": "Willowmere natural greens, river blues, warm timber, cream highlights",
+        "outline": "consistent dark pixel outline with crisp pixel clusters",
+        "lighting": "soft daylight from upper-left",
+        "shadow": "follow the family shadow contract",
+        "texture": "pixel-authored clusters; no photographic noise"
+      },
+      "expectedFilenames": {
+        "staging": "artwork/staging/phase-8a/town-road-tile/v1/town-road-tile.v1.png",
+        "master": "artwork/masters/phase-8a/town-road-tile/v1/town-road-tile.v1.png",
+        "runtime": "public/assets/runtime/phase-8a/town-road-tile.v1.png"
+      },
+      "filenameStem": "town-road-tile",
+      "promptPackage": {
+        "providerNeutral": true,
+        "positivePrompt": "Create one production-ready KindWorks pixel-art asset for north-road surface under the slice Muted blue-grey village road surface, fine pixel aggregate, seamless, with no baked curb or markings. Use KindWorks Visual Style Bible v4. Exact output: 64×64px PNG, fully opaque, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.",
+        "negativePrompt": "provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; vehicles, curb, crossing, centre line, puddles, or debris",
+        "deliveryInstruction": "Return only town-road-tile.v1.png plus provenance metadata; do not composite it into a screenshot or rename it."
+      },
+      "forbiddenOutput": [
+        "provider watermark, signature, logo, caption, or embedded text",
+        "photorealism, vector-soft edges, antialiasing, blur, or resampling noise",
+        "automatic trimming, cropped canvas, changed frame order, or unequal frame alignment",
+        "unrequested UI, characters, props, scenery, shadows, or background colour",
+        "perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4",
+        "vehicles, curb, crossing, centre line, puddles, or debris"
+      ],
+      "validation": {
+        "checklist": [
+          "semantic ID is unique and matches the approved manifest entry",
+          "filename and file format exactly match the contract",
+          "canvas, frame grid, frame count, alpha mode, and untrimmed alignment are exact",
+          "nearest-neighbour sampling is preserved and no smoothing metadata is introduced",
+          "ground anchor, sockets, visual bounds, and gameplay geometry remain independently addressable",
+          "all required states, layers, directions, and animation frames are present",
+          "texture budget, scene-pack dependency, fallback, and orphan-reference checks pass"
+        ],
+        "requireExactDimensions": true,
+        "requireAlpha": false,
+        "requireUntrimmedFrames": true,
+        "requireNearestNeighbour": true,
+        "requireFrameCount": 1,
+        "requireStateNames": [
+          "default"
+        ],
+        "requireDirections": [],
+        "maximumTransparentPadding": {
+          "top": 64,
+          "right": 64,
+          "bottom": 64,
+          "left": 64
+        },
+        "maximumVisibleBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 64,
+          "height": 64
+        },
+        "gameplayGeometrySignature": "b1e3a260",
+        "maximumRuntimeBytes": 30000,
+        "fallbackSemanticId": "system.fallback.production"
+      },
+      "accessibility": null,
+      "dependencies": [
+        "terrain.town.slice.pavement"
+      ],
+      "scenePlacement": [
+        {
+          "layoutId": "layout.phase-8a.town-block.house-6",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.terrain.road",
+          "position": {
+            "x": 640,
+            "y": 548
+          },
+          "worldOrigin": {
+            "x": 1880,
+            "y": 0
+          },
+          "gameplayGeometryLocked": true,
+          "repeat": "horizontal-strip",
+          "protectedWorldRoadId": "north-road"
+        }
+      ],
+      "prefabId": "prefab.phase-8a.terrain.road",
+      "stateMapId": "state.phase-8a.terrain.road",
+      "placeholder": {
+        "mode": "semantic-registry-generated-fallback",
+        "development": "labelled checker placeholder in Asset Lab",
+        "production": "transparent safe fallback with recorded registry failure"
+      },
+      "productionStatus": "specified",
+      "provenance": {
+        "provider": "generator-neutral",
+        "specificationVersion": 2,
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "generatedArtworkPresent": false
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "semanticId": "terrain.town.slice.river-edge",
+      "version": "1.0.0",
+      "familyId": "family.town-terrain.slice",
+      "categoryContractId": "category.terrain",
+      "gameplayPurpose": "tree-free Willow River banks and water edge beside the block",
+      "intendedScenes": [
+        "TownScene"
+      ],
+      "output": {
+        "type": "spritesheet",
+        "format": "png",
+        "canvas": {
+          "width": 512,
+          "height": 64
+        },
+        "alpha": true,
+        "colourMode": "RGBA",
+        "bitDepth": 8,
+        "pixelArt": true,
+        "textureFiltering": "nearest",
+        "smoothing": false,
+        "trimFrames": false,
+        "atlas": null,
+        "spriteSheet": {
+          "frameWidth": 128,
+          "frameHeight": 64,
+          "columns": 4,
+          "rows": 1,
+          "padding": 0,
+          "spacing": 0,
+          "frameCount": 4,
+          "frameOrder": [
+            "west-straight",
+            "east-straight",
+            "west-transition",
+            "east-transition"
+          ],
+          "actions": [
+            "west-straight",
+            "east-straight",
+            "west-transition",
+            "east-transition"
+          ],
+          "directions": []
+        }
+      },
+      "camera": {
+        "projection": "top-down orthographic",
+        "viewDirection": "south-facing map view",
+        "cameraMotion": "none authored into asset"
+      },
+      "masterScale": {
+        "nativePixelsPerLogicalUnit": 1,
+        "logicalDisplay": {
+          "width": 128,
+          "height": 64
+        },
+        "scalePolicy": "fit-declared-logical-bounds-never-source-size"
+      },
+      "anchor": {
+        "name": "tile-top-left",
+        "normalized": {
+          "x": 0,
+          "y": 0
+        },
+        "groundContact": null
+      },
+      "geometry": {
+        "visual": {
+          "kind": "rectangle",
+          "x": 0,
+          "y": 0,
+          "width": 128,
+          "height": 64
+        },
+        "collision": {
+          "kind": "rectangle",
+          "x": 20,
+          "y": 0,
+          "width": 88,
+          "height": 64
+        },
+        "navigation": {
+          "kind": "rectangle",
+          "x": 20,
+          "y": 0,
+          "width": 88,
+          "height": 64
+        },
+        "interaction": null,
+        "touch": null
+      },
+      "sockets": [],
+      "states": [
+        "west-straight",
+        "east-straight",
+        "west-transition",
+        "east-transition"
+      ],
+      "variants": [
+        "west-straight",
+        "east-straight",
+        "west-transition",
+        "east-transition"
+      ],
+      "layers": [
+        {
+          "id": "main",
+          "order": 0,
+          "states": [
+            "west-straight",
+            "east-straight",
+            "west-transition",
+            "east-transition"
+          ],
+          "canvasAlignment": "frame-grid"
+        }
+      ],
+      "directions": [],
+      "animations": [],
+      "artRules": {
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "palette": "Willowmere natural greens, river blues, warm timber, cream highlights",
+        "outline": "consistent dark pixel outline with crisp pixel clusters",
+        "lighting": "soft daylight from upper-left",
+        "shadow": "follow the family shadow contract",
+        "texture": "pixel-authored clusters; no photographic noise"
+      },
+      "expectedFilenames": {
+        "staging": "artwork/staging/phase-8a/town-river-edge-sheet/v1/town-river-edge-sheet.v1.png",
+        "master": "artwork/masters/phase-8a/town-river-edge-sheet/v1/town-river-edge-sheet.v1.png",
+        "runtime": "public/assets/runtime/phase-8a/town-river-edge-sheet.v1.png"
+      },
+      "filenameStem": "town-river-edge-sheet",
+      "promptPackage": {
+        "providerNeutral": true,
+        "positivePrompt": "Create one production-ready KindWorks pixel-art asset for tree-free Willow River banks and water edge beside the block Four horizontal frames in the exact order specified: west straight bank, east straight bank, west transition, east transition. Blue flowing water meets a narrow stone-and-earth bank; stones remain on land at the water edge, never floating in the river. Use KindWorks Visual Style Bible v4. Exact output: 512×64px PNG, transparent alpha, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.",
+        "negativePrompt": "provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; trees, bridge, floating rocks, boats, characters, mirrored labels, or water wider than the declared protected geometry",
+        "deliveryInstruction": "Return only town-river-edge-sheet.v1.png plus provenance metadata; do not composite it into a screenshot or rename it."
+      },
+      "forbiddenOutput": [
+        "provider watermark, signature, logo, caption, or embedded text",
+        "photorealism, vector-soft edges, antialiasing, blur, or resampling noise",
+        "automatic trimming, cropped canvas, changed frame order, or unequal frame alignment",
+        "unrequested UI, characters, props, scenery, shadows, or background colour",
+        "perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4",
+        "trees, bridge, floating rocks, boats, characters, mirrored labels, or water wider than the declared protected geometry"
+      ],
+      "validation": {
+        "checklist": [
+          "semantic ID is unique and matches the approved manifest entry",
+          "filename and file format exactly match the contract",
+          "canvas, frame grid, frame count, alpha mode, and untrimmed alignment are exact",
+          "nearest-neighbour sampling is preserved and no smoothing metadata is introduced",
+          "ground anchor, sockets, visual bounds, and gameplay geometry remain independently addressable",
+          "all required states, layers, directions, and animation frames are present",
+          "texture budget, scene-pack dependency, fallback, and orphan-reference checks pass"
+        ],
+        "requireExactDimensions": true,
+        "requireAlpha": true,
+        "requireUntrimmedFrames": true,
+        "requireNearestNeighbour": true,
+        "requireFrameCount": 4,
+        "requireStateNames": [
+          "west-straight",
+          "east-straight",
+          "west-transition",
+          "east-transition"
+        ],
+        "requireDirections": [],
+        "maximumTransparentPadding": {
+          "top": 64,
+          "right": 512,
+          "bottom": 64,
+          "left": 512
+        },
+        "maximumVisibleBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 512,
+          "height": 64
+        },
+        "gameplayGeometrySignature": "cc07cea4",
+        "maximumRuntimeBytes": 120000,
+        "fallbackSemanticId": "system.fallback.production"
+      },
+      "accessibility": null,
+      "dependencies": [
+        "terrain.town.slice.grass"
+      ],
+      "scenePlacement": [
+        {
+          "layoutId": "layout.phase-8a.town-block.house-6",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.terrain.river-edge",
+          "position": {
+            "x": 670,
+            "y": 360
+          },
+          "worldOrigin": {
+            "x": 1880,
+            "y": 0
+          },
+          "gameplayGeometryLocked": true,
+          "repeat": "vertical-banks",
+          "protectedWorldRiver": {
+            "centreX": 2555,
+            "waterWidth": 188,
+            "bankWidth": 226
+          }
+        }
+      ],
+      "prefabId": "prefab.phase-8a.terrain.river-edge",
+      "stateMapId": "state.phase-8a.terrain.river-edge",
+      "placeholder": {
+        "mode": "semantic-registry-generated-fallback",
+        "development": "labelled checker placeholder in Asset Lab",
+        "production": "transparent safe fallback with recorded registry failure"
+      },
+      "productionStatus": "specified",
+      "provenance": {
+        "provider": "generator-neutral",
+        "specificationVersion": 2,
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "generatedArtworkPresent": false
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "semanticId": "building.town.slice.house-6-bay-cottage",
+      "version": "1.0.0",
+      "familyId": "family.house-exterior.slice",
+      "categoryContractId": "category.building",
+      "gameplayPurpose": "house-6 bay-cottage exterior with clean, dirty, job-ready, and upgraded visual states",
+      "intendedScenes": [
+        "TownScene"
+      ],
+      "output": {
+        "type": "spritesheet",
+        "format": "png",
+        "canvas": {
+          "width": 1024,
+          "height": 192
+        },
+        "alpha": true,
+        "colourMode": "RGBA",
+        "bitDepth": 8,
+        "pixelArt": true,
+        "textureFiltering": "nearest",
+        "smoothing": false,
+        "trimFrames": false,
+        "atlas": null,
+        "spriteSheet": {
+          "frameWidth": 256,
+          "frameHeight": 192,
+          "columns": 4,
+          "rows": 1,
+          "padding": 0,
+          "spacing": 0,
+          "frameCount": 4,
+          "frameOrder": [
+            "clean",
+            "weathered",
+            "job-ready",
+            "upgraded"
+          ],
+          "actions": [
+            "clean",
+            "weathered",
+            "job-ready",
+            "upgraded"
+          ],
+          "directions": []
+        }
+      },
+      "camera": {
+        "projection": "three-quarter top-down town exterior",
+        "viewDirection": "south-facing map view",
+        "cameraMotion": "none authored into asset"
+      },
+      "masterScale": {
+        "nativePixelsPerLogicalUnit": 1,
+        "logicalDisplay": {
+          "width": 256,
+          "height": 192
+        },
+        "scalePolicy": "fit-declared-logical-bounds-never-source-size"
+      },
+      "anchor": {
+        "name": "front-door-ground",
+        "normalized": {
+          "x": 0.5,
+          "y": 0.916667
+        },
+        "groundContact": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "geometry": {
+        "visual": {
+          "kind": "rectangle",
+          "x": -128,
+          "y": -176,
+          "width": 256,
+          "height": 192
+        },
+        "collision": {
+          "kind": "rectangle",
+          "x": -97.5,
+          "y": -115,
+          "width": 195,
+          "height": 110
+        },
+        "navigation": {
+          "kind": "rectangle",
+          "x": -103,
+          "y": -120,
+          "width": 206,
+          "height": 120
+        },
+        "interaction": {
+          "kind": "circle",
+          "x": 0,
+          "y": -7,
+          "radius": 92
+        },
+        "touch": {
+          "kind": "rectangle",
+          "x": -110,
+          "y": -130,
+          "width": 220,
+          "height": 145
+        }
+      },
+      "sockets": [
+        {
+          "id": "door",
+          "logical": {
+            "x": 0,
+            "y": -6
+          }
+        },
+        {
+          "id": "approach",
+          "logical": {
+            "x": 0,
+            "y": 25
+          }
+        },
+        {
+          "id": "roof-status",
+          "logical": {
+            "x": 0,
+            "y": -150
+          }
+        }
+      ],
+      "states": [
+        "clean",
+        "weathered",
+        "job-ready",
+        "upgraded"
+      ],
+      "variants": [
+        "clean",
+        "weathered",
+        "job-ready",
+        "upgraded"
+      ],
+      "layers": [
+        {
+          "id": "main",
+          "order": 0,
+          "states": [
+            "clean",
+            "weathered",
+            "job-ready",
+            "upgraded"
+          ],
+          "canvasAlignment": "frame-grid"
+        }
+      ],
+      "directions": [],
+      "animations": [],
+      "artRules": {
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "palette": "Willowmere natural greens, river blues, warm timber, cream highlights",
+        "outline": "consistent dark pixel outline with crisp pixel clusters",
+        "lighting": "soft daylight from upper-left",
+        "shadow": "follow the family shadow contract",
+        "texture": "pixel-authored clusters; no photographic noise"
+      },
+      "expectedFilenames": {
+        "staging": "artwork/staging/phase-8a/house-6-bay-cottage-states/v1/house-6-bay-cottage-states.v1.png",
+        "master": "artwork/masters/phase-8a/house-6-bay-cottage-states/v1/house-6-bay-cottage-states.v1.png",
+        "runtime": "public/assets/runtime/phase-8a/house-6-bay-cottage-states.v1.png"
+      },
+      "filenameStem": "house-6-bay-cottage-states",
+      "promptPackage": {
+        "providerNeutral": true,
+        "positivePrompt": "Create one production-ready KindWorks pixel-art asset for house-6 bay-cottage exterior with clean, dirty, job-ready, and upgraded visual states One bay cottage kept pixel-perfect in the same position across four horizontal frames: cared-for clean, time-weathered, visibly job-ready but still habitable, and tasteful upgraded. The front door socket and building footprint cannot move between frames. Use KindWorks Visual Style Bible v4. Exact output: 1024×192px PNG, transparent alpha, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.",
+        "negativePrompt": "provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; interior cutaway, people, lawn, fence, separate environment background, moved door, frame-to-frame silhouette drift, or destructive damage",
+        "deliveryInstruction": "Return only house-6-bay-cottage-states.v1.png plus provenance metadata; do not composite it into a screenshot or rename it."
+      },
+      "forbiddenOutput": [
+        "provider watermark, signature, logo, caption, or embedded text",
+        "photorealism, vector-soft edges, antialiasing, blur, or resampling noise",
+        "automatic trimming, cropped canvas, changed frame order, or unequal frame alignment",
+        "unrequested UI, characters, props, scenery, shadows, or background colour",
+        "perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4",
+        "interior cutaway, people, lawn, fence, separate environment background, moved door, frame-to-frame silhouette drift, or destructive damage"
+      ],
+      "validation": {
+        "checklist": [
+          "semantic ID is unique and matches the approved manifest entry",
+          "filename and file format exactly match the contract",
+          "canvas, frame grid, frame count, alpha mode, and untrimmed alignment are exact",
+          "nearest-neighbour sampling is preserved and no smoothing metadata is introduced",
+          "ground anchor, sockets, visual bounds, and gameplay geometry remain independently addressable",
+          "all required states, layers, directions, and animation frames are present",
+          "texture budget, scene-pack dependency, fallback, and orphan-reference checks pass"
+        ],
+        "requireExactDimensions": true,
+        "requireAlpha": true,
+        "requireUntrimmedFrames": true,
+        "requireNearestNeighbour": true,
+        "requireFrameCount": 4,
+        "requireStateNames": [
+          "clean",
+          "weathered",
+          "job-ready",
+          "upgraded"
+        ],
+        "requireDirections": [],
+        "maximumTransparentPadding": {
+          "top": 192,
+          "right": 1024,
+          "bottom": 192,
+          "left": 1024
+        },
+        "maximumVisibleBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1024,
+          "height": 192
+        },
+        "gameplayGeometrySignature": "9eee20b8",
+        "maximumRuntimeBytes": 360000,
+        "fallbackSemanticId": "system.fallback.production"
+      },
+      "accessibility": null,
+      "dependencies": [
+        "terrain.town.slice.grass",
+        "terrain.town.slice.pavement"
+      ],
+      "scenePlacement": [
+        {
+          "layoutId": "layout.phase-8a.town-block.house-6",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.house-6",
+          "position": {
+            "x": 278,
+            "y": 391
+          },
+          "worldOrigin": {
+            "x": 1880,
+            "y": 0
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "house-6",
+          "protectedWorldPosition": {
+            "x": 2158,
+            "y": 391
+          }
+        }
+      ],
+      "prefabId": "prefab.phase-8a.house-6",
+      "stateMapId": "state.phase-8a.house-6",
+      "placeholder": {
+        "mode": "semantic-registry-generated-fallback",
+        "development": "labelled checker placeholder in Asset Lab",
+        "production": "transparent safe fallback with recorded registry failure"
+      },
+      "productionStatus": "specified",
+      "provenance": {
+        "provider": "generator-neutral",
+        "specificationVersion": 2,
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "generatedArtworkPresent": false
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "semanticId": "terrain.town.slice.lawn-house-6",
+      "version": "1.0.0",
+      "familyId": "family.world-lawn.slice",
+      "categoryContractId": "category.terrain",
+      "gameplayPurpose": "the authored house-6 lawn in all four growth states",
+      "intendedScenes": [
+        "TownScene"
+      ],
+      "output": {
+        "type": "spritesheet",
+        "format": "png",
+        "canvas": {
+          "width": 1280,
+          "height": 352
+        },
+        "alpha": true,
+        "colourMode": "RGBA",
+        "bitDepth": 8,
+        "pixelArt": true,
+        "textureFiltering": "nearest",
+        "smoothing": false,
+        "trimFrames": false,
+        "atlas": null,
+        "spriteSheet": {
+          "frameWidth": 320,
+          "frameHeight": 352,
+          "columns": 4,
+          "rows": 1,
+          "padding": 0,
+          "spacing": 0,
+          "frameCount": 4,
+          "frameOrder": [
+            "fresh-cut",
+            "growing",
+            "long",
+            "job-ready"
+          ],
+          "actions": [
+            "fresh-cut",
+            "growing",
+            "long",
+            "job-ready"
+          ],
+          "directions": []
+        }
+      },
+      "camera": {
+        "projection": "top-down orthographic",
+        "viewDirection": "south-facing map view",
+        "cameraMotion": "none authored into asset"
+      },
+      "masterScale": {
+        "nativePixelsPerLogicalUnit": 1,
+        "logicalDisplay": {
+          "width": 320,
+          "height": 352
+        },
+        "scalePolicy": "fit-declared-logical-bounds-never-source-size"
+      },
+      "anchor": {
+        "name": "yard-centre",
+        "normalized": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "groundContact": null
+      },
+      "geometry": {
+        "visual": {
+          "kind": "rectangle",
+          "x": -160,
+          "y": -176,
+          "width": 320,
+          "height": 352
+        },
+        "collision": null,
+        "navigation": null,
+        "interaction": {
+          "kind": "circle",
+          "x": 0,
+          "y": 95,
+          "radius": 105
+        },
+        "touch": {
+          "kind": "rectangle",
+          "x": -155,
+          "y": -170,
+          "width": 310,
+          "height": 340
+        }
+      },
+      "sockets": [
+        {
+          "id": "job-entry",
+          "logical": {
+            "x": 0,
+            "y": 95
+          }
+        },
+        {
+          "id": "gate-south",
+          "logical": {
+            "x": 0,
+            "y": 170
+          }
+        }
+      ],
+      "states": [
+        "fresh-cut",
+        "growing",
+        "long",
+        "job-ready"
+      ],
+      "variants": [
+        "fresh-cut",
+        "growing",
+        "long",
+        "job-ready"
+      ],
+      "layers": [
+        {
+          "id": "main",
+          "order": 0,
+          "states": [
+            "fresh-cut",
+            "growing",
+            "long",
+            "job-ready"
+          ],
+          "canvasAlignment": "frame-grid"
+        }
+      ],
+      "directions": [],
+      "animations": [],
+      "artRules": {
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "palette": "Willowmere natural greens, river blues, warm timber, cream highlights",
+        "outline": "consistent dark pixel outline with crisp pixel clusters",
+        "lighting": "soft daylight from upper-left",
+        "shadow": "follow the family shadow contract",
+        "texture": "pixel-authored clusters; no photographic noise"
+      },
+      "expectedFilenames": {
+        "staging": "artwork/staging/phase-8a/lawn-house-6-growth-states/v1/lawn-house-6-growth-states.v1.png",
+        "master": "artwork/masters/phase-8a/lawn-house-6-growth-states/v1/lawn-house-6-growth-states.v1.png",
+        "runtime": "public/assets/runtime/phase-8a/lawn-house-6-growth-states.v1.png"
+      },
+      "filenameStem": "lawn-house-6-growth-states",
+      "promptPackage": {
+        "providerNeutral": true,
+        "positivePrompt": "Create one production-ready KindWorks pixel-art asset for the authored house-6 lawn in all four growth states Four horizontally aligned versions of the exact same 310×340 house yard: freshly cut below 20 grass height, growing 20–44, long 45–69, and overgrown job-ready at 70+. Preserve every boundary and gate opening; only grass height, density, weeds, and small flowers change. Use KindWorks Visual Style Bible v4. Exact output: 1280×352px PNG, transparent alpha, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.",
+        "negativePrompt": "provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; house, road, mower, person, text, status badge, moved yard boundary, or changed gate position",
+        "deliveryInstruction": "Return only lawn-house-6-growth-states.v1.png plus provenance metadata; do not composite it into a screenshot or rename it."
+      },
+      "forbiddenOutput": [
+        "provider watermark, signature, logo, caption, or embedded text",
+        "photorealism, vector-soft edges, antialiasing, blur, or resampling noise",
+        "automatic trimming, cropped canvas, changed frame order, or unequal frame alignment",
+        "unrequested UI, characters, props, scenery, shadows, or background colour",
+        "perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4",
+        "house, road, mower, person, text, status badge, moved yard boundary, or changed gate position"
+      ],
+      "validation": {
+        "checklist": [
+          "semantic ID is unique and matches the approved manifest entry",
+          "filename and file format exactly match the contract",
+          "canvas, frame grid, frame count, alpha mode, and untrimmed alignment are exact",
+          "nearest-neighbour sampling is preserved and no smoothing metadata is introduced",
+          "ground anchor, sockets, visual bounds, and gameplay geometry remain independently addressable",
+          "all required states, layers, directions, and animation frames are present",
+          "texture budget, scene-pack dependency, fallback, and orphan-reference checks pass"
+        ],
+        "requireExactDimensions": true,
+        "requireAlpha": true,
+        "requireUntrimmedFrames": true,
+        "requireNearestNeighbour": true,
+        "requireFrameCount": 4,
+        "requireStateNames": [
+          "fresh-cut",
+          "growing",
+          "long",
+          "job-ready"
+        ],
+        "requireDirections": [],
+        "maximumTransparentPadding": {
+          "top": 352,
+          "right": 1280,
+          "bottom": 352,
+          "left": 1280
+        },
+        "maximumVisibleBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1280,
+          "height": 352
+        },
+        "gameplayGeometrySignature": "6c4e8cdc",
+        "maximumRuntimeBytes": 460000,
+        "fallbackSemanticId": "system.fallback.production"
+      },
+      "accessibility": null,
+      "dependencies": [
+        "terrain.town.slice.grass"
+      ],
+      "scenePlacement": [
+        {
+          "layoutId": "layout.phase-8a.town-block.house-6",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-6",
+          "position": {
+            "x": 375,
+            "y": 320
+          },
+          "worldOrigin": {
+            "x": 1880,
+            "y": 0
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-6",
+          "protectedWorldYard": {
+            "x": 2100,
+            "y": 150,
+            "width": 310,
+            "height": 340
+          }
+        }
+      ],
+      "prefabId": "prefab.phase-8a.lawn-house-6",
+      "stateMapId": "state.phase-8a.lawn-house-6",
+      "placeholder": {
+        "mode": "semantic-registry-generated-fallback",
+        "development": "labelled checker placeholder in Asset Lab",
+        "production": "transparent safe fallback with recorded registry failure"
+      },
+      "productionStatus": "specified",
+      "provenance": {
+        "provider": "generator-neutral",
+        "specificationVersion": 2,
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "generatedArtworkPresent": false
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "semanticId": "prop.town.slice.large-oak.shadow",
+      "version": "1.0.0",
+      "familyId": "family.layered-tree.slice",
+      "categoryContractId": "category.vegetation",
+      "gameplayPurpose": "separate ground shadow for the large occluding oak",
+      "intendedScenes": [
+        "TownScene"
+      ],
+      "output": {
+        "type": "single-image",
+        "format": "png",
+        "canvas": {
+          "width": 128,
+          "height": 160
+        },
+        "alpha": true,
+        "colourMode": "RGBA",
+        "bitDepth": 8,
+        "pixelArt": true,
+        "textureFiltering": "nearest",
+        "smoothing": false,
+        "trimFrames": false,
+        "spriteSheet": null,
+        "atlas": null
+      },
+      "camera": {
+        "projection": "three-quarter top-down town prop",
+        "viewDirection": "south-facing map view",
+        "cameraMotion": "none authored into asset"
+      },
+      "masterScale": {
+        "nativePixelsPerLogicalUnit": 1,
+        "logicalDisplay": {
+          "width": 128,
+          "height": 160
+        },
+        "scalePolicy": "fit-declared-logical-bounds-never-source-size"
+      },
+      "anchor": {
+        "name": "tree-ground",
+        "normalized": {
+          "x": 0.5,
+          "y": 0.9
+        },
+        "groundContact": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "geometry": {
+        "visual": {
+          "kind": "rectangle",
+          "x": -64,
+          "y": -144,
+          "width": 128,
+          "height": 160
+        },
+        "collision": null,
+        "navigation": null,
+        "interaction": null,
+        "touch": null
+      },
+      "sockets": [],
+      "states": [
+        "default"
+      ],
+      "variants": [
+        "default"
+      ],
+      "layers": [
+        {
+          "id": "shadow",
+          "order": 0,
+          "states": [
+            "default"
+          ],
+          "canvasAlignment": "full-canvas"
+        }
+      ],
+      "directions": [],
+      "animations": [],
+      "artRules": {
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "palette": "Willowmere natural greens, river blues, warm timber, cream highlights",
+        "outline": "consistent dark pixel outline with crisp pixel clusters",
+        "lighting": "soft daylight from upper-left",
+        "shadow": "follow the family shadow contract",
+        "texture": "pixel-authored clusters; no photographic noise"
+      },
+      "expectedFilenames": {
+        "staging": "artwork/staging/phase-8a/large-oak-shadow/v1/large-oak-shadow.v1.png",
+        "master": "artwork/masters/phase-8a/large-oak-shadow/v1/large-oak-shadow.v1.png",
+        "runtime": "public/assets/runtime/phase-8a/large-oak-shadow.v1.png"
+      },
+      "filenameStem": "large-oak-shadow",
+      "promptPackage": {
+        "providerNeutral": true,
+        "positivePrompt": "Create one production-ready KindWorks pixel-art asset for separate ground shadow for the large occluding oak Only the soft pixel-art ground shadow of a large oak, aligned to ground contact (64,144); all other pixels fully transparent. Use KindWorks Visual Style Bible v4. Exact output: 128×160px PNG, transparent alpha, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.",
+        "negativePrompt": "provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; trunk, foliage, grass, opaque background, hard black ellipse, or shifted anchor",
+        "deliveryInstruction": "Return only large-oak-shadow.v1.png plus provenance metadata; do not composite it into a screenshot or rename it."
+      },
+      "forbiddenOutput": [
+        "provider watermark, signature, logo, caption, or embedded text",
+        "photorealism, vector-soft edges, antialiasing, blur, or resampling noise",
+        "automatic trimming, cropped canvas, changed frame order, or unequal frame alignment",
+        "unrequested UI, characters, props, scenery, shadows, or background colour",
+        "perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4",
+        "trunk, foliage, grass, opaque background, hard black ellipse, or shifted anchor"
+      ],
+      "validation": {
+        "checklist": [
+          "semantic ID is unique and matches the approved manifest entry",
+          "filename and file format exactly match the contract",
+          "canvas, frame grid, frame count, alpha mode, and untrimmed alignment are exact",
+          "nearest-neighbour sampling is preserved and no smoothing metadata is introduced",
+          "ground anchor, sockets, visual bounds, and gameplay geometry remain independently addressable",
+          "all required states, layers, directions, and animation frames are present",
+          "texture budget, scene-pack dependency, fallback, and orphan-reference checks pass"
+        ],
+        "requireExactDimensions": true,
+        "requireAlpha": true,
+        "requireUntrimmedFrames": true,
+        "requireNearestNeighbour": true,
+        "requireFrameCount": 1,
+        "requireStateNames": [
+          "default"
+        ],
+        "requireDirections": [],
+        "maximumTransparentPadding": {
+          "top": 160,
+          "right": 128,
+          "bottom": 160,
+          "left": 128
+        },
+        "maximumVisibleBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 128,
+          "height": 160
+        },
+        "gameplayGeometrySignature": "b1e3a260",
+        "maximumRuntimeBytes": 60000,
+        "fallbackSemanticId": "system.fallback.production"
+      },
+      "accessibility": null,
+      "dependencies": [
+        "terrain.town.slice.grass"
+      ],
+      "scenePlacement": [
+        {
+          "layoutId": "layout.phase-8a.town-block.house-6",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.large-oak",
+          "position": {
+            "x": 1000,
+            "y": 250
+          },
+          "worldOrigin": {
+            "x": 1880,
+            "y": 0
+          },
+          "gameplayGeometryLocked": true,
+          "layerRole": "shadow",
+          "protectedWorldPosition": {
+            "x": 2880,
+            "y": 250
+          }
+        }
+      ],
+      "prefabId": "prefab.phase-8a.large-oak",
+      "stateMapId": "state.phase-8a.large-oak",
+      "placeholder": {
+        "mode": "semantic-registry-generated-fallback",
+        "development": "labelled checker placeholder in Asset Lab",
+        "production": "transparent safe fallback with recorded registry failure"
+      },
+      "productionStatus": "specified",
+      "provenance": {
+        "provider": "generator-neutral",
+        "specificationVersion": 2,
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "generatedArtworkPresent": false
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "semanticId": "prop.town.slice.large-oak.trunk",
+      "version": "1.0.0",
+      "familyId": "family.layered-tree.slice",
+      "categoryContractId": "category.vegetation",
+      "gameplayPurpose": "large-oak trunk and lower body used for collision and Y-sort",
+      "intendedScenes": [
+        "TownScene"
+      ],
+      "output": {
+        "type": "single-image",
+        "format": "png",
+        "canvas": {
+          "width": 128,
+          "height": 160
+        },
+        "alpha": true,
+        "colourMode": "RGBA",
+        "bitDepth": 8,
+        "pixelArt": true,
+        "textureFiltering": "nearest",
+        "smoothing": false,
+        "trimFrames": false,
+        "spriteSheet": null,
+        "atlas": null
+      },
+      "camera": {
+        "projection": "three-quarter top-down town prop",
+        "viewDirection": "south-facing map view",
+        "cameraMotion": "none authored into asset"
+      },
+      "masterScale": {
+        "nativePixelsPerLogicalUnit": 1,
+        "logicalDisplay": {
+          "width": 128,
+          "height": 160
+        },
+        "scalePolicy": "fit-declared-logical-bounds-never-source-size"
+      },
+      "anchor": {
+        "name": "tree-ground",
+        "normalized": {
+          "x": 0.5,
+          "y": 0.9
+        },
+        "groundContact": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "geometry": {
+        "visual": {
+          "kind": "rectangle",
+          "x": -43,
+          "y": -62,
+          "width": 87,
+          "height": 97
+        },
+        "collision": {
+          "kind": "circle",
+          "x": 0,
+          "y": 0,
+          "radius": 22
+        },
+        "navigation": {
+          "kind": "circle",
+          "x": 0,
+          "y": 0,
+          "radius": 50
+        },
+        "interaction": {
+          "kind": "circle",
+          "x": 0,
+          "y": 0,
+          "radius": 72
+        },
+        "touch": {
+          "kind": "rectangle",
+          "x": -44,
+          "y": -62,
+          "width": 88,
+          "height": 100
+        }
+      },
+      "sockets": [
+        {
+          "id": "ground",
+          "logical": {
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "id": "canopy",
+          "logical": {
+            "x": 0,
+            "y": -62
+          }
+        }
+      ],
+      "states": [
+        "default"
+      ],
+      "variants": [
+        "default"
+      ],
+      "layers": [
+        {
+          "id": "trunk",
+          "order": 0,
+          "states": [
+            "default"
+          ],
+          "canvasAlignment": "full-canvas"
+        }
+      ],
+      "directions": [],
+      "animations": [],
+      "artRules": {
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "palette": "Willowmere natural greens, river blues, warm timber, cream highlights",
+        "outline": "consistent dark pixel outline with crisp pixel clusters",
+        "lighting": "soft daylight from upper-left",
+        "shadow": "follow the family shadow contract",
+        "texture": "pixel-authored clusters; no photographic noise"
+      },
+      "expectedFilenames": {
+        "staging": "artwork/staging/phase-8a/large-oak-trunk/v1/large-oak-trunk.v1.png",
+        "master": "artwork/masters/phase-8a/large-oak-trunk/v1/large-oak-trunk.v1.png",
+        "runtime": "public/assets/runtime/phase-8a/large-oak-trunk.v1.png"
+      },
+      "filenameStem": "large-oak-trunk",
+      "promptPackage": {
+        "providerNeutral": true,
+        "positivePrompt": "Create one production-ready KindWorks pixel-art asset for large-oak trunk and lower body used for collision and Y-sort Only the oak trunk, roots, and low branches needed below the canopy; align with the shared 128×160 tree canvas and ground contact (64,144). Use KindWorks Visual Style Bible v4. Exact output: 128×160px PNG, transparent alpha, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.",
+        "negativePrompt": "provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; full canopy, ground shadow, fruit, sign, character, or opaque background",
+        "deliveryInstruction": "Return only large-oak-trunk.v1.png plus provenance metadata; do not composite it into a screenshot or rename it."
+      },
+      "forbiddenOutput": [
+        "provider watermark, signature, logo, caption, or embedded text",
+        "photorealism, vector-soft edges, antialiasing, blur, or resampling noise",
+        "automatic trimming, cropped canvas, changed frame order, or unequal frame alignment",
+        "unrequested UI, characters, props, scenery, shadows, or background colour",
+        "perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4",
+        "full canopy, ground shadow, fruit, sign, character, or opaque background"
+      ],
+      "validation": {
+        "checklist": [
+          "semantic ID is unique and matches the approved manifest entry",
+          "filename and file format exactly match the contract",
+          "canvas, frame grid, frame count, alpha mode, and untrimmed alignment are exact",
+          "nearest-neighbour sampling is preserved and no smoothing metadata is introduced",
+          "ground anchor, sockets, visual bounds, and gameplay geometry remain independently addressable",
+          "all required states, layers, directions, and animation frames are present",
+          "texture budget, scene-pack dependency, fallback, and orphan-reference checks pass"
+        ],
+        "requireExactDimensions": true,
+        "requireAlpha": true,
+        "requireUntrimmedFrames": true,
+        "requireNearestNeighbour": true,
+        "requireFrameCount": 1,
+        "requireStateNames": [
+          "default"
+        ],
+        "requireDirections": [],
+        "maximumTransparentPadding": {
+          "top": 160,
+          "right": 128,
+          "bottom": 160,
+          "left": 128
+        },
+        "maximumVisibleBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 128,
+          "height": 160
+        },
+        "gameplayGeometrySignature": "46b43d95",
+        "maximumRuntimeBytes": 90000,
+        "fallbackSemanticId": "system.fallback.production"
+      },
+      "accessibility": null,
+      "dependencies": [
+        "prop.town.slice.large-oak.shadow"
+      ],
+      "scenePlacement": [
+        {
+          "layoutId": "layout.phase-8a.town-block.house-6",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.large-oak",
+          "position": {
+            "x": 1000,
+            "y": 250
+          },
+          "worldOrigin": {
+            "x": 1880,
+            "y": 0
+          },
+          "gameplayGeometryLocked": true,
+          "layerRole": "main",
+          "protectedWorldPosition": {
+            "x": 2880,
+            "y": 250
+          }
+        }
+      ],
+      "prefabId": "prefab.phase-8a.large-oak",
+      "stateMapId": "state.phase-8a.large-oak",
+      "placeholder": {
+        "mode": "semantic-registry-generated-fallback",
+        "development": "labelled checker placeholder in Asset Lab",
+        "production": "transparent safe fallback with recorded registry failure"
+      },
+      "productionStatus": "specified",
+      "provenance": {
+        "provider": "generator-neutral",
+        "specificationVersion": 2,
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "generatedArtworkPresent": false
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "semanticId": "prop.town.slice.large-oak.canopy",
+      "version": "1.0.0",
+      "familyId": "family.layered-tree.slice",
+      "categoryContractId": "category.vegetation",
+      "gameplayPurpose": "foreground canopy that correctly occludes residents behind the large oak",
+      "intendedScenes": [
+        "TownScene"
+      ],
+      "output": {
+        "type": "single-image",
+        "format": "png",
+        "canvas": {
+          "width": 128,
+          "height": 160
+        },
+        "alpha": true,
+        "colourMode": "RGBA",
+        "bitDepth": 8,
+        "pixelArt": true,
+        "textureFiltering": "nearest",
+        "smoothing": false,
+        "trimFrames": false,
+        "spriteSheet": null,
+        "atlas": null
+      },
+      "camera": {
+        "projection": "three-quarter top-down town prop",
+        "viewDirection": "south-facing map view",
+        "cameraMotion": "none authored into asset"
+      },
+      "masterScale": {
+        "nativePixelsPerLogicalUnit": 1,
+        "logicalDisplay": {
+          "width": 128,
+          "height": 160
+        },
+        "scalePolicy": "fit-declared-logical-bounds-never-source-size"
+      },
+      "anchor": {
+        "name": "tree-ground",
+        "normalized": {
+          "x": 0.5,
+          "y": 0.9
+        },
+        "groundContact": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "geometry": {
+        "visual": {
+          "kind": "rectangle",
+          "x": -64,
+          "y": -144,
+          "width": 128,
+          "height": 160
+        },
+        "collision": null,
+        "navigation": null,
+        "interaction": null,
+        "touch": null
+      },
+      "sockets": [],
+      "states": [
+        "default"
+      ],
+      "variants": [
+        "default"
+      ],
+      "layers": [
+        {
+          "id": "foreground-canopy",
+          "order": 0,
+          "states": [
+            "default"
+          ],
+          "canvasAlignment": "full-canvas"
+        }
+      ],
+      "directions": [],
+      "animations": [],
+      "artRules": {
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "palette": "Willowmere natural greens, river blues, warm timber, cream highlights",
+        "outline": "consistent dark pixel outline with crisp pixel clusters",
+        "lighting": "soft daylight from upper-left",
+        "shadow": "follow the family shadow contract",
+        "texture": "pixel-authored clusters; no photographic noise"
+      },
+      "expectedFilenames": {
+        "staging": "artwork/staging/phase-8a/large-oak-canopy/v1/large-oak-canopy.v1.png",
+        "master": "artwork/masters/phase-8a/large-oak-canopy/v1/large-oak-canopy.v1.png",
+        "runtime": "public/assets/runtime/phase-8a/large-oak-canopy.v1.png"
+      },
+      "filenameStem": "large-oak-canopy",
+      "promptPackage": {
+        "providerNeutral": true,
+        "positivePrompt": "Create one production-ready KindWorks pixel-art asset for foreground canopy that correctly occludes residents behind the large oak Only a lush rounded large-oak canopy, aligned with the shared tree canvas. Lower canopy pixels must naturally pass in front of a resident walking behind the trunk while leaving the ground-contact region transparent. Use KindWorks Visual Style Bible v4. Exact output: 128×160px PNG, transparent alpha, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.",
+        "negativePrompt": "provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; trunk, roots, ground shadow, background, rectangular foliage mass, or missing lower occlusion fringe",
+        "deliveryInstruction": "Return only large-oak-canopy.v1.png plus provenance metadata; do not composite it into a screenshot or rename it."
+      },
+      "forbiddenOutput": [
+        "provider watermark, signature, logo, caption, or embedded text",
+        "photorealism, vector-soft edges, antialiasing, blur, or resampling noise",
+        "automatic trimming, cropped canvas, changed frame order, or unequal frame alignment",
+        "unrequested UI, characters, props, scenery, shadows, or background colour",
+        "perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4",
+        "trunk, roots, ground shadow, background, rectangular foliage mass, or missing lower occlusion fringe"
+      ],
+      "validation": {
+        "checklist": [
+          "semantic ID is unique and matches the approved manifest entry",
+          "filename and file format exactly match the contract",
+          "canvas, frame grid, frame count, alpha mode, and untrimmed alignment are exact",
+          "nearest-neighbour sampling is preserved and no smoothing metadata is introduced",
+          "ground anchor, sockets, visual bounds, and gameplay geometry remain independently addressable",
+          "all required states, layers, directions, and animation frames are present",
+          "texture budget, scene-pack dependency, fallback, and orphan-reference checks pass"
+        ],
+        "requireExactDimensions": true,
+        "requireAlpha": true,
+        "requireUntrimmedFrames": true,
+        "requireNearestNeighbour": true,
+        "requireFrameCount": 1,
+        "requireStateNames": [
+          "default"
+        ],
+        "requireDirections": [],
+        "maximumTransparentPadding": {
+          "top": 160,
+          "right": 128,
+          "bottom": 160,
+          "left": 128
+        },
+        "maximumVisibleBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 128,
+          "height": 160
+        },
+        "gameplayGeometrySignature": "b1e3a260",
+        "maximumRuntimeBytes": 120000,
+        "fallbackSemanticId": "system.fallback.production"
+      },
+      "accessibility": null,
+      "dependencies": [
+        "prop.town.slice.large-oak.trunk"
+      ],
+      "scenePlacement": [
+        {
+          "layoutId": "layout.phase-8a.town-block.house-6",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.large-oak",
+          "position": {
+            "x": 1000,
+            "y": 250
+          },
+          "worldOrigin": {
+            "x": 1880,
+            "y": 0
+          },
+          "gameplayGeometryLocked": true,
+          "layerRole": "foreground",
+          "protectedWorldPosition": {
+            "x": 2880,
+            "y": 250
+          }
+        }
+      ],
+      "prefabId": "prefab.phase-8a.large-oak",
+      "stateMapId": "state.phase-8a.large-oak",
+      "placeholder": {
+        "mode": "semantic-registry-generated-fallback",
+        "development": "labelled checker placeholder in Asset Lab",
+        "production": "transparent safe fallback with recorded registry failure"
+      },
+      "productionStatus": "specified",
+      "provenance": {
+        "provider": "generator-neutral",
+        "specificationVersion": 2,
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "generatedArtworkPresent": false
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "semanticId": "prop.town.slice.public-bin",
+      "version": "1.0.0",
+      "familyId": "family.small-town-prop.slice",
+      "categoryContractId": "category.prop",
+      "gameplayPurpose": "compact public bin for the town block",
+      "intendedScenes": [
+        "TownScene"
+      ],
+      "output": {
+        "type": "spritesheet",
+        "format": "png",
+        "canvas": {
+          "width": 192,
+          "height": 80
+        },
+        "alpha": true,
+        "colourMode": "RGBA",
+        "bitDepth": 8,
+        "pixelArt": true,
+        "textureFiltering": "nearest",
+        "smoothing": false,
+        "trimFrames": false,
+        "atlas": null,
+        "spriteSheet": {
+          "frameWidth": 64,
+          "frameHeight": 80,
+          "columns": 3,
+          "rows": 1,
+          "padding": 0,
+          "spacing": 0,
+          "frameCount": 3,
+          "frameOrder": [
+            "normal",
+            "full",
+            "tipped"
+          ],
+          "actions": [
+            "normal",
+            "full",
+            "tipped"
+          ],
+          "directions": []
+        }
+      },
+      "camera": {
+        "projection": "three-quarter top-down town prop",
+        "viewDirection": "south-facing map view",
+        "cameraMotion": "none authored into asset"
+      },
+      "masterScale": {
+        "nativePixelsPerLogicalUnit": 1,
+        "logicalDisplay": {
+          "width": 56,
+          "height": 70
+        },
+        "scalePolicy": "fit-declared-logical-bounds-never-source-size"
+      },
+      "anchor": {
+        "name": "bin-ground",
+        "normalized": {
+          "x": 0.5,
+          "y": 0.875
+        },
+        "groundContact": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "geometry": {
+        "visual": {
+          "kind": "rectangle",
+          "x": -20,
+          "y": -45,
+          "width": 56,
+          "height": 70
+        },
+        "collision": {
+          "kind": "circle",
+          "x": 0,
+          "y": 0,
+          "radius": 18
+        },
+        "navigation": {
+          "kind": "circle",
+          "x": 0,
+          "y": 0,
+          "radius": 28
+        },
+        "interaction": {
+          "kind": "circle",
+          "x": 0,
+          "y": 0,
+          "radius": 72
+        },
+        "touch": {
+          "kind": "rectangle",
+          "x": -28,
+          "y": -35,
+          "width": 56,
+          "height": 70
+        }
+      },
+      "sockets": [
+        {
+          "id": "status",
+          "logical": {
+            "x": 0,
+            "y": -42
+          }
+        }
+      ],
+      "states": [
+        "normal",
+        "full",
+        "tipped"
+      ],
+      "variants": [
+        "normal",
+        "full",
+        "tipped"
+      ],
+      "layers": [
+        {
+          "id": "main",
+          "order": 0,
+          "states": [
+            "normal",
+            "full",
+            "tipped"
+          ],
+          "canvasAlignment": "frame-grid"
+        }
+      ],
+      "directions": [],
+      "animations": [],
+      "artRules": {
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "palette": "Willowmere natural greens, river blues, warm timber, cream highlights",
+        "outline": "consistent dark pixel outline with crisp pixel clusters",
+        "lighting": "soft daylight from upper-left",
+        "shadow": "follow the family shadow contract",
+        "texture": "pixel-authored clusters; no photographic noise"
+      },
+      "expectedFilenames": {
+        "staging": "artwork/staging/phase-8a/public-bin-states/v1/public-bin-states.v1.png",
+        "master": "artwork/masters/phase-8a/public-bin-states/v1/public-bin-states.v1.png",
+        "runtime": "public/assets/runtime/phase-8a/public-bin-states.v1.png"
+      },
+      "filenameStem": "public-bin-states",
+      "promptPackage": {
+        "providerNeutral": true,
+        "positivePrompt": "Create one production-ready KindWorks pixel-art asset for compact public bin for the town block Three horizontally aligned frames of the same small dark-green Willowmere public bin with a tiny clear litter emblem: normal, visibly full, and tipped. Preserve its model, scale, ground contact, and canvas position across every state. Use KindWorks Visual Style Bible v4. Exact output: 192×80px PNG, transparent alpha, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.",
+        "negativePrompt": "provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; oversized wheelie bin, text label, recycling brand, loose rubbish outside the full-state boundary, missing state, or changed ground contact",
+        "deliveryInstruction": "Return only public-bin-states.v1.png plus provenance metadata; do not composite it into a screenshot or rename it."
+      },
+      "forbiddenOutput": [
+        "provider watermark, signature, logo, caption, or embedded text",
+        "photorealism, vector-soft edges, antialiasing, blur, or resampling noise",
+        "automatic trimming, cropped canvas, changed frame order, or unequal frame alignment",
+        "unrequested UI, characters, props, scenery, shadows, or background colour",
+        "perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4",
+        "oversized wheelie bin, text label, recycling brand, loose rubbish outside the full-state boundary, missing state, or changed ground contact"
+      ],
+      "validation": {
+        "checklist": [
+          "semantic ID is unique and matches the approved manifest entry",
+          "filename and file format exactly match the contract",
+          "canvas, frame grid, frame count, alpha mode, and untrimmed alignment are exact",
+          "nearest-neighbour sampling is preserved and no smoothing metadata is introduced",
+          "ground anchor, sockets, visual bounds, and gameplay geometry remain independently addressable",
+          "all required states, layers, directions, and animation frames are present",
+          "texture budget, scene-pack dependency, fallback, and orphan-reference checks pass"
+        ],
+        "requireExactDimensions": true,
+        "requireAlpha": true,
+        "requireUntrimmedFrames": true,
+        "requireNearestNeighbour": true,
+        "requireFrameCount": 3,
+        "requireStateNames": [
+          "normal",
+          "full",
+          "tipped"
+        ],
+        "requireDirections": [],
+        "maximumTransparentPadding": {
+          "top": 80,
+          "right": 192,
+          "bottom": 80,
+          "left": 192
+        },
+        "maximumVisibleBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 192,
+          "height": 80
+        },
+        "gameplayGeometrySignature": "5458a58c",
+        "maximumRuntimeBytes": 150000,
+        "fallbackSemanticId": "system.fallback.production"
+      },
+      "accessibility": null,
+      "dependencies": [
+        "terrain.town.slice.pavement"
+      ],
+      "scenePlacement": [
+        {
+          "layoutId": "layout.phase-8a.town-block.house-6",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.public-bin",
+          "position": {
+            "x": 470,
+            "y": 480
+          },
+          "worldOrigin": {
+            "x": 1880,
+            "y": 0
+          },
+          "gameplayGeometryLocked": true
+        }
+      ],
+      "prefabId": "prefab.phase-8a.public-bin",
+      "stateMapId": "state.phase-8a.public-bin",
+      "placeholder": {
+        "mode": "semantic-registry-generated-fallback",
+        "development": "labelled checker placeholder in Asset Lab",
+        "production": "transparent safe fallback with recorded registry failure"
+      },
+      "productionStatus": "specified",
+      "provenance": {
+        "provider": "generator-neutral",
+        "specificationVersion": 2,
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "generatedArtworkPresent": false
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "semanticId": "prop.town.slice.white-fence",
+      "version": "1.0.0",
+      "familyId": "family.small-town-prop.slice",
+      "categoryContractId": "category.prop",
+      "gameplayPurpose": "house-6 white picket fence segment with gate socket",
+      "intendedScenes": [
+        "TownScene"
+      ],
+      "output": {
+        "type": "spritesheet",
+        "format": "png",
+        "canvas": {
+          "width": 256,
+          "height": 64
+        },
+        "alpha": true,
+        "colourMode": "RGBA",
+        "bitDepth": 8,
+        "pixelArt": true,
+        "textureFiltering": "nearest",
+        "smoothing": false,
+        "trimFrames": false,
+        "atlas": null,
+        "spriteSheet": {
+          "frameWidth": 128,
+          "frameHeight": 64,
+          "columns": 2,
+          "rows": 1,
+          "padding": 0,
+          "spacing": 0,
+          "frameCount": 2,
+          "frameOrder": [
+            "straight",
+            "gate"
+          ],
+          "actions": [
+            "straight",
+            "gate"
+          ],
+          "directions": []
+        }
+      },
+      "camera": {
+        "projection": "three-quarter top-down town prop",
+        "viewDirection": "south-facing map view",
+        "cameraMotion": "none authored into asset"
+      },
+      "masterScale": {
+        "nativePixelsPerLogicalUnit": 1,
+        "logicalDisplay": {
+          "width": 128,
+          "height": 64
+        },
+        "scalePolicy": "fit-declared-logical-bounds-never-source-size"
+      },
+      "anchor": {
+        "name": "fence-ground",
+        "normalized": {
+          "x": 0.5,
+          "y": 0.875
+        },
+        "groundContact": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "geometry": {
+        "visual": {
+          "kind": "rectangle",
+          "x": -64,
+          "y": -56,
+          "width": 128,
+          "height": 64
+        },
+        "collision": {
+          "kind": "rectangle",
+          "x": -64,
+          "y": -10,
+          "width": 128,
+          "height": 16
+        },
+        "navigation": {
+          "kind": "rectangle",
+          "x": -64,
+          "y": -12,
+          "width": 128,
+          "height": 20
+        },
+        "interaction": null,
+        "touch": null
+      },
+      "sockets": [
+        {
+          "id": "segment-left",
+          "logical": {
+            "x": -64,
+            "y": 0
+          }
+        },
+        {
+          "id": "segment-right",
+          "logical": {
+            "x": 64,
+            "y": 0
+          }
+        },
+        {
+          "id": "gate-centre",
+          "logical": {
+            "x": 0,
+            "y": 0
+          }
+        }
+      ],
+      "states": [
+        "straight",
+        "gate"
+      ],
+      "variants": [
+        "straight",
+        "gate"
+      ],
+      "layers": [
+        {
+          "id": "main",
+          "order": 0,
+          "states": [
+            "straight",
+            "gate"
+          ],
+          "canvasAlignment": "frame-grid"
+        }
+      ],
+      "directions": [],
+      "animations": [],
+      "artRules": {
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "palette": "Willowmere natural greens, river blues, warm timber, cream highlights",
+        "outline": "consistent dark pixel outline with crisp pixel clusters",
+        "lighting": "soft daylight from upper-left",
+        "shadow": "follow the family shadow contract",
+        "texture": "pixel-authored clusters; no photographic noise"
+      },
+      "expectedFilenames": {
+        "staging": "artwork/staging/phase-8a/white-fence-segment/v1/white-fence-segment.v1.png",
+        "master": "artwork/masters/phase-8a/white-fence-segment/v1/white-fence-segment.v1.png",
+        "runtime": "public/assets/runtime/phase-8a/white-fence-segment.v1.png"
+      },
+      "filenameStem": "white-fence-segment",
+      "promptPackage": {
+        "providerNeutral": true,
+        "positivePrompt": "Create one production-ready KindWorks pixel-art asset for house-6 white picket fence segment with gate socket Two horizontal frames: a 128-unit white picket fence and a matching centred gate. Keep posts, baseline, endpoints, and ground contact identical so segments join without seams. Use KindWorks Visual Style Bible v4. Exact output: 256×64px PNG, transparent alpha, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.",
+        "negativePrompt": "provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; lawn, house, flowers, perspective mismatch, open gate animation, or nonmatching endpoints",
+        "deliveryInstruction": "Return only white-fence-segment.v1.png plus provenance metadata; do not composite it into a screenshot or rename it."
+      },
+      "forbiddenOutput": [
+        "provider watermark, signature, logo, caption, or embedded text",
+        "photorealism, vector-soft edges, antialiasing, blur, or resampling noise",
+        "automatic trimming, cropped canvas, changed frame order, or unequal frame alignment",
+        "unrequested UI, characters, props, scenery, shadows, or background colour",
+        "perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4",
+        "lawn, house, flowers, perspective mismatch, open gate animation, or nonmatching endpoints"
+      ],
+      "validation": {
+        "checklist": [
+          "semantic ID is unique and matches the approved manifest entry",
+          "filename and file format exactly match the contract",
+          "canvas, frame grid, frame count, alpha mode, and untrimmed alignment are exact",
+          "nearest-neighbour sampling is preserved and no smoothing metadata is introduced",
+          "ground anchor, sockets, visual bounds, and gameplay geometry remain independently addressable",
+          "all required states, layers, directions, and animation frames are present",
+          "texture budget, scene-pack dependency, fallback, and orphan-reference checks pass"
+        ],
+        "requireExactDimensions": true,
+        "requireAlpha": true,
+        "requireUntrimmedFrames": true,
+        "requireNearestNeighbour": true,
+        "requireFrameCount": 2,
+        "requireStateNames": [
+          "straight",
+          "gate"
+        ],
+        "requireDirections": [],
+        "maximumTransparentPadding": {
+          "top": 64,
+          "right": 256,
+          "bottom": 64,
+          "left": 256
+        },
+        "maximumVisibleBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 256,
+          "height": 64
+        },
+        "gameplayGeometrySignature": "8aaf284f",
+        "maximumRuntimeBytes": 90000,
+        "fallbackSemanticId": "system.fallback.production"
+      },
+      "accessibility": null,
+      "dependencies": [
+        "terrain.town.slice.lawn-house-6"
+      ],
+      "scenePlacement": [
+        {
+          "layoutId": "layout.phase-8a.town-block.house-6",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.house-6-fence",
+          "position": {
+            "x": 375,
+            "y": 475
+          },
+          "worldOrigin": {
+            "x": 1880,
+            "y": 0
+          },
+          "gameplayGeometryLocked": true,
+          "repeat": "yard-boundary",
+          "protectedGate": "south"
+        }
+      ],
+      "prefabId": "prefab.phase-8a.white-fence",
+      "stateMapId": "state.phase-8a.white-fence",
+      "placeholder": {
+        "mode": "semantic-registry-generated-fallback",
+        "development": "labelled checker placeholder in Asset Lab",
+        "production": "transparent safe fallback with recorded registry failure"
+      },
+      "productionStatus": "specified",
+      "provenance": {
+        "provider": "generator-neutral",
+        "specificationVersion": 2,
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "generatedArtworkPresent": false
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "semanticId": "prop.town.slice.rubbish-can",
+      "version": "1.0.0",
+      "familyId": "family.small-town-prop.slice",
+      "categoryContractId": "category.prop",
+      "gameplayPurpose": "one collectable rubbish item near the public bin",
+      "intendedScenes": [
+        "TownScene"
+      ],
+      "output": {
+        "type": "single-image",
+        "format": "png",
+        "canvas": {
+          "width": 64,
+          "height": 64
+        },
+        "alpha": true,
+        "colourMode": "RGBA",
+        "bitDepth": 8,
+        "pixelArt": true,
+        "textureFiltering": "nearest",
+        "smoothing": false,
+        "trimFrames": false,
+        "spriteSheet": null,
+        "atlas": null
+      },
+      "camera": {
+        "projection": "three-quarter top-down town prop",
+        "viewDirection": "south-facing map view",
+        "cameraMotion": "none authored into asset"
+      },
+      "masterScale": {
+        "nativePixelsPerLogicalUnit": 1,
+        "logicalDisplay": {
+          "width": 34,
+          "height": 28
+        },
+        "scalePolicy": "fit-declared-logical-bounds-never-source-size"
+      },
+      "anchor": {
+        "name": "rubbish-ground",
+        "normalized": {
+          "x": 0.5,
+          "y": 0.75
+        },
+        "groundContact": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "geometry": {
+        "visual": {
+          "kind": "rectangle",
+          "x": -17,
+          "y": -22,
+          "width": 34,
+          "height": 28
+        },
+        "collision": null,
+        "navigation": null,
+        "interaction": {
+          "kind": "circle",
+          "x": 0,
+          "y": 0,
+          "radius": 54
+        },
+        "touch": {
+          "kind": "rectangle",
+          "x": -24,
+          "y": -24,
+          "width": 48,
+          "height": 48
+        }
+      },
+      "sockets": [],
+      "states": [
+        "present",
+        "collected"
+      ],
+      "variants": [
+        "present",
+        "collected"
+      ],
+      "layers": [
+        {
+          "id": "main",
+          "order": 0,
+          "states": [
+            "present",
+            "collected"
+          ],
+          "canvasAlignment": "full-canvas"
+        }
+      ],
+      "directions": [],
+      "animations": [],
+      "artRules": {
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "palette": "Willowmere natural greens, river blues, warm timber, cream highlights",
+        "outline": "consistent dark pixel outline with crisp pixel clusters",
+        "lighting": "soft daylight from upper-left",
+        "shadow": "follow the family shadow contract",
+        "texture": "pixel-authored clusters; no photographic noise"
+      },
+      "expectedFilenames": {
+        "staging": "artwork/staging/phase-8a/rubbish-crushed-can/v1/rubbish-crushed-can.v1.png",
+        "master": "artwork/masters/phase-8a/rubbish-crushed-can/v1/rubbish-crushed-can.v1.png",
+        "runtime": "public/assets/runtime/phase-8a/rubbish-crushed-can.v1.png"
+      },
+      "filenameStem": "rubbish-crushed-can",
+      "promptPackage": {
+        "providerNeutral": true,
+        "positivePrompt": "Create one production-ready KindWorks pixel-art asset for one collectable rubbish item near the public bin A single clearly readable but small crushed drinks can, isolated on transparency, suitable for a town cleanup interaction. Use KindWorks Visual Style Bible v4. Exact output: 64×64px PNG, transparent alpha, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.",
+        "negativePrompt": "provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; card background, label, multiple rubbish items, bin, hand cursor, or giant scale",
+        "deliveryInstruction": "Return only rubbish-crushed-can.v1.png plus provenance metadata; do not composite it into a screenshot or rename it."
+      },
+      "forbiddenOutput": [
+        "provider watermark, signature, logo, caption, or embedded text",
+        "photorealism, vector-soft edges, antialiasing, blur, or resampling noise",
+        "automatic trimming, cropped canvas, changed frame order, or unequal frame alignment",
+        "unrequested UI, characters, props, scenery, shadows, or background colour",
+        "perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4",
+        "card background, label, multiple rubbish items, bin, hand cursor, or giant scale"
+      ],
+      "validation": {
+        "checklist": [
+          "semantic ID is unique and matches the approved manifest entry",
+          "filename and file format exactly match the contract",
+          "canvas, frame grid, frame count, alpha mode, and untrimmed alignment are exact",
+          "nearest-neighbour sampling is preserved and no smoothing metadata is introduced",
+          "ground anchor, sockets, visual bounds, and gameplay geometry remain independently addressable",
+          "all required states, layers, directions, and animation frames are present",
+          "texture budget, scene-pack dependency, fallback, and orphan-reference checks pass"
+        ],
+        "requireExactDimensions": true,
+        "requireAlpha": true,
+        "requireUntrimmedFrames": true,
+        "requireNearestNeighbour": true,
+        "requireFrameCount": 1,
+        "requireStateNames": [
+          "present",
+          "collected"
+        ],
+        "requireDirections": [],
+        "maximumTransparentPadding": {
+          "top": 64,
+          "right": 64,
+          "bottom": 64,
+          "left": 64
+        },
+        "maximumVisibleBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 64,
+          "height": 64
+        },
+        "gameplayGeometrySignature": "d9604aa9",
+        "maximumRuntimeBytes": 35000,
+        "fallbackSemanticId": "system.fallback.production"
+      },
+      "accessibility": null,
+      "dependencies": [
+        "prop.town.slice.public-bin"
+      ],
+      "scenePlacement": [
+        {
+          "layoutId": "layout.phase-8a.town-block.house-6",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.rubbish-can",
+          "position": {
+            "x": 520,
+            "y": 470
+          },
+          "worldOrigin": {
+            "x": 1880,
+            "y": 0
+          },
+          "gameplayGeometryLocked": true
+        }
+      ],
+      "prefabId": "prefab.phase-8a.rubbish-can",
+      "stateMapId": "state.phase-8a.rubbish-can",
+      "placeholder": {
+        "mode": "semantic-registry-generated-fallback",
+        "development": "labelled checker placeholder in Asset Lab",
+        "production": "transparent safe fallback with recorded registry failure"
+      },
+      "productionStatus": "specified",
+      "provenance": {
+        "provider": "generator-neutral",
+        "specificationVersion": 2,
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "generatedArtworkPresent": false
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "semanticId": "prop.town.slice.flower-planter",
+      "version": "1.0.0",
+      "familyId": "family.small-town-prop.slice",
+      "categoryContractId": "category.prop",
+      "gameplayPurpose": "small flower planter decoration beside house-6",
+      "intendedScenes": [
+        "TownScene"
+      ],
+      "output": {
+        "type": "single-image",
+        "format": "png",
+        "canvas": {
+          "width": 64,
+          "height": 64
+        },
+        "alpha": true,
+        "colourMode": "RGBA",
+        "bitDepth": 8,
+        "pixelArt": true,
+        "textureFiltering": "nearest",
+        "smoothing": false,
+        "trimFrames": false,
+        "spriteSheet": null,
+        "atlas": null
+      },
+      "camera": {
+        "projection": "three-quarter top-down town prop",
+        "viewDirection": "south-facing map view",
+        "cameraMotion": "none authored into asset"
+      },
+      "masterScale": {
+        "nativePixelsPerLogicalUnit": 1,
+        "logicalDisplay": {
+          "width": 48,
+          "height": 48
+        },
+        "scalePolicy": "fit-declared-logical-bounds-never-source-size"
+      },
+      "anchor": {
+        "name": "planter-ground",
+        "normalized": {
+          "x": 0.5,
+          "y": 0.875
+        },
+        "groundContact": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "geometry": {
+        "visual": {
+          "kind": "rectangle",
+          "x": -24,
+          "y": -42,
+          "width": 48,
+          "height": 48
+        },
+        "collision": {
+          "kind": "circle",
+          "x": 0,
+          "y": 0,
+          "radius": 14
+        },
+        "navigation": {
+          "kind": "circle",
+          "x": 0,
+          "y": 0,
+          "radius": 20
+        },
+        "interaction": {
+          "kind": "circle",
+          "x": 0,
+          "y": 0,
+          "radius": 56
+        },
+        "touch": {
+          "kind": "rectangle",
+          "x": -24,
+          "y": -36,
+          "width": 48,
+          "height": 48
+        }
+      },
+      "sockets": [],
+      "states": [
+        "default"
+      ],
+      "variants": [
+        "default"
+      ],
+      "layers": [
+        {
+          "id": "main",
+          "order": 0,
+          "states": [
+            "default"
+          ],
+          "canvasAlignment": "full-canvas"
+        }
+      ],
+      "directions": [],
+      "animations": [],
+      "artRules": {
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "palette": "Willowmere natural greens, river blues, warm timber, cream highlights",
+        "outline": "consistent dark pixel outline with crisp pixel clusters",
+        "lighting": "soft daylight from upper-left",
+        "shadow": "follow the family shadow contract",
+        "texture": "pixel-authored clusters; no photographic noise"
+      },
+      "expectedFilenames": {
+        "staging": "artwork/staging/phase-8a/flower-planter/v1/flower-planter.v1.png",
+        "master": "artwork/masters/phase-8a/flower-planter/v1/flower-planter.v1.png",
+        "runtime": "public/assets/runtime/phase-8a/flower-planter.v1.png"
+      },
+      "filenameStem": "flower-planter",
+      "promptPackage": {
+        "providerNeutral": true,
+        "positivePrompt": "Create one production-ready KindWorks pixel-art asset for small flower planter decoration beside house-6 A compact warm-stone planter with restrained mixed cottage flowers, readable at 48 logical pixels and isolated on transparency. Use KindWorks Visual Style Bible v4. Exact output: 64×64px PNG, transparent alpha, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.",
+        "negativePrompt": "provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; large garden bed, sign, text, person, background, or flowers beyond the 64px canvas",
+        "deliveryInstruction": "Return only flower-planter.v1.png plus provenance metadata; do not composite it into a screenshot or rename it."
+      },
+      "forbiddenOutput": [
+        "provider watermark, signature, logo, caption, or embedded text",
+        "photorealism, vector-soft edges, antialiasing, blur, or resampling noise",
+        "automatic trimming, cropped canvas, changed frame order, or unequal frame alignment",
+        "unrequested UI, characters, props, scenery, shadows, or background colour",
+        "perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4",
+        "large garden bed, sign, text, person, background, or flowers beyond the 64px canvas"
+      ],
+      "validation": {
+        "checklist": [
+          "semantic ID is unique and matches the approved manifest entry",
+          "filename and file format exactly match the contract",
+          "canvas, frame grid, frame count, alpha mode, and untrimmed alignment are exact",
+          "nearest-neighbour sampling is preserved and no smoothing metadata is introduced",
+          "ground anchor, sockets, visual bounds, and gameplay geometry remain independently addressable",
+          "all required states, layers, directions, and animation frames are present",
+          "texture budget, scene-pack dependency, fallback, and orphan-reference checks pass"
+        ],
+        "requireExactDimensions": true,
+        "requireAlpha": true,
+        "requireUntrimmedFrames": true,
+        "requireNearestNeighbour": true,
+        "requireFrameCount": 1,
+        "requireStateNames": [
+          "default"
+        ],
+        "requireDirections": [],
+        "maximumTransparentPadding": {
+          "top": 64,
+          "right": 64,
+          "bottom": 64,
+          "left": 64
+        },
+        "maximumVisibleBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 64,
+          "height": 64
+        },
+        "gameplayGeometrySignature": "e5a75e71",
+        "maximumRuntimeBytes": 50000,
+        "fallbackSemanticId": "system.fallback.production"
+      },
+      "accessibility": null,
+      "dependencies": [
+        "terrain.town.slice.lawn-house-6"
+      ],
+      "scenePlacement": [
+        {
+          "layoutId": "layout.phase-8a.town-block.house-6",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.flower-planter",
+          "position": {
+            "x": 250,
+            "y": 440
+          },
+          "worldOrigin": {
+            "x": 1880,
+            "y": 0
+          },
+          "gameplayGeometryLocked": true
+        }
+      ],
+      "prefabId": "prefab.phase-8a.flower-planter",
+      "stateMapId": "state.phase-8a.flower-planter",
+      "placeholder": {
+        "mode": "semantic-registry-generated-fallback",
+        "development": "labelled checker placeholder in Asset Lab",
+        "production": "transparent safe fallback with recorded registry failure"
+      },
+      "productionStatus": "specified",
+      "provenance": {
+        "provider": "generator-neutral",
+        "specificationVersion": 2,
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "generatedArtworkPresent": false
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "semanticId": "character.player.slice.resident",
+      "version": "1.0.0",
+      "familyId": "family.resident-character.slice",
+      "categoryContractId": "category.character",
+      "gameplayPurpose": "controllable player resident for the premium slice",
+      "intendedScenes": [
+        "TownScene",
+        "LawnCareScene"
+      ],
+      "output": {
+        "type": "spritesheet",
+        "format": "png",
+        "canvas": {
+          "width": 256,
+          "height": 256
+        },
+        "alpha": true,
+        "colourMode": "RGBA",
+        "bitDepth": 8,
+        "pixelArt": true,
+        "textureFiltering": "nearest",
+        "smoothing": false,
+        "trimFrames": false,
+        "atlas": null,
+        "spriteSheet": {
+          "frameWidth": 64,
+          "frameHeight": 64,
+          "columns": 4,
+          "rows": 4,
+          "padding": 0,
+          "spacing": 0,
+          "frameCount": 16,
+          "frameOrder": [
+            "down-0",
+            "down-1",
+            "down-2",
+            "down-3",
+            "left-0",
+            "left-1",
+            "left-2",
+            "left-3",
+            "right-0",
+            "right-1",
+            "right-2",
+            "right-3",
+            "up-0",
+            "up-1",
+            "up-2",
+            "up-3"
+          ],
+          "actions": [
+            "walk",
+            "default"
+          ],
+          "directions": [
+            "down",
+            "left",
+            "right",
+            "up"
+          ]
+        }
+      },
+      "camera": {
+        "projection": "three-quarter top-down resident",
+        "viewDirection": "south-facing map view",
+        "cameraMotion": "none authored into asset"
+      },
+      "masterScale": {
+        "nativePixelsPerLogicalUnit": 1,
+        "logicalDisplay": {
+          "width": 40,
+          "height": 54
+        },
+        "scalePolicy": "fit-declared-logical-bounds-never-source-size"
+      },
+      "anchor": {
+        "name": "resident-feet",
+        "normalized": {
+          "x": 0.5,
+          "y": 0.875
+        },
+        "groundContact": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "geometry": {
+        "visual": {
+          "kind": "rectangle",
+          "x": -20,
+          "y": -54,
+          "width": 40,
+          "height": 54
+        },
+        "collision": {
+          "kind": "circle",
+          "x": 0,
+          "y": 0,
+          "radius": 16
+        },
+        "navigation": {
+          "kind": "circle",
+          "x": 0,
+          "y": 0,
+          "radius": 16
+        },
+        "interaction": {
+          "kind": "circle",
+          "x": 0,
+          "y": 0,
+          "radius": 60
+        },
+        "touch": {
+          "kind": "rectangle",
+          "x": -24,
+          "y": -54,
+          "width": 48,
+          "height": 60
+        }
+      },
+      "sockets": [
+        {
+          "id": "right-hand",
+          "logical": {
+            "x": 12,
+            "y": -28
+          }
+        },
+        {
+          "id": "left-hand",
+          "logical": {
+            "x": -12,
+            "y": -28
+          }
+        },
+        {
+          "id": "head",
+          "logical": {
+            "x": 0,
+            "y": -50
+          }
+        }
+      ],
+      "states": [
+        "default"
+      ],
+      "variants": [
+        "default"
+      ],
+      "layers": [
+        {
+          "id": "main",
+          "order": 0,
+          "states": [
+            "default"
+          ],
+          "canvasAlignment": "frame-grid"
+        }
+      ],
+      "directions": [
+        "down",
+        "left",
+        "right",
+        "up"
+      ],
+      "animations": [
+        {
+          "id": "walk-down",
+          "action": "walk",
+          "direction": "down",
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "frameRate": 9,
+          "repeat": -1
+        },
+        {
+          "id": "walk-left",
+          "action": "walk",
+          "direction": "left",
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "frameRate": 9,
+          "repeat": -1
+        },
+        {
+          "id": "walk-right",
+          "action": "walk",
+          "direction": "right",
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "frameRate": 9,
+          "repeat": -1
+        },
+        {
+          "id": "walk-up",
+          "action": "walk",
+          "direction": "up",
+          "frames": [
+            12,
+            13,
+            14,
+            15
+          ],
+          "frameRate": 9,
+          "repeat": -1
+        }
+      ],
+      "artRules": {
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "palette": "Willowmere natural greens, river blues, warm timber, cream highlights",
+        "outline": "consistent dark pixel outline with crisp pixel clusters",
+        "lighting": "soft daylight from upper-left",
+        "shadow": "follow the family shadow contract",
+        "texture": "pixel-authored clusters; no photographic noise"
+      },
+      "expectedFilenames": {
+        "staging": "artwork/staging/phase-8a/player-resident-walk/v1/player-resident-walk.v1.png",
+        "master": "artwork/masters/phase-8a/player-resident-walk/v1/player-resident-walk.v1.png",
+        "runtime": "public/assets/runtime/phase-8a/player-resident-walk.v1.png"
+      },
+      "filenameStem": "player-resident-walk",
+      "promptPackage": {
+        "providerNeutral": true,
+        "positivePrompt": "Create one production-ready KindWorks pixel-art asset for controllable player resident for the premium slice A friendly customizable KindWorks resident. Four rows down, left, right, up; four columns idle-contact, passing, idle-contact, passing. Keep anatomy, clothing, hair, palette, feet, and hand sockets aligned across all 16 frames. Use KindWorks Visual Style Bible v4. Exact output: 256×256px PNG, transparent alpha, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.",
+        "negativePrompt": "provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; weapons, tool baked into hand, cast shadow, frame labels, inconsistent clothing, missing direction, mirrored asymmetric details, or cropped hair",
+        "deliveryInstruction": "Return only player-resident-walk.v1.png plus provenance metadata; do not composite it into a screenshot or rename it."
+      },
+      "forbiddenOutput": [
+        "provider watermark, signature, logo, caption, or embedded text",
+        "photorealism, vector-soft edges, antialiasing, blur, or resampling noise",
+        "automatic trimming, cropped canvas, changed frame order, or unequal frame alignment",
+        "unrequested UI, characters, props, scenery, shadows, or background colour",
+        "perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4",
+        "weapons, tool baked into hand, cast shadow, frame labels, inconsistent clothing, missing direction, mirrored asymmetric details, or cropped hair"
+      ],
+      "validation": {
+        "checklist": [
+          "semantic ID is unique and matches the approved manifest entry",
+          "filename and file format exactly match the contract",
+          "canvas, frame grid, frame count, alpha mode, and untrimmed alignment are exact",
+          "nearest-neighbour sampling is preserved and no smoothing metadata is introduced",
+          "ground anchor, sockets, visual bounds, and gameplay geometry remain independently addressable",
+          "all required states, layers, directions, and animation frames are present",
+          "texture budget, scene-pack dependency, fallback, and orphan-reference checks pass"
+        ],
+        "requireExactDimensions": true,
+        "requireAlpha": true,
+        "requireUntrimmedFrames": true,
+        "requireNearestNeighbour": true,
+        "requireFrameCount": 16,
+        "requireStateNames": [
+          "default"
+        ],
+        "requireDirections": [
+          "down",
+          "left",
+          "right",
+          "up"
+        ],
+        "maximumTransparentPadding": {
+          "top": 256,
+          "right": 256,
+          "bottom": 256,
+          "left": 256
+        },
+        "maximumVisibleBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 256,
+          "height": 256
+        },
+        "gameplayGeometrySignature": "aa52c1e1",
+        "maximumRuntimeBytes": 280000,
+        "fallbackSemanticId": "system.fallback.production"
+      },
+      "accessibility": null,
+      "dependencies": [
+        "terrain.town.slice.grass"
+      ],
+      "scenePlacement": [
+        {
+          "layoutId": "layout.phase-8a.town-block.house-6",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.player",
+          "position": {
+            "x": 520,
+            "y": 470
+          },
+          "worldOrigin": {
+            "x": 1880,
+            "y": 0
+          },
+          "gameplayGeometryLocked": true,
+          "dynamicPosition": "active Town resident",
+          "dynamicFacing": "active facing"
+        },
+        {
+          "layoutId": "layout.phase-8a.lawn-care.representative",
+          "sceneId": "LawnCareScene",
+          "instanceId": "instance.phase-8a.lawn.player-reference",
+          "position": {
+            "x": 112,
+            "y": 628
+          },
+          "gameplayGeometryLocked": true,
+          "presentationOnly": true
+        }
+      ],
+      "prefabId": "prefab.phase-8a.player",
+      "stateMapId": "state.phase-8a.player",
+      "placeholder": {
+        "mode": "semantic-registry-generated-fallback",
+        "development": "labelled checker placeholder in Asset Lab",
+        "production": "transparent safe fallback with recorded registry failure"
+      },
+      "productionStatus": "specified",
+      "provenance": {
+        "provider": "generator-neutral",
+        "specificationVersion": 2,
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "generatedArtworkPresent": false
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "semanticId": "character.npc.slice.resident-a",
+      "version": "1.0.0",
+      "familyId": "family.resident-character.slice",
+      "categoryContractId": "category.character",
+      "gameplayPurpose": "one independently moving town NPC",
+      "intendedScenes": [
+        "TownScene"
+      ],
+      "output": {
+        "type": "spritesheet",
+        "format": "png",
+        "canvas": {
+          "width": 256,
+          "height": 256
+        },
+        "alpha": true,
+        "colourMode": "RGBA",
+        "bitDepth": 8,
+        "pixelArt": true,
+        "textureFiltering": "nearest",
+        "smoothing": false,
+        "trimFrames": false,
+        "atlas": null,
+        "spriteSheet": {
+          "frameWidth": 64,
+          "frameHeight": 64,
+          "columns": 4,
+          "rows": 4,
+          "padding": 0,
+          "spacing": 0,
+          "frameCount": 16,
+          "frameOrder": [
+            "down-0",
+            "down-1",
+            "down-2",
+            "down-3",
+            "left-0",
+            "left-1",
+            "left-2",
+            "left-3",
+            "right-0",
+            "right-1",
+            "right-2",
+            "right-3",
+            "up-0",
+            "up-1",
+            "up-2",
+            "up-3"
+          ],
+          "actions": [
+            "walk",
+            "default"
+          ],
+          "directions": [
+            "down",
+            "left",
+            "right",
+            "up"
+          ]
+        }
+      },
+      "camera": {
+        "projection": "three-quarter top-down resident",
+        "viewDirection": "south-facing map view",
+        "cameraMotion": "none authored into asset"
+      },
+      "masterScale": {
+        "nativePixelsPerLogicalUnit": 1,
+        "logicalDisplay": {
+          "width": 42,
+          "height": 66
+        },
+        "scalePolicy": "fit-declared-logical-bounds-never-source-size"
+      },
+      "anchor": {
+        "name": "resident-feet",
+        "normalized": {
+          "x": 0.5,
+          "y": 0.875
+        },
+        "groundContact": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "geometry": {
+        "visual": {
+          "kind": "rectangle",
+          "x": -21,
+          "y": -66,
+          "width": 42,
+          "height": 66
+        },
+        "collision": {
+          "kind": "circle",
+          "x": 0,
+          "y": 0,
+          "radius": 16
+        },
+        "navigation": {
+          "kind": "circle",
+          "x": 0,
+          "y": 0,
+          "radius": 16
+        },
+        "interaction": {
+          "kind": "circle",
+          "x": 0,
+          "y": 0,
+          "radius": 74
+        },
+        "touch": {
+          "kind": "rectangle",
+          "x": -24,
+          "y": -58,
+          "width": 48,
+          "height": 66
+        }
+      },
+      "sockets": [
+        {
+          "id": "thought",
+          "logical": {
+            "x": 0,
+            "y": -64
+          }
+        },
+        {
+          "id": "gift",
+          "logical": {
+            "x": 13,
+            "y": -30
+          }
+        }
+      ],
+      "states": [
+        "default"
+      ],
+      "variants": [
+        "default"
+      ],
+      "layers": [
+        {
+          "id": "main",
+          "order": 0,
+          "states": [
+            "default"
+          ],
+          "canvasAlignment": "frame-grid"
+        }
+      ],
+      "directions": [
+        "down",
+        "left",
+        "right",
+        "up"
+      ],
+      "animations": [
+        {
+          "id": "walk-down",
+          "action": "walk",
+          "direction": "down",
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "frameRate": 9,
+          "repeat": -1
+        },
+        {
+          "id": "walk-left",
+          "action": "walk",
+          "direction": "left",
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "frameRate": 9,
+          "repeat": -1
+        },
+        {
+          "id": "walk-right",
+          "action": "walk",
+          "direction": "right",
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "frameRate": 9,
+          "repeat": -1
+        },
+        {
+          "id": "walk-up",
+          "action": "walk",
+          "direction": "up",
+          "frames": [
+            12,
+            13,
+            14,
+            15
+          ],
+          "frameRate": 9,
+          "repeat": -1
+        }
+      ],
+      "artRules": {
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "palette": "Willowmere natural greens, river blues, warm timber, cream highlights",
+        "outline": "consistent dark pixel outline with crisp pixel clusters",
+        "lighting": "soft daylight from upper-left",
+        "shadow": "follow the family shadow contract",
+        "texture": "pixel-authored clusters; no photographic noise"
+      },
+      "expectedFilenames": {
+        "staging": "artwork/staging/phase-8a/npc-resident-a-walk/v1/npc-resident-a-walk.v1.png",
+        "master": "artwork/masters/phase-8a/npc-resident-a-walk/v1/npc-resident-a-walk.v1.png",
+        "runtime": "public/assets/runtime/phase-8a/npc-resident-a-walk.v1.png"
+      },
+      "filenameStem": "npc-resident-a-walk",
+      "promptPackage": {
+        "providerNeutral": true,
+        "positivePrompt": "Create one production-ready KindWorks pixel-art asset for one independently moving town NPC A distinct adult Willowmere NPC using the exact same four-direction, four-frame grid and foot alignment as the player while remaining visibly a different person. Use KindWorks Visual Style Bible v4. Exact output: 256×256px PNG, transparent alpha, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.",
+        "negativePrompt": "provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; player duplicate, name text, speech bubble, gift baked into sprite, shadow, missing direction, or frame-to-frame costume changes",
+        "deliveryInstruction": "Return only npc-resident-a-walk.v1.png plus provenance metadata; do not composite it into a screenshot or rename it."
+      },
+      "forbiddenOutput": [
+        "provider watermark, signature, logo, caption, or embedded text",
+        "photorealism, vector-soft edges, antialiasing, blur, or resampling noise",
+        "automatic trimming, cropped canvas, changed frame order, or unequal frame alignment",
+        "unrequested UI, characters, props, scenery, shadows, or background colour",
+        "perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4",
+        "player duplicate, name text, speech bubble, gift baked into sprite, shadow, missing direction, or frame-to-frame costume changes"
+      ],
+      "validation": {
+        "checklist": [
+          "semantic ID is unique and matches the approved manifest entry",
+          "filename and file format exactly match the contract",
+          "canvas, frame grid, frame count, alpha mode, and untrimmed alignment are exact",
+          "nearest-neighbour sampling is preserved and no smoothing metadata is introduced",
+          "ground anchor, sockets, visual bounds, and gameplay geometry remain independently addressable",
+          "all required states, layers, directions, and animation frames are present",
+          "texture budget, scene-pack dependency, fallback, and orphan-reference checks pass"
+        ],
+        "requireExactDimensions": true,
+        "requireAlpha": true,
+        "requireUntrimmedFrames": true,
+        "requireNearestNeighbour": true,
+        "requireFrameCount": 16,
+        "requireStateNames": [
+          "default"
+        ],
+        "requireDirections": [
+          "down",
+          "left",
+          "right",
+          "up"
+        ],
+        "maximumTransparentPadding": {
+          "top": 256,
+          "right": 256,
+          "bottom": 256,
+          "left": 256
+        },
+        "maximumVisibleBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 256,
+          "height": 256
+        },
+        "gameplayGeometrySignature": "f1cbd4f6",
+        "maximumRuntimeBytes": 280000,
+        "fallbackSemanticId": "system.fallback.production"
+      },
+      "accessibility": null,
+      "dependencies": [
+        "character.player.slice.resident"
+      ],
+      "scenePlacement": [
+        {
+          "layoutId": "layout.phase-8a.town-block.house-6",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.npc-resident-a",
+          "position": {
+            "x": 440,
+            "y": 470
+          },
+          "worldOrigin": {
+            "x": 1880,
+            "y": 0
+          },
+          "gameplayGeometryLocked": true,
+          "npcIdentityBinding": "existing-resident-fixture"
+        }
+      ],
+      "prefabId": "prefab.phase-8a.npc-resident-a",
+      "stateMapId": "state.phase-8a.npc-resident-a",
+      "placeholder": {
+        "mode": "semantic-registry-generated-fallback",
+        "development": "labelled checker placeholder in Asset Lab",
+        "production": "transparent safe fallback with recorded registry failure"
+      },
+      "productionStatus": "specified",
+      "provenance": {
+        "provider": "generator-neutral",
+        "specificationVersion": 2,
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "generatedArtworkPresent": false
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "semanticId": "character.animal.slice.dog",
+      "version": "1.0.0",
+      "familyId": "family.animal-character.slice",
+      "categoryContractId": "category.animal",
+      "gameplayPurpose": "one roaming and follow-capable dog",
+      "intendedScenes": [
+        "TownScene"
+      ],
+      "output": {
+        "type": "spritesheet",
+        "format": "png",
+        "canvas": {
+          "width": 192,
+          "height": 160
+        },
+        "alpha": true,
+        "colourMode": "RGBA",
+        "bitDepth": 8,
+        "pixelArt": true,
+        "textureFiltering": "nearest",
+        "smoothing": false,
+        "trimFrames": false,
+        "atlas": null,
+        "spriteSheet": {
+          "frameWidth": 48,
+          "frameHeight": 40,
+          "columns": 4,
+          "rows": 4,
+          "padding": 0,
+          "spacing": 0,
+          "frameCount": 16,
+          "frameOrder": [
+            "down-0",
+            "down-1",
+            "down-2",
+            "down-3",
+            "left-0",
+            "left-1",
+            "left-2",
+            "left-3",
+            "right-0",
+            "right-1",
+            "right-2",
+            "right-3",
+            "up-0",
+            "up-1",
+            "up-2",
+            "up-3"
+          ],
+          "actions": [
+            "walk",
+            "default"
+          ],
+          "directions": [
+            "down",
+            "left",
+            "right",
+            "up"
+          ]
+        }
+      },
+      "camera": {
+        "projection": "three-quarter top-down animal",
+        "viewDirection": "south-facing map view",
+        "cameraMotion": "none authored into asset"
+      },
+      "masterScale": {
+        "nativePixelsPerLogicalUnit": 1,
+        "logicalDisplay": {
+          "width": 36,
+          "height": 30
+        },
+        "scalePolicy": "fit-declared-logical-bounds-never-source-size"
+      },
+      "anchor": {
+        "name": "animal-feet",
+        "normalized": {
+          "x": 0.5,
+          "y": 0.875
+        },
+        "groundContact": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "geometry": {
+        "visual": {
+          "kind": "rectangle",
+          "x": -18,
+          "y": -30,
+          "width": 36,
+          "height": 30
+        },
+        "collision": {
+          "kind": "circle",
+          "x": 0,
+          "y": 0,
+          "radius": 12
+        },
+        "navigation": {
+          "kind": "circle",
+          "x": 0,
+          "y": 0,
+          "radius": 12
+        },
+        "interaction": {
+          "kind": "circle",
+          "x": 0,
+          "y": 0,
+          "radius": 70
+        },
+        "touch": {
+          "kind": "rectangle",
+          "x": -24,
+          "y": -34,
+          "width": 48,
+          "height": 48
+        }
+      },
+      "sockets": [
+        {
+          "id": "food",
+          "logical": {
+            "x": 15,
+            "y": -12
+          }
+        },
+        {
+          "id": "friendship",
+          "logical": {
+            "x": 0,
+            "y": -34
+          }
+        }
+      ],
+      "states": [
+        "default"
+      ],
+      "variants": [
+        "default"
+      ],
+      "layers": [
+        {
+          "id": "main",
+          "order": 0,
+          "states": [
+            "default"
+          ],
+          "canvasAlignment": "frame-grid"
+        }
+      ],
+      "directions": [
+        "down",
+        "left",
+        "right",
+        "up"
+      ],
+      "animations": [
+        {
+          "id": "walk-down",
+          "action": "walk",
+          "direction": "down",
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "frameRate": 8,
+          "repeat": -1
+        },
+        {
+          "id": "walk-left",
+          "action": "walk",
+          "direction": "left",
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "frameRate": 8,
+          "repeat": -1
+        },
+        {
+          "id": "walk-right",
+          "action": "walk",
+          "direction": "right",
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "frameRate": 8,
+          "repeat": -1
+        },
+        {
+          "id": "walk-up",
+          "action": "walk",
+          "direction": "up",
+          "frames": [
+            12,
+            13,
+            14,
+            15
+          ],
+          "frameRate": 8,
+          "repeat": -1
+        }
+      ],
+      "artRules": {
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "palette": "Willowmere natural greens, river blues, warm timber, cream highlights",
+        "outline": "consistent dark pixel outline with crisp pixel clusters",
+        "lighting": "soft daylight from upper-left",
+        "shadow": "follow the family shadow contract",
+        "texture": "pixel-authored clusters; no photographic noise"
+      },
+      "expectedFilenames": {
+        "staging": "artwork/staging/phase-8a/animal-dog-walk/v1/animal-dog-walk.v1.png",
+        "master": "artwork/masters/phase-8a/animal-dog-walk/v1/animal-dog-walk.v1.png",
+        "runtime": "public/assets/runtime/phase-8a/animal-dog-walk.v1.png"
+      },
+      "filenameStem": "animal-dog-walk",
+      "promptPackage": {
+        "providerNeutral": true,
+        "positivePrompt": "Create one production-ready KindWorks pixel-art asset for one roaming and follow-capable dog A friendly medium-small Willowmere dog in four directional rows and four walk frames per row, aligned to the declared feet, food, and friendship sockets. Use KindWorks Visual Style Bible v4. Exact output: 192×160px PNG, transparent alpha, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.",
+        "negativePrompt": "provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; collar text, food bowl, owner, speech bubble, shadow, missing tail motion, or inconsistent markings between frames",
+        "deliveryInstruction": "Return only animal-dog-walk.v1.png plus provenance metadata; do not composite it into a screenshot or rename it."
+      },
+      "forbiddenOutput": [
+        "provider watermark, signature, logo, caption, or embedded text",
+        "photorealism, vector-soft edges, antialiasing, blur, or resampling noise",
+        "automatic trimming, cropped canvas, changed frame order, or unequal frame alignment",
+        "unrequested UI, characters, props, scenery, shadows, or background colour",
+        "perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4",
+        "collar text, food bowl, owner, speech bubble, shadow, missing tail motion, or inconsistent markings between frames"
+      ],
+      "validation": {
+        "checklist": [
+          "semantic ID is unique and matches the approved manifest entry",
+          "filename and file format exactly match the contract",
+          "canvas, frame grid, frame count, alpha mode, and untrimmed alignment are exact",
+          "nearest-neighbour sampling is preserved and no smoothing metadata is introduced",
+          "ground anchor, sockets, visual bounds, and gameplay geometry remain independently addressable",
+          "all required states, layers, directions, and animation frames are present",
+          "texture budget, scene-pack dependency, fallback, and orphan-reference checks pass"
+        ],
+        "requireExactDimensions": true,
+        "requireAlpha": true,
+        "requireUntrimmedFrames": true,
+        "requireNearestNeighbour": true,
+        "requireFrameCount": 16,
+        "requireStateNames": [
+          "default"
+        ],
+        "requireDirections": [
+          "down",
+          "left",
+          "right",
+          "up"
+        ],
+        "maximumTransparentPadding": {
+          "top": 160,
+          "right": 192,
+          "bottom": 160,
+          "left": 192
+        },
+        "maximumVisibleBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 192,
+          "height": 160
+        },
+        "gameplayGeometrySignature": "e81e5868",
+        "maximumRuntimeBytes": 210000,
+        "fallbackSemanticId": "system.fallback.production"
+      },
+      "accessibility": null,
+      "dependencies": [
+        "character.player.slice.resident"
+      ],
+      "scenePlacement": [
+        {
+          "layoutId": "layout.phase-8a.town-block.house-6",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.animal-dog",
+          "position": {
+            "x": 910,
+            "y": 330
+          },
+          "worldOrigin": {
+            "x": 1880,
+            "y": 0
+          },
+          "gameplayGeometryLocked": true,
+          "speciesBinding": "dog"
+        }
+      ],
+      "prefabId": "prefab.phase-8a.animal-dog",
+      "stateMapId": "state.phase-8a.animal-dog",
+      "placeholder": {
+        "mode": "semantic-registry-generated-fallback",
+        "development": "labelled checker placeholder in Asset Lab",
+        "production": "transparent safe fallback with recorded registry failure"
+      },
+      "productionStatus": "specified",
+      "provenance": {
+        "provider": "generator-neutral",
+        "specificationVersion": 2,
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "generatedArtworkPresent": false
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "semanticId": "ui.town.slice.lawn-interaction",
+      "version": "1.0.0",
+      "familyId": "family.feedback-ui.slice",
+      "categoryContractId": "category.ui",
+      "gameplayPurpose": "contextual lawn-job interaction prompt",
+      "intendedScenes": [
+        "TownScene"
+      ],
+      "output": {
+        "type": "spritesheet",
+        "format": "png",
+        "canvas": {
+          "width": 128,
+          "height": 64
+        },
+        "alpha": true,
+        "colourMode": "RGBA",
+        "bitDepth": 8,
+        "pixelArt": true,
+        "textureFiltering": "nearest",
+        "smoothing": false,
+        "trimFrames": false,
+        "atlas": null,
+        "spriteSheet": {
+          "frameWidth": 64,
+          "frameHeight": 64,
+          "columns": 2,
+          "rows": 1,
+          "padding": 0,
+          "spacing": 0,
+          "frameCount": 2,
+          "frameOrder": [
+            "available",
+            "pressed"
+          ],
+          "actions": [
+            "available",
+            "pressed"
+          ],
+          "directions": []
+        }
+      },
+      "camera": {
+        "projection": "screen-facing pixel UI",
+        "viewDirection": "south-facing map view",
+        "cameraMotion": "none authored into asset"
+      },
+      "masterScale": {
+        "nativePixelsPerLogicalUnit": 1,
+        "logicalDisplay": {
+          "width": 52,
+          "height": 52
+        },
+        "scalePolicy": "fit-declared-logical-bounds-never-source-size"
+      },
+      "anchor": {
+        "name": "prompt-centre",
+        "normalized": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "groundContact": null
+      },
+      "geometry": {
+        "visual": {
+          "kind": "rectangle",
+          "x": -26,
+          "y": -26,
+          "width": 52,
+          "height": 52
+        },
+        "collision": null,
+        "navigation": null,
+        "interaction": null,
+        "touch": {
+          "kind": "rectangle",
+          "x": -32,
+          "y": -32,
+          "width": 64,
+          "height": 64
+        }
+      },
+      "sockets": [],
+      "states": [
+        "available",
+        "pressed"
+      ],
+      "variants": [
+        "available",
+        "pressed"
+      ],
+      "layers": [
+        {
+          "id": "main",
+          "order": 0,
+          "states": [
+            "available",
+            "pressed"
+          ],
+          "canvasAlignment": "frame-grid"
+        }
+      ],
+      "directions": [],
+      "animations": [],
+      "artRules": {
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "palette": "Willowmere natural greens, river blues, warm timber, cream highlights",
+        "outline": "consistent dark pixel outline with crisp pixel clusters",
+        "lighting": "soft daylight from upper-left",
+        "shadow": "follow the family shadow contract",
+        "texture": "pixel-authored clusters; no photographic noise"
+      },
+      "expectedFilenames": {
+        "staging": "artwork/staging/phase-8a/lawn-interaction-prompt/v1/lawn-interaction-prompt.v1.png",
+        "master": "artwork/masters/phase-8a/lawn-interaction-prompt/v1/lawn-interaction-prompt.v1.png",
+        "runtime": "public/assets/runtime/phase-8a/lawn-interaction-prompt.v1.png"
+      },
+      "filenameStem": "lawn-interaction-prompt",
+      "promptPackage": {
+        "providerNeutral": true,
+        "positivePrompt": "Create one production-ready KindWorks pixel-art asset for contextual lawn-job interaction prompt Two frames of a compact contextual action badge: available and visibly pressed. Use a simple mower/grass action symbol with no words; readable at phone landscape size. Use KindWorks Visual Style Bible v4. Exact output: 128×64px PNG, transparent alpha, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.",
+        "negativePrompt": "provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; long text, permanent HUD panel, coin amount, level number, hand cursor, or more than one action",
+        "deliveryInstruction": "Return only lawn-interaction-prompt.v1.png plus provenance metadata; do not composite it into a screenshot or rename it."
+      },
+      "forbiddenOutput": [
+        "provider watermark, signature, logo, caption, or embedded text",
+        "photorealism, vector-soft edges, antialiasing, blur, or resampling noise",
+        "automatic trimming, cropped canvas, changed frame order, or unequal frame alignment",
+        "unrequested UI, characters, props, scenery, shadows, or background colour",
+        "perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4",
+        "long text, permanent HUD panel, coin amount, level number, hand cursor, or more than one action"
+      ],
+      "validation": {
+        "checklist": [
+          "semantic ID is unique and matches the approved manifest entry",
+          "filename and file format exactly match the contract",
+          "canvas, frame grid, frame count, alpha mode, and untrimmed alignment are exact",
+          "nearest-neighbour sampling is preserved and no smoothing metadata is introduced",
+          "ground anchor, sockets, visual bounds, and gameplay geometry remain independently addressable",
+          "all required states, layers, directions, and animation frames are present",
+          "texture budget, scene-pack dependency, fallback, and orphan-reference checks pass"
+        ],
+        "requireExactDimensions": true,
+        "requireAlpha": true,
+        "requireUntrimmedFrames": true,
+        "requireNearestNeighbour": true,
+        "requireFrameCount": 2,
+        "requireStateNames": [
+          "available",
+          "pressed"
+        ],
+        "requireDirections": [],
+        "maximumTransparentPadding": {
+          "top": 64,
+          "right": 128,
+          "bottom": 64,
+          "left": 128
+        },
+        "maximumVisibleBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 128,
+          "height": 64
+        },
+        "gameplayGeometrySignature": "f64911e4",
+        "maximumRuntimeBytes": 50000,
+        "fallbackSemanticId": "system.fallback.production"
+      },
+      "accessibility": {
+        "labelKey": "asset.ui.town.slice.lawn-interaction",
+        "minimumRenderedSize": {
+          "width": 44,
+          "height": 44
+        },
+        "minimumContrastRatio": 3,
+        "safeContentInsets": {
+          "top": 4,
+          "right": 4,
+          "bottom": 4,
+          "left": 4
+        },
+        "localizationExpansionPercent": 30
+      },
+      "dependencies": [
+        "terrain.town.slice.lawn-house-6"
+      ],
+      "scenePlacement": [
+        {
+          "layoutId": "layout.phase-8a.town-block.house-6",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-interaction",
+          "position": {
+            "x": 375,
+            "y": 405
+          },
+          "worldOrigin": {
+            "x": 1880,
+            "y": 0
+          },
+          "gameplayGeometryLocked": true,
+          "socketBinding": "job-entry",
+          "contextualOnly": true
+        }
+      ],
+      "prefabId": "prefab.phase-8a.lawn-interaction",
+      "stateMapId": "state.phase-8a.lawn-interaction",
+      "placeholder": {
+        "mode": "semantic-registry-generated-fallback",
+        "development": "labelled checker placeholder in Asset Lab",
+        "production": "transparent safe fallback with recorded registry failure"
+      },
+      "productionStatus": "specified",
+      "provenance": {
+        "provider": "generator-neutral",
+        "specificationVersion": 2,
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "generatedArtworkPresent": false
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "semanticId": "ui.town.slice.coin-reward-burst",
+      "version": "1.0.0",
+      "familyId": "family.feedback-ui.slice",
+      "categoryContractId": "category.ui",
+      "gameplayPurpose": "short saved-reward confirmation after the lawn state transition",
+      "intendedScenes": [
+        "TownScene",
+        "LawnCareScene"
+      ],
+      "output": {
+        "type": "spritesheet",
+        "format": "png",
+        "canvas": {
+          "width": 384,
+          "height": 64
+        },
+        "alpha": true,
+        "colourMode": "RGBA",
+        "bitDepth": 8,
+        "pixelArt": true,
+        "textureFiltering": "nearest",
+        "smoothing": false,
+        "trimFrames": false,
+        "atlas": null,
+        "spriteSheet": {
+          "frameWidth": 64,
+          "frameHeight": 64,
+          "columns": 6,
+          "rows": 1,
+          "padding": 0,
+          "spacing": 0,
+          "frameCount": 6,
+          "frameOrder": [
+            "burst-0",
+            "burst-1",
+            "burst-2",
+            "burst-3",
+            "burst-4",
+            "burst-5"
+          ],
+          "actions": [
+            "reward",
+            "rewarded"
+          ],
+          "directions": []
+        }
+      },
+      "camera": {
+        "projection": "screen-facing pixel UI",
+        "viewDirection": "south-facing map view",
+        "cameraMotion": "none authored into asset"
+      },
+      "masterScale": {
+        "nativePixelsPerLogicalUnit": 1,
+        "logicalDisplay": {
+          "width": 64,
+          "height": 64
+        },
+        "scalePolicy": "fit-declared-logical-bounds-never-source-size"
+      },
+      "anchor": {
+        "name": "burst-centre",
+        "normalized": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "groundContact": null
+      },
+      "geometry": {
+        "visual": {
+          "kind": "rectangle",
+          "x": -32,
+          "y": -32,
+          "width": 64,
+          "height": 64
+        },
+        "collision": null,
+        "navigation": null,
+        "interaction": null,
+        "touch": null
+      },
+      "sockets": [],
+      "states": [
+        "rewarded"
+      ],
+      "variants": [
+        "rewarded"
+      ],
+      "layers": [
+        {
+          "id": "main",
+          "order": 0,
+          "states": [
+            "rewarded"
+          ],
+          "canvasAlignment": "frame-grid"
+        }
+      ],
+      "directions": [],
+      "animations": [
+        {
+          "id": "reward-burst",
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "frameRate": 12,
+          "repeat": 0,
+          "action": "reward",
+          "direction": null
+        }
+      ],
+      "artRules": {
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "palette": "Willowmere natural greens, river blues, warm timber, cream highlights",
+        "outline": "consistent dark pixel outline with crisp pixel clusters",
+        "lighting": "soft daylight from upper-left",
+        "shadow": "follow the family shadow contract",
+        "texture": "pixel-authored clusters; no photographic noise"
+      },
+      "expectedFilenames": {
+        "staging": "artwork/staging/phase-8a/coin-reward-burst/v1/coin-reward-burst.v1.png",
+        "master": "artwork/masters/phase-8a/coin-reward-burst/v1/coin-reward-burst.v1.png",
+        "runtime": "public/assets/runtime/phase-8a/coin-reward-burst.v1.png"
+      },
+      "filenameStem": "coin-reward-burst",
+      "promptPackage": {
+        "providerNeutral": true,
+        "positivePrompt": "Create one production-ready KindWorks pixel-art asset for short saved-reward confirmation after the lawn state transition Six-frame restrained golden coin sparkle burst, expanding and settling without text. Frame zero starts small; final frame fades cleanly to transparency. Use KindWorks Visual Style Bible v4. Exact output: 384×64px PNG, transparent alpha, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.",
+        "negativePrompt": "provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; coin value, currency grant logic, chest, button, confetti filling the canvas, endless loop, or opaque background",
+        "deliveryInstruction": "Return only coin-reward-burst.v1.png plus provenance metadata; do not composite it into a screenshot or rename it."
+      },
+      "forbiddenOutput": [
+        "provider watermark, signature, logo, caption, or embedded text",
+        "photorealism, vector-soft edges, antialiasing, blur, or resampling noise",
+        "automatic trimming, cropped canvas, changed frame order, or unequal frame alignment",
+        "unrequested UI, characters, props, scenery, shadows, or background colour",
+        "perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4",
+        "coin value, currency grant logic, chest, button, confetti filling the canvas, endless loop, or opaque background"
+      ],
+      "validation": {
+        "checklist": [
+          "semantic ID is unique and matches the approved manifest entry",
+          "filename and file format exactly match the contract",
+          "canvas, frame grid, frame count, alpha mode, and untrimmed alignment are exact",
+          "nearest-neighbour sampling is preserved and no smoothing metadata is introduced",
+          "ground anchor, sockets, visual bounds, and gameplay geometry remain independently addressable",
+          "all required states, layers, directions, and animation frames are present",
+          "texture budget, scene-pack dependency, fallback, and orphan-reference checks pass"
+        ],
+        "requireExactDimensions": true,
+        "requireAlpha": true,
+        "requireUntrimmedFrames": true,
+        "requireNearestNeighbour": true,
+        "requireFrameCount": 6,
+        "requireStateNames": [
+          "rewarded"
+        ],
+        "requireDirections": [],
+        "maximumTransparentPadding": {
+          "top": 64,
+          "right": 384,
+          "bottom": 64,
+          "left": 384
+        },
+        "maximumVisibleBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 384,
+          "height": 64
+        },
+        "gameplayGeometrySignature": "b1e3a260",
+        "maximumRuntimeBytes": 110000,
+        "fallbackSemanticId": "system.fallback.production"
+      },
+      "accessibility": {
+        "labelKey": "asset.ui.town.slice.coin-reward-burst",
+        "minimumRenderedSize": {
+          "width": 44,
+          "height": 44
+        },
+        "minimumContrastRatio": 3,
+        "safeContentInsets": {
+          "top": 4,
+          "right": 4,
+          "bottom": 4,
+          "left": 4
+        },
+        "localizationExpansionPercent": 30
+      },
+      "dependencies": [
+        "ui.town.slice.lawn-interaction"
+      ],
+      "scenePlacement": [
+        {
+          "layoutId": "layout.phase-8a.town-block.house-6",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-reward",
+          "position": {
+            "x": 375,
+            "y": 405
+          },
+          "worldOrigin": {
+            "x": 1880,
+            "y": 0
+          },
+          "gameplayGeometryLocked": true,
+          "visibleAfter": "transition.phase-8a.lawn-house-6.complete"
+        },
+        {
+          "layoutId": "layout.phase-8a.lawn-care.representative",
+          "sceneId": "LawnCareScene",
+          "instanceId": "instance.phase-8a.lawn.reward",
+          "position": {
+            "x": 640,
+            "y": 360
+          },
+          "gameplayGeometryLocked": true,
+          "visibleAfter": "LawnCareService.applyResult.ok"
+        }
+      ],
+      "prefabId": "prefab.phase-8a.coin-reward",
+      "stateMapId": "state.phase-8a.coin-reward",
+      "placeholder": {
+        "mode": "semantic-registry-generated-fallback",
+        "development": "labelled checker placeholder in Asset Lab",
+        "production": "transparent safe fallback with recorded registry failure"
+      },
+      "productionStatus": "specified",
+      "provenance": {
+        "provider": "generator-neutral",
+        "specificationVersion": 2,
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "generatedArtworkPresent": false
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "semanticId": "minigame.lawn.slice.board-tiles",
+      "version": "1.0.0",
+      "familyId": "family.lawn-minigame.slice",
+      "categoryContractId": "category.minigame",
+      "gameplayPurpose": "full-screen Lawn Care board surface states",
+      "intendedScenes": [
+        "LawnCareScene"
+      ],
+      "output": {
+        "type": "spritesheet",
+        "format": "png",
+        "canvas": {
+          "width": 256,
+          "height": 64
+        },
+        "alpha": false,
+        "colourMode": "RGB",
+        "bitDepth": 8,
+        "pixelArt": true,
+        "textureFiltering": "nearest",
+        "smoothing": false,
+        "trimFrames": false,
+        "atlas": null,
+        "spriteSheet": {
+          "frameWidth": 64,
+          "frameHeight": 64,
+          "columns": 4,
+          "rows": 1,
+          "padding": 0,
+          "spacing": 0,
+          "frameCount": 4,
+          "frameOrder": [
+            "tall",
+            "cut-vertical",
+            "cut-horizontal",
+            "hedge"
+          ],
+          "actions": [
+            "tall",
+            "cut-vertical",
+            "cut-horizontal",
+            "hedge"
+          ],
+          "directions": []
+        }
+      },
+      "camera": {
+        "projection": "top-down orthographic board",
+        "viewDirection": "south-facing map view",
+        "cameraMotion": "none authored into asset"
+      },
+      "masterScale": {
+        "nativePixelsPerLogicalUnit": 1,
+        "logicalDisplay": {
+          "width": 64,
+          "height": 64
+        },
+        "scalePolicy": "fit-declared-logical-bounds-never-source-size"
+      },
+      "anchor": {
+        "name": "cell-centre",
+        "normalized": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "groundContact": null
+      },
+      "geometry": {
+        "visual": {
+          "kind": "rectangle",
+          "x": -32,
+          "y": -32,
+          "width": 64,
+          "height": 64
+        },
+        "collision": null,
+        "navigation": null,
+        "interaction": {
+          "kind": "rectangle",
+          "x": -32,
+          "y": -32,
+          "width": 64,
+          "height": 64
+        },
+        "touch": {
+          "kind": "rectangle",
+          "x": -32,
+          "y": -32,
+          "width": 64,
+          "height": 64
+        }
+      },
+      "sockets": [],
+      "states": [
+        "tall",
+        "cut-vertical",
+        "cut-horizontal",
+        "hedge"
+      ],
+      "variants": [
+        "tall",
+        "cut-vertical",
+        "cut-horizontal",
+        "hedge"
+      ],
+      "layers": [
+        {
+          "id": "main",
+          "order": 0,
+          "states": [
+            "tall",
+            "cut-vertical",
+            "cut-horizontal",
+            "hedge"
+          ],
+          "canvasAlignment": "frame-grid"
+        }
+      ],
+      "directions": [],
+      "animations": [],
+      "artRules": {
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "palette": "Willowmere natural greens, river blues, warm timber, cream highlights",
+        "outline": "consistent dark pixel outline with crisp pixel clusters",
+        "lighting": "soft daylight from upper-left",
+        "shadow": "follow the family shadow contract",
+        "texture": "pixel-authored clusters; no photographic noise"
+      },
+      "expectedFilenames": {
+        "staging": "artwork/staging/phase-8a/lawn-care-board-tiles/v1/lawn-care-board-tiles.v1.png",
+        "master": "artwork/masters/phase-8a/lawn-care-board-tiles/v1/lawn-care-board-tiles.v1.png",
+        "runtime": "public/assets/runtime/phase-8a/lawn-care-board-tiles.v1.png"
+      },
+      "filenameStem": "lawn-care-board-tiles",
+      "promptPackage": {
+        "providerNeutral": true,
+        "positivePrompt": "Create one production-ready KindWorks pixel-art asset for full-screen Lawn Care board surface states Four seamless board cells in exact order: tall grass, vertically raked cut lines, horizontally raked cut lines, and impassable hedge. All cells share edges, lighting, scale, and camera. Use KindWorks Visual Style Bible v4. Exact output: 256×64px PNG, fully opaque, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.",
+        "negativePrompt": "provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; mower, weeds, UI, labels, perspective tilt, mismatched tile edges, or ambiguous cut direction",
+        "deliveryInstruction": "Return only lawn-care-board-tiles.v1.png plus provenance metadata; do not composite it into a screenshot or rename it."
+      },
+      "forbiddenOutput": [
+        "provider watermark, signature, logo, caption, or embedded text",
+        "photorealism, vector-soft edges, antialiasing, blur, or resampling noise",
+        "automatic trimming, cropped canvas, changed frame order, or unequal frame alignment",
+        "unrequested UI, characters, props, scenery, shadows, or background colour",
+        "perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4",
+        "mower, weeds, UI, labels, perspective tilt, mismatched tile edges, or ambiguous cut direction"
+      ],
+      "validation": {
+        "checklist": [
+          "semantic ID is unique and matches the approved manifest entry",
+          "filename and file format exactly match the contract",
+          "canvas, frame grid, frame count, alpha mode, and untrimmed alignment are exact",
+          "nearest-neighbour sampling is preserved and no smoothing metadata is introduced",
+          "ground anchor, sockets, visual bounds, and gameplay geometry remain independently addressable",
+          "all required states, layers, directions, and animation frames are present",
+          "texture budget, scene-pack dependency, fallback, and orphan-reference checks pass"
+        ],
+        "requireExactDimensions": true,
+        "requireAlpha": false,
+        "requireUntrimmedFrames": true,
+        "requireNearestNeighbour": true,
+        "requireFrameCount": 4,
+        "requireStateNames": [
+          "tall",
+          "cut-vertical",
+          "cut-horizontal",
+          "hedge"
+        ],
+        "requireDirections": [],
+        "maximumTransparentPadding": {
+          "top": 64,
+          "right": 256,
+          "bottom": 64,
+          "left": 256
+        },
+        "maximumVisibleBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 256,
+          "height": 64
+        },
+        "gameplayGeometrySignature": "59f20e88",
+        "maximumRuntimeBytes": 120000,
+        "fallbackSemanticId": "system.fallback.production"
+      },
+      "accessibility": null,
+      "dependencies": [
+        "terrain.town.slice.grass"
+      ],
+      "scenePlacement": [
+        {
+          "layoutId": "layout.phase-8a.lawn-care.representative",
+          "sceneId": "LawnCareScene",
+          "instanceId": "instance.phase-8a.lawn.board-tiles",
+          "position": {
+            "x": 640,
+            "y": 340
+          },
+          "gameplayGeometryLocked": true,
+          "repeat": "existing-level-grid",
+          "gameplayOwner": "LawnCareEngine"
+        }
+      ],
+      "prefabId": "prefab.phase-8a.lawn-board-tiles",
+      "stateMapId": "state.phase-8a.lawn-board-tiles",
+      "placeholder": {
+        "mode": "semantic-registry-generated-fallback",
+        "development": "labelled checker placeholder in Asset Lab",
+        "production": "transparent safe fallback with recorded registry failure"
+      },
+      "productionStatus": "specified",
+      "provenance": {
+        "provider": "generator-neutral",
+        "specificationVersion": 2,
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "generatedArtworkPresent": false
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "semanticId": "minigame.lawn.slice.weed-tiles",
+      "version": "1.0.0",
+      "familyId": "family.lawn-minigame.slice",
+      "categoryContractId": "category.minigame",
+      "gameplayPurpose": "three readable Lawn Care weed types",
+      "intendedScenes": [
+        "LawnCareScene"
+      ],
+      "output": {
+        "type": "spritesheet",
+        "format": "png",
+        "canvas": {
+          "width": 192,
+          "height": 64
+        },
+        "alpha": true,
+        "colourMode": "RGBA",
+        "bitDepth": 8,
+        "pixelArt": true,
+        "textureFiltering": "nearest",
+        "smoothing": false,
+        "trimFrames": false,
+        "atlas": null,
+        "spriteSheet": {
+          "frameWidth": 64,
+          "frameHeight": 64,
+          "columns": 3,
+          "rows": 1,
+          "padding": 0,
+          "spacing": 0,
+          "frameCount": 3,
+          "frameOrder": [
+            "normal",
+            "tough",
+            "woody"
+          ],
+          "actions": [
+            "normal",
+            "tough",
+            "woody"
+          ],
+          "directions": []
+        }
+      },
+      "camera": {
+        "projection": "top-down orthographic board",
+        "viewDirection": "south-facing map view",
+        "cameraMotion": "none authored into asset"
+      },
+      "masterScale": {
+        "nativePixelsPerLogicalUnit": 1,
+        "logicalDisplay": {
+          "width": 64,
+          "height": 64
+        },
+        "scalePolicy": "fit-declared-logical-bounds-never-source-size"
+      },
+      "anchor": {
+        "name": "cell-centre",
+        "normalized": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "groundContact": null
+      },
+      "geometry": {
+        "visual": {
+          "kind": "rectangle",
+          "x": -32,
+          "y": -32,
+          "width": 64,
+          "height": 64
+        },
+        "collision": null,
+        "navigation": null,
+        "interaction": null,
+        "touch": null
+      },
+      "sockets": [],
+      "states": [
+        "normal",
+        "tough",
+        "woody"
+      ],
+      "variants": [
+        "normal",
+        "tough",
+        "woody"
+      ],
+      "layers": [
+        {
+          "id": "main",
+          "order": 0,
+          "states": [
+            "normal",
+            "tough",
+            "woody"
+          ],
+          "canvasAlignment": "frame-grid"
+        }
+      ],
+      "directions": [],
+      "animations": [],
+      "artRules": {
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "palette": "Willowmere natural greens, river blues, warm timber, cream highlights",
+        "outline": "consistent dark pixel outline with crisp pixel clusters",
+        "lighting": "soft daylight from upper-left",
+        "shadow": "follow the family shadow contract",
+        "texture": "pixel-authored clusters; no photographic noise"
+      },
+      "expectedFilenames": {
+        "staging": "artwork/staging/phase-8a/lawn-care-weed-tiles/v1/lawn-care-weed-tiles.v1.png",
+        "master": "artwork/masters/phase-8a/lawn-care-weed-tiles/v1/lawn-care-weed-tiles.v1.png",
+        "runtime": "public/assets/runtime/phase-8a/lawn-care-weed-tiles.v1.png"
+      },
+      "filenameStem": "lawn-care-weed-tiles",
+      "promptPackage": {
+        "providerNeutral": true,
+        "positivePrompt": "Create one production-ready KindWorks pixel-art asset for three readable Lawn Care weed types Three transparent overlays in exact order: normal weed, tougher leafy weed, and woody obstruction. Each is unmistakable without a text label and remains centred in a 64px lawn cell. Use KindWorks Visual Style Bible v4. Exact output: 192×64px PNG, transparent alpha, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.",
+        "negativePrompt": "provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; grass background, card, label, mower, duplicated plant, or shifted baseline",
+        "deliveryInstruction": "Return only lawn-care-weed-tiles.v1.png plus provenance metadata; do not composite it into a screenshot or rename it."
+      },
+      "forbiddenOutput": [
+        "provider watermark, signature, logo, caption, or embedded text",
+        "photorealism, vector-soft edges, antialiasing, blur, or resampling noise",
+        "automatic trimming, cropped canvas, changed frame order, or unequal frame alignment",
+        "unrequested UI, characters, props, scenery, shadows, or background colour",
+        "perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4",
+        "grass background, card, label, mower, duplicated plant, or shifted baseline"
+      ],
+      "validation": {
+        "checklist": [
+          "semantic ID is unique and matches the approved manifest entry",
+          "filename and file format exactly match the contract",
+          "canvas, frame grid, frame count, alpha mode, and untrimmed alignment are exact",
+          "nearest-neighbour sampling is preserved and no smoothing metadata is introduced",
+          "ground anchor, sockets, visual bounds, and gameplay geometry remain independently addressable",
+          "all required states, layers, directions, and animation frames are present",
+          "texture budget, scene-pack dependency, fallback, and orphan-reference checks pass"
+        ],
+        "requireExactDimensions": true,
+        "requireAlpha": true,
+        "requireUntrimmedFrames": true,
+        "requireNearestNeighbour": true,
+        "requireFrameCount": 3,
+        "requireStateNames": [
+          "normal",
+          "tough",
+          "woody"
+        ],
+        "requireDirections": [],
+        "maximumTransparentPadding": {
+          "top": 64,
+          "right": 192,
+          "bottom": 64,
+          "left": 192
+        },
+        "maximumVisibleBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 192,
+          "height": 64
+        },
+        "gameplayGeometrySignature": "b1e3a260",
+        "maximumRuntimeBytes": 80000,
+        "fallbackSemanticId": "system.fallback.production"
+      },
+      "accessibility": null,
+      "dependencies": [
+        "minigame.lawn.slice.board-tiles"
+      ],
+      "scenePlacement": [
+        {
+          "layoutId": "layout.phase-8a.lawn-care.representative",
+          "sceneId": "LawnCareScene",
+          "instanceId": "instance.phase-8a.lawn.weed-tiles",
+          "position": {
+            "x": 640,
+            "y": 340
+          },
+          "gameplayGeometryLocked": true,
+          "repeat": "level-weed-cells",
+          "gameplayOwner": "LAWN_WEED_TYPES"
+        }
+      ],
+      "prefabId": "prefab.phase-8a.lawn-weed-tiles",
+      "stateMapId": "state.phase-8a.lawn-weed-tiles",
+      "placeholder": {
+        "mode": "semantic-registry-generated-fallback",
+        "development": "labelled checker placeholder in Asset Lab",
+        "production": "transparent safe fallback with recorded registry failure"
+      },
+      "productionStatus": "specified",
+      "provenance": {
+        "provider": "generator-neutral",
+        "specificationVersion": 2,
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "generatedArtworkPresent": false
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "semanticId": "minigame.lawn.slice.mower",
+      "version": "1.0.0",
+      "familyId": "family.lawn-minigame.slice",
+      "categoryContractId": "category.minigame",
+      "gameplayPurpose": "directional mower token for the Lawn Care board",
+      "intendedScenes": [
+        "LawnCareScene"
+      ],
+      "output": {
+        "type": "spritesheet",
+        "format": "png",
+        "canvas": {
+          "width": 256,
+          "height": 64
+        },
+        "alpha": true,
+        "colourMode": "RGBA",
+        "bitDepth": 8,
+        "pixelArt": true,
+        "textureFiltering": "nearest",
+        "smoothing": false,
+        "trimFrames": false,
+        "atlas": null,
+        "spriteSheet": {
+          "frameWidth": 64,
+          "frameHeight": 64,
+          "columns": 4,
+          "rows": 1,
+          "padding": 0,
+          "spacing": 0,
+          "frameCount": 4,
+          "frameOrder": [
+            "down",
+            "left",
+            "right",
+            "up"
+          ],
+          "actions": [
+            "down",
+            "left",
+            "right",
+            "up"
+          ],
+          "directions": [
+            "down",
+            "left",
+            "right",
+            "up"
+          ]
+        }
+      },
+      "camera": {
+        "projection": "top-down orthographic board",
+        "viewDirection": "south-facing map view",
+        "cameraMotion": "none authored into asset"
+      },
+      "masterScale": {
+        "nativePixelsPerLogicalUnit": 1,
+        "logicalDisplay": {
+          "width": 56,
+          "height": 56
+        },
+        "scalePolicy": "fit-declared-logical-bounds-never-source-size"
+      },
+      "anchor": {
+        "name": "cell-centre",
+        "normalized": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "groundContact": null
+      },
+      "geometry": {
+        "visual": {
+          "kind": "rectangle",
+          "x": -28,
+          "y": -28,
+          "width": 56,
+          "height": 56
+        },
+        "collision": {
+          "kind": "rectangle",
+          "x": -24,
+          "y": -24,
+          "width": 48,
+          "height": 48
+        },
+        "navigation": {
+          "kind": "rectangle",
+          "x": -24,
+          "y": -24,
+          "width": 48,
+          "height": 48
+        },
+        "interaction": null,
+        "touch": {
+          "kind": "rectangle",
+          "x": -32,
+          "y": -32,
+          "width": 64,
+          "height": 64
+        }
+      },
+      "sockets": [],
+      "states": [
+        "down",
+        "left",
+        "right",
+        "up"
+      ],
+      "variants": [
+        "down",
+        "left",
+        "right",
+        "up"
+      ],
+      "layers": [
+        {
+          "id": "main",
+          "order": 0,
+          "states": [
+            "down",
+            "left",
+            "right",
+            "up"
+          ],
+          "canvasAlignment": "frame-grid"
+        }
+      ],
+      "directions": [
+        "down",
+        "left",
+        "right",
+        "up"
+      ],
+      "animations": [],
+      "artRules": {
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "palette": "Willowmere natural greens, river blues, warm timber, cream highlights",
+        "outline": "consistent dark pixel outline with crisp pixel clusters",
+        "lighting": "soft daylight from upper-left",
+        "shadow": "follow the family shadow contract",
+        "texture": "pixel-authored clusters; no photographic noise"
+      },
+      "expectedFilenames": {
+        "staging": "artwork/staging/phase-8a/lawn-care-mower/v1/lawn-care-mower.v1.png",
+        "master": "artwork/masters/phase-8a/lawn-care-mower/v1/lawn-care-mower.v1.png",
+        "runtime": "public/assets/runtime/phase-8a/lawn-care-mower.v1.png"
+      },
+      "filenameStem": "lawn-care-mower",
+      "promptPackage": {
+        "providerNeutral": true,
+        "positivePrompt": "Create one production-ready KindWorks pixel-art asset for directional mower token for the Lawn Care board The same compact green mower in four exact directional frames down, left, right, up, centred within a 64px board cell. Direction must remain obvious at narrow-phone scale. Use KindWorks Visual Style Bible v4. Exact output: 256×64px PNG, transparent alpha, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.",
+        "negativePrompt": "provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; operator, joystick, direction button, text, grass background, cast shadow outside cell, or inconsistent mower model",
+        "deliveryInstruction": "Return only lawn-care-mower.v1.png plus provenance metadata; do not composite it into a screenshot or rename it."
+      },
+      "forbiddenOutput": [
+        "provider watermark, signature, logo, caption, or embedded text",
+        "photorealism, vector-soft edges, antialiasing, blur, or resampling noise",
+        "automatic trimming, cropped canvas, changed frame order, or unequal frame alignment",
+        "unrequested UI, characters, props, scenery, shadows, or background colour",
+        "perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4",
+        "operator, joystick, direction button, text, grass background, cast shadow outside cell, or inconsistent mower model"
+      ],
+      "validation": {
+        "checklist": [
+          "semantic ID is unique and matches the approved manifest entry",
+          "filename and file format exactly match the contract",
+          "canvas, frame grid, frame count, alpha mode, and untrimmed alignment are exact",
+          "nearest-neighbour sampling is preserved and no smoothing metadata is introduced",
+          "ground anchor, sockets, visual bounds, and gameplay geometry remain independently addressable",
+          "all required states, layers, directions, and animation frames are present",
+          "texture budget, scene-pack dependency, fallback, and orphan-reference checks pass"
+        ],
+        "requireExactDimensions": true,
+        "requireAlpha": true,
+        "requireUntrimmedFrames": true,
+        "requireNearestNeighbour": true,
+        "requireFrameCount": 4,
+        "requireStateNames": [
+          "down",
+          "left",
+          "right",
+          "up"
+        ],
+        "requireDirections": [
+          "down",
+          "left",
+          "right",
+          "up"
+        ],
+        "maximumTransparentPadding": {
+          "top": 64,
+          "right": 256,
+          "bottom": 64,
+          "left": 256
+        },
+        "maximumVisibleBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 256,
+          "height": 64
+        },
+        "gameplayGeometrySignature": "cd4ca5aa",
+        "maximumRuntimeBytes": 90000,
+        "fallbackSemanticId": "system.fallback.production"
+      },
+      "accessibility": null,
+      "dependencies": [
+        "minigame.lawn.slice.board-tiles"
+      ],
+      "scenePlacement": [
+        {
+          "layoutId": "layout.phase-8a.lawn-care.representative",
+          "sceneId": "LawnCareScene",
+          "instanceId": "instance.phase-8a.lawn.mower",
+          "position": {
+            "x": 640,
+            "y": 340
+          },
+          "gameplayGeometryLocked": true,
+          "dynamicPosition": "LawnCareEngine row/column",
+          "dynamicFacing": "session.facing"
+        }
+      ],
+      "prefabId": "prefab.phase-8a.lawn-mower",
+      "stateMapId": "state.phase-8a.lawn-mower",
+      "placeholder": {
+        "mode": "semantic-registry-generated-fallback",
+        "development": "labelled checker placeholder in Asset Lab",
+        "production": "transparent safe fallback with recorded registry failure"
+      },
+      "productionStatus": "specified",
+      "provenance": {
+        "provider": "generator-neutral",
+        "specificationVersion": 2,
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "generatedArtworkPresent": false
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "semanticId": "ui.lawn.slice.controls",
+      "version": "1.0.0",
+      "familyId": "family.lawn-minigame.slice",
+      "categoryContractId": "category.minigame",
+      "gameplayPurpose": "only the exit, undo, and hint icons required by the representative screen",
+      "intendedScenes": [
+        "LawnCareScene"
+      ],
+      "output": {
+        "type": "spritesheet",
+        "format": "png",
+        "canvas": {
+          "width": 192,
+          "height": 64
+        },
+        "alpha": true,
+        "colourMode": "RGBA",
+        "bitDepth": 8,
+        "pixelArt": true,
+        "textureFiltering": "nearest",
+        "smoothing": false,
+        "trimFrames": false,
+        "atlas": null,
+        "spriteSheet": {
+          "frameWidth": 64,
+          "frameHeight": 64,
+          "columns": 3,
+          "rows": 1,
+          "padding": 0,
+          "spacing": 0,
+          "frameCount": 3,
+          "frameOrder": [
+            "exit",
+            "undo",
+            "hint"
+          ],
+          "actions": [
+            "exit",
+            "undo",
+            "hint"
+          ],
+          "directions": []
+        }
+      },
+      "camera": {
+        "projection": "screen-facing pixel UI",
+        "viewDirection": "south-facing map view",
+        "cameraMotion": "none authored into asset"
+      },
+      "masterScale": {
+        "nativePixelsPerLogicalUnit": 1,
+        "logicalDisplay": {
+          "width": 52,
+          "height": 52
+        },
+        "scalePolicy": "fit-declared-logical-bounds-never-source-size"
+      },
+      "anchor": {
+        "name": "control-centre",
+        "normalized": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "groundContact": null
+      },
+      "geometry": {
+        "visual": {
+          "kind": "rectangle",
+          "x": -26,
+          "y": -26,
+          "width": 52,
+          "height": 52
+        },
+        "collision": null,
+        "navigation": null,
+        "interaction": null,
+        "touch": {
+          "kind": "rectangle",
+          "x": -32,
+          "y": -32,
+          "width": 64,
+          "height": 64
+        }
+      },
+      "sockets": [],
+      "states": [
+        "exit",
+        "undo",
+        "hint"
+      ],
+      "variants": [
+        "exit",
+        "undo",
+        "hint"
+      ],
+      "layers": [
+        {
+          "id": "main",
+          "order": 0,
+          "states": [
+            "exit",
+            "undo",
+            "hint"
+          ],
+          "canvasAlignment": "frame-grid"
+        }
+      ],
+      "directions": [],
+      "animations": [],
+      "artRules": {
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "palette": "Willowmere natural greens, river blues, warm timber, cream highlights",
+        "outline": "consistent dark pixel outline with crisp pixel clusters",
+        "lighting": "soft daylight from upper-left",
+        "shadow": "follow the family shadow contract",
+        "texture": "pixel-authored clusters; no photographic noise"
+      },
+      "expectedFilenames": {
+        "staging": "artwork/staging/phase-8a/lawn-care-essential-controls/v1/lawn-care-essential-controls.v1.png",
+        "master": "artwork/masters/phase-8a/lawn-care-essential-controls/v1/lawn-care-essential-controls.v1.png",
+        "runtime": "public/assets/runtime/phase-8a/lawn-care-essential-controls.v1.png"
+      },
+      "filenameStem": "lawn-care-essential-controls",
+      "promptPackage": {
+        "providerNeutral": true,
+        "positivePrompt": "Create one production-ready KindWorks pixel-art asset for only the exit, undo, and hint icons required by the representative screen Three compact, coherent pixel UI icons in order: close/exit, undo, and hint. No text. Each icon is centred with clear normal-state contrast and space for runtime pressed/disabled tint. Use KindWorks Visual Style Bible v4. Exact output: 192×64px PNG, transparent alpha, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.",
+        "negativePrompt": "provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; movement arrows, reset, level, timer, served counter, status bar, text labels, or decorative panel wider than one cell",
+        "deliveryInstruction": "Return only lawn-care-essential-controls.v1.png plus provenance metadata; do not composite it into a screenshot or rename it."
+      },
+      "forbiddenOutput": [
+        "provider watermark, signature, logo, caption, or embedded text",
+        "photorealism, vector-soft edges, antialiasing, blur, or resampling noise",
+        "automatic trimming, cropped canvas, changed frame order, or unequal frame alignment",
+        "unrequested UI, characters, props, scenery, shadows, or background colour",
+        "perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4",
+        "movement arrows, reset, level, timer, served counter, status bar, text labels, or decorative panel wider than one cell"
+      ],
+      "validation": {
+        "checklist": [
+          "semantic ID is unique and matches the approved manifest entry",
+          "filename and file format exactly match the contract",
+          "canvas, frame grid, frame count, alpha mode, and untrimmed alignment are exact",
+          "nearest-neighbour sampling is preserved and no smoothing metadata is introduced",
+          "ground anchor, sockets, visual bounds, and gameplay geometry remain independently addressable",
+          "all required states, layers, directions, and animation frames are present",
+          "texture budget, scene-pack dependency, fallback, and orphan-reference checks pass"
+        ],
+        "requireExactDimensions": true,
+        "requireAlpha": true,
+        "requireUntrimmedFrames": true,
+        "requireNearestNeighbour": true,
+        "requireFrameCount": 3,
+        "requireStateNames": [
+          "exit",
+          "undo",
+          "hint"
+        ],
+        "requireDirections": [],
+        "maximumTransparentPadding": {
+          "top": 64,
+          "right": 192,
+          "bottom": 64,
+          "left": 192
+        },
+        "maximumVisibleBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 192,
+          "height": 64
+        },
+        "gameplayGeometrySignature": "f64911e4",
+        "maximumRuntimeBytes": 70000,
+        "fallbackSemanticId": "system.fallback.production"
+      },
+      "accessibility": null,
+      "dependencies": [
+        "minigame.lawn.slice.board-tiles"
+      ],
+      "scenePlacement": [
+        {
+          "layoutId": "layout.phase-8a.lawn-care.representative",
+          "sceneId": "LawnCareScene",
+          "instanceId": "instance.phase-8a.lawn.controls",
+          "position": {
+            "x": 640,
+            "y": 680
+          },
+          "gameplayGeometryLocked": true,
+          "safeAreaBindings": [
+            "top-right:exit",
+            "bottom-centre:undo,hint"
+          ],
+          "minimumCssTouchTarget": 44
+        }
+      ],
+      "prefabId": "prefab.phase-8a.lawn-controls",
+      "stateMapId": "state.phase-8a.lawn-controls",
+      "placeholder": {
+        "mode": "semantic-registry-generated-fallback",
+        "development": "labelled checker placeholder in Asset Lab",
+        "production": "transparent safe fallback with recorded registry failure"
+      },
+      "productionStatus": "specified",
+      "provenance": {
+        "provider": "generator-neutral",
+        "specificationVersion": 2,
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "generatedArtworkPresent": false
+      }
+    }
+  ],
+  "layouts": [
+    {
+      "id": "layout.phase-8a.town-block.house-6",
+      "sceneId": "TownScene",
+      "canonicalSize": {
+        "width": 1280,
+        "height": 720
+      },
+      "worldOrigin": {
+        "x": 1880,
+        "y": 0
+      },
+      "sourceOfTruth": "src/data/town.js house-6, north-road, RIVER_PATH, TOWN_REFERENCE_LAYOUT",
+      "activation": "prepared-not-active-until-phase-8b"
+    },
+    {
+      "id": "layout.phase-8a.lawn-care.representative",
+      "sceneId": "LawnCareScene",
+      "canonicalSize": {
+        "width": 1280,
+        "height": 720
+      },
+      "sourceOfTruth": "src/scenes/LawnCareScene.js and src/data/lawnCare.js",
+      "activation": "prepared-not-active-until-phase-8b"
+    }
+  ],
+  "transition": {
+    "id": "transition.phase-8a.lawn-house-6.complete",
+    "interaction": {
+      "sceneId": "TownScene",
+      "targetId": "lawn-house-6",
+      "entryOwner": "TownScene.startLawnCare",
+      "radius": 105
+    },
+    "activity": {
+      "sceneId": "LawnCareScene",
+      "gameplayOwner": "LawnCareEngine",
+      "completionOwner": "LawnCareService.applyResult",
+      "minimumRewardPercentOwner": "MIN_LAWN_REWARD_PERCENT"
+    },
+    "beforeVisualState": {
+      "stateMapId": "state.phase-8a.lawn-house-6",
+      "state": "job-ready",
+      "grassHeightRange": {
+        "minimum": 70,
+        "maximum": 100
+      }
+    },
+    "afterVisualState": {
+      "stateMapId": "state.phase-8a.lawn-house-6",
+      "state": "fresh-cut",
+      "grassHeightOwner": "LAWN_CONFIG.freshlyCutHeight",
+      "currentValue": 5
+    },
+    "rewardContract": {
+      "owner": "LawnCareService.applyResult/calculateLawnReward",
+      "delivery": "existing economy ledger only",
+      "duplicateProtection": "lawnCare.processedSessionIds",
+      "visualLayerMayMutateReward": false
+    },
+    "saveContract": {
+      "preservedFields": [
+        "farming.lawns.lawn-house-6",
+        "lawnCare",
+        "economy.coins",
+        "economy.ledger"
+      ],
+      "visualDefinitionsPersisted": false
+    }
+  },
+  "dependencyOrder": [
+    {
+      "wave": 1,
+      "name": "foundation-and-calibration",
+      "assetIds": [
+        "terrain.town.slice.grass",
+        "terrain.town.slice.pavement",
+        "terrain.town.slice.road"
+      ]
+    },
+    {
+      "wave": 2,
+      "name": "river-and-world-footprints",
+      "assetIds": [
+        "terrain.town.slice.river-edge",
+        "terrain.town.slice.lawn-house-6",
+        "building.town.slice.house-6-bay-cottage"
+      ]
+    },
+    {
+      "wave": 3,
+      "name": "occlusion-and-props",
+      "assetIds": [
+        "prop.town.slice.large-oak.shadow",
+        "prop.town.slice.large-oak.trunk",
+        "prop.town.slice.large-oak.canopy",
+        "prop.town.slice.white-fence",
+        "prop.town.slice.public-bin",
+        "prop.town.slice.rubbish-can",
+        "prop.town.slice.flower-planter"
+      ]
+    },
+    {
+      "wave": 4,
+      "name": "characters-and-animal",
+      "assetIds": [
+        "character.player.slice.resident",
+        "character.npc.slice.resident-a",
+        "character.animal.slice.dog"
+      ]
+    },
+    {
+      "wave": 5,
+      "name": "interaction-and-reward",
+      "assetIds": [
+        "ui.town.slice.lawn-interaction",
+        "ui.town.slice.coin-reward-burst"
+      ]
+    },
+    {
+      "wave": 6,
+      "name": "lawn-care-screen",
+      "assetIds": [
+        "minigame.lawn.slice.board-tiles",
+        "minigame.lawn.slice.weed-tiles",
+        "minigame.lawn.slice.mower",
+        "ui.lawn.slice.controls"
+      ]
+    }
+  ],
+  "integration": {
+    "registrySource": "createPhase8AAssetLabManifest(KINDWORKS_VISUAL_MANIFEST)",
+    "renderer": "PhaserPrefabRenderer",
+    "inspection": "AssetLabScene",
+    "replacementRule": "Change only the central semantic asset source/kind/runtime metadata after staged approval; scene gameplay files remain unchanged.",
+    "placeholdersActiveInRegistry": true,
+    "liveSceneActivationDeferredTo": "Phase 8B approved vertical-slice integration",
+    "massGenerationPermitted": false
+  }
+}

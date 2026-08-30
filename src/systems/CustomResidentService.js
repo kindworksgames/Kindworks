@@ -15,6 +15,7 @@ import {
   personalHomeRedesignQuote,
 } from "../data/customResident.js";
 import { NPC_INDOOR_NODE_KINDS, NPC_NAVIGATION_LINKS, NPC_NAVIGATION_NODES } from "../data/npcTownLife.js";
+import { npcNavigationDetour, npcNavigationEdgeBlockedByPlacements } from "../data/townPlacement.js";
 import { COIN_LEDGER_LIMIT } from "../state/economyState.js";
 import {
   normalizeCustomResidentProfile,
@@ -94,6 +95,7 @@ export class CustomResidentService {
     this.runtimeLocation = { ...normalizeCustomResidentState(gameState.getSnapshot().customResident).location };
     this.locationDirty = false;
     this.lastResult = { ok: true, code: "ready" };
+    this.navigationDetours = new Map();
   }
 
   subscribe(listener) {
@@ -108,7 +110,7 @@ export class CustomResidentService {
   }
 
   getSnapshot() {
-    const state = normalizeCustomResidentState(this.gameState.getSnapshot().customResident);
+    const state = normalizeCustomResidentState(this.gameState.getDomainSnapshot("customResident"));
     state.location = { ...this.runtimeLocation };
     return {
       ...structuredClone(state),
@@ -161,9 +163,19 @@ export class CustomResidentService {
     const autonomy = resident.autonomy;
     const now = absoluteMinute(state.world);
     const schedule = autonomySchedule(resident.profile, state.world);
-    if (autonomy.targetNodeId !== schedule.targetNodeId || autonomy.route.at(-1) !== schedule.targetNodeId) {
+    const placedObjects = state.townPlacement?.objects || [];
+    const routeIds = [autonomy.currentNodeId, ...autonomy.route.slice(autonomy.routeIndex)];
+    const routeBlocked = routeIds.slice(1).some((id, index) => {
+      const from = this.graph.getNode(routeIds[index]);
+      const to = this.graph.getNode(id);
+      return from && to && npcNavigationEdgeBlockedByPlacements(from, to, placedObjects);
+    });
+    if (autonomy.targetNodeId !== schedule.targetNodeId || autonomy.route.at(-1) !== schedule.targetNodeId || routeBlocked) {
       autonomy.targetNodeId = schedule.targetNodeId;
-      autonomy.route = this.graph.findPath(autonomy.currentNodeId, schedule.targetNodeId);
+      autonomy.route = this.graph.findPath(autonomy.currentNodeId, schedule.targetNodeId, {
+        blockedEdge: (from, to) => npcNavigationEdgeBlockedByPlacements(from, to, placedObjects),
+      });
+      if (!autonomy.route.length) autonomy.route = this.graph.findPath(autonomy.currentNodeId, schedule.targetNodeId);
       if (!autonomy.route.length) autonomy.route = [autonomy.currentNodeId];
       autonomy.routeIndex = autonomy.route.length > 1 ? 1 : 0;
       if (schedule.hobby?.kind === "shop") autonomy.shoppingVisits += 1;
@@ -172,8 +184,16 @@ export class CustomResidentService {
     let remaining = minutes * CUSTOM_RESIDENT_AUTONOMY.speedWorldUnitsPerGameMinute;
     while (remaining > 0 && autonomy.routeIndex < autonomy.route.length) {
       const target = this.graph.getNode(autonomy.route[autonomy.routeIndex]);
-      const dx = target.x - resident.location.x;
-      const dy = target.y - resident.location.y;
+      let detour = this.navigationDetours.get(resident.residentId);
+      if (!detour || detour.targetId !== target.id) {
+        const points = npcNavigationDetour(resident.location, target, placedObjects, `${resident.residentId}:${target.id}`);
+        detour = points.length ? { targetId: target.id, points: [...points] } : null;
+        if (detour) this.navigationDetours.set(resident.residentId, detour);
+        else this.navigationDetours.delete(resident.residentId);
+      }
+      const movementTarget = detour?.points[0] || target;
+      const dx = movementTarget.x - resident.location.x;
+      const dy = movementTarget.y - resident.location.y;
       const distance = Math.hypot(dx, dy);
       if (distance > remaining && distance > 0) {
         resident.location.x += (dx / distance) * remaining;
@@ -182,11 +202,19 @@ export class CustomResidentService {
         remaining = 0;
         break;
       }
+      resident.location.x = movementTarget.x;
+      resident.location.y = movementTarget.y;
+      remaining -= distance;
+      if (detour?.points.length) {
+        detour.points.shift();
+        if (detour.points.length) continue;
+        this.navigationDetours.delete(resident.residentId);
+        continue;
+      }
       resident.location.x = target.x;
       resident.location.y = target.y;
       autonomy.currentNodeId = target.id;
       autonomy.routeIndex += 1;
-      remaining -= distance;
     }
 
     const arrived = autonomy.currentNodeId === schedule.targetNodeId && autonomy.routeIndex >= autonomy.route.length;

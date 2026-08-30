@@ -1,5 +1,6 @@
 import Phaser from "phaser";
-import { ANIMAL_BY_ID, ANIMAL_REFERENCE_TEXTURE_KEY, ANIMAL_SPECIES, animalReferenceFrame } from "../data/animals.js";
+import { ANIMAL_BY_ID, ANIMAL_SPECIES, animalReferenceFrame } from "../data/animals.js";
+import { VISUAL_ASSET_IDS } from "../visual/visualManifest.js";
 import { ITEM_CATALOG } from "../data/items.js";
 import {
   PAWS_WONDERS_CATALOG,
@@ -12,6 +13,7 @@ import {
 import { createPlayerAssets, PlayerCharacter } from "../entities/PlayerCharacter.js";
 import { InteractionSystem } from "../systems/InteractionSystem.js";
 import { MovementController } from "../systems/MovementController.js";
+import { PAWS_WONDERS_GEOMETRY } from "../data/interiorGeometry.js";
 
 const PLAYER_RADIUS = 17;
 const WALK_SPEED = 220;
@@ -40,6 +42,7 @@ export class PawsWondersScene extends Phaser.Scene {
   }
 
   create() {
+    this.gameplayGeometry = PAWS_WONDERS_GEOMETRY;
     this.gameState = this.registry.get("gameState");
     this.pawsWonders = this.registry.get("pawsWonders");
     this.worldSimulation = this.registry.get("worldSimulation");
@@ -77,7 +80,7 @@ export class PawsWondersScene extends Phaser.Scene {
     this.add.text(640, 66, PAWS_WONDERS_INTERIOR.subtitle, { color: "#d6e8d2", fontFamily: "system-ui", fontSize: "13px" }).setOrigin(0.5).setDepth(40);
 
     const colours = { dogs: 0xb78755, exotics: 0x7e9a61, featured: 0x887353, counter: 0x4b7259 };
-    this.fixtureRects = [];
+    this.fixtureRects = PAWS_WONDERS_GEOMETRY.collisions.map((entry) => ({ ...entry }));
     for (const [id, fixture] of Object.entries(PAWS_WONDERS_FIXTURES)) {
       const rect = pawsPercentRect(fixture);
       floor.fillStyle(colours[id], 1);
@@ -85,7 +88,6 @@ export class PawsWondersScene extends Phaser.Scene {
       floor.lineStyle(4, 0x40372d, 0.9);
       floor.strokeRoundedRect(rect.x, rect.y, rect.width, rect.height, 10);
       this.add.text(rect.x + rect.width / 2, rect.y + 6, fixture.label, { color: "#fff8dd", fontFamily: "ui-monospace, monospace", fontSize: "10px", fontStyle: "bold" }).setOrigin(0.5, 0).setDepth(12);
-      this.fixtureRects.push({ id, ...rect });
     }
     this.petDisplays = new Map();
     for (const display of PAWS_WONDERS_DISPLAYS) this.drawPetDisplay(display);
@@ -99,17 +101,20 @@ export class PawsWondersScene extends Phaser.Scene {
   drawPetDisplay(display) {
     const item = PAWS_WONDERS_CATALOG[display.id];
     const rect = pawsPercentRect(display);
-    const zone = this.add.rectangle(rect.x + rect.width / 2, rect.y + rect.height / 2, rect.width, rect.height, 0xfff8dc, 0.12).setStrokeStyle(2, 0xf6e39a, 0.85).setDepth(14).setInteractive({ useHandCursor: true });
-    zone.on("pointerdown", () => this.selectCompanion(item.id));
+    const zone = this.add.rectangle(rect.x + rect.width / 2, rect.y + rect.height / 2, rect.width, rect.height, 0xfff8dc, 0.12).setStrokeStyle(2, 0xf6e39a, 0.85).setDepth(14);
+    const touch = PAWS_WONDERS_GEOMETRY.displays[item.id].touchTarget;
+    const hitTarget = this.add.zone(touch.x + touch.width / 2, touch.y + touch.height / 2, touch.width, touch.height).setDepth(20).setInteractive({ useHandCursor: true });
+    hitTarget.on("pointerdown", () => this.selectCompanion(item.id));
     const bed = this.add.ellipse(zone.x, rect.y + rect.height * 0.72, Math.max(36, rect.width * 0.55), Math.max(12, rect.height * 0.22), item.category === "dog" ? 0xead092 : 0xc7dba5, 0.95).setDepth(15);
     const definition = ANIMAL_BY_ID[item.animalId];
     const referenceFrame = animalReferenceFrame(definition);
-    const icon = referenceFrame === null || !this.textures.exists(ANIMAL_REFERENCE_TEXTURE_KEY)
+    const animalTextureKey = this.registry.get("visualRegistry").getTextureKey(VISUAL_ASSET_IDS.ANIMAL_REFERENCE_SHEET);
+    const icon = referenceFrame === null || !this.textures.exists(animalTextureKey)
       ? this.add.text(zone.x, rect.y + rect.height * 0.45, item.icon, { fontFamily: "Apple Color Emoji, system-ui", fontSize: item.category === "featured" ? "35px" : "28px" }).setOrigin(0.5).setDepth(17)
-      : this.add.image(zone.x, rect.y + rect.height * 0.62, ANIMAL_REFERENCE_TEXTURE_KEY, referenceFrame).setOrigin(0.5, 1).setScale(item.category === "featured" ? 0.68 : 0.58).setDepth(17);
+      : this.add.image(zone.x, rect.y + rect.height * 0.62, animalTextureKey, referenceFrame).setOrigin(0.5, 1).setScale(item.category === "featured" ? 0.68 : 0.58).setDepth(17);
     const label = this.add.text(zone.x, rect.y + rect.height - 3, item.name, { color: "#263d30", fontFamily: "system-ui", fontSize: "9px", fontStyle: "bold", backgroundColor: "rgba(255,250,225,.9)", padding: { x: 4, y: 2 } }).setOrigin(0.5, 1).setDepth(18);
     const status = this.add.text(rect.x + rect.width - 3, rect.y + 3, "", { color: "#fff", fontSize: "8px", fontStyle: "bold", backgroundColor: "#47785a", padding: { x: 4, y: 2 } }).setOrigin(1, 0).setDepth(19);
-    this.petDisplays.set(item.id, { item, rect, zone, bed, icon, label, status });
+    this.petDisplays.set(item.id, { item, rect, zone, hitTarget, bed, icon, label, status });
   }
 
   drawNpc(npc) {
@@ -122,35 +127,38 @@ export class PawsWondersScene extends Phaser.Scene {
   }
 
   drawDetailPanel() {
+    const animalTextureKey = this.registry.get("visualRegistry").getTextureKey(VISUAL_ASSET_IDS.ANIMAL_REFERENCE_SHEET);
     this.add.rectangle(1062, 360, 330, 570, 0xfffbeb, 1).setStrokeStyle(5, 0x42684f).setDepth(25);
     this.detailEyebrow = this.add.text(925, 96, "SELECTED COMPANION", { color: "#78856f", fontFamily: "ui-monospace, monospace", fontSize: "10px", fontStyle: "bold" }).setDepth(26);
-    this.detailIcon = this.add.image(1062, 192, ANIMAL_REFERENCE_TEXTURE_KEY, animalReferenceFrame(ANIMAL_BY_ID["pet-dog-labrador"])).setOrigin(0.5, 1).setScale(1.25).setDepth(26);
+    this.detailIcon = this.add.image(1062, 192, animalTextureKey, animalReferenceFrame(ANIMAL_BY_ID["pet-dog-labrador"])).setOrigin(0.5, 1).setScale(1.25).setDepth(26);
     this.detailName = this.add.text(925, 208, "Sunny · Labrador", { color: "#244c36", fontFamily: "system-ui", fontSize: "22px", fontStyle: "bold", wordWrap: { width: 275 } }).setDepth(26);
     this.detailPersonality = this.add.text(925, 244, "Warm, bouncy and people-focused", { color: "#4f6c59", fontSize: "13px", fontStyle: "bold", wordWrap: { width: 275 } }).setDepth(26);
     this.detailDescription = this.add.text(925, 284, "", { color: "#5c6c61", fontSize: "12px", lineSpacing: 4, wordWrap: { width: 275 } }).setDepth(26);
     this.detailFoods = this.add.text(925, 377, "", { color: "#48624f", fontSize: "11px", lineSpacing: 3, wordWrap: { width: 275 } }).setDepth(26);
     this.detailPrice = this.add.text(925, 445, "🪙 420", { color: "#294c37", fontSize: "20px", fontStyle: "bold" }).setDepth(26);
     this.detailStatus = this.add.text(925, 482, "Not adopted · South Meadow after adoption", { color: "#68766c", fontSize: "11px", wordWrap: { width: 275 } }).setDepth(26);
-    this.adoptButton = this.add.rectangle(1062, 551, 275, 54, 0x3d7a50).setStrokeStyle(2, 0x2b5f3b).setDepth(26).setInteractive({ useHandCursor: true });
+    this.adoptButton = this.add.rectangle(1062, 551, 275, 56, 0x3d7a50).setStrokeStyle(2, 0x2b5f3b).setDepth(26).setInteractive({ useHandCursor: true });
     this.adoptButtonText = this.add.text(1062, 551, "Adopt · 🪙 420", { color: "#fff", fontSize: "15px", fontStyle: "bold" }).setOrigin(0.5).setDepth(27);
     this.adoptButton.on("pointerdown", () => this.adoptSelected());
     this.messageText = this.add.text(925, 592, "Adoptions are permanent and save immediately.", { color: "#5c6f60", fontSize: "10px", wordWrap: { width: 275 } }).setDepth(26);
   }
 
   createPlayer() {
-    const spawn = PAWS_WONDERS_INTERIOR.spawn;
+    const spawn = PAWS_WONDERS_GEOMETRY.spawnPoints[0];
     this.player = new PlayerCharacter(this, spawn.x, spawn.y, { direction: spawn.facing }).setScale(1.02).setDepth(50);
     this.shadow = this.add.ellipse(spawn.x, spawn.y + 21, 36, 12, 0x24392d, 0.25).setDepth(49);
     this.movement = new MovementController(this);
   }
 
   createInteractions() {
-    const products = [...this.petDisplays.values()].map(({ item, rect }) => ({
-      id: `paws-${item.id}`, kind: "pet-habitat", x: rect.x + rect.width / 2, y: rect.y + rect.height / 2,
-      radius: Math.max(62, rect.width * 0.58), label: `Meet ${item.name}`, detail: `${item.breed} · 🪙 ${item.price.toLocaleString()}`,
+    const products = [...this.petDisplays.values()].map(({ item }) => {
+      const interaction = PAWS_WONDERS_GEOMETRY.displays[item.id].interaction;
+      return ({ id: `paws-${item.id}`, kind: "pet-habitat", x: interaction.x, y: interaction.y, radius: interaction.radius,
+      label: `Meet ${item.name}`, detail: `${item.breed} · 🪙 ${item.price.toLocaleString()}`,
       onActivate: () => this.selectCompanion(item.id),
-    }));
-    const exit = PAWS_WONDERS_INTERIOR.exit;
+      });
+    });
+    const exit = PAWS_WONDERS_GEOMETRY.triggerRegions[0];
     this.interactions = new InteractionSystem({ interactables: [...products, { id: "paws-exit", kind: "exit", x: exit.x, y: exit.y, radius: exit.radius, label: "Leave Paws & Wonders", detail: "Return to Willowmere", onActivate: () => this.exitToTown() }], onChange: (current) => this.renderInteractionPrompt(current) });
   }
 
@@ -180,7 +188,22 @@ export class PawsWondersScene extends Phaser.Scene {
     this.adoptButton.disableInteractive();
     if (product.canAdopt) this.adoptButton.setInteractive({ useHandCursor: true });
     this.adoptButton.setFillStyle(product.canAdopt ? 0x3d7a50 : 0x87948a);
+    const mobileName = document.querySelector("#paws-mobile-name");
+    const mobileSummary = document.querySelector("#paws-mobile-summary");
+    const mobileAdopt = document.querySelector("#paws-mobile-adopt");
+    if (mobileName) mobileName.textContent = itemLabel(item);
+    if (mobileSummary) mobileSummary.textContent = `${status} · 🪙 ${item.price.toLocaleString()}`;
+    if (mobileAdopt) {
+      mobileAdopt.textContent = label;
+      mobileAdopt.disabled = !product.canAdopt;
+    }
     for (const [id, display] of this.petDisplays) display.zone.setStrokeStyle(id === item.id ? 4 : 2, id === item.id ? 0xffd96b : 0xf6e39a, 0.9);
+  }
+
+  cycleCompanion(direction) {
+    const itemIds = Object.keys(PAWS_WONDERS_CATALOG);
+    const current = Math.max(0, itemIds.indexOf(this.selectedItemId));
+    return this.selectCompanion(itemIds[(current + direction + itemIds.length) % itemIds.length]);
   }
 
   refreshFromState() {
@@ -202,6 +225,8 @@ export class PawsWondersScene extends Phaser.Scene {
     this.messageText.setColor(result.ok ? "#28613b" : "#8a4934");
     this.messageText.setText(result.ok ? `🎉 Congratulations! ${result.name} is now roaming in South Meadow.` : result.message);
     this.refreshFromState();
+    const mobileStatus = document.querySelector("#paws-mobile-status");
+    if (mobileStatus) mobileStatus.textContent = result.ok ? `${result.name} adopted and saved.` : result.message;
     return result;
   }
 
@@ -219,16 +244,25 @@ export class PawsWondersScene extends Phaser.Scene {
   bindInterface() {
     this.interactionButton = document.querySelector("#interaction-action");
     this.exitButton = document.querySelector("#paws-exit");
+    this.mobilePreviousButton = document.querySelector("#paws-mobile-previous");
+    this.mobileNextButton = document.querySelector("#paws-mobile-next");
+    this.mobileAdoptButton = document.querySelector("#paws-mobile-adopt");
     this.onInteraction = () => this.interactions.activateCurrent();
     this.onExit = () => this.exitToTown();
+    this.onMobilePrevious = () => this.cycleCompanion(-1);
+    this.onMobileNext = () => this.cycleCompanion(1);
+    this.onMobileAdopt = () => this.adoptSelected();
     this.interactionButton?.addEventListener("click", this.onInteraction);
     this.exitButton?.addEventListener("click", this.onExit);
+    this.mobilePreviousButton?.addEventListener("click", this.onMobilePrevious);
+    this.mobileNextButton?.addEventListener("click", this.onMobileNext);
+    this.mobileAdoptButton?.addEventListener("click", this.onMobileAdopt);
     this.escapeKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
     this.adoptKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
   }
 
   isBlocked(x, y) {
-    const room = PAWS_WONDERS_INTERIOR.room;
+    const room = PAWS_WONDERS_GEOMETRY.worldBounds;
     if (x < room.x + PLAYER_RADIUS || x > room.x + room.width - PLAYER_RADIUS || y < room.y + PLAYER_RADIUS || y > room.y + room.height - PLAYER_RADIUS) return true;
     return this.fixtureRects.some((rect) => circleTouchesRect(x, y, PLAYER_RADIUS, rect));
   }
@@ -283,6 +317,9 @@ export class PawsWondersScene extends Phaser.Scene {
     this.movement?.destroy();
     this.interactionButton?.removeEventListener("click", this.onInteraction);
     this.exitButton?.removeEventListener("click", this.onExit);
+    this.mobilePreviousButton?.removeEventListener("click", this.onMobilePrevious);
+    this.mobileNextButton?.removeEventListener("click", this.onMobileNext);
+    this.mobileAdoptButton?.removeEventListener("click", this.onMobileAdopt);
     this.renderInteractionPrompt(null);
     this.worldSimulation?.setPaused?.("activity", false);
     this.npcTownLife?.setPaused?.("activity", false);

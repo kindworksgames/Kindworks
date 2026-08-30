@@ -1,0 +1,6 @@
+{
+  "description": "Removes an asset required by the manifest contract policy.",
+  "assetId": "scene.fishing.reedbank.background",
+  "operation": "remove-asset",
+  "expectedCodes": ["missing-required-contract"]
+}

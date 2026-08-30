@@ -4,6 +4,7 @@ import {
   houseRescueCoverage,
 } from "../data/houseRescue.js";
 import { startLazyScene } from "./lazyScenes.js";
+import { runHouseRescueQaCompletion } from "../qa/houseRescueQaCompletion.js";
 
 const FURNITURE_ICONS = Object.freeze({
   bed: "🛏️", table: "🍽️", kitchen: "🥣", wardrobe: "🚪", rug: "▰", sofa: "🛋️",
@@ -182,7 +183,7 @@ export class HouseRescueScene extends Phaser.Scene {
   setSceneInterface() {
     document.body.dataset.gameScene = this.scene.key;
     const badge = document.querySelector(".milestone-badge");
-    if (badge) badge.textContent = "HOUSE RESCUE · MILESTONE 16";
+    if (badge) badge.textContent = "HOUSE RESCUE";
     setText("#location-status", "House Rescue");
     setText("#control-hint", "Tap an item, then its bin · swipe to vacuum");
   }
@@ -291,7 +292,7 @@ export class HouseRescueScene extends Phaser.Scene {
     }
     setText("#house-rescue-balance", `🪙 ${this.gameState.getSnapshot().economy.coins}`);
     const game = document.querySelector("#game");
-    if (game) {
+    if (import.meta.env.DEV && game) {
       game.dataset.scene = this.scene.key;
       game.dataset.houseRescueLevel = String(session?.level || progress.selectedLevel);
       game.dataset.houseRescuePhase = session?.phase || "loading";
@@ -301,10 +302,12 @@ export class HouseRescueScene extends Phaser.Scene {
   }
 
   completeQa() {
-    const result = this.houseRescue.qaComplete();
-    if (!result.ok) { this.setMessage(result.message, "error"); return false; }
-    this.showResult(result.result);
-    return true;
+    return runHouseRescueQaCompletion({
+      qaMode: this.qaMode,
+      houseRescue: this.houseRescue,
+      setMessage: (message, status) => this.setMessage(message, status),
+      showResult: (result) => this.showResult(result),
+    });
   }
 
   showResult(result) {
@@ -315,7 +318,7 @@ export class HouseRescueScene extends Phaser.Scene {
     setText("#house-rescue-result-coins", `+${result.coins}`);
     setText("#house-rescue-balance", `🪙 ${this.gameState.getSnapshot().economy.coins}`);
     const game = document.querySelector("#game");
-    if (game) {
+    if (import.meta.env.DEV && game) {
       game.dataset.houseRescuePhase = "result";
       game.dataset.houseRescueCoverage = String(Math.round(result.completionCoverage * 100));
     }

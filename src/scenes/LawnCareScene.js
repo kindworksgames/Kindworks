@@ -5,6 +5,9 @@ import {
   lawnTravelPlan,
   lawnCellKey,
 } from "../data/lawnCare.js";
+import { preloadApprovedSceneVisuals, mountApprovedSceneVisuals } from "../visual/renderers/ApprovedSceneVisualRuntime.js";
+import { createLawnApprovedSceneBindings } from "../presentation/LawnApprovedSceneBindings.js";
+import { applyApprovedLawnDomVisuals } from "../presentation/LawnApprovedDomVisuals.js";
 
 const ROOM = Object.freeze({ width: 1280, height: 720 });
 const DIRECTION_KEYS = Object.freeze({ U: "up", D: "down", L: "left", R: "right" });
@@ -34,6 +37,10 @@ export class LawnCareScene extends Phaser.Scene {
     this.queuedDirection = null;
   }
 
+  preload() {
+    preloadApprovedSceneVisuals(this);
+  }
+
   create() {
     this.lawnCare = this.registry.get("lawnCare");
     this.onboarding = this.registry.get("onboarding");
@@ -48,6 +55,8 @@ export class LawnCareScene extends Phaser.Scene {
     if (!this.lawnCare.getActiveSession()) this.startLevel(this.entryData.level || this.lawnCare.getCampaignSnapshot().nextLevel);
     this.setSceneInterface();
     this.render();
+    this.approvedSceneVisuals = mountApprovedSceneVisuals(this, { bindings: createLawnApprovedSceneBindings(this) });
+    this.removeApprovedLawnDomVisuals = applyApprovedLawnDomVisuals(this);
     this.cameras.main.fadeIn(220, 38, 75, 42);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.shutdownScene());
   }
@@ -131,7 +140,7 @@ export class LawnCareScene extends Phaser.Scene {
   setSceneInterface() {
     document.body.dataset.gameScene = this.scene.key;
     const badge = document.querySelector(".milestone-badge");
-    if (badge) badge.textContent = "LAWN CARE · MILESTONE 18";
+    if (badge) badge.textContent = "LAWN CARE";
     setText("#location-status", "Lawn Care");
     setText("#control-hint", "Swipe, arrows or WASD mow · Z undoes · H hints · landscape play");
     setText("#landscape-required-message", "Lawn Care is designed for landscape play. Turn your phone sideways to continue mowing.");
@@ -276,6 +285,7 @@ export class LawnCareScene extends Phaser.Scene {
     this.buttons.hint.disabled = state.ended;
     if (this.buttons.qa) this.buttons.qa.disabled = state.ended;
     this.renderBoard(state, session.assignedLevel);
+    this.approvedSceneVisuals?.refresh?.();
     this.updateDomState();
   }
 
@@ -307,6 +317,7 @@ export class LawnCareScene extends Phaser.Scene {
   }
 
   updateDomState() {
+    if (!import.meta.env.DEV) return;
     const game = document.querySelector("#game");
     if (!game) return;
     const session = this.lawnCare.getActiveSession();
@@ -375,6 +386,8 @@ export class LawnCareScene extends Phaser.Scene {
       this.exitButton.classList.remove("confirming");
     }
     this.hud?.classList.add("hidden");
+    this.removeApprovedLawnDomVisuals?.();
+    this.removeApprovedLawnDomVisuals = null;
     this.worldSimulation?.setPaused("activity", false);
     this.npcTownLife?.setPaused("activity", false);
   }

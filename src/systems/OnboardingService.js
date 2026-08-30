@@ -4,6 +4,7 @@ import {
   ONBOARDING_TRACKED_GAME_KEYS,
   localLoginDayKey,
   loginDayOrdinal,
+  normalizeOnboardingCreatorDraft,
   normalizeOnboardingJourneyState,
   onboardingChecklistComplete,
   validateTownName,
@@ -72,12 +73,37 @@ export class OnboardingService {
     }, "Your town name could not be saved, so the previous name was kept.");
   }
 
+  saveCreatorDraft(step, value) {
+    const current = this.getSnapshot();
+    if (!current.townNamed) return { ok: false, code: "town-name-required", message: "Name your town before creating its resident." };
+    if (current.complete) return { ok: true, code: "setup-already-complete", duplicate: true, state: current };
+    const creatorDraft = normalizeOnboardingCreatorDraft(value);
+    if (!creatorDraft) return { ok: false, code: "creator-draft-required", message: "The resident choices could not be read." };
+    const creatorStep = Math.max(0, Math.min(2, Math.floor(Number(step) || 0)));
+    if (creatorStep > 0 && !/[\p{L}\p{N}]/u.test(creatorDraft.name)) {
+      return { ok: false, code: "resident-name-required", message: "Enter a resident name before continuing." };
+    }
+    if (current.creatorStep === creatorStep && JSON.stringify(current.creatorDraft) === JSON.stringify(creatorDraft)) {
+      return { ok: true, code: "creator-draft-unchanged", duplicate: true, state: current };
+    }
+    return this.commit((state) => {
+      state.onboarding.creatorStep = creatorStep;
+      state.onboarding.creatorDraft = creatorDraft;
+      return { ok: true, code: "creator-draft-saved", creatorStep };
+    }, "Your resident choices could not be saved. Keep this page open and try again.");
+  }
+
   syncSetupFromResident() {
     const snapshot = this.gameState.getSnapshot();
     const complete = Boolean(snapshot.onboarding.townNamed && snapshot.customResident?.profile && snapshot.customResident?.home?.houseId);
-    if (snapshot.onboarding.complete === complete) return { ok: true, code: "setup-unchanged", duplicate: true, state: this.getSnapshot() };
+    const checkpointCleared = snapshot.onboarding.creatorStep === 0 && snapshot.onboarding.creatorDraft === null;
+    if (snapshot.onboarding.complete === complete && (!complete || checkpointCleared)) return { ok: true, code: "setup-unchanged", duplicate: true, state: this.getSnapshot() };
     return this.commit((state) => {
       state.onboarding.complete = complete;
+      if (complete) {
+        state.onboarding.creatorStep = 0;
+        state.onboarding.creatorDraft = null;
+      }
       return { ok: true, code: complete ? "setup-complete" : "setup-incomplete" };
     }, "Your completed welcome setup could not be saved.");
   }

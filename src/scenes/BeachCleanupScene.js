@@ -113,7 +113,7 @@ export class BeachCleanupScene extends Phaser.Scene {
   }
 
   setSceneInterface() {
-    document.body.dataset.gameScene = this.scene.key; setText(".milestone-badge", "BEACH CLEANUP · MILESTONE 19"); setText("#location-status", "South Shore Beach");
+    document.body.dataset.gameScene = this.scene.key; setText(".milestone-badge", "BEACH CLEANUP"); setText("#location-status", "South Shore Beach");
     setText("#control-hint", "Swipe across the sand · Tap Menu for help");
     setText("#landscape-required-message", "Turn your device sideways to play.");
   }
@@ -194,7 +194,7 @@ export class BeachCleanupScene extends Phaser.Scene {
     this.setMessage("Beach saved.", "success"); this.render();
   }
   setMessage(message, status = "neutral") { const element = document.querySelector("#beach-status"); if (element) { element.textContent = message || "Continue cleaning."; element.dataset.status = status; } }
-  updateDomState() { const game = document.querySelector("#game"); if (!game) return; const session = this.beachCleanup.getActiveSession(); const state = this.beachCleanup.getSessionState(); const diagnostics = this.beachCleanup.getDiagnostics(); game.dataset.scene = this.scene.key; game.dataset.beachLevel = String(session?.assignedLevel || diagnostics.nextLevel); game.dataset.beachMode = session?.mode || this.lastResultContext?.mode || "loading"; game.dataset.beachPhase = this.lastResultContext ? "result" : session?.status || "loading"; game.dataset.beachRaked = String(state?.rakedCount || 0); game.dataset.beachRubbish = String(state?.collectedRubbish || 0); game.dataset.beachEarned = String(state?.earnedCoins || 0); game.dataset.beachCompleted = String(diagnostics.completed); game.dataset.beachCatalogue = String(diagnostics.totalLevels); game.dataset.beachCatalogueValid = String(diagnostics.catalogueValid); }
+  updateDomState() { if (!import.meta.env.DEV) return; const game = document.querySelector("#game"); if (!game) return; const session = this.beachCleanup.getActiveSession(); const state = this.beachCleanup.getSessionState(); const diagnostics = this.beachCleanup.getDiagnostics(); game.dataset.scene = this.scene.key; game.dataset.beachLevel = String(session?.assignedLevel || diagnostics.nextLevel); game.dataset.beachMode = session?.mode || this.lastResultContext?.mode || "loading"; game.dataset.beachPhase = this.lastResultContext ? "result" : session?.status || "loading"; game.dataset.beachRaked = String(state?.rakedCount || 0); game.dataset.beachRubbish = String(state?.collectedRubbish || 0); game.dataset.beachEarned = String(state?.earnedCoins || 0); game.dataset.beachCompleted = String(diagnostics.completed); game.dataset.beachCatalogue = String(diagnostics.totalLevels); game.dataset.beachCatalogueValid = String(diagnostics.catalogueValid); }
 
   requestExit() {
     const session = this.beachCleanup.getActiveSession();

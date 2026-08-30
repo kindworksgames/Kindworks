@@ -11,6 +11,7 @@ import {
 import { createPlayerAssets, PlayerCharacter } from "../entities/PlayerCharacter.js";
 import { InteractionSystem } from "../systems/InteractionSystem.js";
 import { MovementController } from "../systems/MovementController.js";
+import { VILLAGE_GROCER_GEOMETRY } from "../data/interiorGeometry.js";
 
 const PLAYER_RADIUS = 18;
 const WALK_SPEED = 220;
@@ -35,6 +36,7 @@ export class VillageGrocerScene extends Phaser.Scene {
   }
 
   create() {
+    this.gameplayGeometry = VILLAGE_GROCER_GEOMETRY;
     this.gameState = this.registry.get("gameState");
     this.shopController = this.registry.get("shopController");
     this.worldSimulation = this.registry.get("worldSimulation");
@@ -74,7 +76,8 @@ export class VillageGrocerScene extends Phaser.Scene {
     this.add.text(640, 72, VILLAGE_GROCER_INTERIOR.subtitle, { color: "#d7e8cf", fontFamily: "system-ui", fontSize: "14px" }).setOrigin(0.5).setDepth(30);
 
     const fixtureColours = { shelf: 0x9c713e, islandA: 0x77955a, islandB: 0xb58955, counter: 0x496c58 };
-    this.fixtureRects = Object.entries(VILLAGE_GROCER_FIXTURES).map(([id, fixture]) => {
+    this.fixtureRects = VILLAGE_GROCER_GEOMETRY.collisions.map((entry) => ({ ...entry }));
+    Object.entries(VILLAGE_GROCER_FIXTURES).forEach(([id, fixture]) => {
       const rect = percentRect(fixture);
       floor.fillStyle(fixtureColours[id], 1);
       floor.fillRoundedRect(rect.x, rect.y, rect.width, rect.height, 10);
@@ -83,7 +86,6 @@ export class VillageGrocerScene extends Phaser.Scene {
       this.add.text(rect.x + rect.width / 2, rect.y + 8, fixture.label, {
         color: "#fff8da", fontFamily: "ui-monospace, monospace", fontSize: "11px", fontStyle: "bold",
       }).setOrigin(0.5, 0).setDepth(12);
-      return { id, ...rect };
     });
 
     this.productZones = [];
@@ -99,9 +101,11 @@ export class VillageGrocerScene extends Phaser.Scene {
     const rect = percentRect(display);
     const zone = this.add.rectangle(rect.x + rect.width / 2, rect.y + rect.height / 2, rect.width, rect.height, 0xfff6cf, 0.08)
       .setStrokeStyle(2, 0xffef9c, 0.7)
-      .setDepth(14)
-      .setInteractive({ useHandCursor: true });
-    zone.on("pointerdown", () => this.openProduct(display.id));
+      .setDepth(14);
+    const touch = VILLAGE_GROCER_GEOMETRY.displays[display.id].touchTarget;
+    const hitTarget = this.add.zone(touch.x + touch.width / 2, touch.y + touch.height / 2, touch.width, touch.height)
+      .setDepth(17).setInteractive({ useHandCursor: true });
+    hitTarget.on("pointerdown", () => this.openProduct(display.id));
     const copies = Math.max(2, Math.min(10, display.count));
     for (let index = 0; index < copies; index += 1) {
       const x = rect.x + rect.width * (index + 0.5) / copies;
@@ -111,7 +115,7 @@ export class VillageGrocerScene extends Phaser.Scene {
       color: "#263d30", fontFamily: "system-ui", fontSize: display.width < 15 ? "9px" : "11px", fontStyle: "bold",
       backgroundColor: "rgba(255,250,220,.86)", padding: { x: 4, y: 2 },
     }).setOrigin(0.5, 1).setDepth(16);
-    this.productZones.push({ display, item, rect, zone });
+    this.productZones.push({ display, item, rect, zone, hitTarget });
   }
 
   drawNpc(npc) {
@@ -124,24 +128,25 @@ export class VillageGrocerScene extends Phaser.Scene {
   }
 
   createPlayer() {
-    const spawn = VILLAGE_GROCER_INTERIOR.spawn;
+    const spawn = VILLAGE_GROCER_GEOMETRY.spawnPoints[0];
     this.player = new PlayerCharacter(this, spawn.x, spawn.y, { direction: spawn.facing }).setScale(1.06).setDepth(50);
     this.shadow = this.add.ellipse(spawn.x, spawn.y + 21, 38, 13, 0x24392d, 0.25).setDepth(49);
     this.movement = new MovementController(this);
   }
 
   createInteractions() {
-    const products = this.productZones.map(({ display, item, rect }) => ({
+    const products = this.productZones.map(({ display, item }) => {
+      const interaction = VILLAGE_GROCER_GEOMETRY.displays[display.id].interaction;
+      return ({
       id: `grocer-${display.id}`,
       kind: "grocer-product",
-      x: rect.x + rect.width / 2,
-      y: rect.y + rect.height / 2,
-      radius: Math.max(70, Math.min(128, rect.width * 0.58)),
+      x: interaction.x, y: interaction.y, radius: interaction.radius,
       label: `Inspect ${item.name}`,
       detail: `🪙 ${item.price.toLocaleString()} · ${display.fixture === "islandB" ? "animal food" : "farming stock"}`,
       onActivate: () => this.openProduct(item.id),
-    }));
-    const exit = VILLAGE_GROCER_INTERIOR.exit;
+      });
+    });
+    const exit = VILLAGE_GROCER_GEOMETRY.triggerRegions[0];
     this.interactions = new InteractionSystem({
       interactables: [...products, {
         id: "grocer-exit", kind: "exit", x: exit.x, y: exit.y, radius: exit.radius,
@@ -186,7 +191,7 @@ export class VillageGrocerScene extends Phaser.Scene {
   }
 
   isBlocked(x, y) {
-    const room = VILLAGE_GROCER_INTERIOR.room;
+    const room = VILLAGE_GROCER_GEOMETRY.worldBounds;
     if (x < room.x + PLAYER_RADIUS || x > room.x + room.width - PLAYER_RADIUS || y < room.y + PLAYER_RADIUS || y > room.y + room.height - PLAYER_RADIUS) return true;
     return this.fixtureRects.some((rect) => circleTouchesRect(x, y, PLAYER_RADIUS, rect));
   }

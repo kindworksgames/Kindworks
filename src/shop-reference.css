@@ -354,7 +354,7 @@
   .shop-placement-preview { display: block; max-height: 42px; margin: 3px 0; overflow: hidden; padding: 4px 5px; font-size: 8px; }
 }
 
-@media (max-width: 680px) and (orientation: landscape) {
+@media (max-width: 900px) and (max-height: 500px) and (orientation: landscape) {
   .shop-panel { padding: 4px; }
   .shop-panel-card { width: calc(100vw - 8px); height: calc(100dvh - 8px); }
   .shop-panel-body { grid-template-columns: minmax(0, 1fr) 174px; }
@@ -451,8 +451,8 @@
 .shop-panel[data-shop-id="fresh-market"] .shop-balance strong { font-size: clamp(13px, 2.8dvh, 30px); }
 
 .shop-panel[data-shop-id="fresh-market"] .shop-panel-close {
-  width: clamp(40px, 6.5dvh, 66px);
-  height: clamp(40px, 6.5dvh, 66px);
+  width: clamp(var(--kw-touch-min, 44px), 6.5dvh, 66px);
+  height: clamp(var(--kw-touch-min, 44px), 6.5dvh, 66px);
   border: 3px solid #3a2430;
   border-radius: 5px;
   background: linear-gradient(#ef6b57, #bd332f);
@@ -817,8 +817,8 @@
 .shop-panel[data-shop-id="town-grocer"] .shop-balance > span:first-child { display: none; }
 .shop-panel[data-shop-id="town-grocer"] .shop-balance strong { font-size: clamp(13px, 2.6dvh, 27px); }
 .shop-panel[data-shop-id="town-grocer"] .shop-panel-close {
-  width: clamp(40px, 6.5dvh, 64px);
-  height: clamp(40px, 6.5dvh, 64px);
+  width: clamp(var(--kw-touch-min, 44px), 6.5dvh, 64px);
+  height: clamp(var(--kw-touch-min, 44px), 6.5dvh, 64px);
   border: 3px solid #332d48;
   border-radius: 8px;
   background: #fff8d8;
@@ -1060,10 +1060,39 @@
 }
 .shop-panel[data-shop-id="town-grocer"] .shop-message[data-status="neutral"] { display: none; }
 
-@media (max-width: 680px) and (orientation: landscape) {
+@media (max-width: 900px) and (max-height: 500px) and (orientation: landscape) {
   .shop-panel[data-shop-id="town-grocer"] .shop-panel-body { grid-template-columns: minmax(0, 69%) minmax(170px, 31%); }
   .shop-panel[data-shop-id="town-grocer"] .shop-product-list { padding-right: 10px; padding-left: 10px; }
   .shop-panel[data-shop-id="town-grocer"] .shop-detail-meta { grid-template-columns: 1fr 1fr; }
   .shop-panel[data-shop-id="town-grocer"] .shop-detail-meta div:nth-child(2) { display: block; }
   .shop-panel[data-shop-id="town-grocer"] #shop-detail-description { display: none; }
+
+  /* The decorative checkout row yields its space to the three interactive
+     shelves so every product remains a full finger-sized target. */
+  .shop-panel[data-shop-id="town-grocer"] .shop-product-list {
+    grid-template-rows: repeat(3, minmax(44px, 1fr));
+  }
+  .shop-panel[data-shop-id="town-grocer"] .grocer-shop-room-details { display: none; }
+  .shop-panel[data-shop-id="town-grocer"] .grocer-shop-product {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Counter stock becomes column-based at narrow landscape widths. The room
+     composition remains intact while each product owns at least 44×44 CSS px. */
+  .shop-panel[data-shop-id="fresh-market"] .fresh-market-stock {
+    grid-template-columns: repeat(3, minmax(44px, 1fr));
+    grid-template-rows: 1fr;
+  }
+  .shop-panel[data-shop-id="fresh-market"] .fresh-market-pond-food .fresh-market-stock {
+    grid-template-columns: minmax(44px, 1fr);
+  }
+  .shop-panel[data-shop-id="fresh-market"] .fresh-market-product {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .shop-panel[data-shop-id="fresh-market"] .shop-buy-button,
+  .shop-panel[data-shop-id="town-grocer"] .shop-buy-button {
+    min-height: 44px;
+  }
 }

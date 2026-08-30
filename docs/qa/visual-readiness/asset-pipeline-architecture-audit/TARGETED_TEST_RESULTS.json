@@ -1,0 +1,187 @@
+{
+  "schemaVersion": 1,
+  "auditId": "kindworks-asset-pipeline-architecture-audit-2026-08-30",
+  "branch": "phase-2-ui-simplification",
+  "head": "3387bcb48964c41edbdc26f4257d2990fcdaf8d5",
+  "productionCodeChanged": false,
+  "registryCounts": {
+    "assets": 15,
+    "fileAssets": 7,
+    "prefabs": 6,
+    "sceneInstances": 1,
+    "animations": 4,
+    "scenePacks": 4,
+    "physicalImageFiles": 10,
+    "phase8AContractOnlyAssets": 22,
+    "phase10PlannedFamilies": 74
+  },
+  "coverage": {
+    "plannedFamiliesWithRuntimeSemanticRepresentation": {
+      "covered": 6,
+      "total": 74,
+      "percent": 8.1
+    },
+    "artFamiliesFullyControlledByManifestAndFactory": {
+      "covered": 2,
+      "total": 73,
+      "percent": 2.7,
+      "families": [
+        "prop.bin-family",
+        "minigame.fishing-magnet-pack"
+      ]
+    },
+    "currentGameplayFileLoadsControlledByVisualRegistry": {
+      "covered": 1,
+      "total": 7,
+      "percent": 14.3
+    },
+    "physicalImageFilesRegisteredAsPrimaryRuntimeSources": {
+      "covered": 7,
+      "total": 10,
+      "percent": 70.0
+    }
+  },
+  "automatedChecks": [
+    {
+      "id": "targeted-visual-readiness-tests",
+      "result": "PASS",
+      "details": "52 tests passed across visual-readiness Phases 2, 3, 5, 6, 7, 8A and 10."
+    },
+    {
+      "id": "visual-registry-check",
+      "result": "PASS",
+      "details": "15 assets, 7 files, 6 prefabs, 1 scene instance, 4 animations, 4 scene packs."
+    },
+    {
+      "id": "artwork-pipeline-check",
+      "result": "PASS",
+      "details": "One valid sample accepted; six invalid fixtures rejected."
+    },
+    {
+      "id": "production-build",
+      "result": "PASS",
+      "details": "Vite production build and all postbuild validators completed successfully."
+    }
+  ],
+  "negativeCases": [
+    {
+      "id": "valid-asset",
+      "expected": "accept",
+      "actual": "accept",
+      "result": "PASS"
+    },
+    {
+      "id": "missing-required-asset",
+      "expected": "reject",
+      "actual": "missing-asset-file",
+      "result": "PASS"
+    },
+    {
+      "id": "missing-optional-asset",
+      "expected": "allow-with-diagnostic-or-declared-fallback",
+      "actual": "missing-asset-file; optional flag is ignored",
+      "result": "FAIL"
+    },
+    {
+      "id": "duplicate-semantic-id",
+      "expected": "reject",
+      "actual": "duplicate-id or duplicate-semantic-id",
+      "result": "PASS"
+    },
+    {
+      "id": "duplicate-phaser-cache-key",
+      "expected": "reject",
+      "actual": "accepted with no errors",
+      "result": "FAIL"
+    },
+    {
+      "id": "incorrect-path-case",
+      "expected": "reject before build",
+      "actual": "validator accepted; production preview returned the application shell instead of the image",
+      "result": "FAIL"
+    },
+    {
+      "id": "unsupported-declared-format",
+      "expected": "reject",
+      "actual": "runtime registry accepted",
+      "result": "FAIL"
+    },
+    {
+      "id": "corrupt-image-buffer",
+      "expected": "reject",
+      "actual": "runtime registry has no byte inspection; artwork inspector returned null dimensions",
+      "result": "PARTIAL"
+    },
+    {
+      "id": "incorrect-runtime-dimensions",
+      "expected": "reject",
+      "actual": "runtime registry accepted",
+      "result": "FAIL"
+    },
+    {
+      "id": "incorrect-spritesheet-frame-size",
+      "expected": "reject",
+      "actual": "runtime registry accepted",
+      "result": "FAIL"
+    },
+    {
+      "id": "missing-animation-frame",
+      "expected": "reject",
+      "actual": "runtime registry accepted",
+      "result": "FAIL"
+    },
+    {
+      "id": "replacement-with-different-visible-bounds",
+      "expected": "reject incompatible source",
+      "actual": "1536x1024 Power Wash image accepted for the 720x405 Fishing contract",
+      "result": "FAIL"
+    },
+    {
+      "id": "failed-preload-followed-by-scene-entry",
+      "expected": "diagnose and provide safe fallback",
+      "actual": "runtime-load-failed recorded and fallback created under requested key",
+      "result": "PARTIAL"
+    },
+    {
+      "id": "scene-revisit",
+      "expected": "no load errors on repeat entry",
+      "actual": "Fishing entered, exited to Town, and re-entered with no new asset warning or error",
+      "result": "PASS"
+    },
+    {
+      "id": "production-resolution",
+      "expected": "registered lowercase URLs resolve",
+      "actual": "Fishing 720x405 WebP and Power Wash 1536x1024 PNG resolved correctly",
+      "result": "PASS"
+    }
+  ],
+  "browserEvidence": {
+    "developmentAssetLab": {
+      "url": "http://127.0.0.1:5174/?qa=asset-lab",
+      "registeredAssetsShown": 37,
+      "warnings": 0,
+      "reloads": 2,
+      "result": "PASS"
+    },
+    "developmentFishingRevisit": {
+      "entries": 2,
+      "exits": 1,
+      "brokenDomImages": 0,
+      "newAssetErrors": 0,
+      "result": "PASS"
+    },
+    "productionPreview": {
+      "url": "http://127.0.0.1:4175/",
+      "scene": "TownScene",
+      "consoleWarnings": 0,
+      "consoleErrors": 0,
+      "result": "PASS"
+    },
+    "wrongCaseProductionUrl": {
+      "url": "http://127.0.0.1:4175/assets/runtime/scene/fishing/FISHING-REEDBANK-BACKGROUND.V1.WEBP",
+      "expectedImage": "720x405 WebP",
+      "actual": "application index page",
+      "result": "FAIL"
+    }
+  }
+}

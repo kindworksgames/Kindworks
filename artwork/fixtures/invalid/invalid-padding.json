@@ -1,0 +1,8 @@
+{
+  "description": "Declares an invalid negative transparent-padding allowance.",
+  "assetId": "scene.fishing.reedbank.background",
+  "operation": "set",
+  "path": "validation.maximumTransparentPadding.left",
+  "value": -1,
+  "expectedCodes": ["invalid-padding-contract"]
+}

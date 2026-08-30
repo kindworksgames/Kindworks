@@ -1,7 +1,9 @@
 import Phaser from "phaser";
-import { ANIMAL_REFERENCE_TEXTURE_KEY, ANIMAL_RELOCATION_CONFIG, WILDLIFE_ROTATION, animalReferenceFrame, speciesFor } from "../data/animals.js";
+import { ANIMAL_RELOCATION_CONFIG, WILDLIFE_ROTATION, animalReferenceFrame, speciesFor } from "../data/animals.js";
 import { ANIMAL_ANATOMY_VISUALS } from "../data/legacyVisualStates.js";
 import { setSpriteAiLabelHint } from "../plugins/SpriteAiLabelPlugin.js";
+import { VISUAL_ASSET_IDS } from "../visual/visualManifest.js";
+import { resolveTownSceneDepth, TOWN_DEPTH_POLICY_IDS } from "../visual/layouts/sceneLayoutCatalog.js";
 
 export class AnimalCharacter extends Phaser.GameObjects.Container {
   constructor(scene, definition) {
@@ -22,9 +24,10 @@ export class AnimalCharacter extends Phaser.GameObjects.Container {
     this.anatomy = scene.add.graphics();
     this.drawAnatomy();
     const referenceFrame = animalReferenceFrame(definition);
-    this.referenceSprite = referenceFrame === null || !scene.textures.exists(ANIMAL_REFERENCE_TEXTURE_KEY)
+    const referenceTextureKey = scene.registry.get("visualRegistry").getTextureKey(VISUAL_ASSET_IDS.ANIMAL_REFERENCE_SHEET);
+    this.referenceSprite = referenceFrame === null || !scene.textures.exists(referenceTextureKey)
       ? null
-      : scene.add.image(0, 15, ANIMAL_REFERENCE_TEXTURE_KEY, referenceFrame).setOrigin(0.5, 1);
+      : scene.add.image(0, 15, referenceTextureKey, referenceFrame).setOrigin(0.5, 1);
     if (this.referenceSprite) {
       this.body.setVisible(false);
       this.accent.setVisible(false);
@@ -123,10 +126,11 @@ export class AnimalCharacter extends Phaser.GameObjects.Container {
     this.shadow.setPosition(0,14).setScale(Math.max(.55,size - animation.elevation / 100),Math.max(.45,size - animation.elevation / 130)).setAlpha(animation.aerial ? .12 : .24);
     this.ripple.setVisible(animation.water).setScale(size * (1 + Math.sin(this.phase) * .08),size).setAlpha(.14 + (Math.sin(this.phase) + 1) * .05);
     this.heart.setVisible(presentation.state.adopted);
-    this.label.setText(`${presentation.state.name}\n${presentation.state.trust}% trust`);
+    const labelText = `${presentation.state.name}\n${presentation.state.trust}% trust`;
+    if (this.label.text !== labelText) this.label.setText(labelText);
     this.label.setVisible(this.hovered || (!following && Math.hypot(this.x - playerPosition.x, this.y - playerPosition.y) < 100));
     this.setAlpha(this.presentationAlpha * this.relocationAlpha);
-    this.setDepth(following ? 300 + this.y / 10 : presentation.depth);
+    this.setDepth(following ? resolveTownSceneDepth(TOWN_DEPTH_POLICY_IDS.ANIMAL_FOLLOWER, this.y) : presentation.depth);
   }
 
   drawAnatomy() {

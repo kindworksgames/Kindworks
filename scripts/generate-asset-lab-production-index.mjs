@@ -1,0 +1,98 @@
+import { readFile, writeFile } from "node:fs/promises";
+import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+import { KINDWORKS_VISUAL_MANIFEST } from "../src/visual/visualManifest.js";
+import { validateVisualManifestFiles } from "../src/visual/validateVisualManifest.js";
+import { auditRuntimeAssetCoverage, createRuntimeAssetInspector } from "./lib/runtimeAssetValidation.mjs";
+
+const root = resolve(fileURLToPath(new URL("../", import.meta.url)));
+const outputPath = resolve(root, "src/visual/generated/assetLabProductionIndex.js");
+const [contracts, productionPlan, phase8a] = await Promise.all([
+  readFile(resolve(root, "artwork/contracts/asset-category-contracts.v2.json"), "utf8").then(JSON.parse),
+  readFile(resolve(root, "artwork/production/phase-10/production-migration-plan.v1.json"), "utf8").then(JSON.parse),
+  readFile(resolve(root, "artwork/production/phase-8a/vertical-slice-production-package.v1.json"), "utf8").then(JSON.parse),
+]);
+
+const [validation, coverage] = await Promise.all([
+  validateVisualManifestFiles(KINDWORKS_VISUAL_MANIFEST, createRuntimeAssetInspector(root)),
+  auditRuntimeAssetCoverage(root, KINDWORKS_VISUAL_MANIFEST),
+]);
+
+const findings = [...validation.errors, ...validation.warnings].map((finding) => ({
+  severity: validation.errors.includes(finding) ? "error" : "warning",
+  code: finding.code,
+  message: finding.message,
+  path: finding.path,
+  assetId: finding.assetId,
+  expected: finding.expected,
+  actual: finding.actual,
+  affectedScenes: finding.affectedScenes,
+}));
+for (const path of coverage.orphaned) findings.push({ severity: "error", code: "orphaned-runtime-file", message: `${path} is not registered in the visual manifest.`, path, assetId: null, expected: "manifest declaration or explicit non-runtime exclusion", actual: path, affectedScenes: [] });
+for (const assetId of coverage.unusedEntries) findings.push({ severity: "error", code: "unused-manifest-entry", message: `${assetId} is registered but has no prefab, animation, scene-pack, or fallback consumer.`, path: `assets.${assetId}`, assetId, expected: "at least one manifest consumer", actual: "none", affectedScenes: [] });
+for (const duplicate of coverage.duplicateContent) findings.push({ severity: "warning", code: "duplicate-asset-content", message: `Identical bytes are registered at ${duplicate.paths.join(" and ")}.`, path: duplicate.paths[0], assetId: null, expected: "deduplicated content or documented intentional duplicate", actual: duplicate.paths, affectedScenes: [] });
+
+const familyById = new Map(productionPlan.assetFamilies.map((family) => [family.id, family]));
+const scenesByFamily = new Map();
+for (const [sceneId, familyIds] of Object.entries(productionPlan.sceneDependencies)) {
+  for (const familyId of familyIds) scenesByFamily.set(familyId, [...new Set([...(scenesByFamily.get(familyId) || []), sceneId])]);
+}
+
+const familyRecords = contracts.familyAssignments.map((assignment) => {
+  const family = familyById.get(assignment.familyId);
+  return {
+    id: assignment.familyId,
+    categoryContractId: assignment.categoryContractId,
+    status: assignment.productionReady ? "production-ready" : "contract-only",
+    approvalStatus: assignment.productionReady ? "approved" : "not-ready",
+    validationStatus: assignment.productionReady ? "valid" : "contract-only",
+    readinessReason: assignment.readinessReason,
+    strategies: assignment.strategies,
+    scenes: [...new Set([...(assignment.scenes || []), ...(family?.scenes || []), ...(scenesByFamily.get(assignment.familyId) || [])])].sort(),
+    wave: family?.wave ?? null,
+    dependencies: family?.dependencies || [],
+    scope: family?.scope || "",
+    deduplicationRule: family?.deduplicationRule || "",
+  };
+});
+
+const data = {
+  schemaVersion: 1,
+  sourceRevision: {
+    visualManifest: KINDWORKS_VISUAL_MANIFEST.revision,
+    categoryContracts: contracts.schemaVersion,
+    productionPlan: productionPlan.schemaVersion,
+    phase8aPackage: phase8a.schemaVersion,
+  },
+  categoryContracts: contracts.categoryContracts,
+  familyRecords,
+  sceneDependencies: productionPlan.sceneDependencies,
+  assetContracts: Object.fromEntries((phase8a.assets || []).map((asset) => [asset.semanticId, {
+    semanticId: asset.semanticId,
+    categoryContractId: asset.categoryContractId,
+    familyId: asset.familyId,
+    productionStatus: asset.productionStatus,
+    expectedFilenames: asset.expectedFilenames,
+    output: asset.output,
+    anchor: asset.anchor,
+    geometry: asset.geometry,
+    validation: asset.validation,
+    intendedScenes: asset.intendedScenes,
+    provenance: asset.provenance,
+  }])),
+  validation: {
+    ok: findings.every(({ severity }) => severity !== "error"),
+    findings,
+    orphanedFiles: coverage.orphaned,
+    unusedEntries: coverage.unusedEntries,
+    duplicateContent: coverage.duplicateContent,
+    registeredFiles: coverage.registered,
+    runtimeFiles: coverage.files,
+  },
+};
+
+const output = `// Generated by scripts/generate-asset-lab-production-index.mjs. Do not hand-edit.\nexport const ASSET_LAB_PRODUCTION_INDEX = Object.freeze(${JSON.stringify(data, null, 2)});\n`;
+await writeFile(outputPath, output, "utf8");
+console.log(`Asset Lab production index: ${familyRecords.length} families, ${contracts.categoryContracts.length} categories, ${Object.keys(productionPlan.sceneDependencies).length} scene groups, ${findings.length} validation findings.`);
+

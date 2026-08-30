@@ -1,0 +1,8 @@
+{
+  "description": "Declares a canvas one pixel wider than the staged image.",
+  "assetId": "scene.fishing.reedbank.background",
+  "operation": "set",
+  "path": "output.canvas.width",
+  "value": 721,
+  "expectedCodes": ["dimension-mismatch"]
+}

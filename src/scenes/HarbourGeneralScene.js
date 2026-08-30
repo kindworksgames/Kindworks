@@ -11,12 +11,11 @@ import {
 import { createPlayerAssets, PlayerCharacter } from "../entities/PlayerCharacter.js";
 import { InteractionSystem } from "../systems/InteractionSystem.js";
 import { MovementController } from "../systems/MovementController.js";
+import { HARBOUR_GENERAL_GEOMETRY } from "../data/interiorGeometry.js";
 
 const PLAYER_RADIUS = 17;
 const WALK_SPEED = 220;
 const SPRINT_SPEED = 330;
-const SHOP_WORLD_RIGHT = 936;
-const SHOP_HEADER_HEIGHT = 80;
 
 function circleTouchesRect(x, y, radius, rect) {
   const closestX = Math.max(rect.x, Math.min(x, rect.x + rect.width));
@@ -51,6 +50,7 @@ export class HarbourGeneralScene extends Phaser.Scene {
   }
 
   create() {
+    this.gameplayGeometry = HARBOUR_GENERAL_GEOMETRY;
     this.gameState = this.registry.get("gameState");
     this.harbourGeneral = this.registry.get("harbourGeneral");
     this.worldSimulation = this.registry.get("worldSimulation");
@@ -99,10 +99,9 @@ export class HarbourGeneralScene extends Phaser.Scene {
     this.drawHarbourWindows();
     this.drawStockroomCorner();
 
-    this.fixtureRects = [];
+    this.fixtureRects = HARBOUR_GENERAL_GEOMETRY.collisions.map((entry) => ({ ...entry }));
     for (const fixture of HARBOUR_GENERAL_INTERIOR.fixtures) {
       this.drawFixture(fixture);
-      this.fixtureRects.push({ ...fixture });
     }
 
     this.slotViews = new Map();
@@ -117,7 +116,6 @@ export class HarbourGeneralScene extends Phaser.Scene {
     floor.fillRect(counter.x + 12, counter.y + 44, 96, 46);
     floor.lineStyle(4, 0x2e2630, 1);
     floor.strokeRoundedRect(counter.x, counter.y, counter.width, counter.height, 7);
-    this.fixtureRects.push({ id: "counter", ...counter });
     labelVisual(this.add.text(counter.x + 152, counter.y - 14, "👩🏻‍💼", { fontSize: "37px" }).setOrigin(0.5, 1).setDepth(28), "harbour-general.character.amelia-shopkeeper", "shop-character");
     labelVisual(this.add.text(counter.x + 145, counter.y + 26, "▰", { color: "#20262d", fontSize: "35px" }).setOrigin(0.5).setDepth(28), "harbour-general.fixture.checkout-register", "shop-fixture");
     labelVisual(this.add.text(counter.x + 42, counter.y + 68, "⚓", { color: "#f5dfad", fontSize: "25px" }).setOrigin(0.5).setDepth(28), "harbour-general.fixture.checkout-anchor-emblem", "shop-decoration");
@@ -191,11 +189,13 @@ export class HarbourGeneralScene extends Phaser.Scene {
   }
 
   drawSlot(slot) {
-    const zone = labelVisual(this.add.rectangle(slot.x + slot.width / 2, slot.y + slot.height / 2, slot.width, slot.height, 0xf3dfb4, 1).setStrokeStyle(3, 0x654024, 1).setDepth(20).setInteractive({ useHandCursor: true }), `harbour-general.display.slot-${slot.slot + 1}`, "interactive-shop-display");
+    const zone = labelVisual(this.add.rectangle(slot.x + slot.width / 2, slot.y + slot.height / 2, slot.width, slot.height, 0xf3dfb4, 1).setStrokeStyle(3, 0x654024, 1).setDepth(20), `harbour-general.display.slot-${slot.slot + 1}`, "shop-display");
+    const touch = HARBOUR_GENERAL_GEOMETRY.displays[slot.slot].touchTarget;
+    const hitTarget = this.add.zone(touch.x + touch.width / 2, touch.y + touch.height / 2, touch.width, touch.height).setDepth(24).setInteractive({ useHandCursor: true });
     const copies = Array.from({ length: HARBOUR_GENERAL_CONFIG.caseSize }, (_, index) => labelVisual(this.add.text(slot.x + 29 + index * ((slot.width - 58) / 3), zone.y - 4, "＋", { fontSize: slot.fixture === "back-wall" ? "27px" : "24px" }).setOrigin(0.5).setDepth(21), `harbour-general.display.slot-${slot.slot + 1}.product-${index + 1}`, "shop-stock-sprite"));
     const stock = labelVisual(this.add.text(zone.x, slot.y + slot.height - 4, "0", { color: "#f7eecb", backgroundColor: "#173f62", fontFamily: "ui-monospace, monospace", fontSize: "11px", fontStyle: "bold", padding: { x: 8, y: 2 } }).setOrigin(0.5, 1).setDepth(22), `harbour-general.display.slot-${slot.slot + 1}.stock-count`, "shop-status-label");
-    zone.on("pointerdown", () => this.selectSlot(slot.slot));
-    this.slotViews.set(slot.slot, { slot, zone, copies, stock });
+    hitTarget.on("pointerdown", () => this.selectSlot(slot.slot));
+    this.slotViews.set(slot.slot, { slot, zone, hitTarget, copies, stock });
   }
 
   makeButton(x, y, width, label, onPress, colour = 0x4d965d, height = 44, assetId = null) {
@@ -210,8 +210,8 @@ export class HarbourGeneralScene extends Phaser.Scene {
     labelVisual(this.add.rectangle(1108, 192, 282, 184, 0xfff8df).setStrokeStyle(3, 0xb99a63).setDepth(36), "harbour-general.panel.product-art-frame", "shop-product-frame");
     this.panelEyebrow = this.add.text(1108, 102, "SELECTED PRODUCT", { color: "#24304a", fontFamily: "ui-monospace, monospace", fontSize: "14px", fontStyle: "bold" }).setOrigin(0.5).setDepth(37);
     this.panelIcon = labelVisual(this.add.text(1108, 192, "☂️", { fontSize: "78px" }).setOrigin(0.5).setDepth(37), "harbour-general.selected-product.umbrella", "shop-product-sprite");
-    this.previousProductButton = this.makeButton(987, 192, 44, "‹", () => this.cycleProduct(-1), 0x245f91, 52, "harbour-general.control.previous-product");
-    this.nextProductButton = this.makeButton(1229, 192, 44, "›", () => this.cycleProduct(1), 0x245f91, 52, "harbour-general.control.next-product");
+    this.previousProductButton = this.makeButton(987, 192, 56, "‹", () => this.cycleProduct(-1), 0x245f91, 56, "harbour-general.control.previous-product");
+    this.nextProductButton = this.makeButton(1229, 192, 56, "›", () => this.cycleProduct(1), 0x245f91, 56, "harbour-general.control.next-product");
     this.panelName = this.add.text(1108, 301, "Umbrella", { color: "#20304b", fontFamily: "ui-monospace, monospace", fontSize: "24px", fontStyle: "bold", align: "center", wordWrap: { width: 285 } }).setOrigin(0.5).setDepth(36);
     this.panelDescription = this.add.text(1108, 331, "", { color: "#665543", fontSize: "12px", align: "center", lineSpacing: 2, wordWrap: { width: 286 } }).setOrigin(0.5, 0).setDepth(36);
     this.panelStats = this.add.text(974, 382, "", { color: "#26324a", fontFamily: "ui-monospace, monospace", fontSize: "14px", fontStyle: "bold", lineSpacing: 11 }).setDepth(36);
@@ -225,18 +225,20 @@ export class HarbourGeneralScene extends Phaser.Scene {
   }
 
   createPlayer() {
-    const spawn = HARBOUR_GENERAL_INTERIOR.spawn;
+    const spawn = HARBOUR_GENERAL_GEOMETRY.spawnPoints[0];
     this.player = new PlayerCharacter(this, spawn.x, spawn.y, { direction: spawn.facing }).setScale(1.02).setDepth(70);
     this.shadow = this.add.ellipse(spawn.x, spawn.y + 21, 36, 12, 0x24392d, 0.25).setDepth(69);
     this.movement = new MovementController(this);
   }
 
   createInteractions() {
-    const shelves = HARBOUR_GENERAL_INTERIOR.slots.map((slot) => ({
-      id: `harbour-slot-${slot.slot}`, kind: "shop-display", x: slot.x + slot.width / 2, y: slot.y + slot.height / 2,
-      radius: 78, label: `Manage display ${slot.slot + 1}`, detail: "Choose stock or restock a four-item case", onActivate: () => this.selectSlot(slot.slot),
-    }));
-    const exit = HARBOUR_GENERAL_INTERIOR.exit;
+    const shelves = HARBOUR_GENERAL_INTERIOR.slots.map((slot) => {
+      const interaction = HARBOUR_GENERAL_GEOMETRY.displays[slot.slot].interaction;
+      return ({ id: `harbour-slot-${slot.slot}`, kind: "shop-display", x: interaction.x, y: interaction.y, radius: interaction.radius,
+      label: `Manage display ${slot.slot + 1}`, detail: "Choose stock or restock a four-item case", onActivate: () => this.selectSlot(slot.slot),
+      });
+    });
+    const exit = HARBOUR_GENERAL_GEOMETRY.triggerRegions[0];
     const counter = HARBOUR_GENERAL_INTERIOR.counter;
     this.interactions = new InteractionSystem({
       interactables: [...shelves, { id: "harbour-counter", kind: "shop-counter", x: counter.x + counter.width / 2, y: counter.y + counter.height / 2, radius: 86, label: "Check the till", detail: "Collect saved in-person sales", onActivate: () => this.collectTill() }, { id: "harbour-exit", kind: "exit", x: exit.x, y: exit.y, radius: exit.radius, label: "Leave Harbour General", detail: "Return to Willowmere", onActivate: () => this.exitToTown() }],
@@ -287,6 +289,8 @@ export class HarbourGeneralScene extends Phaser.Scene {
 
   showMessage(message, ok = false) {
     this.messageText.setColor(ok ? "#2f6942" : "#8b4738").setText(message || "Nothing changed.");
+    const mobileStatus = document.querySelector("#harbour-mobile-status");
+    if (mobileStatus) mobileStatus.textContent = message || "Nothing changed.";
   }
 
   refreshFromState() {
@@ -327,6 +331,22 @@ export class HarbourGeneralScene extends Phaser.Scene {
     this.clearButton.setEnabled(Boolean(state.slots[this.selectedSlot]));
     this.collectButton.text.setText(state.tillCoins ? `Collect till · 🪙 ${state.tillCoins.toLocaleString()}` : "Till empty");
     this.collectButton.setEnabled(state.tillCoins > 0);
+    const mobileSlot = document.querySelector("#harbour-mobile-slot");
+    const mobileName = document.querySelector("#harbour-mobile-name");
+    const mobileSummary = document.querySelector("#harbour-mobile-summary");
+    if (mobileSlot) mobileSlot.value = String(this.selectedSlot);
+    if (mobileName) mobileName.textContent = item.name;
+    if (mobileSummary) mobileSummary.textContent = `Stock ${state.stock[item.id]} · shelf ${onShelf} · restock 🪙 ${caseCost}`;
+    if (this.mobileRestockButton) this.mobileRestockButton.disabled = !(assigned && quantity > 0 && catalogue.balance >= caseCost);
+    if (this.mobileAssignButton) {
+      this.mobileAssignButton.disabled = assigned;
+      this.mobileAssignButton.textContent = assigned ? "On this shelf" : "Place on shelf";
+    }
+    if (this.mobileClearButton) this.mobileClearButton.disabled = !state.slots[this.selectedSlot];
+    if (this.mobileCollectButton) {
+      this.mobileCollectButton.disabled = state.tillCoins <= 0;
+      this.mobileCollectButton.textContent = state.tillCoins ? `Till 🪙 ${state.tillCoins.toLocaleString()}` : "Till empty";
+    }
     const hud = document.querySelector("#harbour-hud-stats");
     if (hud) hud.textContent = `🪙 ${catalogue.balance.toLocaleString()} · Till ${state.tillCoins.toLocaleString()} · ${state.lifetimeSales} sales`;
     const balance = document.querySelector("#harbour-balance");
@@ -338,7 +358,7 @@ export class HarbourGeneralScene extends Phaser.Scene {
     const sales = document.querySelector("#harbour-today-sales");
     if (sales) sales.textContent = todaySales.toLocaleString();
     const game = document.querySelector("#game");
-    if (game) {
+    if (import.meta.env.DEV && game) {
       game.dataset.harbourOwned = String(state.owned);
       game.dataset.harbourSlot = String(this.selectedSlot + 1);
       game.dataset.harbourItem = item.id;
@@ -362,10 +382,31 @@ export class HarbourGeneralScene extends Phaser.Scene {
   bindInterface() {
     this.interactionButton = document.querySelector("#interaction-action");
     this.exitButton = document.querySelector("#harbour-exit");
+    this.mobilePreviousButton = document.querySelector("#harbour-mobile-previous");
+    this.mobileNextButton = document.querySelector("#harbour-mobile-next");
+    this.mobileSlotSelect = document.querySelector("#harbour-mobile-slot");
+    this.mobileRestockButton = document.querySelector("#harbour-mobile-restock");
+    this.mobileAssignButton = document.querySelector("#harbour-mobile-place");
+    this.mobileClearButton = document.querySelector("#harbour-mobile-clear");
+    this.mobileCollectButton = document.querySelector("#harbour-mobile-collect");
     this.onInteraction = () => this.interactions.activateCurrent();
     this.onExit = () => this.exitToTown();
+    this.onMobilePrevious = () => this.cycleProduct(-1);
+    this.onMobileNext = () => this.cycleProduct(1);
+    this.onMobileSlot = (event) => this.selectSlot(Number(event.currentTarget.value));
+    this.onMobileRestock = () => this.restockSelected();
+    this.onMobileAssign = () => this.assignSelected();
+    this.onMobileClear = () => this.clearSelected();
+    this.onMobileCollect = () => this.collectTill();
     this.interactionButton?.addEventListener("click", this.onInteraction);
     this.exitButton?.addEventListener("click", this.onExit);
+    this.mobilePreviousButton?.addEventListener("click", this.onMobilePrevious);
+    this.mobileNextButton?.addEventListener("click", this.onMobileNext);
+    this.mobileSlotSelect?.addEventListener("change", this.onMobileSlot);
+    this.mobileRestockButton?.addEventListener("click", this.onMobileRestock);
+    this.mobileAssignButton?.addEventListener("click", this.onMobileAssign);
+    this.mobileClearButton?.addEventListener("click", this.onMobileClear);
+    this.mobileCollectButton?.addEventListener("click", this.onMobileCollect);
     this.escapeKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
     this.restockKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
     this.placeKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.P);
@@ -376,9 +417,8 @@ export class HarbourGeneralScene extends Phaser.Scene {
   }
 
   isBlocked(x, y) {
-    const room = HARBOUR_GENERAL_INTERIOR.room;
+    const room = HARBOUR_GENERAL_GEOMETRY.worldBounds;
     if (x < room.x + PLAYER_RADIUS || x > room.x + room.width - PLAYER_RADIUS || y < room.y + PLAYER_RADIUS || y > room.y + room.height - PLAYER_RADIUS) return true;
-    if (x > SHOP_WORLD_RIGHT - PLAYER_RADIUS || y < SHOP_HEADER_HEIGHT + 158 + PLAYER_RADIUS) return true;
     return this.fixtureRects.some((rect) => circleTouchesRect(x, y, PLAYER_RADIUS, rect));
   }
 
@@ -441,6 +481,13 @@ export class HarbourGeneralScene extends Phaser.Scene {
     this.movement?.destroy();
     this.interactionButton?.removeEventListener("click", this.onInteraction);
     this.exitButton?.removeEventListener("click", this.onExit);
+    this.mobilePreviousButton?.removeEventListener("click", this.onMobilePrevious);
+    this.mobileNextButton?.removeEventListener("click", this.onMobileNext);
+    this.mobileSlotSelect?.removeEventListener("change", this.onMobileSlot);
+    this.mobileRestockButton?.removeEventListener("click", this.onMobileRestock);
+    this.mobileAssignButton?.removeEventListener("click", this.onMobileAssign);
+    this.mobileClearButton?.removeEventListener("click", this.onMobileClear);
+    this.mobileCollectButton?.removeEventListener("click", this.onMobileCollect);
     this.renderInteractionPrompt(null);
     this.worldSimulation?.setPaused?.("activity", false);
     this.npcTownLife?.setPaused?.("activity", false);

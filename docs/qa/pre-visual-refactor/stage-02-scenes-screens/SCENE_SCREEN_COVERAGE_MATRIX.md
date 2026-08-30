@@ -20,14 +20,16 @@ Evidence keys:
 - `A-PARITY`: 105,795 minigame instances and 5,850-level differential parity.
 - `A-MOBILE`: responsive shell, mobile UX, gesture, touch-target, orientation, and release-gate tests.
 - `S-ROUTE`: registered source route, cleanup handler, and save dependency inspection.
+- `R-S2-REPAIR`: repaired production journey at 568×320 plus House Interior entry/exit/re-entry at 568×320 and 1024×768.
+- `A-615`: full post-repair 615-test suite, including the focused Stage 2 production-copy and scene-marker contracts.
 
 ## Phaser scenes
 
 | Scene | Load/assets/errors | Entry, exit, back, re-entry | Pause/cleanup | Input, movement, camera | Empty/partial/completed/locked/error | Save/leave-transition | Phone/tablet | Overall | Evidence / reason |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `BootScene` | PASS | PASS | PASS | N/A | PARTIAL | PASS | PARTIAL | **PARTIAL** | `R-BOOT`, `R-ERR`, `A-611`; load-error fallback is automated, not forced live |
-| `TownScene` | PASS | PASS | PASS | PARTIAL | PARTIAL | PASS | PARTIAL | **FAIL** | `R-BOOT`, `R-PANEL`, `A-MOBILE`; S2-F01 exposes raw coordinates/internal copy |
-| `HouseInteriorScene` | PASS | PASS | PASS | PARTIAL | PARTIAL | PASS | PARTIAL | **FAIL** | `R-FID`, `R-EXIT`, `A-611`; S2-F02 root scene marker is stale |
+| `TownScene` | PASS | PASS | PASS | PARTIAL | PARTIAL | PASS | PASS | **PARTIAL** | `R-BOOT`, `R-PANEL`, `A-MOBILE`, `R-S2-REPAIR`, `A-615`; S2-F01 fixed, broader state coverage remains partial |
+| `HouseInteriorScene` | PASS | PASS | PASS | PARTIAL | PARTIAL | PASS | PASS | **PARTIAL** | `R-FID`, `R-EXIT`, `R-S2-REPAIR`, `A-615`; S2-F02 fixed, broader state coverage remains partial |
 | `VillageGrocerScene` | PASS | PASS | PASS | PASS | PARTIAL | PASS | PARTIAL | **PARTIAL** | `R-FID`, `R-EXIT`, `R-INPUT` purchase, `A-611`; live phone/tablet and error state outstanding |
 | `PawsWondersScene` | PASS | BLOCKED | PASS | PARTIAL | PARTIAL | PASS | PARTIAL | **BLOCKED** | `S-ROUTE`, `A-611`; normal live door-to-interior route not completed |
 | `HarbourGeneralScene` | PASS | PASS | PASS | PARTIAL | PARTIAL | PASS | PARTIAL | **PARTIAL** | `R-FID`, `R-EXIT`, `A-611`; management edge states and mobile sizes automated only |
@@ -49,7 +51,7 @@ All 18 scene files remain in the eager list or lazy loader. No new orphan scene 
 
 ## Town districts and continuous world areas
 
-These are portions of `TownScene`, not separate scene classes. All share Town's mobile/manual limitation and S2-F01.
+These are portions of `TownScene`, not separate scene classes. S2-F01 is fixed; district-specific live physical-device journeys retain the documented manual limitation.
 
 | Area | Entry/reachability | Interaction/state evidence | Overall |
 | --- | --- | --- | --- |
@@ -82,7 +84,7 @@ Camera bounds, free-browse default, explicit resident control, map dragging, pin
 | Paws & Wonders | Source and automated only | **BLOCKED** | Live normal doorway journey not completed |
 | South Shore Café / Scoops | Entry, picker, shift, part, save-exit, re-entry | **PARTIAL** | Naming bridge remains Stage 1 observation O-05 |
 | KindWorks Cinema | Impact panel operated through menu; unlock route automated | **PARTIAL** | Conditional cinema-door journey not live |
-| Willowmere Shop | Modal, categories, close | **FAIL** | Functional tests pass; S2-F01 internal milestone copy is visible |
+| Willowmere Shop | Modal, categories, close | **PASS** | Functional tests plus `R-S2-REPAIR`; S2-F01 fixed |
 | 19 authored house interiors | One representative interior operated | **PARTIAL** | Six variants and all state combinations automated/source only |
 | Meadowlight personal home | Creation and progression editor operated | **PARTIAL** | Furniture placement and mobile rendering automated |
 
@@ -90,34 +92,34 @@ Camera bounds, free-browse default, explicit resident control, map dragging, pin
 
 | Surface | Overall | Evidence / limitation |
 | --- | --- | --- |
-| Town HUD | **FAIL** | Live; S2-F01 raw coordinates are player-visible |
+| Town HUD | **PASS** | Live `R-S2-REPAIR`; S2-F01 fixed and raw coordinates removed |
 | Town menu | **PASS** | Open/close and every visible destination operated |
 | First-run onboarding | **PASS** | Fresh production Name Town and Welcome steps operated |
 | First-session checklist | **PARTIAL** | Step 1 live; later contextual steps automated |
 | Login reward toast | **PASS** | Live dismissible return-reward toast plus automated date/reward rules |
-| Custom resident three-page flow | **FAIL** | All pages/back/create live; internal milestone label is visible (S2-F01) |
+| Custom resident three-page flow | **PASS** | All pages/back/create live; S2-F01 label fixed and covered by `A-615` |
 | Personal-home progression | **PARTIAL** | Live current/locked upgrades; purchase edge states automated |
-| NPC story panel | **FAIL** | Live via menu/dev fixture; internal milestone label visible |
+| NPC story panel | **PASS** | Live via menu/dev fixture; S2-F01 label fixed and covered by `A-615` |
 | Resident control banner | **PARTIAL** | Source/tests; not operated live in this stage |
 | Interaction prompt | **PARTIAL** | Source/tests and scene interactions; all Town targets not live |
 | Impact/Cinema panel | **PASS** | Menu open/close live; data fallback automated |
 | Restoration reveal | **PASS** | Live reveal and dismissal |
-| Homeowner gift panel | **FAIL** | Both phases/keep live; internal milestone label visible |
-| Save panel | **FAIL** | Live open/close; internal safe-save milestone label visible |
-| Economy panel | **FAIL** | Wallet/Inventory/Support live; internal migration/catalogue copy visible |
+| Homeowner gift panel | **PASS** | Both phases/keep live; S2-F01 label fixed and covered by `A-615` |
+| Save panel | **PASS** | Live open/close; player-facing save wording covered by `A-615` |
+| Economy panel | **PASS** | Wallet/Inventory/Support live; migration/catalogue diagnostics removed |
 | Wallet tab | **PARTIAL** | Live balance/history; failure rollback automated |
-| Inventory tab | **FAIL** | Live; `legacy item definitions ready` diagnostic exposed |
+| Inventory tab | **PASS** | Live `R-S2-REPAIR`; diagnostic replaced with owned-item summary |
 | Commerce tab | **PASS** | Live disabled bridge state; grants fail closed |
-| Willowmere Shop | **FAIL** | Live open/categories/close; internal milestone label visible |
+| Willowmere Shop | **PASS** | Live open/categories/close plus `R-S2-REPAIR`; internal label fixed |
 | Fresh Market panel | **PASS** | Live open/close/re-entry |
 | Grocer HUD/product | **PASS** | Live select, purchase, close, exit, re-entry |
 | Paws HUD/product | **BLOCKED** | Automated/source only |
 | Harbour HUD/product/business | **PARTIAL** | HUD/entry/exit live; product/till edge states automated |
 | Farming panel | **BLOCKED** | Automated/source only in this stage |
-| Animal Friends panel | **FAIL** | Live menu open/close; internal milestone label visible |
+| Animal Friends panel | **PASS** | Live menu open/close; internal label fixed and covered by `A-615` |
 | Town placement banner | **PARTIAL** | Automated/source only |
 | Placed-object panel | **PARTIAL** | Automated/source only |
-| Home Interior HUD/readout | **FAIL** | Live; S2-F01 copy and S2-F02 stale root marker |
+| Home Interior HUD/readout | **PASS** | `R-S2-REPAIR`; player copy fixed and both scene markers synchronized |
 | Furniture tray/placement | **PARTIAL** | Automated/source only |
 | House Rescue gameplay | **PASS** | Live item/bin action and checkpoint resume |
 | House Rescue sort stage | **PASS** | Live correct sort feedback |
@@ -133,19 +135,19 @@ Camera bounds, free-browse default, explicit resident control, map dragging, pin
 | Beach result | **PARTIAL** | Automated, not rendered live |
 | Power Wash gameplay | **PASS** | Live board/tool/exit plus 1280 containment check |
 | Power Wash result | **PARTIAL** | Automated, not rendered live |
-| Café picker | **FAIL** | Live; internal vertical-slice/milestone copy visible |
+| Café picker | **PASS** | Live; internal copy fixed and covered by `A-615` |
 | Café shift | **PARTIAL** | Live step/exit; success/failure/mobile automated |
 | Café result | **PARTIAL** | Automated, not rendered live |
-| Bakery picker | **FAIL** | Live; internal vertical-slice/milestone copy visible |
+| Bakery picker | **PASS** | Live; internal copy fixed and covered by `A-615` |
 | Bakery shift | **PARTIAL** | Live step/exit; success/failure/mobile automated |
 | Bakery result | **PARTIAL** | Automated, not rendered live |
-| Morning Mug picker | **FAIL** | Live; internal campaign/milestone copy visible |
+| Morning Mug picker | **PASS** | Live; internal copy fixed and covered by `A-615` |
 | Morning Mug shift | **PARTIAL** | Live step/save-exit; success/failure/mobile automated |
 | Morning Mug result | **PARTIAL** | Automated, not rendered live |
-| Riverside picker | **FAIL** | Live; internal campaign/milestone copy visible |
+| Riverside picker | **PASS** | Live; internal copy fixed and covered by `A-615` |
 | Riverside shift | **PARTIAL** | Live step/save-exit; heat/success/failure/mobile automated |
 | Riverside result | **PARTIAL** | Automated, not rendered live |
-| Scoops picker | **FAIL** | Live; internal campaign/milestone copy visible |
+| Scoops picker | **PASS** | Live; internal copy fixed and covered by `A-615` |
 | Scoops shift | **PARTIAL** | Live part/save-exit; success/failure/mobile automated |
 | Scoops result | **PARTIAL** | Automated, not rendered live |
 | Fishing HUD — fish | **PASS** | Live cast and leave-during-cast confirmation |

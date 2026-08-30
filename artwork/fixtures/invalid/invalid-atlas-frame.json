@@ -1,0 +1,9 @@
+{
+  "description": "References an animation frame not present in the declared atlas.",
+  "assetId": "scene.fishing.reedbank.background",
+  "operation": "merge",
+  "path": "output",
+  "value": {"type":"atlas","atlas":{"dataFilename":"fishing-reedbank-background.v1.json","frames":1,"frameNames":["idle-0"],"allowTrim":false,"allowRotation":false}},
+  "postMutations": [{"operation":"set","path":"animations","value":[{"id":"idle","action":"idle","direction":null,"frames":["missing-0"],"frameRate":8,"repeat":-1}]}],
+  "expectedCodes": ["missing-atlas-frame"]
+}

@@ -1,0 +1,60 @@
+{
+  "date": "2026-08-30",
+  "branch": "phase-2-ui-simplification",
+  "commit": "3387bcb48964c41edbdc26f4257d2990fcdaf8d5",
+  "productionManifestAssets": 1,
+  "runtimeManifestAssets": 15,
+  "phase8a": {
+    "families": 9,
+    "assetsSpecified": 22,
+    "assetsApproved": 0,
+    "invalidValuesAccepted": [
+      "missing-required-direction",
+      "missing-required-state",
+      "invalid-frame-rate",
+      "duplicate-variant",
+      "excess-transparent-padding",
+      "invalid-origin",
+      "unsupported-format"
+    ]
+  },
+  "phase10": {
+    "plannedFamilies": 74,
+    "productionScenesAssigned": 18,
+    "completeEnforceableFamilies": 0,
+    "executionBlocked": true
+  },
+  "productionContractFixtures": [
+    {"name":"wrong-dimensions","rejected":true,"codes":["dimension-mismatch"]},
+    {"name":"wrong-frame-count","rejected":true,"codes":["frame-count-mismatch"]},
+    {"name":"missing-used-direction","rejected":true,"codes":["unknown-frame-direction"]},
+    {"name":"missing-contract-required-direction","rejected":false,"codes":[]},
+    {"name":"empty-state-set","rejected":true,"codes":["missing-states"]},
+    {"name":"missing-contract-required-state","rejected":false,"codes":[]},
+    {"name":"incorrect-origin","rejected":true,"codes":["invalid-anchor"]},
+    {"name":"non-transparent-background","rejected":true,"codes":["alpha-mismatch"]},
+    {"name":"excess-transparent-padding","rejected":false,"codes":[]},
+    {"name":"oversized-file","rejected":true,"codes":["texture-budget-exceeded"]},
+    {"name":"incorrect-semantic-id","rejected":true,"codes":["invalid-semantic-id"]},
+    {"name":"incorrect-filename-for-id","rejected":false,"codes":[]},
+    {"name":"duplicate-variant","rejected":false,"codes":[]},
+    {"name":"invalid-frame-rate","rejected":false,"codes":[]},
+    {"name":"missing-atlas-frame","rejected":false,"codes":[]},
+    {"name":"incorrect-texture-filtering","rejected":true,"codes":["smoothing-forbidden"]},
+    {"name":"unsupported-format","rejected":true,"codes":["invalid-output-format"]},
+    {"name":"unsupported-colour-mode","rejected":false,"codes":[]},
+    {"name":"missing-contract","rejected":false,"codes":[]},
+    {"name":"contract-pointing-to-missing-asset","rejected":true,"codes":["missing-artwork-file"]},
+    {"name":"runtime-missing-atlas-frame","rejected":true,"codes":["missing-animation-frame"]}
+  ],
+  "verification": {
+    "artworkCheck": "pass",
+    "phase8aCheck": "pass-structural",
+    "phase10Check": "pass-plan-execution-blocked",
+    "focusedTests": "20/20 pass",
+    "fullTests": "728/728 pass",
+    "productionBuild": "pass"
+  },
+  "brokenFixturesLeftInProduction": false,
+  "productionCodeChanged": false
+}

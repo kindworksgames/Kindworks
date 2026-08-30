@@ -36,7 +36,8 @@ test("town, Paws & Wonders and the personal home use the shared legacy artwork",
     readFile(new URL("src/scenes/PawsWondersScene.js", root), "utf8"),
     readFile(new URL("src/scenes/HouseInteriorScene.js", root), "utf8"),
   ]);
-  assert.match(boot, /load\.spritesheet\(ANIMAL_REFERENCE_TEXTURE_KEY/);
+  assert.match(boot, /queueScenePacks\(this, this\.scene\.key\)/);
+  assert.doesNotMatch(boot, /load\.spritesheet\(/);
   assert.match(character, /animalReferenceFrame\(definition\)/);
   assert.match(paws, /animalReferenceFrame\(ANIMAL_BY_ID\[item\.animalId\]\)/);
   assert.match(home, /animalReferenceFrame\(ANIMAL_BY_ID\[occupant\.id\]\)/);

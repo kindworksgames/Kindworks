@@ -47,7 +47,7 @@ export const HOME_OBJECT_DESCRIPTIONS = Object.freeze({
   petbowls: "Food and fresh water for the companions who live here.",
   "floor-lamp": "A warm lamp brightens this corner.",
   "companion-basket": "A snug basket where a companion can rest.",
-  "fish-tank": "An empty ornamental fish tank. Fish move-in arrives in Milestone 33.",
+  "fish-tank": "An empty ornamental fish tank, ready for Reedbank catches.",
 });
 
 const HOME_METADATA = Object.freeze(Object.fromEntries(NPC_HOME_DEFINITIONS.map(([id, , , , name, area]) => [id, Object.freeze({ id, name, area })])));

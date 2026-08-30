@@ -1,0 +1,8 @@
+{
+  "description": "Uses a runtime filename unrelated to the approved filename stem.",
+  "assetId": "scene.fishing.reedbank.background",
+  "operation": "set",
+  "path": "expectedFilenames.runtime",
+  "value": "public/assets/runtime/scene/fishing/unrelated.v1.webp",
+  "expectedCodes": ["filename-contract-mismatch"]
+}

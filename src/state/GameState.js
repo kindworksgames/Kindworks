@@ -3,6 +3,7 @@ import { GAME_STATE_SCHEMA_VERSION } from "./constants.js";
 import {
   createFreshEconomyState,
   createFreshInventoryState,
+  normalizeEconomyState,
   normalizeInventoryState,
   projectLegacyEconomy,
   projectLegacyInventory,
@@ -178,6 +179,61 @@ function safeTownName(value) {
 function safeInteger(value, minimum = 0, maximum = Number.MAX_SAFE_INTEGER) {
   const number = Math.floor(Number(value));
   return Number.isFinite(number) ? Math.max(minimum, Math.min(maximum, number)) : minimum;
+}
+
+function isRecord(value) {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function fillMissingFields(target, normalized) {
+  if (!isRecord(target) || !isRecord(normalized)) return target;
+  for (const [key, fallback] of Object.entries(normalized)) {
+    if (!Object.hasOwn(target, key) || target[key] === undefined) {
+      target[key] = structuredClone(fallback);
+      continue;
+    }
+    if (isRecord(target[key]) && isRecord(fallback)) fillMissingFields(target[key], fallback);
+  }
+  return target;
+}
+
+function restoreAdditiveGameStateFields(state, { now = Date.now() } = {}) {
+  if (state.schemaVersion !== GAME_STATE_SCHEMA_VERSION) return state;
+  const fresh = createFreshGameState({ now });
+  if (isRecord(state.source)) fillMissingFields(state.source, fresh.source);
+  if (isRecord(state.world)) fillMissingFields(state.world, normalizeWorldState(state.world, { now }));
+  if (isRecord(state.progress?.cleanup)) fillMissingFields(state.progress.cleanup, normalizeCleanupState(state.progress.cleanup));
+  if (isRecord(state.economy)) fillMissingFields(state.economy, normalizeEconomyState(state.economy, { now }));
+  if (isRecord(state.inventory)) fillMissingFields(state.inventory, normalizeInventoryState(state.inventory));
+  if (isRecord(state.townPlacement)) fillMissingFields(state.townPlacement, normalizeTownPlacementState(state.townPlacement, { inventory: state.inventory, now }));
+  if (isRecord(state.npcs)) fillMissingFields(state.npcs, normalizeNpcState(state.npcs, state.world));
+  if (isRecord(state.municipalCollection)) fillMissingFields(state.municipalCollection, normalizeMunicipalCollectionState(state.municipalCollection, state.world));
+  if (isRecord(state.restorationMilestones)) fillMissingFields(state.restorationMilestones, normalizeRestorationMilestoneState(state.restorationMilestones));
+  if (isRecord(state.onboarding)) fillMissingFields(state.onboarding, normalizeOnboardingState(state.onboarding, { state, now }));
+  if (isRecord(state.commerce)) fillMissingFields(state.commerce, normalizeCommerceState(state.commerce));
+  if (isRecord(state.customResident)) fillMissingFields(state.customResident, normalizeCustomResidentState(state.customResident));
+  if (isRecord(state.homeInteriors)) fillMissingFields(state.homeInteriors, normalizeHomeInteriorState(state.homeInteriors));
+  if (isRecord(state.farming)) fillMissingFields(state.farming, normalizeFarmingState(state.farming, state.world));
+  if (isRecord(state.environment)) fillMissingFields(state.environment, normalizeLivingEnvironmentState(state.environment, state.world));
+  if (isRecord(state.animals)) fillMissingFields(state.animals, normalizeAnimalState(state.animals, state.world));
+  if (isRecord(state.fishing)) fillMissingFields(state.fishing, normalizeFishingState(state.fishing, state.world));
+  if (isRecord(state.bakery)) fillMissingFields(state.bakery, normalizeBakeryState(state.bakery));
+  if (isRecord(state.cafe)) fillMissingFields(state.cafe, normalizeCafeState(state.cafe));
+  if (isRecord(state.river)) fillMissingFields(state.river, normalizeRiverState(state.river));
+  if (isRecord(state.houseRescue)) fillMissingFields(state.houseRescue, normalizeHouseRescueState(state.houseRescue, { worldDay: state.world?.day }));
+  if (isRecord(state.lawnCare)) fillMissingFields(state.lawnCare, normalizeLawnCareState(state.lawnCare));
+  if (isRecord(state.beachCleanup)) fillMissingFields(state.beachCleanup, normalizeBeachCleanupState(state.beachCleanup));
+  if (isRecord(state.playgroundPowerwash)) fillMissingFields(state.playgroundPowerwash, normalizePlaygroundPowerwashState(state.playgroundPowerwash));
+  if (isRecord(state.morningMug)) fillMissingFields(state.morningMug, normalizeMorningMugState(state.morningMug));
+  if (isRecord(state.riversideKitchen)) fillMissingFields(state.riversideKitchen, normalizeRiversideKitchenState(state.riversideKitchen));
+  if (isRecord(state.southShoreScoops)) fillMissingFields(state.southShoreScoops, normalizeSouthShoreScoopsState(state.southShoreScoops));
+  if (isRecord(state.homeownerGifts)) fillMissingFields(state.homeownerGifts, normalizeHomeownerGiftState(state.homeownerGifts, state.inventory));
+  if (isRecord(state.harbourGeneral)) fillMissingFields(state.harbourGeneral, normalizeHarbourGeneralState(state.harbourGeneral));
+  if (state.source?.kind === "new") {
+    if (!Object.hasOwn(state, "legacyReconciliation")) state.legacyReconciliation = null;
+    if (!Object.hasOwn(state, "legacySnapshot")) state.legacySnapshot = null;
+  }
+  return state;
 }
 
 export function createFreshGameState({ now = Date.now() } = {}) {
@@ -529,7 +585,7 @@ export function upgradeGameState(value, { now = Date.now() } = {}) {
     } else state.legacyReconciliation = null;
     state.schemaVersion = 37;
   }
-  return state;
+  return restoreAdditiveGameStateFields(state, { now });
 }
 
 export function validateGameState(value) {
@@ -601,6 +657,19 @@ export class GameStateService {
 
   getSnapshot() {
     return structuredClone(this.state);
+  }
+
+  getDomainSnapshot(domain) {
+    if (typeof domain !== "string" || !Object.prototype.hasOwnProperty.call(this.state, domain)) {
+      throw new TypeError(`Unknown game-state domain: ${String(domain)}`);
+    }
+    return structuredClone(this.state[domain]);
+  }
+
+  getDomainsSnapshot(...domains) {
+    const snapshot = {};
+    for (const domain of domains) snapshot[domain] = this.getDomainSnapshot(domain);
+    return snapshot;
   }
 
   replace(nextState) {

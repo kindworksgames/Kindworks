@@ -1,0 +1,201 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-30T07:20:59.589Z",
+  "branchBaseline": "phase-2-ui-simplification@3387bcb",
+  "manifest": {
+    "assets": 37,
+    "fileBackedAssets": 7,
+    "placeholders": 22,
+    "kinds": {
+      "generated-fallback": 2,
+      "generated-texture-family": 1,
+      "image": 6,
+      "procedural": 27,
+      "spritesheet": 1
+    },
+    "statuses": [
+      "artwork-pipeline-verified",
+      "legacy-registered",
+      "phase-8a-specified-placeholder",
+      "prefab-migrated",
+      "system"
+    ],
+    "categories": [
+      "building",
+      "character",
+      "minigame",
+      "prop",
+      "scene",
+      "system",
+      "terrain",
+      "ui"
+    ],
+    "scenes": [
+      "BootScene",
+      "FishingScene",
+      "LawnCareScene",
+      "PlaygroundPowerwashScene",
+      "TownScene"
+    ],
+    "families": [
+      "character.animal",
+      "character.resident",
+      "family.animal-character.slice",
+      "family.feedback-ui.slice",
+      "family.house-exterior.slice",
+      "family.lawn-minigame.slice",
+      "family.layered-tree.slice",
+      "family.resident-character.slice",
+      "family.small-town-prop.slice",
+      "family.town-terrain.slice",
+      "family.world-lawn.slice",
+      "minigame.powerwash",
+      "scene.fishing",
+      "system.fallback",
+      "town-bin"
+    ]
+  },
+  "productionCoverage": {
+    "categoryContracts": [
+      {
+        "id": "category.calibration",
+        "assetLabFacet": null,
+        "present": false
+      },
+      {
+        "id": "category.system-fallback",
+        "assetLabFacet": "system",
+        "present": true
+      },
+      {
+        "id": "category.terrain",
+        "assetLabFacet": "terrain",
+        "present": true
+      },
+      {
+        "id": "category.structure",
+        "assetLabFacet": null,
+        "present": false
+      },
+      {
+        "id": "category.vegetation",
+        "assetLabFacet": null,
+        "present": false
+      },
+      {
+        "id": "category.prop",
+        "assetLabFacet": "prop",
+        "present": true
+      },
+      {
+        "id": "category.effect",
+        "assetLabFacet": null,
+        "present": false
+      },
+      {
+        "id": "category.vehicle",
+        "assetLabFacet": null,
+        "present": false
+      },
+      {
+        "id": "category.building",
+        "assetLabFacet": "building",
+        "present": true
+      },
+      {
+        "id": "category.character",
+        "assetLabFacet": "character",
+        "present": true
+      },
+      {
+        "id": "category.animal",
+        "assetLabFacet": null,
+        "present": false
+      },
+      {
+        "id": "category.ui",
+        "assetLabFacet": "ui",
+        "present": true
+      },
+      {
+        "id": "category.interior",
+        "assetLabFacet": null,
+        "present": false
+      },
+      {
+        "id": "category.minigame",
+        "assetLabFacet": "minigame",
+        "present": true
+      },
+      {
+        "id": "category.audio",
+        "assetLabFacet": null,
+        "present": false
+      }
+    ],
+    "categoryContractsPresent": 7,
+    "categoryContractsTotal": 15,
+    "exactProductionFamilyIdsPresent": [],
+    "exactProductionFamilyIdsCovered": 0,
+    "productionFamilyIdsTotal": 74,
+    "productionScenesRepresented": 5,
+    "productionScenesPlanned": 18
+  },
+  "sourceFeatureChecks": {
+    "registryDerivedCatalog": true,
+    "search": true,
+    "categorySceneStatusFamilyFilters": true,
+    "dedicatedStateFilter": false,
+    "dedicatedDirectionFilter": false,
+    "dedicatedAnimationFilter": false,
+    "dedicatedApprovalFilter": false,
+    "dedicatedValidationFilter": false,
+    "atlasFrameSelector": false,
+    "animationRestart": false,
+    "animationScrubber": false,
+    "actualOpaqueBounds": false,
+    "frameBoundaryOverlay": false,
+    "standingPointOverlay": false,
+    "deepValidationResults": false,
+    "orphanDetection": false,
+    "assetReload": false,
+    "fullManifestMetadataPanel": false,
+    "productionGuard": true
+  },
+  "largeLibrary": [
+    {
+      "assets": 1000,
+      "catalogMs": 53.44,
+      "filterMs": 1.06,
+      "matches": 1,
+      "domOptions": 1000,
+      "eagerPreviewLoads": 1000,
+      "contactSheet": {
+        "width": 960,
+        "height": 55000,
+        "estimatedRgbaBytes": 211200000,
+        "exceedsCommon32767CanvasLimit": true
+      }
+    },
+    {
+      "assets": 5000,
+      "catalogMs": 1099.38,
+      "filterMs": 8.73,
+      "matches": 11,
+      "domOptions": 5000,
+      "eagerPreviewLoads": 5000,
+      "contactSheet": {
+        "width": 960,
+        "height": 275000,
+        "estimatedRgbaBytes": 1056000000,
+        "exceedsCommon32767CanvasLimit": true
+      }
+    }
+  ],
+  "knownRuntimeObservation": {
+    "assetsSelected": 37,
+    "selectorCombinationsSelected": 193,
+    "warningAssets": 0,
+    "placeholderEntriesRenderingFallbackWhileReportingValid": 22
+  }
+}

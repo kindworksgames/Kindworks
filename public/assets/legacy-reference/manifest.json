@@ -1,4 +1,6 @@
 {
+  "role": "comparison-provenance-only",
+  "runtimeSourceOfTruth": "/src/visual/visualManifest.js",
   "source": "kindworks_little_bakery_v65_house_rescue_reintegrated_fixed.html",
   "assets": {
     "harbourGeneral": {

@@ -68,6 +68,7 @@ export class SpriteAiLabelPlugin extends Phaser.Plugins.ScenePlugin {
   }
 
   publishCoverage() {
+    if (!import.meta.env.DEV) return;
     if (this.coverageQueued || typeof document === "undefined") return;
     this.coverageQueued = true;
     queueMicrotask(() => {

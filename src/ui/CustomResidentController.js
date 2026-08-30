@@ -16,6 +16,8 @@ export class CustomResidentController {
     onStartControl = () => ({ ok: false }),
     onEndControl = () => ({ ok: false }),
     onSaved = () => {},
+    onSaveOnboardingDraft = () => ({ ok: true }),
+    onReturnToTownName = () => ({ ok: false }),
   } = {}) {
     this.service = service;
     this.onModalChange = onModalChange;
@@ -23,6 +25,8 @@ export class CustomResidentController {
     this.onStartControl = onStartControl;
     this.onEndControl = onEndControl;
     this.onSaved = onSaved;
+    this.onSaveOnboardingDraft = onSaveOnboardingDraft;
+    this.onReturnToTownName = onReturnToTownName;
     this.openButton = document.querySelector("#custom-resident-button");
     this.panel = document.querySelector("#custom-resident-panel");
     this.closeButton = document.querySelector("#custom-resident-close");
@@ -58,6 +62,8 @@ export class CustomResidentController {
     this.controlBannerName = document.querySelector("#resident-control-name");
     this.returnButton = document.querySelector("#resident-control-return");
     this.previousFocus = null;
+    this.onboardingRequired = false;
+    this.draftSaveTimer = null;
 
     this.onOpenClick = () => this.open();
     this.onCloseClick = () => this.close();
@@ -66,7 +72,11 @@ export class CustomResidentController {
       if (this.step < 2) this.nextStep();
       else this.save();
     };
-    this.onFormInput = () => { this.clearError(); this.renderPreview(); };
+    this.onFormInput = () => {
+      this.clearError();
+      this.renderPreview();
+      this.saveOnboardingDraft();
+    };
     this.onHobbyChange = (event) => this.handleHobbyChange(event);
     this.onLocateClick = () => this.locate();
     this.onControlClick = () => this.startControl();
@@ -99,11 +109,12 @@ export class CustomResidentController {
     return Boolean(this.panel && !this.panel.classList.contains("hidden"));
   }
 
-  populateForm() {
+  populateForm(profileOverride = null) {
     const state = this.service.getSnapshot();
-    const profile = state.profile || {
+    const profile = profileOverride || state.profile || {
       name: "", skin: "warm", hair: 0, hairColor: "dark-brown", accessory: "none", outfit: 0, bodyBuild: "average", hobbies: [],
     };
+    const home = profileOverride?.home || state.home;
     if (this.nameInput) this.nameInput.value = profile.name;
     for (const [name, value] of Object.entries({
       skin: profile.skin,
@@ -112,15 +123,34 @@ export class CustomResidentController {
       accessory: profile.accessory,
       outfit: profile.outfit,
       bodyBuild: profile.bodyBuild,
-      wallColor: state.home.wallColor,
-      roofStyle: state.home.roofStyle,
-      roofColor: state.home.roofColor,
+      wallColor: home.wallColor,
+      roofStyle: home.roofStyle,
+      roofColor: home.roofColor,
     })) {
       const field = this.form?.elements?.namedItem(name);
       if (field) field.value = String(value);
     }
     for (const input of this.hobbyGrid?.querySelectorAll('input[name="hobby"]') || []) input.checked = profile.hobbies.includes(input.value);
     this.renderPreview();
+  }
+
+  saveOnboardingDraft({ immediate = false } = {}) {
+    if (!this.onboardingRequired || this.service.getSnapshot().created) return { ok: true, code: "creator-draft-not-required" };
+    if (this.draftSaveTimer) {
+      clearTimeout(this.draftSaveTimer);
+      this.draftSaveTimer = null;
+    }
+    const save = () => {
+      this.draftSaveTimer = null;
+      return this.onSaveOnboardingDraft(this.step, this.readDraft());
+    };
+    if (immediate) return save();
+    this.draftSaveTimer = setTimeout(save, 180);
+    return { ok: true, code: "creator-draft-pending" };
+  }
+
+  persistOnboardingDraft(options = {}) {
+    return this.saveOnboardingDraft({ ...options, immediate: true });
   }
 
   readDraft() {
@@ -206,6 +236,7 @@ export class CustomResidentController {
       this.showStatus("Choose up to three hobbies.", "error");
     }
     this.renderPreview();
+    this.saveOnboardingDraft();
   }
 
   render() {
@@ -244,7 +275,10 @@ export class CustomResidentController {
     }
     this.stepDots.forEach((dot, index) => dot.classList.toggle("active", index === this.step));
     if (this.stepStatus) this.stepStatus.textContent = `Step ${this.step + 1} of 3 · ${labels[this.step]}`;
-    if (this.backButton) this.backButton.hidden = this.step === 0;
+    if (this.backButton) {
+      this.backButton.hidden = this.step === 0 && !this.onboardingRequired;
+      this.backButton.textContent = this.step === 0 && this.onboardingRequired ? "Back: Town name" : "Back";
+    }
     if (this.nextButton) {
       this.nextButton.hidden = this.step === 2;
       this.nextButton.textContent = this.step === 0 ? "Next: Hobbies" : "Next: Your house";
@@ -267,36 +301,66 @@ export class CustomResidentController {
     }
     this.clearError();
     this.showStatus(this.step === 0 ? "Now choose up to three hobbies." : "Now design their starter home.", "neutral");
-    return { ok: true, step: this.setStep(this.step + 1) };
+    const step = this.setStep(this.step + 1);
+    const saved = this.persistOnboardingDraft();
+    return saved.ok ? { ok: true, step } : saved;
   }
 
   previousStep() {
+    if (this.step === 0 && this.onboardingRequired) {
+      const saved = this.persistOnboardingDraft();
+      if (!saved.ok) return saved;
+      return this.returnToTownName();
+    }
     this.clearError();
     this.showStatus(this.step === 2 ? "Review hobbies or continue to the home when ready." : "Adjust the resident's appearance.", "neutral");
-    return { ok: true, step: this.setStep(this.step - 1) };
+    const step = this.setStep(this.step - 1);
+    const saved = this.persistOnboardingDraft();
+    return saved.ok ? { ok: true, step } : saved;
   }
 
-  open() {
+  open({ onboarding = false, creatorStep = 0, creatorDraft = null } = {}) {
     if (!this.panel) return { ok: false };
     this.previousFocus = document.activeElement;
-    this.populateForm();
+    this.onboardingRequired = Boolean(onboarding && !this.service.getSnapshot().created);
+    this.panel.dataset.onboardingRequired = String(this.onboardingRequired);
+    if (this.closeButton) this.closeButton.hidden = this.onboardingRequired;
+    this.populateForm(creatorDraft);
     this.clearError();
-    this.showStatus(this.service.getSnapshot().created ? "Edit the resident, redesign the home, or buy its next permanent upgrade." : "Every option and the starter cottage are free.", "neutral");
+    this.showStatus(this.service.getSnapshot().created
+      ? "Edit the resident, redesign the home, or buy its next permanent upgrade."
+      : creatorDraft ? "Your setup was restored. Continue where you stopped." : "Every option and the starter cottage are free.", "neutral");
     this.panel.classList.remove("hidden");
     this.panel.setAttribute("aria-hidden", "false");
     this.onModalChange(true);
-    this.setStep(0);
+    if (creatorDraft) this.setStep(creatorStep);
+    else this.setStep(0);
     return { ok: true };
   }
 
-  close() {
+  close({ force = false } = {}) {
     if (!this.isOpen()) return { ok: false };
+    if (!force && this.onboardingRequired && !this.service.getSnapshot().created) {
+      this.showStatus("Finish creating your resident and home before exploring town.", "error");
+      return { ok: false, code: "setup-required" };
+    }
+    if (this.draftSaveTimer) {
+      clearTimeout(this.draftSaveTimer);
+      this.draftSaveTimer = null;
+    }
     this.panel.classList.add("hidden");
     this.panel.setAttribute("aria-hidden", "true");
     this.onModalChange(false);
     const target = this.previousFocus?.isConnected ? this.previousFocus : this.openButton;
     target?.focus?.({ preventScroll: true });
     return { ok: true };
+  }
+
+  returnToTownName() {
+    if (!this.onboardingRequired) return { ok: false, code: "town-name-return-unavailable" };
+    const closed = this.close({ force: true });
+    if (!closed.ok) return closed;
+    return this.onReturnToTownName();
   }
 
   clearError() {
@@ -323,7 +387,17 @@ export class CustomResidentController {
     }
     this.populateForm();
     this.showStatus(result.code === "resident-created" ? `Welcome to town, ${result.state.profile.name}! Meadowlight House is ready.` : `${result.state.profile.name}'s resident profile was saved. Home changes use the redesign or upgrade buttons.`, "success");
-    this.onSaved(result);
+    const onboardingResult = this.onSaved(result);
+    if (onboardingResult?.ok !== false && this.service.getSnapshot().created) {
+      this.onboardingRequired = false;
+      this.panel.dataset.onboardingRequired = "false";
+      if (this.closeButton) this.closeButton.hidden = false;
+      if (this.draftSaveTimer) {
+        clearTimeout(this.draftSaveTimer);
+        this.draftSaveTimer = null;
+      }
+      this.renderStep();
+    }
     this.submitButton?.focus({ preventScroll: true });
     return result;
   }
@@ -391,6 +465,6 @@ export class CustomResidentController {
   }
 
   getDiagnostics() {
-    return { open: this.isOpen(), creatorStep: this.step, creatorSteps: 3, hobbyOptions: Object.keys(CUSTOM_RESIDENT_HOBBIES).length, ...this.service.getDiagnostics() };
+    return { open: this.isOpen(), onboardingRequired: this.onboardingRequired, creatorStep: this.step, creatorSteps: 3, hobbyOptions: Object.keys(CUSTOM_RESIDENT_HOBBIES).length, ...this.service.getDiagnostics() };
   }
 }

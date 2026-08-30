@@ -63,6 +63,7 @@ export class BakeryScene extends Phaser.Scene {
     if (this.exitButton) this.exitButton.textContent = "Exit";
     this.setMessage("Choose a bakery shift.", "neutral");
     this.onStart = () => this.startLevel(Number(this.levelSelect?.value || 1));
+    this.onLevelChange = () => { if (this.startButton) this.startButton.textContent = `Open for Level ${Number(this.levelSelect?.value || 1)}`; };
     this.onExit = () => this.requestExit();
     this.onUndo = () => { const result = this.bakery.undoStep(); this.setMessage(result.ok ? `${bakeryStep(result.removed).name} removed from this tray.` : result.message, result.ok ? "neutral" : "error"); this.render(); };
     this.onDiscard = () => { const result = this.bakery.discardRecipe(); this.setMessage(result.ok ? "This tray was cleared." : result.message, result.ok ? "error" : "neutral"); this.render(); };
@@ -73,6 +74,7 @@ export class BakeryScene extends Phaser.Scene {
     this.onSteps = (event) => { const button = event.target.closest?.("[data-bakery-step]"); if (button) this.useStep(button.dataset.bakeryStep); };
     this.onTraySelect = (event) => { const button = event.target.closest?.("[data-bakery-tray]"); if (!button) return; const result = this.bakery.selectTray(Number(button.dataset.bakeryTray)); this.setMessage(result.ok ? `${result.order.customerName}'s tray selected.` : result.message, result.ok ? "neutral" : "error"); this.render(); };
     this.startButton?.addEventListener("click", this.onStart);
+    this.levelSelect?.addEventListener("change", this.onLevelChange);
     this.exitButton?.addEventListener("click", this.onExit);
     this.undoButton?.addEventListener("click", this.onUndo);
     this.discardButton?.addEventListener("click", this.onDiscard);
@@ -93,7 +95,7 @@ export class BakeryScene extends Phaser.Scene {
     const badge = document.querySelector(".milestone-badge");
     const status = document.querySelector("#location-status");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = "LITTLE BAKERY · MILESTONE 15";
+    if (badge) badge.textContent = "LITTLE BAKERY";
     const landscapeMessage = document.querySelector("#landscape-required-message");
     if (landscapeMessage) landscapeMessage.textContent = "Turn your device sideways to play.";
     if (status) status.textContent = "Inside Little Bakery";
@@ -281,6 +283,7 @@ export class BakeryScene extends Phaser.Scene {
   }
 
   updateDomState() {
+    if (!import.meta.env.DEV) return;
     const game = document.querySelector("#game"); if (!game) return;
     const session = this.bakery.getActiveSession(); const diagnostics = this.bakery.getDiagnostics();
     game.dataset.scene = this.scene.key;
@@ -302,7 +305,7 @@ export class BakeryScene extends Phaser.Scene {
   }
 
   shutdownScene() {
-    this.startButton?.removeEventListener("click", this.onStart); this.exitButton?.removeEventListener("click", this.onExit);
+    this.startButton?.removeEventListener("click", this.onStart); this.levelSelect?.removeEventListener("change", this.onLevelChange); this.exitButton?.removeEventListener("click", this.onExit);
     this.undoButton?.removeEventListener("click", this.onUndo); this.discardButton?.removeEventListener("click", this.onDiscard);
     this.serveButton?.removeEventListener("click", this.onServe); this.nextButton?.removeEventListener("click", this.onNext);
     this.replayButton?.removeEventListener("click", this.onReplay); this.returnButton?.removeEventListener("click", this.onReturn);

@@ -1,0 +1,286 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-30T06:44:03.743Z",
+  "method": "fresh-independent-adversarial-retest",
+  "replacementArtwork": {
+    "actualFiles": [
+      {
+        "file": "/assets/animals/reference-master-v44.png",
+        "format": "png",
+        "width": 384,
+        "height": 512,
+        "alpha": true,
+        "opaqueBounds": {
+          "x": 0,
+          "y": 11,
+          "width": 382,
+          "height": 491
+        }
+      },
+      {
+        "file": "/assets/powerwash/tool-precision.png",
+        "format": "png",
+        "width": 80,
+        "height": 101,
+        "alpha": true,
+        "opaqueBounds": {
+          "x": 21,
+          "y": 8,
+          "width": 39,
+          "height": 89
+        }
+      },
+      {
+        "file": "/assets/powerwash/playground-master.png",
+        "format": "png",
+        "width": 1536,
+        "height": 1024,
+        "alpha": false,
+        "opaqueBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1536,
+          "height": 1024
+        }
+      }
+    ],
+    "distinctCanvasCount": 3,
+    "adversarialMetadataCases": [
+      {
+        "canvas": "8x4096",
+        "transparentPadding": "2048px vertical",
+        "origin": "-2,4"
+      },
+      {
+        "canvas": "8199x8",
+        "transparentPadding": "4000px horizontal",
+        "origin": "4,1"
+      },
+      {
+        "animationFrame": "96x31",
+        "expectedResult": "rejected-before-runtime"
+      }
+    ]
+  },
+  "geometryContracts": {
+    "townId": "town-willowmere",
+    "houses": 19,
+    "shops": 12,
+    "interiors": [
+      "village-grocer-interior",
+      "paws-wonders-interior",
+      "harbour-general-interior"
+    ]
+  },
+  "navigation": {
+    "npcLinksTotal": 138,
+    "outdoorSegmentsChecked": 104,
+    "violations": []
+  },
+  "animals": {
+    "definitions": 56,
+    "groundSegmentsChecked": 481,
+    "violations": []
+  },
+  "entrancesAndStandingPoints": {
+    "standingPointViolations": [
+      {
+        "contractId": "village-grocer-interior",
+        "pointId": "grocer-standing-carrot-seeds",
+        "point": {
+          "x": 318.68,
+          "y": 293.12
+        },
+        "obstacles": [
+          "grocer-collision-islandA"
+        ]
+      },
+      {
+        "contractId": "village-grocer-interior",
+        "pointId": "grocer-standing-fresh-greens-seeds",
+        "point": {
+          "x": 640,
+          "y": 293.12
+        },
+        "obstacles": [
+          "grocer-collision-islandA"
+        ]
+      },
+      {
+        "contractId": "village-grocer-interior",
+        "pointId": "grocer-standing-wild-berry-starters",
+        "point": {
+          "x": 961.32,
+          "y": 293.12
+        },
+        "obstacles": [
+          "grocer-collision-islandA"
+        ]
+      },
+      {
+        "contractId": "village-grocer-interior",
+        "pointId": "grocer-standing-orchard-apple-sapling",
+        "point": {
+          "x": 640,
+          "y": 431.12
+        },
+        "obstacles": [
+          "grocer-collision-islandB"
+        ]
+      },
+      {
+        "contractId": "paws-wonders-interior",
+        "pointId": "paws-standing-pet-labrador",
+        "point": {
+          "x": 198.5,
+          "y": 275.6
+        },
+        "obstacles": [
+          "paws-collision-dogs"
+        ]
+      },
+      {
+        "contractId": "paws-wonders-interior",
+        "pointId": "paws-standing-pet-spaniel",
+        "point": {
+          "x": 388.25,
+          "y": 275.6
+        },
+        "obstacles": [
+          "paws-collision-dogs"
+        ]
+      },
+      {
+        "contractId": "paws-wonders-interior",
+        "pointId": "paws-standing-pet-dachshund",
+        "point": {
+          "x": 578,
+          "y": 275.6
+        },
+        "obstacles": [
+          "paws-collision-dogs"
+        ]
+      },
+      {
+        "contractId": "paws-wonders-interior",
+        "pointId": "paws-standing-pet-corgi",
+        "point": {
+          "x": 272.75,
+          "y": 349.7
+        },
+        "obstacles": [
+          "paws-collision-exotics"
+        ]
+      },
+      {
+        "contractId": "paws-wonders-interior",
+        "pointId": "paws-standing-pet-border-collie",
+        "point": {
+          "x": 462.5,
+          "y": 349.7
+        },
+        "obstacles": [
+          "paws-collision-exotics"
+        ]
+      },
+      {
+        "contractId": "paws-wonders-interior",
+        "pointId": "paws-standing-pet-husky",
+        "point": {
+          "x": 652.25,
+          "y": 349.7
+        },
+        "obstacles": [
+          "paws-collision-featured"
+        ]
+      },
+      {
+        "contractId": "paws-wonders-interior",
+        "pointId": "paws-standing-pet-chinchilla",
+        "point": {
+          "x": 194.375,
+          "y": 486.5
+        },
+        "obstacles": [
+          "paws-collision-exotics"
+        ]
+      },
+      {
+        "contractId": "paws-wonders-interior",
+        "pointId": "paws-standing-pet-meerkat",
+        "point": {
+          "x": 441.875,
+          "y": 486.5
+        },
+        "obstacles": [
+          "paws-collision-exotics"
+        ]
+      },
+      {
+        "contractId": "paws-wonders-interior",
+        "pointId": "paws-standing-pet-baby-triceratops",
+        "point": {
+          "x": 710,
+          "y": 537.8
+        },
+        "obstacles": [
+          "paws-collision-featured",
+          "paws-collision-counter"
+        ]
+      },
+      {
+        "contractId": "harbour-general-interior",
+        "pointId": "harbour-slot-standing-3",
+        "point": {
+          "x": 386,
+          "y": 458
+        },
+        "obstacles": [
+          "harbour-collision-towel-island"
+        ]
+      },
+      {
+        "contractId": "harbour-general-interior",
+        "pointId": "harbour-slot-standing-4",
+        "point": {
+          "x": 550,
+          "y": 458
+        },
+        "obstacles": [
+          "harbour-collision-towel-island"
+        ]
+      },
+      {
+        "contractId": "harbour-general-interior",
+        "pointId": "harbour-slot-standing-5",
+        "point": {
+          "x": 714,
+          "y": 458
+        },
+        "obstacles": [
+          "harbour-collision-towel-island"
+        ]
+      }
+    ]
+  },
+  "sourceIsolation": {
+    "filesChecked": [
+      "src/scenes/TownScene.js",
+      "src/entities/PlayerCharacter.js",
+      "src/entities/NpcCharacter.js",
+      "src/entities/AnimalCharacter.js",
+      "src/systems/NpcTownLifeService.js",
+      "src/systems/CustomResidentService.js",
+      "src/systems/AnimalService.js",
+      "src/scenes/LawnCareScene.js",
+      "src/scenes/RiverClearoutScene.js",
+      "src/scenes/BeachCleanupScene.js",
+      "src/scenes/PlaygroundPowerwashScene.js"
+    ],
+    "violations": []
+  },
+  "saveIsolation": {
+    "fragileVisualFields": []
+  },
+  "pass": false
+}

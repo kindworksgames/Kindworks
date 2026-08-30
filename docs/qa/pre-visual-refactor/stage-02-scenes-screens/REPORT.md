@@ -1,5 +1,7 @@
 # Stage 2 — Every Scene and Screen Audit
 
+> **Repair update (29 August 2026):** S2-F01 and S2-F02 have been fixed and verified. The audit verdict below is retained as the historical pre-repair result. The current decision is **READY FOR NEXT QA STAGE**; see [REPAIR_REPORT.md](REPAIR_REPORT.md).
+
 ## Audit verdict
 
 **STAGE 2 AUDIT COMPLETE — NOT READY FOR REPAIR-FREE CONTINUATION.**
@@ -123,6 +125,6 @@ No blank screen, crash, total progression blocker, save corruption, reward dupli
 
 ## Stage result
 
-**NOT READY — STAGE 2 REPAIR PROMPT REQUIRED.**
+**Historical audit result: NOT READY — STAGE 2 REPAIR PROMPT REQUIRED.**
 
-The next action should use the reusable repair prompt to correct S2-F01 and S2-F02, add regression tests, rerun this entire Stage 2 audit, and preserve the documented manual-device gates. No Stage 3 work or visual-readiness refactor should begin from this report alone.
+That repair has now been completed. S2-F01 and S2-F02 are fixed, regression coverage has been added, and the Stage 2 checks have been rerun. The remaining observations are documented verification boundaries rather than unresolved P0–P3 defects. Refer to the repair report for the current gate.

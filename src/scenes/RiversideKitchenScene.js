@@ -92,7 +92,7 @@ export class RiversideKitchenScene extends Phaser.Scene {
 
   setSceneInterface() {
     document.body.dataset.gameScene = this.scene.key;
-    const badge = document.querySelector(".milestone-badge"); if (badge) badge.textContent = "RIVERSIDE KITCHEN · MILESTONE 22";
+    const badge = document.querySelector(".milestone-badge"); if (badge) badge.textContent = "RIVERSIDE KITCHEN";
     const status = document.querySelector("#location-status"); if (status) status.textContent = "Inside Riverside Kitchen";
     const hint = document.querySelector("#control-hint"); if (hint) hint.textContent = "Choose a meal tray · Follow preparation and heat steps · Save & exit preserves the shift";
     const landscapeMessage = document.querySelector("#landscape-required-message");
@@ -224,6 +224,7 @@ export class RiversideKitchenScene extends Phaser.Scene {
   }
 
   updateDomState() {
+    if (!import.meta.env.DEV) return;
     const game = document.querySelector("#game"); if (!game) return;
     const session = this.riversideKitchen.getActiveSession(); const diagnostics = this.riversideKitchen.getDiagnostics();
     game.dataset.scene = this.scene.key; game.dataset.riversideKitchenLevel = String(session?.level.level || diagnostics.unlockedLevel);

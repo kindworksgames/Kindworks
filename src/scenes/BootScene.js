@@ -1,5 +1,4 @@
 import Phaser from "phaser";
-import { ANIMAL_REFERENCE_SHEET_PATH, ANIMAL_REFERENCE_TEXTURE_KEY } from "../data/animals.js";
 import { createPlayerAssets } from "../entities/PlayerCharacter.js";
 import { startLazyScene } from "./lazyScenes.js";
 
@@ -9,9 +8,7 @@ export class BootScene extends Phaser.Scene {
   }
 
   preload() {
-    if (!this.textures.exists(ANIMAL_REFERENCE_TEXTURE_KEY)) {
-      this.load.spritesheet(ANIMAL_REFERENCE_TEXTURE_KEY, ANIMAL_REFERENCE_SHEET_PATH, { frameWidth: 64, frameHeight: 64 });
-    }
+    this.registry.get("visualRegistry")?.queueScenePacks(this, this.scene.key);
   }
 
   create() {

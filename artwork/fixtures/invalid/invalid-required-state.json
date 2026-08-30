@@ -1,0 +1,8 @@
+{
+  "description": "Omits a state required by the asset contract.",
+  "assetId": "scene.fishing.reedbank.background",
+  "operation": "set",
+  "path": "states",
+  "value": [],
+  "expectedCodes": ["missing-required-state"]
+}

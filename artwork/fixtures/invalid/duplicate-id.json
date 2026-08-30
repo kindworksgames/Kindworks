@@ -1,0 +1,6 @@
+{
+  "description": "Duplicates a semantic identity in the source manifest.",
+  "assetId": "scene.fishing.reedbank.background",
+  "operation": "duplicate-asset",
+  "expectedCodes": ["duplicate-semantic-id"]
+}

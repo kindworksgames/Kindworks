@@ -345,13 +345,14 @@ export class WasteCollectionScene extends Phaser.Scene {
 
   setSceneInterface() {
     document.body.dataset.gameScene = this.scene.key;
-    const badge = document.querySelector(".milestone-badge"); if (badge) badge.textContent = "WASTE COLLECTION · MILESTONE 17";
+    const badge = document.querySelector(".milestone-badge"); if (badge) badge.textContent = "WASTE COLLECTION";
     setText("#location-status", this.session?.mode === "town-job" ? this.job?.title : "Waste Collection Campaign");
     setText("#control-hint", "Tap uncovered cards · match three · H shows a safe card · landscape play");
     setText("#landscape-required-message", "Waste Collection is designed for landscape play. Turn your phone sideways to continue matching rubbish.");
   }
 
   updateDomState() {
+    if (!import.meta.env.DEV) return;
     const game = document.querySelector("#game"); if (!game) return;
     const active = this.cleanup?.getActiveSession(); const diagnostics = this.cleanup?.getDiagnostics();
     game.dataset.scene = this.scene.key; game.dataset.wasteMode = active?.mode || (this.lastCampaignResult ? "result" : "loading");

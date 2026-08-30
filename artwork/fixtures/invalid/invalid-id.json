@@ -1,0 +1,8 @@
+{
+  "description": "Uses a provider-style display label instead of a stable semantic ID.",
+  "assetId": "scene.fishing.reedbank.background",
+  "operation": "set",
+  "path": "semanticId",
+  "value": "ChatGPT Fishing Background FINAL",
+  "expectedCodes": ["invalid-semantic-id"]
+}

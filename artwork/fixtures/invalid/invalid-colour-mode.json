@@ -1,0 +1,8 @@
+{
+  "description": "Declares an unsupported CMYK colour mode.",
+  "assetId": "scene.fishing.reedbank.background",
+  "operation": "set",
+  "path": "output.colourMode",
+  "value": "CMYK",
+  "expectedCodes": ["invalid-colour-contract"]
+}
