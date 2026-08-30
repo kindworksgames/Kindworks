@@ -23,7 +23,7 @@ test("Phase 3 pins the immutable legacy source and complete viewport matrix", ()
 });
 
 test("Phase 3 requires observable evidence for every migrated activity", () => {
-  assert.equal(FIDELITY_ACTIVITIES.length, 14);
+  assert.equal(FIDELITY_ACTIVITIES.length, 17);
   for (const activity of FIDELITY_ACTIVITIES) {
     assert.ok(activity.legacyAnchors.length >= 2);
     assert.ok(activity.phaserOwners.length >= 2);
@@ -68,4 +68,9 @@ test("the fidelity route provides browser-operable isolated activity controls", 
   assert.match(harness, /id = "fidelity-qa-level"/);
   assert.match(harness, /id = "fidelity-qa-open"/);
   assert.match(harness, /await this\.openActivity\(activity\.value, Number\(level\.value\) \|\| 1\)/);
+  assert.match(harness, /activeScenes\.find\(\(scene\) => scene\.scene\.key === visibleSceneKey\)/);
+  assert.match(harness, /this\.game\.scene\.stop\(activeScene\.scene\.key\)/);
+  assert.match(harness, /this\.game\.scene\.start\(route\.scene, sceneData\)/);
+  assert.match(harness, /if \(runningFishingScene\) this\.game\.scene\.stop\("FishingScene"\)/);
+  assert.match(harness, /this\.game\.registry\.get\("shopController"\)\?\.close\?\.\(\)/);
 });

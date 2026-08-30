@@ -38,6 +38,7 @@ export function validateSaveEnvelope(envelope) {
   };
   if (envelope.checksum !== checksumValue(body)) errors.push("Save checksum does not match its contents.");
   const upgradedData = upgradeGameState(envelope.data, { now: Date.parse(envelope.writtenAt) || Date.now() });
+  const normalized = JSON.stringify(envelope.data) !== JSON.stringify(upgradedData);
   const stateValidation = validateGameState(upgradedData);
   errors.push(...stateValidation.errors);
   return {
@@ -47,7 +48,9 @@ export function validateSaveEnvelope(envelope) {
     needsMigration: errors.length === 0 && (
       envelope.schemaVersion !== GAME_STATE_SCHEMA_VERSION
       || envelope.data?.schemaVersion !== GAME_STATE_SCHEMA_VERSION
+      || normalized
     ),
+    normalized: errors.length === 0 && normalized,
   };
 }
 
@@ -63,6 +66,17 @@ function parseEnvelope(raw) {
     };
   } catch {
     return { ok: false, errors: ["Save contains invalid JSON."], envelope: null };
+  }
+}
+
+function parseRecovery(raw) {
+  if (!raw) return { ok: false, errors: ["Recovery is empty."] };
+  try {
+    const recovery = JSON.parse(raw);
+    if (typeof recovery?.raw !== "string") return { ok: false, errors: ["Recovery has no save payload."] };
+    return parseEnvelope(recovery.raw);
+  } catch {
+    return { ok: false, errors: ["Recovery contains invalid JSON."] };
   }
 }
 
@@ -82,6 +96,10 @@ export class SaveRepository {
 
   writeRecovery(payload) {
     try {
+      const existingRaw = this.storage?.getItem?.(PHASER_RECOVERY_KEY) ?? null;
+      const existing = parseRecovery(existingRaw);
+      const incoming = typeof payload?.raw === "string" ? parseEnvelope(payload.raw) : { ok: false };
+      if (existing.ok && !incoming.ok) return true;
       this.storage?.setItem?.(PHASER_RECOVERY_KEY, JSON.stringify({
         format: 1,
         capturedAt: new Date().toISOString(),
@@ -95,7 +113,7 @@ export class SaveRepository {
 
   load() {
     const failures = [];
-    for (const [key, kind] of [[PHASER_SAVE_KEY, "current"], [PHASER_BACKUP_KEY, "backup"]]) {
+    for (const [key, kind] of [[PHASER_SAVE_KEY, "current"], [PHASER_BACKUP_KEY, "backup"], [PHASER_RECOVERY_KEY, "recovery"]]) {
       const read = this.safeRead(key);
       if (!read.ok) {
         const result = { ok: false, status: "storage-error", reason: read.error, failures };
@@ -103,7 +121,7 @@ export class SaveRepository {
         return result;
       }
       if (!read.raw) continue;
-      const parsed = parseEnvelope(read.raw);
+      const parsed = kind === "recovery" ? parseRecovery(read.raw) : parseEnvelope(read.raw);
       if (!parsed.ok) {
         failures.push(`${key}: ${parsed.errors.join(" ")}`);
         if (kind === "current") this.writeRecovery({ sourceKey: key, reason: parsed.errors.join(" "), raw: read.raw });
@@ -111,9 +129,10 @@ export class SaveRepository {
       }
       const result = {
         ok: true,
-        status: kind === "current" ? "loaded" : "recovered-backup",
+        status: kind === "current" ? "loaded" : kind === "backup" ? "recovered-backup" : "recovered-recovery",
         sourceKey: key,
-        recovered: kind === "backup",
+        recovered: kind !== "current",
+        recoveryKind: kind === "current" ? null : kind,
         state: structuredClone(parsed.state),
         envelope: parsed.envelope,
         needsMigration: parsed.needsMigration,
@@ -122,7 +141,7 @@ export class SaveRepository {
       this.lastResult = result;
       return result;
     }
-    const result = { ok: false, status: failures.length ? "invalid" : "not-found", reason: failures.length ? "No valid Phaser save could be loaded." : "No Phaser save exists yet.", failures };
+    const result = { ok: false, status: failures.length ? "invalid" : "not-found", reason: failures.length ? "No valid save could be loaded." : "No save exists yet.", failures };
     this.lastResult = result;
     return result;
   }
@@ -164,7 +183,7 @@ export class SaveRepository {
       this.lastResult = result;
       return result;
     } catch (error) {
-      this.writeRecovery({ sourceKey: PHASER_SAVE_KEY, reason: `Phaser save verification failed: ${String(error)}`, raw: candidate, previousRaw: previousRead.raw });
+      this.writeRecovery({ sourceKey: PHASER_SAVE_KEY, reason: `Save verification failed: ${String(error)}`, raw: candidate, previousRaw: previousRead.raw });
       const result = { ok: false, status: "write-failed", reason: String(error), recoveryKey: PHASER_RECOVERY_KEY };
       this.lastResult = result;
       return result;

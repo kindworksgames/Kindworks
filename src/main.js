@@ -1,9 +1,14 @@
 import Phaser from "phaser";
+import { installTestMetricsBridge } from "./qa/TestMetricsBridge.js";
+import { renderFrameTarget } from "./visual/ResponsiveFramePolicy.js";
 import "./style.css";
 import "./shop-reference.css";
 import { BootScene } from "./scenes/BootScene.js";
 import { TownScene } from "./scenes/TownScene.js";
 import { SpriteAiLabelPlugin } from "./plugins/SpriteAiLabelPlugin.js";
+import { SceneLayoutPlugin } from "./plugins/SceneLayoutPlugin.js";
+import { applyLayoutSurfaces } from "./visual/layouts/SceneLayoutRuntime.js";
+import { GLOBAL_UI_LAYOUT, SCENE_LAYOUT_CATALOGUE_DIGEST, SCENE_LAYOUT_PRODUCTION_SIGNATURE } from "./visual/layouts/sceneLayoutCatalog.js";
 import { installSpriteAiDomLabels, spriteAiInventory } from "./assets/spriteAiLabels.js";
 import { bootstrapState } from "./state/bootstrapState.js";
 import { GAME_STATE_SCHEMA_VERSION } from "./state/constants.js";
@@ -58,21 +63,48 @@ import { ResponsiveShellController } from "./ui/ResponsiveShellController.js";
 import { InteractionFeedbackController } from "./ui/InteractionFeedbackController.js";
 import { SharedOverlayController } from "./ui/SharedOverlayController.js";
 import { TownMenuController } from "./ui/TownMenuController.js";
+import { ensureLazyScene } from "./scenes/lazyScenes.js";
 import { ITEM_IDS } from "./data/items.js";
+import { PAWS_WONDERS } from "./data/pawsWonders.js";
 import { findSafeFurniturePlacement } from "./data/homeInteriors.js";
 import { getParityCertification } from "./data/parityCertification.js";
 import { getDifferentialParityCertification } from "./data/differentialParityAudit.js";
 import { getReleaseCandidateCertification } from "./data/releaseCandidate.js";
 import { createFidelityStorage, getFidelityContract } from "./qa/fidelityContract.js";
 import { FidelityQaHarness } from "./qa/FidelityQaHarness.js";
+import {
+  VISUAL_REGRESSION_FIXED_NOW,
+  getVisualRegressionScenario,
+  seedVisualRegressionStorage,
+} from "./qa/visualRegressionFixtures.js";
+import {
+  VISUAL_COMPARISON_SEED,
+  createSeededRandom,
+  resolveVisualCaptureCase,
+} from "./qa/visualComparisonContracts.js";
+import { createVisualRegistry } from "./visual/VisualRegistry.js";
 
-installSpriteAiDomLabels(document, window);
+if (import.meta.env.DEV) installSpriteAiDomLabels(document, window);
 
 const qaMode = new URLSearchParams(window.location.search).get("qa");
-const fidelityQa = import.meta.env.DEV && ["fidelity", "animal-fidelity"].includes(qaMode);
+const visualRegressionQa = import.meta.env.DEV && qaMode === "visual-regression";
+const referenceOverlayQa = import.meta.env.DEV && qaMode === "reference-overlay";
+const scaleCalibrationQa = import.meta.env.DEV && qaMode === "scale-calibration";
+const assetLabQa = import.meta.env.DEV && qaMode === "asset-lab";
+const sceneVisualQa = import.meta.env.DEV && qaMode === "scene-visual";
+const candidatePreviewQa = import.meta.env.DEV && qaMode === "candidate-preview";
+const geometryQa = import.meta.env.DEV && qaMode === "geometry";
+const fidelityQa = import.meta.env.DEV && (["fidelity", "animal-fidelity", "visual-regression", "reference-overlay", "scale-calibration", "asset-lab", "scene-visual", "candidate-preview"].includes(qaMode) || geometryQa);
+if (visualRegressionQa) Math.random = createSeededRandom(VISUAL_COMPARISON_SEED);
 const runtimeStorage = fidelityQa ? createFidelityStorage(window.localStorage) : window.localStorage;
+if (visualRegressionQa) seedVisualRegressionStorage(runtimeStorage);
 const stateRuntime = bootstrapState(runtimeStorage);
-const worldSimulation = new WorldSimulationService(stateRuntime.gameState, stateRuntime.repository);
+const visualRegressionClock = visualRegressionQa ? () => VISUAL_REGRESSION_FIXED_NOW : null;
+const worldSimulation = new WorldSimulationService(
+  stateRuntime.gameState,
+  stateRuntime.repository,
+  visualRegressionClock ? { now: visualRegressionClock } : undefined,
+);
 const customResident = new CustomResidentService(stateRuntime.gameState, stateRuntime.repository);
 const farming = new FarmingService(stateRuntime.gameState, stateRuntime.repository);
 const livingEnvironment = new LivingEnvironmentService(stateRuntime.gameState, stateRuntime.repository);
@@ -81,9 +113,22 @@ worldSimulation.addStateAdvancer((state) => livingEnvironment.advanceInto(state)
 worldSimulation.addStateAdvancer((state, before, result) => customResident.advanceInto(state, before, result));
 const offlineResolution = worldSimulation.resolveOffline();
 const harbourGeneral = new HarbourGeneralService(stateRuntime.gameState, stateRuntime.repository);
-const npcTownLife = new NpcTownLifeService(stateRuntime.gameState, stateRuntime.repository, { harbourGeneral });
+const npcTownLife = new NpcTownLifeService(stateRuntime.gameState, stateRuntime.repository, {
+  harbourGeneral,
+  ...(visualRegressionClock ? { now: visualRegressionClock } : {}),
+});
 const npcNarratives = new NpcNarrativeService(stateRuntime.gameState, stateRuntime.repository, { npcTownLife });
-const municipalCollection = new MunicipalCollectionService(stateRuntime.gameState, stateRuntime.repository);
+const municipalCollection = new MunicipalCollectionService(
+  stateRuntime.gameState,
+  stateRuntime.repository,
+  visualRegressionClock ? { now: visualRegressionClock } : undefined,
+);
+if (visualRegressionQa || scaleCalibrationQa || assetLabQa) {
+  const pauseReason = assetLabQa ? "asset-lab" : scaleCalibrationQa ? "scale-calibration" : "visual-regression";
+  worldSimulation.setPaused(pauseReason, true);
+  npcTownLife.setPaused(pauseReason, true);
+  municipalCollection.setPaused(pauseReason, true);
+}
 const aquarium = new AquariumService(stateRuntime.gameState, stateRuntime.repository);
 const homeInteriors = new HomeInteriorService(stateRuntime.gameState, stateRuntime.repository, { customResident, aquarium });
 farming.refresh({ persist: true });
@@ -118,18 +163,39 @@ const config = {
   backgroundColor: "#20382c",
   pixelArt: true,
   roundPixels: true,
+  fps: {
+    target: renderFrameTarget(),
+    forceSetTimeOut: false,
+  },
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
   plugins: {
-    scene: [{ key: "spriteAiLabels", plugin: SpriteAiLabelPlugin, mapping: "spriteAiLabels" }],
+    scene: [
+      { key: "spriteAiLabels", plugin: SpriteAiLabelPlugin, mapping: "spriteAiLabels" },
+      { key: "sceneLayouts", plugin: SceneLayoutPlugin, mapping: "sceneLayouts" },
+    ],
   },
   scene: [BootScene, TownScene],
 };
 
 const game = new Phaser.Game(config);
-window.__KINDWORKS_PHASER_GAME__ = game;
+if (import.meta.env.VITE_KW_TEST_METRICS === "1") installTestMetricsBridge(game, window);
+if (geometryQa) {
+  import("./visual/dev/GameplayGeometryDebugOverlay.js").then(({ installGameplayGeometryDebug }) => {
+    game.registry.set("gameplayGeometryDebug", installGameplayGeometryDebug(game));
+  });
+}
+applyLayoutSurfaces(GLOBAL_UI_LAYOUT);
+document.body.dataset.sceneLayoutCatalogueDigest = SCENE_LAYOUT_CATALOGUE_DIGEST;
+document.body.dataset.sceneLayoutProductionSignature = SCENE_LAYOUT_PRODUCTION_SIGNATURE;
+if (import.meta.env.DEV) window.__KINDWORKS_PHASER_GAME__ = game;
+const visualRegistry = createVisualRegistry({
+  environment: import.meta.env.PROD ? "production" : "development",
+  baseUrl: import.meta.env.BASE_URL,
+});
+game.registry.set("visualRegistry", visualRegistry);
 const responsiveShell = new ResponsiveShellController(game, {
   worldSimulation,
   npcTownLife,
@@ -140,7 +206,7 @@ const interactionFeedback = new InteractionFeedbackController().start();
 game.registry.set("interactionFeedback", interactionFeedback);
 const sharedOverlay = new SharedOverlayController().start();
 game.registry.set("sharedOverlay", sharedOverlay);
-game.registry.set("spriteAiInventory", spriteAiInventory);
+if (import.meta.env.DEV) game.registry.set("spriteAiInventory", spriteAiInventory);
 game.registry.set("gameState", stateRuntime.gameState);
 game.registry.set("saveRepository", stateRuntime.repository);
 game.registry.set("worldSimulation", worldSimulation);
@@ -175,7 +241,11 @@ game.registry.set("activityRecovery", activityRecovery);
 const economy = new EconomyService(stateRuntime.gameState, stateRuntime.repository);
 game.registry.set("economy", economy);
 const commerceQa = import.meta.env.DEV && ["commerce", "commerce-disabled"].includes(qaMode);
-const readOnlyQa = import.meta.env.DEV && ["parity", "differential-parity", "release-candidate", "fidelity", "animal-fidelity"].includes(qaMode);
+const readOnlyQa = import.meta.env.DEV && (
+  ["parity", "differential-parity", "release-candidate", "fidelity", "animal-fidelity", "visual-regression", "reference-overlay", "scale-calibration"].includes(qaMode)
+  || ["asset-lab", "scene-visual"].includes(qaMode)
+  || geometryQa
+);
 const developmentCommerce = import.meta.env.DEV && qaMode === "commerce";
 const billingBridge = developmentCommerce
   ? createDevelopmentBillingBridge(stateRuntime.gameState)
@@ -230,10 +300,20 @@ if (fidelityQa) {
   document.body.dataset.fidelitySource = fidelityContract.source.sha256;
   document.body.dataset.fidelityStorageIsolated = "true";
 }
-if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "paws") {
+if (import.meta.env.DEV && ["paws", "stage7-paws"].includes(new URLSearchParams(window.location.search).get("qa"))) {
   restorationMilestones.unlockForQa("highstreet", { revealed: true });
   const balance = stateRuntime.gameState.getSnapshot().economy.coins;
   if (balance < 10_000) economy.credit(10_000 - balance, { kind: "development-fixture", reason: "Milestone 36 Paws & Wonders visual QA" });
+}
+if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "stage7-paws") {
+  const openStage7Paws = async () => {
+    const activeScene = game.scene.getScenes(true).at(-1) || game.scene.getScenes(true)[0];
+    if (!activeScene || activeScene.scene.key === "BootScene") return;
+    await ensureLazyScene(activeScene, "PawsWondersScene");
+    if (activeScene.scene.key !== "PawsWondersScene") game.scene.stop(activeScene.scene.key);
+    game.scene.start("PawsWondersScene", { focusItemId: "pet-labrador", returnPosition: PAWS_WONDERS.approach, returnFacing: "down" });
+  };
+  setTimeout(() => openStage7Paws(), 1600);
 }
 if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("qa") === "harbour-general") {
   const state = stateRuntime.gameState.getSnapshot();
@@ -380,6 +460,9 @@ const saveStatus = new SaveStatusController(stateRuntime, {
   onModalChange(open) {
     setModalOpen("save", open);
   },
+  onNewGame() {
+    window.location.reload();
+  },
 });
 const economyHud = new EconomyHudController(stateRuntime, {
   economy,
@@ -398,7 +481,7 @@ const economyHud = new EconomyHudController(stateRuntime, {
   },
 });
 
-const fidelityHarness = fidelityQa ? new FidelityQaHarness({
+const fidelityHarness = fidelityQa && !assetLabQa && !sceneVisualQa ? new FidelityQaHarness({
   game,
   gameState: stateRuntime.gameState,
   repository: stateRuntime.repository,
@@ -407,7 +490,128 @@ const fidelityHarness = fidelityQa ? new FidelityQaHarness({
 }) : null;
 if (fidelityHarness) {
   game.registry.set("fidelityHarness", fidelityHarness);
-  fidelityHarness.mountPanel();
+  if (referenceOverlayQa) {
+    document.body.dataset.referenceOverlayReady = "loading";
+    setTimeout(async () => {
+      const result = await fidelityHarness.openActivity("fishing", 1);
+      if (!result?.ok) document.body.dataset.referenceOverlayReady = "failed";
+    }, 900);
+  } else if (!visualRegressionQa && !scaleCalibrationQa) fidelityHarness.mountPanel();
+  else if (visualRegressionQa) {
+    const captureParams = new URLSearchParams(window.location.search);
+    const requestedScenario = captureParams.get("scenario") || "town";
+    const captureCase = resolveVisualCaptureCase({
+      id: captureParams.get("capture"),
+      scenario: requestedScenario,
+      width: window.innerWidth,
+      height: window.innerHeight,
+    });
+    const scenario = getVisualRegressionScenario(captureCase?.scenario || requestedScenario);
+    document.body.dataset.visualRegressionQa = "true";
+    document.body.dataset.visualRegressionScenario = scenario?.id || "unknown";
+    document.body.dataset.visualRegressionReady = "preparing";
+    if (!captureCase) {
+      document.body.dataset.visualRegressionReady = "failed";
+      document.body.dataset.visualCaptureStatus = "failed";
+      document.body.dataset.visualCaptureDetails = JSON.stringify({
+        ok: false,
+        code: "unknown-capture-contract",
+        message: `No approved capture contract matches scenario ${requestedScenario} at ${window.innerWidth}x${window.innerHeight}.`,
+      });
+    } else import("./qa/VisualCaptureRuntime.js")
+      .then(({ prepareVisualCapture }) => prepareVisualCapture({
+        game,
+        captureId: captureCase.id,
+        openActivity: (activityId, level) => fidelityHarness.openActivity(activityId, level),
+      }))
+      .catch((error) => {
+        console.error("Visual capture preparation failed.", error);
+        document.body.dataset.visualRegressionReady = "failed";
+        document.body.dataset.visualCaptureStatus = "failed";
+        document.body.dataset.visualCaptureDetails = JSON.stringify({ ok: false, code: "capture-runtime-error", message: error.message });
+      });
+  }
+}
+if (scaleCalibrationQa) {
+  document.body.dataset.scaleCalibrationReady = "loading";
+  setTimeout(async () => {
+    try {
+      const { ScaleCalibrationScene } = await import("./scenes/ScaleCalibrationScene.js");
+      if (!game.scene.keys.ScaleCalibrationScene) game.scene.add("ScaleCalibrationScene", ScaleCalibrationScene, false);
+      for (const activeScene of game.scene.getScenes(true)) game.scene.stop(activeScene.scene.key);
+      game.scene.start("ScaleCalibrationScene");
+    } catch (error) {
+      console.error("Scale calibration scene failed to start.", error);
+      document.body.dataset.scaleCalibrationReady = "failed";
+    }
+  }, 900);
+}
+if (assetLabQa) {
+  document.body.dataset.assetLabReady = "loading";
+  setTimeout(async () => {
+    try {
+      const [{ AssetLabScene }, { createPhase8AAssetLabManifest }] = await Promise.all([
+        import("./visual/dev/AssetLabScene.js"),
+        import("./visual/dev/phase8aAssetLabManifest.js"),
+      ]);
+      game.registry.set("visualRegistry", createVisualRegistry({
+        manifest: createPhase8AAssetLabManifest(visualRegistry.manifest),
+        environment: "development",
+        baseUrl: import.meta.env.BASE_URL,
+      }));
+      if (!game.scene.keys.AssetLabScene) game.scene.add("AssetLabScene", AssetLabScene, false);
+      for (const activeScene of game.scene.getScenes(true)) game.scene.stop(activeScene.scene.key);
+      game.scene.start("AssetLabScene");
+    } catch (error) {
+      console.error("Asset Lab failed to start.", error);
+      document.body.dataset.assetLabReady = "failed";
+    }
+  }, 900);
+}
+if (sceneVisualQa) {
+  document.body.dataset.sceneQaReady = "loading";
+  setTimeout(async () => {
+    try {
+      const { SceneQaOverlayController } = await import("./visual/dev/SceneQaOverlayController.js");
+      const sceneQaOverlay = new SceneQaOverlayController(game, visualRegistry);
+      game.registry.set("sceneQaOverlay", sceneQaOverlay);
+    } catch (error) {
+      console.error("Scene visual QA overlay failed to start.", error);
+      document.body.dataset.sceneQaReady = "failed";
+    }
+  }, 900);
+}
+if (candidatePreviewQa) {
+  document.body.dataset.candidatePreviewReady = "loading";
+  setTimeout(async () => {
+    try {
+      const semanticId = new URLSearchParams(window.location.search).get("asset");
+      const [{ Phase8BCandidatePreviewController }, { SceneQaOverlayController }, { PHASE_8A_VERTICAL_SLICE_PACKAGE }] = await Promise.all([
+        import("./visual/dev/Phase8BCandidatePreviewController.js"),
+        import("./visual/dev/SceneQaOverlayController.js"),
+        import("./visual/verticalSlice/phase8aVerticalSlicePackage.js"),
+      ]);
+      const contract = PHASE_8A_VERTICAL_SLICE_PACKAGE.assets.find((asset) => asset.semanticId === semanticId);
+      if (!contract) throw new Error(`Unknown candidate contract: ${semanticId}`);
+      if (contract.intendedScenes.includes("LawnCareScene")) await fidelityHarness.openActivity("lawn", 1);
+      else if (contract.intendedScenes.includes("TownScene") && !game.scene.isActive("TownScene")) {
+        for (const activeScene of game.scene.getScenes(true)) game.scene.stop(activeScene.scene.key);
+        game.scene.start("TownScene");
+        await new Promise((resolve) => setTimeout(resolve, 350));
+      }
+      const controller = new Phase8BCandidatePreviewController(game, semanticId);
+      await controller.mount();
+      const sceneQaOverlay = new SceneQaOverlayController(game, visualRegistry);
+      game.registry.set("phase8bCandidatePreview", controller);
+      game.registry.set("sceneQaOverlay", sceneQaOverlay);
+    } catch (error) {
+      const candidateUnavailable = error?.message?.startsWith("No prepared Phase 8B candidate for ");
+      if (candidateUnavailable) console.info("Candidate preview is unavailable until the selected asset is prepared.");
+      else console.error("Candidate preview failed to start.", error);
+      document.body.dataset.candidatePreviewReady = candidateUnavailable ? "unavailable" : "failed";
+      document.body.dataset.candidatePreviewError = error.message;
+    }
+  }, 1100);
 }
 const commerceController = new CommerceController(commerce);
 game.registry.set("commerceController", commerceController);
@@ -443,6 +647,7 @@ const farmingController = new FarmingController(farming, {
 });
 game.registry.set("farmingController", farmingController);
 const animalFriendsController = new AnimalFriendsController(animals, {
+  visualRegistry,
   onModalChange(open) {
     setModalOpen("animal-friends", open);
   },
@@ -461,8 +666,14 @@ const customResidentController = new CustomResidentController(customResident, {
   onEndControl() {
     return activeTownScene()?.endCustomResidentControl?.() || { ok: false, message: "The control handoff is not active in town." };
   },
+  onSaveOnboardingDraft(step, draft) {
+    return onboarding.saveCreatorDraft(step, draft);
+  },
+  onReturnToTownName() {
+    return onboardingController.openTownNameEditor();
+  },
   onSaved() {
-    onboardingController.notifyResidentSaved();
+    return onboardingController.notifyResidentSaved();
   },
 });
 game.registry.set("customResidentController", customResidentController);
@@ -473,8 +684,8 @@ const onboardingController = new OnboardingController(onboarding, {
   canOpen() {
     return Boolean(activeTownScene()) && document.body.dataset.modalOpen !== "true";
   },
-  onCreateResident() {
-    return customResidentController.open();
+  onCreateResident(options) {
+    return customResidentController.open(options);
   },
   onFindJob(gameKey) {
     return activeTownScene()?.startOnboardingJob?.(gameKey) || { ok: false, message: "Return to town to start this job." };
@@ -497,6 +708,7 @@ function handleVisibilityChange() {
 document.addEventListener("visibilitychange", handleVisibilityChange);
 window.addEventListener("pagehide", () => {
   responsiveShell.update();
+  customResidentController.persistOnboardingDraft();
   customResident.persistLocation();
   farming.refresh({ persist: true });
   livingEnvironment.refresh({ persist: true });
@@ -508,7 +720,7 @@ window.addEventListener("pagehide", () => {
   if (southShoreScoops.getActiveSession() && !southShoreScoops.getActiveSession().finished) southShoreScoops.persistActiveSession();
 });
 
-window.__KINDWORKS_PHASER__ = {
+if (import.meta.env.DEV) window.__KINDWORKS_PHASER__ = {
   game,
   getParityCertification,
   getDifferentialParityCertification,

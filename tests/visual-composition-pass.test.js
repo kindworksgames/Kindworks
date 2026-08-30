@@ -7,12 +7,13 @@ const readText = async (path) => readFile(new URL(path, root), "utf8");
 
 test("Waste Collection and Lawn Care use full-canvas landscape compositions", async () => {
   const styles = await readText("src/style.css");
-  assert.match(styles, /Waste Collection uses the full landscape canvas/);
+  assert.match(styles, /Waste Collection reference-led park composition/);
   assert.match(styles, /WasteCollectionScene[\s\S]*?waste-campaign-hud:not\(\.hidden\)[\s\S]*?width: auto !important/);
-  assert.match(styles, /waste-board-viewport[\s\S]*?grid-column: 1 \/ -1 !important/);
-  assert.match(styles, /Lawn Care full-canvas visual composition/);
-  assert.match(styles, /LawnCareScene[\s\S]*?lawn-care-hud:not\(\.hidden\)[\s\S]*?width: auto !important/);
-  assert.match(styles, /lawn-board[\s\S]*?height: 100% !important/);
+  assert.match(styles, /WasteCollectionScene[\s\S]*?waste-board-viewport[\s\S]*?grid-row: 1 !important/);
+  assert.match(styles, /WasteCollectionScene[\s\S]*?waste-tray-wrap[\s\S]*?width: min\(76%, 650px\) !important/);
+  assert.match(styles, /Lawn Care board-only composition/);
+  assert.match(styles, /LawnCareScene[\s\S]*?lawn-care-hud:not\(\.hidden\)[\s\S]*?width: 100vw !important/);
+  assert.match(styles, /LawnCareScene[\s\S]*?lawn-board[\s\S]*?width: 100% !important;[\s\S]*?height: 100% !important/);
 });
 
 test("Fishing removes unrelated town chrome and keeps a compact active panel", async () => {

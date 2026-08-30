@@ -1,9 +1,11 @@
 import Phaser from "phaser";
-import { ANIMAL_BY_ID, ANIMAL_REFERENCE_TEXTURE_KEY, animalReferenceFrame } from "../data/animals.js";
+import { ANIMAL_BY_ID, animalReferenceFrame } from "../data/animals.js";
+import { VISUAL_ASSET_IDS } from "../visual/visualManifest.js";
 import { ITEM_CATALOG } from "../data/items.js";
 import { PERSONAL_HOME_HOUSE_ID } from "../data/customResident.js";
 import { HOME_INTERIOR_VIEW, validateFurniturePlacement } from "../data/homeInteriors.js";
 import { AQUARIUM_SPECIES_BY_ID } from "../data/aquarium.js";
+import { setRuntimeSceneMarkers } from "../ui/runtimeSceneMarkers.js";
 import { startLazyScene } from "./lazyScenes.js";
 
 // Presentation transform only: enlarge the interactive room while preserving
@@ -104,9 +106,9 @@ export class HouseInteriorScene extends Phaser.Scene {
   }
 
   setSceneInterface() {
-    document.body.dataset.gameScene = this.scene.key;
+    setRuntimeSceneMarkers(document, this.scene.key);
     const badge = document.querySelector(".milestone-badge");
-    if (badge) badge.textContent = "HOME AQUARIUM · MILESTONE 33";
+    if (badge) badge.textContent = "WILLOWMERE HOME";
     text("#location-status", "Inside a Willowmere home");
     text("#control-hint", "Tap to inspect · arrows browse/move · R rotates · Enter confirms");
   }
@@ -259,8 +261,9 @@ export class HouseInteriorScene extends Phaser.Scene {
 
   drawAnimalOccupant(graphics, occupant, x, y) {
     const frame = animalReferenceFrame(ANIMAL_BY_ID[occupant.id]);
-    if (frame !== null && this.textures.exists(ANIMAL_REFERENCE_TEXTURE_KEY)) {
-      return this.add.image(x, y + 18, ANIMAL_REFERENCE_TEXTURE_KEY, frame).setOrigin(0.5, 1).setScale(0.78).setDepth(8);
+    const animalTextureKey = this.registry.get("visualRegistry").getTextureKey(VISUAL_ASSET_IDS.ANIMAL_REFERENCE_SHEET);
+    if (frame !== null && this.textures.exists(animalTextureKey)) {
+      return this.add.image(x, y + 18, animalTextureKey, frame).setOrigin(0.5, 1).setScale(0.78).setDepth(8);
     }
     const body = Number(occupant.color) || 0x9b7d64;
     const accent = Number(occupant.accent) || 0xe8d4b5;
@@ -334,7 +337,7 @@ export class HouseInteriorScene extends Phaser.Scene {
     this.drawRoom(interior);
     this.renderInterface(this.interior());
     const game = document.querySelector("#game");
-    if (game) {
+    if (import.meta.env.DEV && game) {
       game.dataset.homeInteriorHouse = this.houseId;
       game.dataset.homeInteriorClean = String(interior.clean);
       game.dataset.homeFurnitureCount = String(interior.furniture?.placements.length || 0);

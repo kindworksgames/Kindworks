@@ -1,0 +1,46 @@
+{
+  "stage": 7,
+  "auditOnly": false,
+  "branch": "phase-2-ui-simplification",
+  "startingCommit": "3387bcb48964c41edbdc26f4257d2990fcdaf8d5",
+  "verdict": "SAFE TO CONTINUE WITH DOCUMENTED USER DECISIONS",
+  "findings": { "P0": 0, "P1": 0, "P2Open": 0, "P2Fixed": 2, "P3": 0, "userDecisionRequired": 1 },
+  "catalogue": {
+    "items": 82,
+    "categories": { "consumable": 21, "collectible": 4, "furniture": 10, "equipment": 12, "placeable": 35 },
+    "shops": { "willowmere-shop": 51, "town-grocer": 9, "fresh-market": 7 },
+    "pawsWonders": 11,
+    "harbourGeneral": 17
+  },
+  "tests": {
+    "initialFocused": { "tests": 268, "passed": 268 },
+    "supplementalFocused": { "tests": 149, "passed": 149, "overlapsInitial": true },
+    "repairFocused": { "tests": 130, "passed": 130, "failed": 0 },
+    "full": { "tests": 632, "passed": 632, "failed": 0 },
+    "giftProbabilitySamplesPerMode": 1000000,
+    "differentialParity": { "status": "PASS", "activities": 13, "levels": 5850, "sharedDomains": 19, "exactRules": 85 },
+    "minigameParity": { "status": "PASS", "games": 14, "comparisons": 75, "instances": 105795 },
+    "productionBuild": { "status": "PASS", "modules": 179 },
+    "performanceBudget": { "status": "PASS", "lazyChunks": 19, "totalJavaScriptBytes": 4823094 }
+  },
+  "runtime": {
+    "willowmereShopPurchase": "PASS",
+    "villageGrocerRapidRepeat": "PASS",
+    "freshMarketPurchase": "PASS",
+    "inventoryScroll568x320": "PASS",
+    "pawsOneTimeAdoption": "PASS",
+    "harbourRestock": "PASS",
+    "homeownerGiftEquip": "PASS",
+    "personalHomeUpgrade": "PASS",
+    "externalCheckout": "BLOCKED_BY_DESIGN_FAIL_CLOSED",
+    "responsiveShopRepair": {
+      "profiles": ["568x320", "667x375", "1024x768", "1280x720"],
+      "villageGrocer": "PASS",
+      "freshMarket": "PASS",
+      "pawsWonders": "PASS",
+      "harbourGeneral": "PASS",
+      "runtimeConsole": "PASS_NO_ERRORS"
+    }
+  },
+  "protectedHtmlSha256": "0b85bd71385b83e7a13676f7593ce376245959fa4ebf1a6b9a0e6765297aa5a5"
+}

@@ -1,0 +1,1676 @@
+{
+  "schemaVersion": 2,
+  "id": "kindworks.asset-category-contracts",
+  "categoryContracts": [
+    {
+      "schemaVersion": 2,
+      "id": "category.calibration",
+      "description": "Scale rulers, calibration specimens, and non-player production references.",
+      "allowedOutputTypes": [
+        "single-image",
+        "layer-set"
+      ],
+      "allowedFormats": [
+        "png",
+        "webp"
+      ],
+      "requiresPerspective": true,
+      "requiresScale": true,
+      "requiresGeometry": true,
+      "requiresStates": true,
+      "requiresVariants": false,
+      "requiresDirections": false,
+      "requiresAnimationContract": false,
+      "requiresTransparencyContract": true,
+      "requiresAccessibilityMetadata": false,
+      "requiredMetadata": [
+        "masterScale",
+        "anchor"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "category.system-fallback",
+      "description": "Visible development and safe production missing-asset fallbacks.",
+      "allowedOutputTypes": [
+        "single-image"
+      ],
+      "allowedFormats": [
+        "png",
+        "webp"
+      ],
+      "requiresPerspective": true,
+      "requiresScale": true,
+      "requiresGeometry": true,
+      "requiresStates": true,
+      "requiresVariants": false,
+      "requiresDirections": false,
+      "requiresAnimationContract": false,
+      "requiresTransparencyContract": true,
+      "requiresAccessibilityMetadata": false,
+      "requiredMetadata": [
+        "fallbackPolicy"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "category.terrain",
+      "description": "Terrain, roads, paths, banks, water, shorelines, and repeatable transitions.",
+      "allowedOutputTypes": [
+        "tileset",
+        "spritesheet",
+        "atlas",
+        "layer-set",
+        "single-image"
+      ],
+      "allowedFormats": [
+        "png",
+        "webp"
+      ],
+      "requiresPerspective": true,
+      "requiresScale": true,
+      "requiresGeometry": true,
+      "requiresStates": true,
+      "requiresVariants": false,
+      "requiresDirections": false,
+      "requiresAnimationContract": false,
+      "requiresTransparencyContract": true,
+      "requiresAccessibilityMetadata": false,
+      "requiredMetadata": [
+        "tileGrid",
+        "seamPolicy",
+        "perspective",
+        "scale"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "category.structure",
+      "description": "Bridges, docks, fences, gates, and other modular world structures.",
+      "allowedOutputTypes": [
+        "spritesheet",
+        "atlas",
+        "layer-set",
+        "single-image"
+      ],
+      "allowedFormats": [
+        "png",
+        "webp"
+      ],
+      "requiresPerspective": true,
+      "requiresScale": true,
+      "requiresGeometry": true,
+      "requiresStates": true,
+      "requiresVariants": true,
+      "requiresDirections": false,
+      "requiresAnimationContract": false,
+      "requiresTransparencyContract": true,
+      "requiresAccessibilityMetadata": false,
+      "requiredMetadata": [
+        "anchor",
+        "sockets",
+        "geometry"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "category.vegetation",
+      "description": "Trees, crops, grass growth, shrubs, flowers, and harvestable plants.",
+      "allowedOutputTypes": [
+        "spritesheet",
+        "atlas",
+        "layer-set",
+        "single-image"
+      ],
+      "allowedFormats": [
+        "png",
+        "webp"
+      ],
+      "requiresPerspective": true,
+      "requiresScale": true,
+      "requiresGeometry": true,
+      "requiresStates": true,
+      "requiresVariants": true,
+      "requiresDirections": false,
+      "requiresAnimationContract": false,
+      "requiresTransparencyContract": true,
+      "requiresAccessibilityMetadata": false,
+      "requiredMetadata": [
+        "growthStates",
+        "groundContact",
+        "shadowPolicy"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "category.prop",
+      "description": "Reusable world props, furniture, rubbish, bins, decorations, tools, and equipment.",
+      "allowedOutputTypes": [
+        "single-image",
+        "spritesheet",
+        "atlas",
+        "layer-set"
+      ],
+      "allowedFormats": [
+        "png",
+        "webp"
+      ],
+      "requiresPerspective": true,
+      "requiresScale": true,
+      "requiresGeometry": true,
+      "requiresStates": true,
+      "requiresVariants": true,
+      "requiresDirections": false,
+      "requiresAnimationContract": false,
+      "requiresTransparencyContract": true,
+      "requiresAccessibilityMetadata": false,
+      "requiredMetadata": [
+        "groundContact",
+        "geometry",
+        "shadowPolicy"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "category.effect",
+      "description": "Environment, interaction, reward, dirt, stain, and restoration effects.",
+      "allowedOutputTypes": [
+        "effect-sheet",
+        "spritesheet",
+        "atlas",
+        "layer-set",
+        "single-image"
+      ],
+      "allowedFormats": [
+        "png",
+        "webp"
+      ],
+      "requiresPerspective": true,
+      "requiresScale": true,
+      "requiresGeometry": true,
+      "requiresStates": true,
+      "requiresVariants": false,
+      "requiresDirections": false,
+      "requiresAnimationContract": true,
+      "requiresTransparencyContract": true,
+      "requiresAccessibilityMetadata": false,
+      "requiredMetadata": [
+        "blendPolicy",
+        "lifetime",
+        "stateMapping"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "category.vehicle",
+      "description": "Vehicles and mobile equipment with direction and movement presentation.",
+      "allowedOutputTypes": [
+        "spritesheet",
+        "atlas",
+        "layer-set"
+      ],
+      "allowedFormats": [
+        "png",
+        "webp"
+      ],
+      "requiresPerspective": true,
+      "requiresScale": true,
+      "requiresGeometry": true,
+      "requiresStates": true,
+      "requiresVariants": true,
+      "requiresDirections": true,
+      "requiresAnimationContract": true,
+      "requiresTransparencyContract": true,
+      "requiresAccessibilityMetadata": false,
+      "requiredMetadata": [
+        "directions",
+        "groundContact",
+        "geometry"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "category.building",
+      "description": "House, shop, venue, and landmark exteriors with aligned condition or upgrade states.",
+      "allowedOutputTypes": [
+        "spritesheet",
+        "atlas",
+        "layer-set",
+        "single-image"
+      ],
+      "allowedFormats": [
+        "png",
+        "webp"
+      ],
+      "requiresPerspective": true,
+      "requiresScale": true,
+      "requiresGeometry": true,
+      "requiresStates": true,
+      "requiresVariants": true,
+      "requiresDirections": false,
+      "requiresAnimationContract": false,
+      "requiresTransparencyContract": true,
+      "requiresAccessibilityMetadata": false,
+      "requiredMetadata": [
+        "stateAlignment",
+        "doorSockets",
+        "geometry",
+        "shadowPolicy"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "category.character",
+      "description": "Player and NPC rigs, appearance components, clothing, expressions, and actions.",
+      "allowedOutputTypes": [
+        "spritesheet",
+        "atlas",
+        "layer-set"
+      ],
+      "allowedFormats": [
+        "png",
+        "webp"
+      ],
+      "requiresPerspective": true,
+      "requiresScale": true,
+      "requiresGeometry": true,
+      "requiresStates": true,
+      "requiresVariants": true,
+      "requiresDirections": true,
+      "requiresAnimationContract": true,
+      "requiresTransparencyContract": true,
+      "requiresAccessibilityMetadata": false,
+      "requiredMetadata": [
+        "rig",
+        "directions",
+        "groundContact",
+        "frameOrder"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "category.animal",
+      "description": "Wildlife, companion, pet-shop, and aquarium animal rigs.",
+      "allowedOutputTypes": [
+        "spritesheet",
+        "atlas",
+        "layer-set"
+      ],
+      "allowedFormats": [
+        "png",
+        "webp"
+      ],
+      "requiresPerspective": true,
+      "requiresScale": true,
+      "requiresGeometry": true,
+      "requiresStates": true,
+      "requiresVariants": true,
+      "requiresDirections": true,
+      "requiresAnimationContract": true,
+      "requiresTransparencyContract": true,
+      "requiresAccessibilityMetadata": false,
+      "requiredMetadata": [
+        "rig",
+        "habitatPresentation",
+        "groundContact",
+        "frameOrder"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "category.ui",
+      "description": "Buttons, panels, dialogs, icons, cards, counters, and player feedback.",
+      "allowedOutputTypes": [
+        "single-image",
+        "spritesheet",
+        "atlas",
+        "nine-slice",
+        "effect-sheet"
+      ],
+      "allowedFormats": [
+        "png",
+        "webp"
+      ],
+      "requiresPerspective": true,
+      "requiresScale": true,
+      "requiresGeometry": true,
+      "requiresStates": true,
+      "requiresVariants": true,
+      "requiresDirections": false,
+      "requiresAnimationContract": false,
+      "requiresTransparencyContract": true,
+      "requiresAccessibilityMetadata": true,
+      "requiredMetadata": [
+        "intendedDisplaySize",
+        "safeContentInsets",
+        "accessibility"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "category.interior",
+      "description": "Room construction, furniture, appliances, counters, stations, and interior overlays.",
+      "allowedOutputTypes": [
+        "tileset",
+        "single-image",
+        "spritesheet",
+        "atlas",
+        "layer-set"
+      ],
+      "allowedFormats": [
+        "png",
+        "webp"
+      ],
+      "requiresPerspective": true,
+      "requiresScale": true,
+      "requiresGeometry": true,
+      "requiresStates": true,
+      "requiresVariants": true,
+      "requiresDirections": false,
+      "requiresAnimationContract": false,
+      "requiresTransparencyContract": true,
+      "requiresAccessibilityMetadata": false,
+      "requiredMetadata": [
+        "roomGrid",
+        "anchor",
+        "sockets",
+        "geometry"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "category.minigame",
+      "description": "Minigame-specific boards, actors, tools, stations, objects, masks, and feedback.",
+      "allowedOutputTypes": [
+        "single-image",
+        "tileset",
+        "spritesheet",
+        "atlas",
+        "layer-set",
+        "nine-slice",
+        "effect-sheet"
+      ],
+      "allowedFormats": [
+        "png",
+        "webp"
+      ],
+      "requiresPerspective": true,
+      "requiresScale": true,
+      "requiresGeometry": true,
+      "requiresStates": true,
+      "requiresVariants": true,
+      "requiresDirections": false,
+      "requiresAnimationContract": false,
+      "requiresTransparencyContract": true,
+      "requiresAccessibilityMetadata": false,
+      "requiredMetadata": [
+        "minigameId",
+        "playfieldScale",
+        "geometry",
+        "stateMapping"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "category.audio",
+      "description": "Music, ambience, voice, and interaction sound effects.",
+      "allowedOutputTypes": [
+        "audio"
+      ],
+      "allowedFormats": [
+        "mp3",
+        "ogg",
+        "wav"
+      ],
+      "requiresPerspective": false,
+      "requiresScale": false,
+      "requiresGeometry": false,
+      "requiresStates": false,
+      "requiresVariants": false,
+      "requiresDirections": false,
+      "requiresAnimationContract": false,
+      "requiresTransparencyContract": false,
+      "requiresAccessibilityMetadata": false,
+      "requiredMetadata": [
+        "channels",
+        "sampleRate",
+        "duration",
+        "loopPolicy",
+        "loudnessTarget"
+      ]
+    }
+  ],
+  "familyAssignments": [
+    {
+      "schemaVersion": 2,
+      "familyId": "foundation.calibration-specimens",
+      "categoryContractId": "category.calibration",
+      "strategies": [
+        "reused-directly",
+        "modular-components"
+      ],
+      "scenes": [
+        "ScaleCalibrationScene",
+        "AssetLabScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "foundation.shadow-profiles",
+      "categoryContractId": "category.calibration",
+      "strategies": [
+        "layered-assets",
+        "atlas"
+      ],
+      "scenes": [
+        "TownScene",
+        "HouseInteriorScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "system.visual-fallbacks",
+      "categoryContractId": "category.system-fallback",
+      "strategies": [
+        "reused-directly"
+      ],
+      "scenes": [
+        "BootScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "terrain.grass-soil-tiles",
+      "categoryContractId": "category.terrain",
+      "strategies": [
+        "tileset",
+        "palette-state-variants"
+      ],
+      "scenes": [
+        "TownScene",
+        "LawnCareScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "terrain.transition-atlas",
+      "categoryContractId": "category.terrain",
+      "strategies": [
+        "atlas",
+        "tileset"
+      ],
+      "scenes": [
+        "TownScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "terrain.road-marking-tiles",
+      "categoryContractId": "category.terrain",
+      "strategies": [
+        "tileset",
+        "modular-components"
+      ],
+      "scenes": [
+        "TownScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "terrain.pavement-path-tiles",
+      "categoryContractId": "category.terrain",
+      "strategies": [
+        "tileset",
+        "palette-state-variants"
+      ],
+      "scenes": [
+        "TownScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "terrain.river-water-tiles",
+      "categoryContractId": "category.terrain",
+      "strategies": [
+        "tileset",
+        "sprite-sheets"
+      ],
+      "scenes": [
+        "TownScene",
+        "FishingScene",
+        "RiverClearoutScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "terrain.river-bank-edge-atlas",
+      "categoryContractId": "category.terrain",
+      "strategies": [
+        "atlas",
+        "tileset",
+        "layered-assets"
+      ],
+      "scenes": [
+        "TownScene",
+        "FishingScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "terrain.pond-wetland-kit",
+      "categoryContractId": "category.terrain",
+      "strategies": [
+        "modular-components",
+        "tileset"
+      ],
+      "scenes": [
+        "TownScene",
+        "FishingScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "terrain.beach-shore-kit",
+      "categoryContractId": "category.terrain",
+      "strategies": [
+        "tileset",
+        "layered-assets"
+      ],
+      "scenes": [
+        "TownScene",
+        "BeachCleanupScene",
+        "SouthShoreScoopsScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "structure.bridge-kit",
+      "categoryContractId": "category.structure",
+      "strategies": [
+        "modular-components",
+        "palette-state-variants"
+      ],
+      "scenes": [
+        "TownScene",
+        "FishingScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "structure.harbour-dock-kit",
+      "categoryContractId": "category.structure",
+      "strategies": [
+        "modular-components",
+        "layered-assets"
+      ],
+      "scenes": [
+        "TownScene",
+        "HarbourGeneralScene",
+        "FishingScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "terrain.woodland-boundary",
+      "categoryContractId": "category.terrain",
+      "strategies": [
+        "tileset",
+        "palette-state-variants"
+      ],
+      "scenes": [
+        "TownScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "vegetation.tree-layer-family",
+      "categoryContractId": "category.vegetation",
+      "strategies": [
+        "layered-assets",
+        "sprite-sheets",
+        "palette-state-variants"
+      ],
+      "scenes": [
+        "TownScene",
+        "HouseInteriorScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "vegetation.crop-growth-sheets",
+      "categoryContractId": "category.vegetation",
+      "strategies": [
+        "sprite-sheets",
+        "palette-state-variants"
+      ],
+      "scenes": [
+        "TownScene",
+        "VillageGrocerScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "vegetation.shrub-flower-atlas",
+      "categoryContractId": "category.vegetation",
+      "strategies": [
+        "atlas",
+        "palette-state-variants"
+      ],
+      "scenes": [
+        "TownScene",
+        "VillageGrocerScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "prop.fence-gate-tiles",
+      "categoryContractId": "category.prop",
+      "strategies": [
+        "tileset",
+        "modular-components"
+      ],
+      "scenes": [
+        "TownScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "prop.bin-family",
+      "categoryContractId": "category.prop",
+      "strategies": [
+        "sprite-sheets",
+        "palette-state-variants"
+      ],
+      "scenes": [
+        "TownScene",
+        "HarbourGeneralScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "prop.bench-seating-family",
+      "categoryContractId": "category.prop",
+      "strategies": [
+        "atlas",
+        "modular-components"
+      ],
+      "scenes": [
+        "TownScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "prop.street-decoration-atlas",
+      "categoryContractId": "category.prop",
+      "strategies": [
+        "atlas",
+        "palette-state-variants"
+      ],
+      "scenes": [
+        "TownScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "prop.prestige-landmark-layers",
+      "categoryContractId": "category.prop",
+      "strategies": [
+        "layered-assets",
+        "modular-components"
+      ],
+      "scenes": [
+        "TownScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "rubbish.shared-atlas",
+      "categoryContractId": "category.prop",
+      "strategies": [
+        "atlas",
+        "palette-state-variants"
+      ],
+      "scenes": [
+        "TownScene",
+        "WasteCollectionScene",
+        "RiverClearoutScene",
+        "HouseRescueScene",
+        "BeachCleanupScene",
+        "FishingScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "effects.environment-atlas",
+      "categoryContractId": "category.effect",
+      "strategies": [
+        "atlas",
+        "sprite-sheets"
+      ],
+      "scenes": [
+        "TownScene",
+        "FishingScene",
+        "BeachCleanupScene",
+        "PlaygroundPowerwashScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "effects.interaction-reward-atlas",
+      "categoryContractId": "category.effect",
+      "strategies": [
+        "atlas",
+        "sprite-sheets"
+      ],
+      "scenes": [
+        "TownScene",
+        "LawnCareScene",
+        "WasteCollectionScene",
+        "RiverClearoutScene",
+        "HouseRescueScene",
+        "BeachCleanupScene",
+        "PlaygroundPowerwashScene",
+        "FishingScene",
+        "BakeryScene",
+        "CafeScene",
+        "MorningMugScene",
+        "RiversideKitchenScene",
+        "SouthShoreScoopsScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "vehicle.municipal-collection-sheet",
+      "categoryContractId": "category.vehicle",
+      "strategies": [
+        "sprite-sheets",
+        "modular-components"
+      ],
+      "scenes": [
+        "TownScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "building.house-modular-kits",
+      "categoryContractId": "category.building",
+      "strategies": [
+        "modular-components",
+        "layered-assets",
+        "palette-state-variants"
+      ],
+      "scenes": [
+        "TownScene",
+        "HouseInteriorScene",
+        "HouseRescueScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "building.house-condition-overlays",
+      "categoryContractId": "category.building",
+      "strategies": [
+        "layered-assets",
+        "palette-state-variants"
+      ],
+      "scenes": [
+        "TownScene",
+        "HouseRescueScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "building.personal-home-levels",
+      "categoryContractId": "category.building",
+      "strategies": [
+        "modular-components",
+        "palette-state-variants"
+      ],
+      "scenes": [
+        "TownScene",
+        "HouseInteriorScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "terrain.house-lawn-states",
+      "categoryContractId": "category.terrain",
+      "strategies": [
+        "sprite-sheets",
+        "palette-state-variants"
+      ],
+      "scenes": [
+        "TownScene",
+        "LawnCareScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "building.shopfront-module-system",
+      "categoryContractId": "category.building",
+      "strategies": [
+        "modular-components",
+        "layered-assets"
+      ],
+      "scenes": [
+        "TownScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "building.shop-sign-awning-atlas",
+      "categoryContractId": "category.building",
+      "strategies": [
+        "atlas",
+        "palette-state-variants"
+      ],
+      "scenes": [
+        "TownScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "building.shopfront-composites",
+      "categoryContractId": "category.building",
+      "strategies": [
+        "coherent-whole-illustrations",
+        "modular-components"
+      ],
+      "scenes": [
+        "TownScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "landmark.world-assemblies",
+      "categoryContractId": "category.building",
+      "strategies": [
+        "layered-assets",
+        "modular-components"
+      ],
+      "scenes": [
+        "TownScene",
+        "PlaygroundPowerwashScene",
+        "FishingScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "landmark.restoration-state-layers",
+      "categoryContractId": "category.building",
+      "strategies": [
+        "layered-assets",
+        "palette-state-variants"
+      ],
+      "scenes": [
+        "TownScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "character.resident-base-rig",
+      "categoryContractId": "category.character",
+      "strategies": [
+        "sprite-sheets",
+        "modular-components"
+      ],
+      "scenes": [
+        "BootScene",
+        "TownScene",
+        "HouseInteriorScene",
+        "BakeryScene",
+        "CafeScene",
+        "MorningMugScene",
+        "RiversideKitchenScene",
+        "SouthShoreScoopsScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "character.appearance-components",
+      "categoryContractId": "category.character",
+      "strategies": [
+        "atlas",
+        "modular-components",
+        "palette-state-variants"
+      ],
+      "scenes": [
+        "BootScene",
+        "TownScene",
+        "HouseInteriorScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "character.clothing-accessory-atlas",
+      "categoryContractId": "category.character",
+      "strategies": [
+        "atlas",
+        "palette-state-variants"
+      ],
+      "scenes": [
+        "TownScene",
+        "HarbourGeneralScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "character.expression-action-atlas",
+      "categoryContractId": "category.character",
+      "strategies": [
+        "atlas",
+        "sprite-sheets"
+      ],
+      "scenes": [
+        "TownScene",
+        "HouseInteriorScene",
+        "FishingScene",
+        "BakeryScene",
+        "CafeScene",
+        "MorningMugScene",
+        "RiversideKitchenScene",
+        "SouthShoreScoopsScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "character.npc-population-recipes",
+      "categoryContractId": "category.character",
+      "strategies": [
+        "modular-components",
+        "palette-state-variants"
+      ],
+      "scenes": [
+        "TownScene",
+        "HouseInteriorScene",
+        "BakeryScene",
+        "CafeScene",
+        "MorningMugScene",
+        "RiversideKitchenScene",
+        "SouthShoreScoopsScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "animal.rig-template-library",
+      "categoryContractId": "category.animal",
+      "strategies": [
+        "sprite-sheets",
+        "modular-components"
+      ],
+      "scenes": [
+        "TownScene",
+        "PawsWondersScene",
+        "HouseInteriorScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "animal.species-identity-sheets",
+      "categoryContractId": "category.animal",
+      "strategies": [
+        "sprite-sheets",
+        "palette-state-variants"
+      ],
+      "scenes": [
+        "BootScene",
+        "TownScene",
+        "PawsWondersScene",
+        "HouseInteriorScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "animal.pet-shop-presentations",
+      "categoryContractId": "category.animal",
+      "strategies": [
+        "layered-assets",
+        "palette-state-variants"
+      ],
+      "scenes": [
+        "PawsWondersScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "animal.aquarium-fish-sheets",
+      "categoryContractId": "category.animal",
+      "strategies": [
+        "sprite-sheets",
+        "palette-state-variants"
+      ],
+      "scenes": [
+        "FishingScene",
+        "HouseInteriorScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "ui.button-nine-slices",
+      "categoryContractId": "category.ui",
+      "strategies": [
+        "ui-nine-slices",
+        "palette-state-variants"
+      ],
+      "scenes": [
+        "BootScene",
+        "TownScene",
+        "HouseInteriorScene",
+        "VillageGrocerScene",
+        "PawsWondersScene",
+        "HarbourGeneralScene",
+        "BakeryScene",
+        "CafeScene",
+        "MorningMugScene",
+        "RiversideKitchenScene",
+        "SouthShoreScoopsScene",
+        "RiverClearoutScene",
+        "HouseRescueScene",
+        "WasteCollectionScene",
+        "LawnCareScene",
+        "BeachCleanupScene",
+        "PlaygroundPowerwashScene",
+        "FishingScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "ui.panel-dialog-nine-slices",
+      "categoryContractId": "category.ui",
+      "strategies": [
+        "ui-nine-slices",
+        "palette-state-variants"
+      ],
+      "scenes": [
+        "TownScene",
+        "HouseInteriorScene",
+        "VillageGrocerScene",
+        "PawsWondersScene",
+        "HarbourGeneralScene",
+        "BakeryScene",
+        "CafeScene",
+        "MorningMugScene",
+        "RiversideKitchenScene",
+        "SouthShoreScoopsScene",
+        "RiverClearoutScene",
+        "HouseRescueScene",
+        "WasteCollectionScene",
+        "LawnCareScene",
+        "BeachCleanupScene",
+        "PlaygroundPowerwashScene",
+        "FishingScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "ui.global-icon-atlas",
+      "categoryContractId": "category.ui",
+      "strategies": [
+        "atlas",
+        "palette-state-variants"
+      ],
+      "scenes": [
+        "TownScene",
+        "HouseInteriorScene",
+        "VillageGrocerScene",
+        "PawsWondersScene",
+        "HarbourGeneralScene",
+        "BakeryScene",
+        "CafeScene",
+        "MorningMugScene",
+        "RiversideKitchenScene",
+        "SouthShoreScoopsScene",
+        "RiverClearoutScene",
+        "HouseRescueScene",
+        "WasteCollectionScene",
+        "LawnCareScene",
+        "BeachCleanupScene",
+        "PlaygroundPowerwashScene",
+        "FishingScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "ui.resource-status-atlas",
+      "categoryContractId": "category.ui",
+      "strategies": [
+        "atlas",
+        "palette-state-variants"
+      ],
+      "scenes": [
+        "TownScene",
+        "HouseInteriorScene",
+        "VillageGrocerScene",
+        "PawsWondersScene",
+        "HarbourGeneralScene",
+        "BakeryScene",
+        "CafeScene",
+        "MorningMugScene",
+        "RiversideKitchenScene",
+        "SouthShoreScoopsScene",
+        "FishingScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "ui.card-slot-components",
+      "categoryContractId": "category.ui",
+      "strategies": [
+        "ui-nine-slices",
+        "atlas"
+      ],
+      "scenes": [
+        "TownScene",
+        "VillageGrocerScene",
+        "PawsWondersScene",
+        "HarbourGeneralScene",
+        "WasteCollectionScene",
+        "HouseRescueScene",
+        "BakeryScene",
+        "CafeScene",
+        "MorningMugScene",
+        "RiversideKitchenScene",
+        "SouthShoreScoopsScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "ui.progress-feedback-components",
+      "categoryContractId": "category.ui",
+      "strategies": [
+        "ui-nine-slices",
+        "sprite-sheets"
+      ],
+      "scenes": [
+        "TownScene",
+        "HouseInteriorScene",
+        "PawsWondersScene",
+        "HarbourGeneralScene",
+        "BakeryScene",
+        "CafeScene",
+        "MorningMugScene",
+        "RiversideKitchenScene",
+        "SouthShoreScoopsScene",
+        "RiverClearoutScene",
+        "HouseRescueScene",
+        "WasteCollectionScene",
+        "LawnCareScene",
+        "BeachCleanupScene",
+        "PlaygroundPowerwashScene",
+        "FishingScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "ui.orientation-loading-error",
+      "categoryContractId": "category.ui",
+      "strategies": [
+        "coherent-whole-illustrations",
+        "ui-nine-slices"
+      ],
+      "scenes": [
+        "BootScene",
+        "TownScene",
+        "RiverClearoutScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "interior.room-construction-tiles",
+      "categoryContractId": "category.interior",
+      "strategies": [
+        "tileset",
+        "modular-components"
+      ],
+      "scenes": [
+        "HouseInteriorScene",
+        "HouseRescueScene",
+        "VillageGrocerScene",
+        "PawsWondersScene",
+        "HarbourGeneralScene",
+        "BakeryScene",
+        "CafeScene",
+        "MorningMugScene",
+        "RiversideKitchenScene",
+        "SouthShoreScoopsScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "interior.six-theme-materials",
+      "categoryContractId": "category.interior",
+      "strategies": [
+        "palette-state-variants",
+        "tileset"
+      ],
+      "scenes": [
+        "HouseInteriorScene",
+        "HouseRescueScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "interior.fixed-furniture-atlas",
+      "categoryContractId": "category.interior",
+      "strategies": [
+        "atlas",
+        "modular-components"
+      ],
+      "scenes": [
+        "HouseInteriorScene",
+        "HouseRescueScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "interior.placeable-furniture-atlas",
+      "categoryContractId": "category.interior",
+      "strategies": [
+        "atlas",
+        "sprite-sheets"
+      ],
+      "scenes": [
+        "HouseInteriorScene",
+        "TownScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "interior.aquarium-layers",
+      "categoryContractId": "category.interior",
+      "strategies": [
+        "layered-assets",
+        "sprite-sheets"
+      ],
+      "scenes": [
+        "HouseInteriorScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "interior.dirt-clean-overlays",
+      "categoryContractId": "category.interior",
+      "strategies": [
+        "layered-assets",
+        "palette-state-variants"
+      ],
+      "scenes": [
+        "HouseInteriorScene",
+        "HouseRescueScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "interior.village-grocer-kit",
+      "categoryContractId": "category.interior",
+      "strategies": [
+        "modular-components",
+        "atlas"
+      ],
+      "scenes": [
+        "VillageGrocerScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "interior.paws-wonders-kit",
+      "categoryContractId": "category.interior",
+      "strategies": [
+        "modular-components",
+        "layered-assets"
+      ],
+      "scenes": [
+        "PawsWondersScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "interior.harbour-general-kit",
+      "categoryContractId": "category.interior",
+      "strategies": [
+        "modular-components",
+        "atlas"
+      ],
+      "scenes": [
+        "HarbourGeneralScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "interior.restaurant-shared-shell",
+      "categoryContractId": "category.interior",
+      "strategies": [
+        "modular-components",
+        "tileset"
+      ],
+      "scenes": [
+        "BakeryScene",
+        "CafeScene",
+        "MorningMugScene",
+        "RiversideKitchenScene",
+        "SouthShoreScoopsScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "minigame.lawn-care-pack",
+      "categoryContractId": "category.minigame",
+      "strategies": [
+        "tileset",
+        "sprite-sheets",
+        "atlas"
+      ],
+      "scenes": [
+        "LawnCareScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "minigame.waste-collection-pack",
+      "categoryContractId": "category.minigame",
+      "strategies": [
+        "coherent-whole-illustrations",
+        "atlas",
+        "ui-nine-slices"
+      ],
+      "scenes": [
+        "WasteCollectionScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "minigame.river-clearout-pack",
+      "categoryContractId": "category.minigame",
+      "strategies": [
+        "tileset",
+        "sprite-sheets",
+        "atlas"
+      ],
+      "scenes": [
+        "RiverClearoutScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "minigame.house-rescue-pack",
+      "categoryContractId": "category.minigame",
+      "strategies": [
+        "layered-assets",
+        "atlas",
+        "sprite-sheets"
+      ],
+      "scenes": [
+        "HouseRescueScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "minigame.beach-cleanup-pack",
+      "categoryContractId": "category.minigame",
+      "strategies": [
+        "tileset",
+        "sprite-sheets",
+        "atlas"
+      ],
+      "scenes": [
+        "BeachCleanupScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "minigame.powerwash-pack",
+      "categoryContractId": "category.minigame",
+      "strategies": [
+        "reused-directly",
+        "layered-assets",
+        "sprite-sheets"
+      ],
+      "scenes": [
+        "PlaygroundPowerwashScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "minigame.fishing-magnet-pack",
+      "categoryContractId": "category.minigame",
+      "strategies": [
+        "reused-directly",
+        "layered-assets",
+        "sprite-sheets",
+        "atlas"
+      ],
+      "scenes": [
+        "FishingScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "minigame.restaurant-shared-pack",
+      "categoryContractId": "category.minigame",
+      "strategies": [
+        "modular-components",
+        "atlas",
+        "sprite-sheets"
+      ],
+      "scenes": [
+        "BakeryScene",
+        "CafeScene",
+        "MorningMugScene",
+        "RiversideKitchenScene",
+        "SouthShoreScoopsScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "minigame.corner-cafe-pack",
+      "categoryContractId": "category.minigame",
+      "strategies": [
+        "modular-components",
+        "atlas"
+      ],
+      "scenes": [
+        "CafeScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "minigame.little-bakery-pack",
+      "categoryContractId": "category.minigame",
+      "strategies": [
+        "modular-components",
+        "atlas",
+        "sprite-sheets"
+      ],
+      "scenes": [
+        "BakeryScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "minigame.morning-mug-pack",
+      "categoryContractId": "category.minigame",
+      "strategies": [
+        "modular-components",
+        "atlas",
+        "sprite-sheets"
+      ],
+      "scenes": [
+        "MorningMugScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "minigame.riverside-kitchen-pack",
+      "categoryContractId": "category.minigame",
+      "strategies": [
+        "modular-components",
+        "atlas",
+        "sprite-sheets"
+      ],
+      "scenes": [
+        "RiversideKitchenScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    },
+    {
+      "schemaVersion": 2,
+      "familyId": "minigame.south-shore-scoops-pack",
+      "categoryContractId": "category.minigame",
+      "strategies": [
+        "coherent-whole-illustrations",
+        "modular-components",
+        "atlas"
+      ],
+      "scenes": [
+        "SouthShoreScoopsScene"
+      ],
+      "productionReady": false,
+      "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation."
+    }
+  ]
+}

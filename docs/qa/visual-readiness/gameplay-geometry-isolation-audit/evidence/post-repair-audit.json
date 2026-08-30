@@ -1,0 +1,402 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-30T06:05:08.614Z",
+  "repository": {
+    "root": "/Users/youyoulu/Documents/GitHub/Kindworks"
+  },
+  "sourceScan": {
+    "spriteIntrinsicDimensions": {
+      "count": 1,
+      "matches": [
+        {
+          "file": "src/visual/VisualRegistry.js",
+          "line": 202,
+          "text": "const actual = `${image.naturalWidth || image.width}x${image.naturalHeight || image.height}`;"
+        }
+      ]
+    },
+    "displayDimensions": {
+      "count": 10,
+      "matches": [
+        {
+          "file": "src/visual/dev/AssetLabScene.js",
+          "line": 218,
+          "text": "const sourceWidth = current?.frame?.realWidth || current?.displayWidth || entry.asset.technical?.width || 1;"
+        },
+        {
+          "file": "src/visual/dev/AssetLabScene.js",
+          "line": 219,
+          "text": "const sourceHeight = current?.frame?.realHeight || current?.displayHeight || entry.asset.technical?.height || 1;"
+        },
+        {
+          "file": "src/visual/scale/scaleSystem.js",
+          "line": 117,
+          "text": "const displayWidth = canonical.width * scale;"
+        },
+        {
+          "file": "src/visual/scale/scaleSystem.js",
+          "line": 118,
+          "text": "const displayHeight = canonical.height * scale;"
+        },
+        {
+          "file": "src/visual/scale/scaleSystem.js",
+          "line": 121,
+          "text": "displayWidth,"
+        },
+        {
+          "file": "src/visual/scale/scaleSystem.js",
+          "line": 122,
+          "text": "displayHeight,"
+        },
+        {
+          "file": "src/visual/scale/scaleSystem.js",
+          "line": 123,
+          "text": "offsetX: (width - displayWidth) / 2,"
+        },
+        {
+          "file": "src/visual/scale/scaleSystem.js",
+          "line": 124,
+          "text": "offsetY: (height - displayHeight) / 2,"
+        },
+        {
+          "file": "src/visual/scale/scaleSystem.js",
+          "line": 125,
+          "text": "letterboxX: Math.max(0, (width - displayWidth) / 2),"
+        },
+        {
+          "file": "src/visual/scale/scaleSystem.js",
+          "line": 126,
+          "text": "letterboxY: Math.max(0, (height - displayHeight) / 2),"
+        }
+      ]
+    },
+    "getBounds": {
+      "count": 0,
+      "matches": []
+    },
+    "originReads": {
+      "count": 2,
+      "matches": [
+        {
+          "file": "src/visual/dev/AssetLabScene.js",
+          "line": 210,
+          "text": "object.setOrigin(prefab?.origin?.x ?? prefab?.anchor?.originX ?? 0.5, prefab?.origin?.y ?? prefab?.anchor?.originY ?? 0.5);"
+        },
+        {
+          "file": "src/visual/renderers/PhaserPrefabRenderer.js",
+          "line": 35,
+          "text": "origin: prefab.origin || { x: prefab.anchor?.originX ?? 0.5, y: prefab.anchor?.originY ?? 0.5 },"
+        }
+      ]
+    },
+    "alphaOrVisibilityGameplay": {
+      "count": 26,
+      "matches": [
+        {
+          "file": "src/rendering/LegacyPowerwashRenderer.js",
+          "line": 175,
+          "text": "eraseCircle(context, x, y, radius, alpha = 1) {"
+        },
+        {
+          "file": "src/scenes/FishingScene.js",
+          "line": 534,
+          "text": "this.tweens.add({ targets: ring, scaleX: 1.7 + index * 0.35, scaleY: 1.7 + index * 0.35, alpha: 0, delay: index * 90, duration: 650, onComplete: () => ring.destroy() });"
+        },
+        {
+          "file": "src/scenes/HouseInteriorScene.js",
+          "line": 229,
+          "text": "this.tweens.add({ targets: bubble, y: rect.y + inset, alpha: 0.12, duration: 1200 + index * 180, yoyo: true, repeat: -1, ease: \"Sine.easeInOut\" });"
+        },
+        {
+          "file": "src/scenes/TownScene.js",
+          "line": 461,
+          "text": "enabled: resident.visible,"
+        },
+        {
+          "file": "src/scenes/TownScene.js",
+          "line": 683,
+          "text": "this.tweens.add({ targets: this.interactionHighlight, scale: 1.15, alpha: 0.03, duration: 650, yoyo: true, repeat: -1, ease: \"Sine.easeInOut\" });"
+        },
+        {
+          "file": "src/scenes/TownScene.js",
+          "line": 1563,
+          "text": "this.tweens.add({ targets: pulse, scale: 1.25, alpha: 0.05, duration: 1000, yoyo: true, repeat: -1, ease: \"Sine.easeInOut\" });"
+        },
+        {
+          "file": "src/scenes/TownScene.js",
+          "line": 1578,
+          "text": "this.tweens.add({ targets: pulse, scale: 1.24, alpha: 0.04, duration: 1050, yoyo: true, repeat: -1, ease: \"Sine.easeInOut\" });"
+        },
+        {
+          "file": "src/scenes/TownScene.js",
+          "line": 1616,
+          "text": "this.tweens.add({ targets: pulse, scale: 1.24, alpha: 0.04, duration: 1080, yoyo: true, repeat: -1, ease: \"Sine.easeInOut\" });"
+        },
+        {
+          "file": "src/scenes/TownScene.js",
+          "line": 1633,
+          "text": "this.tweens.add({ targets: pulse, scale: 1.24, alpha: 0.04, duration: 1080, yoyo: true, repeat: -1, ease: \"Sine.easeInOut\" });"
+        },
+        {
+          "file": "src/scenes/TownScene.js",
+          "line": 1690,
+          "text": "this.tweens.add({ targets: this.locatorBeacon, scale: 1.75, alpha: 0, duration: 1400, ease: \"Cubic.easeOut\", onComplete: () => this.locatorBeacon?.destroy() });"
+        },
+        {
+          "file": "src/scenes/TownScene.js",
+          "line": 2813,
+          "text": "interaction.enabled = resident.visible;"
+        },
+        {
+          "file": "src/scenes/WasteCollectionScene.js",
+          "line": 297,
+          "text": "this.tweens.add({ targets: object, y: object.y - 25, alpha: 0, scale: 0.45, duration: 210 });"
+        },
+        {
+          "file": "src/style.css",
+          "line": 3664,
+          "text": "width: auto; max-height: none; overflow: visible; pointer-events: none; border: 0; border-radius: 0; background: transparent; box-shadow: none;"
+        },
+        {
+          "file": "src/style.css",
+          "line": 3776,
+          "text": ".beach-cell { position: relative; display: grid; min-width: 0; min-height: 0; place-items: center; overflow: hidden; border: 1px solid rgb(129 81 25 / 14%); }.beach-cell.beach-player { z-index: 4; overflow: visible; }.beach-cell.sand, .beach-cell.raked, .beach-cell.obstacle { background: radial-gradient(circle at 23% 29%, rgb(255 244 187 / 52%) 0 2%, transparent 3%), radial-gradient(circle at 72% 78%, rgb(151 87 24 / 24%) 0 2%, transparent 3%), linear-gradient(145deg, #f8da82, #eeb95e); }.beach-cell.sand:nth-child(3n)::after { content: \"\"; width: 3px; height: 3px; border-radius: 50%; background: rgb(128 75 24 / 30%); box-shadow: 8px -5px 0 rgb(255 238 167 / 65%); }.beach-rake-grooves { position: absolute; z-index: 2; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }.beach-rake-grooves path { fill: none; stroke: rgb(143 86 27 / 78%); stroke-width: 2px; stroke-linecap: round; }.beach-rake-grooves path.soft { stroke: rgb(178 116 42 / 58%); stroke-width: 1px; }.beach-cell.boardwalk { background: repeating-linear-gradient(90deg, #8e5729 0 7px, #be7835 7px 14px, #d4984c 14px 18px); border-color: #5a3417; box-shadow: inset 0 3px 0 rgb(248 185 87 / 25%); }.beach-cell.boardwalk:nth-child(odd)::after { content: \"\"; position: absolute; inset: 12% 42%; background: #5b351d; box-shadow: 0 0 0 2px #2e1b11; }.beach-cell.tide { background: radial-gradient(ellipse at top, #d6ffff 0 11%, transparent 12%), linear-gradient(180deg, #7be1e5, #2e9db9); }.beach-obstacle { position: relative; z-index: 3; display: block; width: min(82%, 72px); aspect-ratio: 1; filter: drop-shadow(3px 5px 0 rgb(73 43 19 / 35%)); }.beach-obstacle.umbrella { border-radius: 50% 50% 45% 45%; background: conic-gradient(#f7efe0 0 12.5%, #c94c38 12.5% 25%, #f7efe0 25% 37.5%, #c94c38 37.5% 50%, #f7efe0 50% 62.5%, #c94c38 62.5% 75%, #f7efe0 75% 87.5%, #c94c38 87.5%); box-shadow: inset 0 0 0 3px #6c3824; }.beach-obstacle.umbrella::before { content: \"\"; position: absolute; left: calc(50% - 4px); top: 48%; width: 8px; height: 62%; background: #70411f; }.beach-obstacle.umbrella::after { content: \"\"; position: absolute; left: calc(50% - 5px); top: calc(50% - 5px); width: 10px; height: 10px; border: 2px solid #4b2a18; border-radius: 50%; background: #f4ead4; }.beach-obstacle.chair { width: 67%; height: 82%; aspect-ratio: auto; border: 4px solid #633c21; border-top-width: 7px; border-bottom-width: 7px; background: repeating-linear-gradient(90deg, #f7f1df 0 8px, #3979b6 8px 16px); box-shadow: inset 0 0 0 3px #d6a354; transform: perspective(60px) rotateX(-10deg); }.beach-player-icon { position: relative; z-index: 5; display: block; width: min(72%, 58px); aspect-ratio: .78; filter: drop-shadow(3px 4px 0 rgb(73 43 19 / 38%)); }.beach-player-icon::before { content: \"\"; position: absolute; left: 18%; right: 18%; bottom: 0; height: 68%; border: 3px solid #28452b; border-radius: 42% 42% 22% 22%; background: linear-gradient(90deg, #3e7b45 0 48%, #2e6538 49% 100%); }.beach-player-icon::after { content: \"\"; position: absolute; left: 29%; top: 3%; width: 42%; aspect-ratio: 1; border: 3px solid #4d3020; border-radius: 50%; background: #d7a36d; box-shadow: 0 -6px 0 3px #416d3c; }.beach-rake-tool { position: absolute; z-index: 6; left: 50%; top: -26%; width: 5px; height: 73%; border-radius: 3px; background: #7b4b27; transform-origin: 50% 92%; }.beach-rake-tool::before { content: \"\"; position: absolute; left: -14px; top: -2px; width: 33px; height: 6px; border: 3px solid #3d301d; background: #c5bd8a; box-shadow: -11px 7px 0 -4px #3d301d, 0 7px 0 -4px #3d301d, 11px 7px 0 -4px #3d301d; }.beach-player-icon[data-facing=\"L\"] .beach-rake-tool { transform: rotate(-90deg); }.beach-player-icon[data-facing=\"R\"] .beach-rake-tool { transform: rotate(90deg); }.beach-player-icon[data-facing=\"D\"] .beach-rake-tool { transform: rotate(180deg); }"
+        },
+        {
+          "file": "src/style.css",
+          "line": 4870,
+          "text": "width: auto; max-height: none; overflow: visible; pointer-events: none; border: 0; border-radius: 0; background: transparent; box-shadow: none;"
+        },
+        {
+          "file": "src/style.css",
+          "line": 4920,
+          "text": "width: auto; max-height: none; overflow: visible; pointer-events: none; border: 0; border-radius: 0; background: transparent; box-shadow: none;"
+        },
+        {
+          "file": "src/systems/CustomResidentService.js",
+          "line": 195,
+          "text": "autonomy.visible = !arrived || !NPC_INDOOR_NODE_KINDS.has(this.graph.getNode(schedule.targetNodeId)?.kind);"
+        },
+        {
+          "file": "src/systems/NpcTownLifeService.js",
+          "line": 443,
+          "text": "resident.visible = Boolean(schedule.forceVisible) || resident.phase === \"commuting\" || !NPC_INDOOR_NODE_KINDS.has(this.graph.getNode(schedule.targetNodeId).kind);"
+        },
+        {
+          "file": "src/ui/RestaurantPresentation.js",
+          "line": 397,
+          "text": "scene.tweens.add({ targets, x: -20, alpha: 0, duration: 280, ease: \"Sine.easeIn\" });"
+        },
+        {
+          "file": "src/visual/generated/phase8aVerticalSliceRuntime.js",
+          "line": 3,
+          "text": "export const PHASE_8A_RUNTIME_DEFINITIONS = buildPhase8ARuntimeDefinitions({\"assets\":[{\"id\":\"terrain.town.slice.grass\",\"family\":\"family.town-terrain.slice\",\"prefabId\":\"prefab.phase-8a.terrain.grass\",\"stateMapId\":\"state.phase-8a.terrain.grass\",\"file\":\"public/assets/runtime/phase-8a/town-grass-tile.v1.png\",\"width\":64,\"height\":64,\"alpha\":false,\"frameWidth\":null,\"frameHeight\":null,\"directions\":[],\"states\":[\"default\"],\"layers\":[\"main\"],\"origin\":{\"x\":0,\"y\":0},\"shadow\":\"no-shadow\",\"geometry\":{\"visual\":{\"kind\":\"rectangle\",\"x\":0,\"y\":0,\"width\":64,\"height\":64},\"collision\":null,\"navigation\":null,\"interaction\":null,\"touch\":null},\"sockets\":{},\"animations\":[],\"scenes\":[\"TownScene\"],\"placements\":[{\"id\":\"instance.phase-8a.town.terrain.grass\",\"sceneId\":\"TownScene\",\"layoutId\":\"layout.phase-8a.town-block.house-6\",\"position\":{\"x\":640,\"y\":360}}]},{\"id\":\"terrain.town.slice.pavement\",\"family\":\"family.town-terrain.slice\",\"prefabId\":\"prefab.phase-8a.terrain.pavement\",\"stateMapId\":\"state.phase-8a.terrain.pavement\",\"file\":\"public/assets/runtime/phase-8a/town-pavement-tile.v1.png\",\"width\":64,\"height\":64,\"alpha\":false,\"frameWidth\":null,\"frameHeight\":null,\"directions\":[],\"states\":[\"default\"],\"layers\":[\"main\"],\"origin\":{\"x\":0,\"y\":0},\"shadow\":\"no-shadow\",\"geometry\":{\"visual\":{\"kind\":\"rectangle\",\"x\":0,\"y\":0,\"width\":64,\"height\":64},\"collision\":null,\"navigation\":null,\"interaction\":null,\"touch\":null},\"sockets\":{},\"animations\":[],\"scenes\":[\"TownScene\"],\"placements\":[{\"id\":\"instance.phase-8a.town.terrain.pavement\",\"sceneId\":\"TownScene\",\"layoutId\":\"layout.phase-8a.town-block.house-6\",\"position\":{\"x\":640,\"y\":493}}]},{\"id\":\"terrain.town.slice.road\",\"family\":\"family.town-terrain.slice\",\"prefabId\":\"prefab.phase-8a.terrain.road\",\"stateMapId\":\"state.phase-8a.terrain.road\",\"file\":\"public/assets/runtime/phase-8a/town-road-tile.v1.png\",\"width\":64,\"height\":64,\"alpha\":false,\"frameWidth\":null,\"frameHeight\":null,\"directions\":[],\"states\":[\"default\"],\"layers\":[\"main\"],\"origin\":{\"x\":0,\"y\":0},\"shadow\":\"no-shadow\",\"geometry\":{\"visual\":{\"kind\":\"rectangle\",\"x\":0,\"y\":0,\"width\":64,\"height\":64},\"collision\":null,\"navigation\":null,\"interaction\":null,\"touch\":null},\"sockets\":{},\"animations\":[],\"scenes\":[\"TownScene\"],\"placements\":[{\"id\":\"instance.phase-8a.town.terrain.road\",\"sceneId\":\"TownScene\",\"layoutId\":\"layout.phase-8a.town-block.house-6\",\"position\":{\"x\":640,\"y\":548}}]},{\"id\":\"terrain.town.slice.river-edge\",\"family\":\"family.town-terrain.slice\",\"prefabId\":\"prefab.phase-8a.terrain.river-edge\",\"stateMapId\":\"state.phase-8a.terrain.river-edge\",\"file\":\"public/assets/runtime/phase-8a/town-river-edge-sheet.v1.png\",\"width\":512,\"height\":64,\"alpha\":true,\"frameWidth\":128,\"frameHeight\":64,\"directions\":[],\"states\":[\"west-straight\",\"east-straight\",\"west-transition\",\"east-transition\"],\"layers\":[\"main\"],\"origin\":{\"x\":0,\"y\":0},\"shadow\":\"no-shadow\",\"geometry\":{\"visual\":{\"kind\":\"rectangle\",\"x\":0,\"y\":0,\"width\":128,\"height\":64},\"collision\":{\"kind\":\"rectangle\",\"x\":20,\"y\":0,\"width\":88,\"height\":64},\"navigation\":{\"kind\":\"rectangle\",\"x\":20,\"y\":0,\"width\":88,\"height\":64},\"interaction\":null,\"touch\":null},\"sockets\":{},\"animations\":[],\"scenes\":[\"TownScene\"],\"placements\":[{\"id\":\"instance.phase-8a.town.terrain.river-edge\",\"sceneId\":\"TownScene\",\"layoutId\":\"layout.phase-8a.town-block.house-6\",\"position\":{\"x\":670,\"y\":360}}]},{\"id\":\"building.town.slice.house-6-bay-cottage\",\"family\":\"family.house-exterior.slice\",\"prefabId\":\"prefab.phase-8a.house-6\",\"stateMapId\":\"state.phase-8a.house-6\",\"file\":\"public/assets/runtime/phase-8a/house-6-bay-cottage-states.v1.png\",\"width\":1024,\"height\":192,\"alpha\":true,\"frameWidth\":256,\"frameHeight\":192,\"directions\":[],\"states\":[\"clean\",\"weathered\",\"job-ready\",\"upgraded\"],\"layers\":[\"main\"],\"origin\":{\"x\":0.5,\"y\":0.916667},\"shadow\":\"custom-authored-shadow\",\"geometry\":{\"visual\":{\"kind\":\"rectangle\",\"x\":-128,\"y\":-176,\"width\":256,\"height\":192},\"collision\":{\"kind\":\"rectangle\",\"x\":-97.5,\"y\":-115,\"width\":195,\"height\":110},\"navigation\":{\"kind\":\"rectangle\",\"x\":-103,\"y\":-120,\"width\":206,\"height\":120},\"interaction\":{\"kind\":\"circle\",\"x\":0,\"y\":-7,\"radius\":92},\"touch\":{\"kind\":\"rectangle\",\"x\":-110,\"y\":-130,\"width\":220,\"height\":145}},\"sockets\":{\"door\":{\"x\":0,\"y\":-6},\"approach\":{\"x\":0,\"y\":25},\"roof-status\":{\"x\":0,\"y\":-150}},\"animations\":[],\"scenes\":[\"TownScene\"],\"placements\":[{\"id\":\"instance.phase-8a.town.house-6\",\"sceneId\":\"TownScene\",\"layoutId\":\"layout.phase-8a.town-block.house-6\",\"position\":{\"x\":278,\"y\":391}}]},{\"id\":\"terrain.town.slice.lawn-house-6\",\"family\":\"family.world-lawn.slice\",\"prefabId\":\"prefab.phase-8a.lawn-house-6\",\"stateMapId\":\"state.phase-8a.lawn-house-6\",\"file\":\"public/assets/runtime/phase-8a/lawn-house-6-growth-states.v1.png\",\"width\":1280,\"height\":352,\"alpha\":true,\"frameWidth\":320,\"frameHeight\":352,\"directions\":[],\"states\":[\"fresh-cut\",\"growing\",\"long\",\"job-ready\"],\"layers\":[\"main\"],\"origin\":{\"x\":0.5,\"y\":0.5},\"shadow\":\"no-shadow\",\"geometry\":{\"visual\":{\"kind\":\"rectangle\",\"x\":-160,\"y\":-176,\"width\":320,\"height\":352},\"collision\":null,\"navigation\":null,\"interaction\":{\"kind\":\"circle\",\"x\":0,\"y\":95,\"radius\":105},\"touch\":{\"kind\":\"rectangle\",\"x\":-155,\"y\":-170,\"width\":310,\"height\":340}},\"sockets\":{\"job-entry\":{\"x\":0,\"y\":95},\"gate-south\":{\"x\":0,\"y\":170}},\"animations\":[],\"scenes\":[\"TownScene\"],\"placements\":[{\"id\":\"instance.phase-8a.town.lawn-house-6\",\"sceneId\":\"TownScene\",\"layoutId\":\"layout.phase-8a.town-block.house-6\",\"position\":{\"x\":375,\"y\":320}}]},{\"id\":\"prop.town.slice.large-oak.shadow\",\"family\":\"family.layered-tree.slice\",\"prefabId\":\"prefab.phase-8a.large-oak\",\"stateMapId\":\"state.phase-8a.large-oak\",\"file\":\"public/assets/runtime/phase-8a/large-oak-shadow.v1.png\",\"width\":128,\"height\":160,\"alpha\":true,\"frameWidth\":null,\"frameHeight\":null,\"directions\":[],\"states\":[\"default\"],\"layers\":[\"shadow\"],\"origin\":{\"x\":0.5,\"y\":0.9},\"shadow\":\"custom-authored-shadow\",\"geometry\":{\"visual\":{\"kind\":\"rectangle\",\"x\":-64,\"y\":-144,\"width\":128,\"height\":160},\"collision\":null,\"navigation\":null,\"interaction\":null,\"touch\":null},\"sockets\":{},\"animations\":[],\"scenes\":[\"TownScene\"],\"placements\":[{\"id\":\"instance.phase-8a.town.large-oak\",\"sceneId\":\"TownScene\",\"layoutId\":\"layout.phase-8a.town-block.house-6\",\"position\":{\"x\":1000,\"y\":250}}]},{\"id\":\"prop.town.slice.large-oak.trunk\",\"family\":\"family.layered-tree.slice\",\"prefabId\":\"prefab.phase-8a.large-oak\",\"stateMapId\":\"state.phase-8a.large-oak\",\"file\":\"public/assets/runtime/phase-8a/large-oak-trunk.v1.png\",\"width\":128,\"height\":160,\"alpha\":true,\"frameWidth\":null,\"frameHeight\":null,\"directions\":[],\"states\":[\"default\"],\"layers\":[\"trunk\"],\"origin\":{\"x\":0.5,\"y\":0.9},\"shadow\":\"custom-authored-shadow\",\"geometry\":{\"visual\":{\"kind\":\"rectangle\",\"x\":-43,\"y\":-62,\"width\":87,\"height\":97},\"collision\":{\"kind\":\"circle\",\"x\":0,\"y\":0,\"radius\":22},\"navigation\":{\"kind\":\"circle\",\"x\":0,\"y\":0,\"radius\":50},\"interaction\":{\"kind\":\"circle\",\"x\":0,\"y\":0,\"radius\":72},\"touch\":{\"kind\":\"rectangle\",\"x\":-44,\"y\":-62,\"width\":88,\"height\":100}},\"sockets\":{\"ground\":{\"x\":0,\"y\":0},\"canopy\":{\"x\":0,\"y\":-62}},\"animations\":[],\"scenes\":[\"TownScene\"],\"placements\":[{\"id\":\"instance.phase-8a.town.large-oak\",\"sceneId\":\"TownScene\",\"layoutId\":\"layout.phase-8a.town-block.house-6\",\"position\":{\"x\":1000,\"y\":250}}]},{\"id\":\"prop.town.slice.large-oak.canopy\",\"family\":\"family.layered-tree.slice\",\"prefabId\":\"prefab.phase-8a.large-oak\",\"stateMapId\":\"state.phase-8a.large-oak\",\"file\":\"public/assets/runtime/phase-8a/large-oak-canopy.v1.png\",\"width\":128,\"height\":160,\"alpha\":true,\"frameWidth\":null,\"frameHeight\":null,\"directions\":[],\"states\":[\"default\"],\"layers\":[\"foreground-canopy\"],\"origin\":{\"x\":0.5,\"y\":0.9},\"shadow\":\"custom-authored-shadow\",\"geometry\":{\"visual\":{\"kind\":\"rectangle\",\"x\":-64,\"y\":-144,\"width\":128,\"height\":160},\"collision\":null,\"navigation\":null,\"interaction\":null,\"touch\":null},\"sockets\":{},\"animations\":[],\"scenes\":[\"TownScene\"],\"placements\":[{\"id\":\"instance.phase-8a.town.large-oak\",\"sceneId\":\"TownScene\",\"layoutId\":\"layout.phase-8a.town-block.house-6\",\"position\":{\"x\":1000,\"y\":250}}]},{\"id\":\"prop.town.slice.public-bin\",\"family\":\"family.small-town-prop.slice\",\"prefabId\":\"prefab.phase-8a.public-bin\",\"stateMapId\":\"state.phase-8a.public-bin\",\"file\":\"public/assets/runtime/phase-8a/public-bin-states.v1.png\",\"width\":192,\"height\":80,\"alpha\":true,\"frameWidth\":64,\"frameHeight\":80,\"directions\":[],\"states\":[\"normal\",\"full\",\"tipped\"],\"layers\":[\"main\"],\"origin\":{\"x\":0.5,\"y\":0.875},\"shadow\":\"custom-authored-shadow\",\"geometry\":{\"visual\":{\"kind\":\"rectangle\",\"x\":-20,\"y\":-45,\"width\":56,\"height\":70},\"collision\":{\"kind\":\"circle\",\"x\":0,\"y\":0,\"radius\":18},\"navigation\":{\"kind\":\"circle\",\"x\":0,\"y\":0,\"radius\":28},\"interaction\":{\"kind\":\"circle\",\"x\":0,\"y\":0,\"radius\":72},\"touch\":{\"kind\":\"rectangle\",\"x\":-28,\"y\":-35,\"width\":56,\"height\":70}},\"sockets\":{\"status\":{\"x\":0,\"y\":-42}},\"animations\":[],\"scenes\":[\"TownScene\"],\"placements\":[{\"id\":\"instance.phase-8a.town.public-bin\",\"sceneId\":\"TownScene\",\"layoutId\":\"layout.phase-8a.town-block.house-6\",\"position\":{\"x\":470,\"y\":480}}]},{\"id\":\"prop.town.slice.white-fence\",\"family\":\"family.small-town-prop.slice\",\"prefabId\":\"prefab.phase-8a.white-fence\",\"stateMapId\":\"state.phase-8a.white-fence\",\"file\":\"public/assets/runtime/phase-8a/white-fence-segment.v1.png\",\"width\":256,\"height\":64,\"alpha\":true,\"frameWidth\":128,\"frameHeight\":64,\"directions\":[],\"states\":[\"straight\",\"gate\"],\"layers\":[\"main\"],\"origin\":{\"x\":0.5,\"y\":0.875},\"shadow\":\"custom-authored-shadow\",\"geometry\":{\"visual\":{\"kind\":\"rectangle\",\"x\":-64,\"y\":-56,\"width\":128,\"height\":64},\"collision\":{\"kind\":\"rectangle\",\"x\":-64,\"y\":-10,\"width\":128,\"height\":16},\"navigation\":{\"kind\":\"rectangle\",\"x\":-64,\"y\":-12,\"width\":128,\"height\":20},\"interaction\":null,\"touch\":null},\"sockets\":{\"segment-left\":{\"x\":-64,\"y\":0},\"segment-right\":{\"x\":64,\"y\":0},\"gate-centre\":{\"x\":0,\"y\":0}},\"animations\":[],\"scenes\":[\"TownScene\"],\"placements\":[{\"id\":\"instance.phase-8a.town.house-6-fence\",\"sceneId\":\"TownScene\",\"layoutId\":\"layout.phase-8a.town-block.house-6\",\"position\":{\"x\":375,\"y\":475}}]},{\"id\":\"prop.town.slice.rubbish-can\",\"family\":\"family.small-town-prop.slice\",\"prefabId\":\"prefab.phase-8a.rubbish-can\",\"stateMapId\":\"state.phase-8a.rubbish-can\",\"file\":\"public/assets/runtime/phase-8a/rubbish-crushed-can.v1.png\",\"width\":64,\"height\":64,\"alpha\":true,\"frameWidth\":null,\"frameHeight\":null,\"directions\":[],\"states\":[\"present\",\"collected\"],\"layers\":[\"main\"],\"origin\":{\"x\":0.5,\"y\":0.75},\"shadow\":\"custom-authored-shadow\",\"geometry\":{\"visual\":{\"kind\":\"rectangle\",\"x\":-17,\"y\":-22,\"width\":34,\"height\":28},\"collision\":null,\"navigation\":null,\"interaction\":{\"kind\":\"circle\",\"x\":0,\"y\":0,\"radius\":54},\"touch\":{\"kind\":\"rectangle\",\"x\":-24,\"y\":-24,\"width\":48,\"height\":48}},\"sockets\":{},\"animations\":[],\"scenes\":[\"TownScene\"],\"placements\":[{\"id\":\"instance.phase-8a.town.rubbish-can\",\"sceneId\":\"TownScene\",\"layoutId\":\"layout.phase-8a.town-block.house-6\",\"position\":{\"x\":520,\"y\":470}}]},{\"id\":\"prop.town.slice.flower-planter\",\"family\":\"family.small-town-prop.slice\",\"prefabId\":\"prefab.phase-8a.flower-planter\",\"stateMapId\":\"state.phase-8a.flower-planter\",\"file\":\"public/assets/runtime/phase-8a/flower-planter.v1.png\",\"width\":64,\"height\":64,\"alpha\":true,\"frameWidth\":null,\"frameHeight\":null,\"directions\":[],\"states\":[\"default\"],\"layers\":[\"main\"],\"origin\":{\"x\":0.5,\"y\":0.875},\"shadow\":\"custom-authored-shadow\",\"geometry\":{\"visual\":{\"kind\":\"rectangle\",\"x\":-24,\"y\":-42,\"width\":48,\"height\":48},\"collision\":{\"kind\":\"circle\",\"x\":0,\"y\":0,\"radius\":14},\"navigation\":{\"kind\":\"circle\",\"x\":0,\"y\":0,\"radius\":20},\"interaction\":{\"kind\":\"circle\",\"x\":0,\"y\":0,\"radius\":56},\"touch\":{\"kind\":\"rectangle\",\"x\":-24,\"y\":-36,\"width\":48,\"height\":48}},\"sockets\":{},\"animations\":[],\"scenes\":[\"TownScene\"],\"placements\":[{\"id\":\"instance.phase-8a.town.flower-planter\",\"sceneId\":\"TownScene\",\"layoutId\":\"layout.phase-8a.town-block.house-6\",\"position\":{\"x\":250,\"y\":440}}]},{\"id\":\"character.player.slice.resident\",\"family\":\"family.resident-character.slice\",\"prefabId\":\"prefab.phase-8a.player\",\"stateMapId\":\"state.phase-8a.player\",\"file\":\"public/assets/runtime/phase-8a/player-resident-walk.v1.png\",\"width\":256,\"height\":256,\"alpha\":true,\"frameWidth\":64,\"frameHeight\":64,\"directions\":[\"down\",\"left\",\"right\",\"up\"],\"states\":[\"default\"],\"layers\":[\"main\"],\"origin\":{\"x\":0.5,\"y\":0.875},\"shadow\":\"shared-ground-shadow\",\"geometry\":{\"visual\":{\"kind\":\"rectangle\",\"x\":-20,\"y\":-54,\"width\":40,\"height\":54},\"collision\":{\"kind\":\"circle\",\"x\":0,\"y\":0,\"radius\":16},\"navigation\":{\"kind\":\"circle\",\"x\":0,\"y\":0,\"radius\":16},\"interaction\":{\"kind\":\"circle\",\"x\":0,\"y\":0,\"radius\":60},\"touch\":{\"kind\":\"rectangle\",\"x\":-24,\"y\":-54,\"width\":48,\"height\":60}},\"sockets\":{\"right-hand\":{\"x\":12,\"y\":-28},\"left-hand\":{\"x\":-12,\"y\":-28},\"head\":{\"x\":0,\"y\":-50}},\"animations\":[{\"id\":\"walk-down\",\"action\":\"walk\",\"direction\":\"down\",\"frames\":[0,1,2,3],\"frameRate\":9,\"repeat\":-1},{\"id\":\"walk-left\",\"action\":\"walk\",\"direction\":\"left\",\"frames\":[4,5,6,7],\"frameRate\":9,\"repeat\":-1},{\"id\":\"walk-right\",\"action\":\"walk\",\"direction\":\"right\",\"frames\":[8,9,10,11],\"frameRate\":9,\"repeat\":-1},{\"id\":\"walk-up\",\"action\":\"walk\",\"direction\":\"up\",\"frames\":[12,13,14,15],\"frameRate\":9,\"repeat\":-1}],\"scenes\":[\"TownScene\",\"LawnCareScene\"],\"placements\":[{\"id\":\"instance.phase-8a.town.player\",\"sceneId\":\"TownScene\",\"layoutId\":\"layout.phase-8a.town-block.house-6\",\"position\":{\"x\":520,\"y\":470}},{\"id\":\"instance.phase-8a.lawn.player-reference\",\"sceneId\":\"LawnCareScene\",\"layoutId\":\"layout.phase-8a.lawn-care.representative\",\"position\":{\"x\":112,\"y\":628}}]},{\"id\":\"character.npc.slice.resident-a\",\"family\":\"family.resident-character.slice\",\"prefabId\":\"prefab.phase-8a.npc-resident-a\",\"stateMapId\":\"state.phase-8a.npc-resident-a\",\"file\":\"public/assets/runtime/phase-8a/npc-resident-a-walk.v1.png\",\"width\":256,\"height\":256,\"alpha\":true,\"frameWidth\":64,\"frameHeight\":64,\"directions\":[\"down\",\"left\",\"right\",\"up\"],\"states\":[\"default\"],\"layers\":[\"main\"],\"origin\":{\"x\":0.5,\"y\":0.875},\"shadow\":\"shared-ground-shadow\",\"geometry\":{\"visual\":{\"kind\":\"rectangle\",\"x\":-21,\"y\":-66,\"width\":42,\"height\":66},\"collision\":{\"kind\":\"circle\",\"x\":0,\"y\":0,\"radius\":16},\"navigation\":{\"kind\":\"circle\",\"x\":0,\"y\":0,\"radius\":16},\"interaction\":{\"kind\":\"circle\",\"x\":0,\"y\":0,\"radius\":74},\"touch\":{\"kind\":\"rectangle\",\"x\":-24,\"y\":-58,\"width\":48,\"height\":66}},\"sockets\":{\"thought\":{\"x\":0,\"y\":-64},\"gift\":{\"x\":13,\"y\":-30}},\"animations\":[{\"id\":\"walk-down\",\"action\":\"walk\",\"direction\":\"down\",\"frames\":[0,1,2,3],\"frameRate\":9,\"repeat\":-1},{\"id\":\"walk-left\",\"action\":\"walk\",\"direction\":\"left\",\"frames\":[4,5,6,7],\"frameRate\":9,\"repeat\":-1},{\"id\":\"walk-right\",\"action\":\"walk\",\"direction\":\"right\",\"frames\":[8,9,10,11],\"frameRate\":9,\"repeat\":-1},{\"id\":\"walk-up\",\"action\":\"walk\",\"direction\":\"up\",\"frames\":[12,13,14,15],\"frameRate\":9,\"repeat\":-1}],\"scenes\":[\"TownScene\"],\"placements\":[{\"id\":\"instance.phase-8a.town.npc-resident-a\",\"sceneId\":\"TownScene\",\"layoutId\":\"layout.phase-8a.town-block.house-6\",\"position\":{\"x\":440,\"y\":470}}]},{\"id\":\"character.animal.slice.dog\",\"family\":\"family.animal-character.slice\",\"prefabId\":\"prefab.phase-8a.animal-dog\",\"stateMapId\":\"state.phase-8a.animal-dog\",\"file\":\"public/assets/runtime/phase-8a/animal-dog-walk.v1.png\",\"width\":192,\"height\":160,\"alpha\":true,\"frameWidth\":48,\"frameHeight\":40,\"directions\":[\"down\",\"left\",\"right\",\"up\"],\"states\":[\"default\"],\"layers\":[\"main\"],\"origin\":{\"x\":0.5,\"y\":0.875},\"shadow\":\"shared-ground-shadow\",\"geometry\":{\"visual\":{\"kind\":\"rectangle\",\"x\":-18,\"y\":-30,\"width\":36,\"height\":30},\"collision\":{\"kind\":\"circle\",\"x\":0,\"y\":0,\"radius\":12},\"navigation\":{\"kind\":\"circle\",\"x\":0,\"y\":0,\"radius\":12},\"interaction\":{\"kind\":\"circle\",\"x\":0,\"y\":0,\"radius\":70},\"touch\":{\"kind\":\"rectangle\",\"x\":-24,\"y\":-34,\"width\":48,\"height\":48}},\"sockets\":{\"food\":{\"x\":15,\"y\":-12},\"friendship\":{\"x\":0,\"y\":-34}},\"animations\":[{\"id\":\"walk-down\",\"action\":\"walk\",\"direction\":\"down\",\"frames\":[0,1,2,3],\"frameRate\":8,\"repeat\":-1},{\"id\":\"walk-left\",\"action\":\"walk\",\"direction\":\"left\",\"frames\":[4,5,6,7],\"frameRate\":8,\"repeat\":-1},{\"id\":\"walk-right\",\"action\":\"walk\",\"direction\":\"right\",\"frames\":[8,9,10,11],\"frameRate\":8,\"repeat\":-1},{\"id\":\"walk-up\",\"action\":\"walk\",\"direction\":\"up\",\"frames\":[12,13,14,15],\"frameRate\":8,\"repeat\":-1}],\"scenes\":[\"TownScene\"],\"placements\":[{\"id\":\"instance.phase-8a.town.animal-dog\",\"sceneId\":\"TownScene\",\"layoutId\":\"layout.phase-8a.town-block.house-6\",\"position\":{\"x\":910,\"y\":330}}]},{\"id\":\"ui.town.slice.lawn-interaction\",\"family\":\"family.feedback-ui.slice\",\"prefabId\":\"prefab.phase-8a.lawn-interaction\",\"stateMapId\":\"state.phase-8a.lawn-interaction\",\"file\":\"public/assets/runtime/phase-8a/lawn-interaction-prompt.v1.png\",\"width\":128,\"height\":64,\"alpha\":true,\"frameWidth\":64,\"frameHeight\":64,\"directions\":[],\"states\":[\"available\",\"pressed\"],\"layers\":[\"main\"],\"origin\":{\"x\":0.5,\"y\":0.5},\"shadow\":\"no-shadow\",\"geometry\":{\"visual\":{\"kind\":\"rectangle\",\"x\":-26,\"y\":-26,\"width\":52,\"height\":52},\"collision\":null,\"navigation\":null,\"interaction\":null,\"touch\":{\"kind\":\"rectangle\",\"x\":-32,\"y\":-32,\"width\":64,\"height\":64}},\"sockets\":{},\"animations\":[],\"scenes\":[\"TownScene\"],\"placements\":[{\"id\":\"instance.phase-8a.town.lawn-interaction\",\"sceneId\":\"TownScene\",\"layoutId\":\"layout.phase-8a.town-block.house-6\",\"position\":{\"x\":375,\"y\":405}}]},{\"id\":\"ui.town.slice.coin-reward-burst\",\"family\":\"family.feedback-ui.slice\",\"prefabId\":\"prefab.phase-8a.coin-reward\",\"stateMapId\":\"state.phase-8a.coin-reward\",\"file\":\"public/assets/runtime/phase-8a/coin-reward-burst.v1.png\",\"width\":384,\"height\":64,\"alpha\":true,\"frameWidth\":64,\"frameHeight\":64,\"directions\":[],\"states\":[\"rewarded\"],\"layers\":[\"main\"],\"origin\":{\"x\":0.5,\"y\":0.5},\"shadow\":\"no-shadow\",\"geometry\":{\"visual\":{\"kind\":\"rectangle\",\"x\":-32,\"y\":-32,\"width\":64,\"height\":64},\"collision\":null,\"navigation\":null,\"interaction\":null,\"touch\":null},\"sockets\":{},\"animations\":[{\"id\":\"reward-burst\",\"frames\":[0,1,2,3,4,5],\"frameRate\":12,\"repeat\":0,\"action\":\"reward\",\"direction\":null}],\"scenes\":[\"TownScene\",\"LawnCareScene\"],\"placements\":[{\"id\":\"instance.phase-8a.town.lawn-reward\",\"sceneId\":\"TownScene\",\"layoutId\":\"layout.phase-8a.town-block.house-6\",\"position\":{\"x\":375,\"y\":405}},{\"id\":\"instance.phase-8a.lawn.reward\",\"sceneId\":\"LawnCareScene\",\"layoutId\":\"layout.phase-8a.lawn-care.representative\",\"position\":{\"x\":640,\"y\":360}}]},{\"id\":\"minigame.lawn.slice.board-tiles\",\"family\":\"family.lawn-minigame.slice\",\"prefabId\":\"prefab.phase-8a.lawn-board-tiles\",\"stateMapId\":\"state.phase-8a.lawn-board-tiles\",\"file\":\"public/assets/runtime/phase-8a/lawn-care-board-tiles.v1.png\",\"width\":256,\"height\":64,\"alpha\":false,\"frameWidth\":64,\"frameHeight\":64,\"directions\":[],\"states\":[\"tall\",\"cut-vertical\",\"cut-horizontal\",\"hedge\"],\"layers\":[\"main\"],\"origin\":{\"x\":0.5,\"y\":0.5},\"shadow\":\"no-shadow\",\"geometry\":{\"visual\":{\"kind\":\"rectangle\",\"x\":-32,\"y\":-32,\"width\":64,\"height\":64},\"collision\":null,\"navigation\":null,\"interaction\":{\"kind\":\"rectangle\",\"x\":-32,\"y\":-32,\"width\":64,\"height\":64},\"touch\":{\"kind\":\"rectangle\",\"x\":-32,\"y\":-32,\"width\":64,\"height\":64}},\"sockets\":{},\"animations\":[],\"scenes\":[\"LawnCareScene\"],\"placements\":[{\"id\":\"instance.phase-8a.lawn.board-tiles\",\"sceneId\":\"LawnCareScene\",\"layoutId\":\"layout.phase-8a.lawn-care.representative\",\"position\":{\"x\":640,\"y\":340}}]},{\"id\":\"minigame.lawn.slice.weed-tiles\",\"family\":\"family.lawn-minigame.slice\",\"prefabId\":\"prefab.phase-8a.lawn-weed-tiles\",\"stateMapId\":\"state.phase-8a.lawn-weed-tiles\",\"file\":\"public/assets/runtime/phase-8a/lawn-care-weed-tiles.v1.png\",\"width\":192,\"height\":64,\"alpha\":true,\"frameWidth\":64,\"frameHeight\":64,\"directions\":[],\"states\":[\"normal\",\"tough\",\"woody\"],\"layers\":[\"main\"],\"origin\":{\"x\":0.5,\"y\":0.5},\"shadow\":\"no-shadow\",\"geometry\":{\"visual\":{\"kind\":\"rectangle\",\"x\":-32,\"y\":-32,\"width\":64,\"height\":64},\"collision\":null,\"navigation\":null,\"interaction\":null,\"touch\":null},\"sockets\":{},\"animations\":[],\"scenes\":[\"LawnCareScene\"],\"placements\":[{\"id\":\"instance.phase-8a.lawn.weed-tiles\",\"sceneId\":\"LawnCareScene\",\"layoutId\":\"layout.phase-8a.lawn-care.representative\",\"position\":{\"x\":640,\"y\":340}}]},{\"id\":\"minigame.lawn.slice.mower\",\"family\":\"family.lawn-minigame.slice\",\"prefabId\":\"prefab.phase-8a.lawn-mower\",\"stateMapId\":\"state.phase-8a.lawn-mower\",\"file\":\"public/assets/runtime/phase-8a/lawn-care-mower.v1.png\",\"width\":256,\"height\":64,\"alpha\":true,\"frameWidth\":64,\"frameHeight\":64,\"directions\":[\"down\",\"left\",\"right\",\"up\"],\"states\":[\"down\",\"left\",\"right\",\"up\"],\"layers\":[\"main\"],\"origin\":{\"x\":0.5,\"y\":0.5},\"shadow\":\"no-shadow\",\"geometry\":{\"visual\":{\"kind\":\"rectangle\",\"x\":-28,\"y\":-28,\"width\":56,\"height\":56},\"collision\":{\"kind\":\"rectangle\",\"x\":-24,\"y\":-24,\"width\":48,\"height\":48},\"navigation\":{\"kind\":\"rectangle\",\"x\":-24,\"y\":-24,\"width\":48,\"height\":48},\"interaction\":null,\"touch\":{\"kind\":\"rectangle\",\"x\":-32,\"y\":-32,\"width\":64,\"height\":64}},\"sockets\":{},\"animations\":[],\"scenes\":[\"LawnCareScene\"],\"placements\":[{\"id\":\"instance.phase-8a.lawn.mower\",\"sceneId\":\"LawnCareScene\",\"layoutId\":\"layout.phase-8a.lawn-care.representative\",\"position\":{\"x\":640,\"y\":340}}]},{\"id\":\"ui.lawn.slice.controls\",\"family\":\"family.lawn-minigame.slice\",\"prefabId\":\"prefab.phase-8a.lawn-controls\",\"stateMapId\":\"state.phase-8a.lawn-controls\",\"file\":\"public/assets/runtime/phase-8a/lawn-care-essential-controls.v1.png\",\"width\":192,\"height\":64,\"alpha\":true,\"frameWidth\":64,\"frameHeight\":64,\"directions\":[],\"states\":[\"exit\",\"undo\",\"hint\"],\"layers\":[\"main\"],\"origin\":{\"x\":0.5,\"y\":0.5},\"shadow\":\"no-shadow\",\"geometry\":{\"visual\":{\"kind\":\"rectangle\",\"x\":-26,\"y\":-26,\"width\":52,\"height\":52},\"collision\":null,\"navigation\":null,\"interaction\":null,\"touch\":{\"kind\":\"rectangle\",\"x\":-32,\"y\":-32,\"width\":64,\"height\":64}},\"sockets\":{},\"animations\":[],\"scenes\":[\"LawnCareScene\"],\"placements\":[{\"id\":\"instance.phase-8a.lawn.controls\",\"sceneId\":\"LawnCareScene\",\"layoutId\":\"layout.phase-8a.lawn-care.representative\",\"position\":{\"x\":640,\"y\":680}}]}]});"
+        },
+        {
+          "file": "src/visual/layouts/sceneLayoutContracts.js",
+          "line": 9,
+          "text": "const VISUAL_FIELDS = new Set([\"position\", \"offset\", \"origin\", \"scale\", \"rotation\", \"flipX\", \"flipY\", \"depth\", \"layerId\", \"depthOffset\", \"visible\", \"tint\", \"alpha\", \"animation\", \"bounds\", \"visibleBounds\", \"shadowPolicy\"]);"
+        },
+        {
+          "file": "src/visual/prefabs/townBinPrefabs.js",
+          "line": 129,
+          "text": "shadowPolicy: Object.freeze({ mode: SHADOW_POLICY_IDS.CUSTOM, enabled: true, color: 0x294637, alpha: 0.2, x: isPublic ? 0 : -width / 2 - 6, y: isPublic ? 14 : 17, width: isPublic ? 34 : width + 12, height: isPublic ? 13 : 14 }),"
+        },
+        {
+          "file": "src/visual/prefabs/townBinPrefabs.js",
+          "line": 157,
+          "text": "mark: Object.freeze({ x: 0, y: 1, radius: 5, color: 0xe7e3cf, alpha: 0.9 }),"
+        },
+        {
+          "file": "src/visual/renderers/TownBinVisualFactory.js",
+          "line": 118,
+          "text": "graphic.fillStyle(recipe.mark.color, recipe.mark.alpha).fillCircle(recipe.mark.x, recipe.mark.y, recipe.mark.radius);"
+        },
+        {
+          "file": "src/visual/verticalSlice/phase8aVerticalSlicePackage.js",
+          "line": 183,
+          "text": "makeAsset({ semanticId: PHASE_8A_ASSET_IDS.GRASS, slug: \"town-grass-tile\", familyId: \"family.town-terrain.slice\", purpose: \"seamless grass foundation for the representative town block\", scenes: [TOWN_SCENE], output: outputImage(64, 64, false), perspective: \"top-down orthographic\", logicalDisplay: { width: 64, height: 64 }, anchor: { name: \"tile-top-left\", normalized: point(0, 0), groundContact: null }, geometry: { visual: rect(0, 0, 64, 64), collision: null, navigation: null, interaction: null, touch: null }, prompt: \"A quiet mid-green village lawn tile with restrained natural pixel variation; edges must tile seamlessly on all four sides.\", forbidden: [\"flowers, paths, stones, objects, baked shadows, or visible seams\"], placements: [townPlacement(\"instance.phase-8a.town.terrain.grass\", 640, 360, { repeat: \"cover-canonical-block\" })], prefabId: \"prefab.phase-8a.terrain.grass\", stateMapId: \"state.phase-8a.terrain.grass\", maximumRuntimeBytes: 30000 }),"
+        },
+        {
+          "file": "src/visual/verticalSlice/phase8aVerticalSlicePackage.js",
+          "line": 200,
+          "text": "makeAsset({ semanticId: PHASE_8A_ASSET_IDS.REWARD, slug: \"coin-reward-burst\", familyId: \"family.feedback-ui.slice\", purpose: \"short saved-reward confirmation after the lawn state transition\", scenes: [TOWN_SCENE, LAWN_SCENE], output: outputSheet(64, 64, 6, 1, [\"burst-0\", \"burst-1\", \"burst-2\", \"burst-3\", \"burst-4\", \"burst-5\"], true), perspective: \"screen-facing pixel UI\", logicalDisplay: { width: 64, height: 64 }, anchor: { name: \"burst-centre\", normalized: point(0.5, 0.5), groundContact: null }, geometry: { visual: rect(-32, -32, 64, 64), collision: null, navigation: null, interaction: null, touch: null }, states: [\"rewarded\"], animations: [{ id: \"reward-burst\", frames: [0, 1, 2, 3, 4, 5], frameRate: 12, repeat: 0 }], prompt: \"Six-frame restrained golden coin sparkle burst, expanding and settling without text. Frame zero starts small; final frame fades cleanly to transparency.\", forbidden: [\"coin value, currency grant logic, chest, button, confetti filling the canvas, endless loop, or opaque background\"], dependencies: [PHASE_8A_ASSET_IDS.INTERACTION], placements: [townPlacement(\"instance.phase-8a.town.lawn-reward\", 375, 405, { visibleAfter: \"transition.phase-8a.lawn-house-6.complete\" }), lawnPlacement(\"instance.phase-8a.lawn.reward\", 640, 360, { visibleAfter: \"LawnCareService.applyResult.ok\" })], prefabId: \"prefab.phase-8a.coin-reward\", stateMapId: \"state.phase-8a.coin-reward\", maximumRuntimeBytes: 110000 }),"
+        }
+      ]
+    },
+    "automaticPhysicsBodies": {
+      "count": 0,
+      "matches": []
+    },
+    "explicitHitGeometry": {
+      "count": 14,
+      "matches": [
+        {
+          "file": "src/entities/AnimalCharacter.js",
+          "line": 48,
+          "text": "this.setSize(52, 54).setInteractive({ useHandCursor: true });"
+        },
+        {
+          "file": "src/entities/NpcCharacter.js",
+          "line": 38,
+          "text": "this.setSize(42, 66).setInteractive({ useHandCursor: true });"
+        },
+        {
+          "file": "src/entities/TownPlacedObject.js",
+          "line": 117,
+          "text": "container.setSize(footprint * 2, footprint * 2);"
+        },
+        {
+          "file": "src/entities/TownPlacedObject.js",
+          "line": 119,
+          "text": "container.setInteractive();"
+        },
+        {
+          "file": "src/scenes/HarbourGeneralScene.js",
+          "line": 196,
+          "text": "const hitTarget = this.add.zone(touch.x + touch.width / 2, touch.y + touch.height / 2, touch.width, touch.height).setDepth(24).setInteractive({ useHandCursor: true });"
+        },
+        {
+          "file": "src/scenes/HarbourGeneralScene.js",
+          "line": 204,
+          "text": "const background = labelVisual(this.add.rectangle(x, y, width, height, colour).setStrokeStyle(3, 0x20283a).setDepth(42).setInteractive({ useHandCursor: true }), assetId || `harbour-general.control.${String(label).toLowerCase().replaceAll(/[^a-z0-9]+/g, \"-\")}`, \"shop-control\");"
+        },
+        {
+          "file": "src/scenes/HarbourGeneralScene.js",
+          "line": 207,
+          "text": "return { background, text, setEnabled(enabled) { background.disableInteractive(); if (enabled) background.setInteractive({ useHandCursor: true }); background.setAlpha(enabled ? 1 : 0.42); text.setAlpha(enabled ? 1 : 0.58); } };"
+        },
+        {
+          "file": "src/scenes/PawsWondersScene.js",
+          "line": 106,
+          "text": "const hitTarget = this.add.zone(touch.x + touch.width / 2, touch.y + touch.height / 2, touch.width, touch.height).setDepth(20).setInteractive({ useHandCursor: true });"
+        },
+        {
+          "file": "src/scenes/PawsWondersScene.js",
+          "line": 140,
+          "text": "this.adoptButton = this.add.rectangle(1062, 551, 275, 56, 0x3d7a50).setStrokeStyle(2, 0x2b5f3b).setDepth(26).setInteractive({ useHandCursor: true });"
+        },
+        {
+          "file": "src/scenes/PawsWondersScene.js",
+          "line": 189,
+          "text": "if (product.canAdopt) this.adoptButton.setInteractive({ useHandCursor: true });"
+        },
+        {
+          "file": "src/scenes/VillageGrocerScene.js",
+          "line": 107,
+          "text": ".setDepth(17).setInteractive({ useHandCursor: true });"
+        },
+        {
+          "file": "src/scenes/WasteCollectionScene.js",
+          "line": 289,
+          "text": "const object = this.add.container(item.x, item.y, [backing, icon]).setSize(105, 95).setInteractive({ useHandCursor: true });"
+        },
+        {
+          "file": "src/visual/renderers/TownBinVisualFactory.js",
+          "line": 60,
+          "text": "container.setSize(footprint * 2, footprint * 2);"
+        },
+        {
+          "file": "src/visual/renderers/TownBinVisualFactory.js",
+          "line": 62,
+          "text": "container.setInteractive();"
+        }
+      ]
+    }
+  },
+  "interactiveCalls": {
+    "count": 12,
+    "matches": [
+      {
+        "file": "src/entities/AnimalCharacter.js",
+        "line": 48,
+        "text": "this.setSize(52, 54).setInteractive({ useHandCursor: true });"
+      },
+      {
+        "file": "src/entities/NpcCharacter.js",
+        "line": 38,
+        "text": "this.setSize(42, 66).setInteractive({ useHandCursor: true });"
+      },
+      {
+        "file": "src/entities/TownPlacedObject.js",
+        "line": 119,
+        "text": "container.setInteractive();"
+      },
+      {
+        "file": "src/scenes/HarbourGeneralScene.js",
+        "line": 196,
+        "text": "const hitTarget = this.add.zone(touch.x + touch.width / 2, touch.y + touch.height / 2, touch.width, touch.height).setDepth(24).setInteractive({ useHandCursor: true });"
+      },
+      {
+        "file": "src/scenes/HarbourGeneralScene.js",
+        "line": 204,
+        "text": "const background = labelVisual(this.add.rectangle(x, y, width, height, colour).setStrokeStyle(3, 0x20283a).setDepth(42).setInteractive({ useHandCursor: true }), assetId || `harbour-general.control.${String(label).toLowerCase().replaceAll(/[^a-z0-9]+/g, \"-\")}`, \"shop-control\");"
+      },
+      {
+        "file": "src/scenes/HarbourGeneralScene.js",
+        "line": 207,
+        "text": "return { background, text, setEnabled(enabled) { background.disableInteractive(); if (enabled) background.setInteractive({ useHandCursor: true }); background.setAlpha(enabled ? 1 : 0.42); text.setAlpha(enabled ? 1 : 0.58); } };"
+      },
+      {
+        "file": "src/scenes/PawsWondersScene.js",
+        "line": 106,
+        "text": "const hitTarget = this.add.zone(touch.x + touch.width / 2, touch.y + touch.height / 2, touch.width, touch.height).setDepth(20).setInteractive({ useHandCursor: true });"
+      },
+      {
+        "file": "src/scenes/PawsWondersScene.js",
+        "line": 140,
+        "text": "this.adoptButton = this.add.rectangle(1062, 551, 275, 56, 0x3d7a50).setStrokeStyle(2, 0x2b5f3b).setDepth(26).setInteractive({ useHandCursor: true });"
+      },
+      {
+        "file": "src/scenes/PawsWondersScene.js",
+        "line": 189,
+        "text": "if (product.canAdopt) this.adoptButton.setInteractive({ useHandCursor: true });"
+      },
+      {
+        "file": "src/scenes/VillageGrocerScene.js",
+        "line": 107,
+        "text": ".setDepth(17).setInteractive({ useHandCursor: true });"
+      },
+      {
+        "file": "src/scenes/WasteCollectionScene.js",
+        "line": 289,
+        "text": "const object = this.add.container(item.x, item.y, [backing, icon]).setSize(105, 95).setInteractive({ useHandCursor: true });"
+      },
+      {
+        "file": "src/visual/renderers/TownBinVisualFactory.js",
+        "line": 62,
+        "text": "container.setInteractive();"
+      }
+    ]
+  },
+  "navigation": {
+    "npcNodes": 133,
+    "npcLinks": 138,
+    "staticSegmentViolations": [],
+    "placedObjectRouteWitness": null,
+    "npcMovementUsesDynamicObstacleHook": true
+  },
+  "animals": {
+    "definitions": 56,
+    "sampledGroundSegments": 481,
+    "groundSegmentViolations": [],
+    "waterRouteViolations": []
+  },
+  "save": {
+    "fragileVisualFields": []
+  },
+  "geometryContracts": {
+    "town": "town-willowmere",
+    "interiors": [
+      "village-grocer-interior",
+      "paws-wonders-interior",
+      "harbour-general-interior"
+    ],
+    "stableLogicalUnits": true
+  },
+  "world": {
+    "width": 4200,
+    "height": 2800,
+    "cameraContractSource": "src/data/townGeometry.js"
+  }
+}

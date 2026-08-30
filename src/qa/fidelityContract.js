@@ -86,6 +86,9 @@ export const FIDELITY_ACTIVITIES = Object.freeze([
   activity("riverside-kitchen", "Riverside Kitchen", "RiversideKitchenScene", 150, { legacyAnchors: ["openRiversideKitchen", "renderRiversideKitchen"], phaserOwners: ["src/scenes/RiversideKitchenScene.js", "src/systems/RiversideKitchenService.js"] }),
   activity("scoops", "South Shore Scoops", "SouthShoreScoopsScene", 750, { legacyAnchors: ["openScoops", "renderScoops"], phaserOwners: ["src/scenes/SouthShoreScoopsScene.js", "src/systems/SouthShoreScoopsService.js"] }),
   activity("house-interior", "House Interiors", "HouseInteriorScene", 0, { legacyAnchors: ["openHouseInterior", "renderHouseInterior"], phaserOwners: ["src/scenes/HouseInteriorScene.js", "src/systems/HomeInteriorService.js"] }),
+  activity("village-grocer", "Village Grocer", "VillageGrocerScene", 0, { legacyAnchors: ["openShop", "shop-02"], phaserOwners: ["src/scenes/VillageGrocerScene.js", "src/systems/ShopService.js"] }),
+  activity("fresh-market", "Fresh Market", "TownScene", 0, { legacyAnchors: ["openShop", "shop-10"], phaserOwners: ["src/ui/ShopController.js", "src/systems/ShopService.js"] }),
+  activity("harbour-general", "Harbour General", "HarbourGeneralScene", 0, { legacyAnchors: ["harbourGeneral", "shop-07"], phaserOwners: ["src/scenes/HarbourGeneralScene.js", "src/systems/HarbourGeneralService.js"] }),
 ]);
 
 export const FIDELITY_TOWN_SYSTEMS = Object.freeze([

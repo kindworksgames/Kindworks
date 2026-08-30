@@ -136,6 +136,27 @@ function estimatedPrepSeconds(recipeIds) {
   return recipeIds.reduce((sum, id) => sum + BAKERY_RECIPES[id].steps.reduce((seconds, step) => seconds + (BAKERY_APPLIANCES[step] ? BAKERY_APPLIANCES[step].seconds + 0.45 : 0.65), 0) + 1.1, 0);
 }
 
+function motionServiceBudget(orders) {
+  let serviceClock = 0;
+  let worstWait = 0;
+  for (const order of orders) {
+    let prepSeconds = 0.4;
+    for (const recipeId of order.recipes) {
+      const recipe = BAKERY_RECIPES[recipeId];
+      if (!recipe) continue;
+      for (const step of recipe.steps) {
+        const appliance = BAKERY_APPLIANCES[step];
+        prepSeconds += appliance ? Math.max(0.25, Number(appliance.seconds) || 0) + 1.32 : 0.78;
+      }
+      prepSeconds += 0.25;
+    }
+    const start = Math.max(serviceClock, order.at);
+    worstWait = Math.max(worstWait, start - order.at + prepSeconds);
+    serviceClock = start + prepSeconds;
+  }
+  return Object.freeze({ duration: Math.ceil(serviceClock + 8), patience: Math.ceil(worstWait + 8) });
+}
+
 function arrivalGap(level) {
   if (level <= 20) return 24;
   if (level <= 40) return 22;
@@ -163,8 +184,9 @@ function buildLevels() {
       serviceClock = start + prep;
     }
     const ratio = (level - 1) / (BAKERY_CONFIG.levelCount - 1);
-    const duration = Math.max(100, Math.ceil(serviceClock + Math.round(48 - ratio * 28)));
-    const patience = Math.max(55, Math.ceil(worstWait + Math.round(36 - ratio * 22)));
+    const motion = motionServiceBudget(orders);
+    const duration = Math.max(100, Math.ceil(serviceClock + Math.round(48 - ratio * 28)), motion.duration);
+    const patience = Math.max(55, Math.ceil(worstWait + Math.round(36 - ratio * 22)), motion.patience);
     levels.push(Object.freeze({
       level, name, chapter: Math.floor((level - 1) / BAKERY_CONFIG.levelsPerChapter) + 1, duration, target, maxMisses: 0, patience,
       menu: Object.freeze([...new Set(orders.flatMap((order) => order.recipes))]), orders: Object.freeze(orders),

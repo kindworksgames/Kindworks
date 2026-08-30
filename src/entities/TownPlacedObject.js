@@ -1,5 +1,7 @@
 import Phaser from "phaser";
 import { ITEM_CATALOG, placeableFootprintFor } from "../data/items.js";
+import { getTownBinVisualFactory } from "../visual/renderers/TownBinVisualFactory.js";
+import { resolveTownSceneDepth, TOWN_DEPTH_POLICY_IDS } from "../visual/layouts/sceneLayoutCatalog.js";
 
 function treePalette(style) {
   if (style === "cherry") return [0x8b6546, 0xf09ab4, 0xf6bed0];
@@ -38,15 +40,6 @@ function drawBench(graphics, item) {
   graphics.fillStyle(iron ? 0x2f3838 : 0x765238, 1).fillRect(-29, 7, 7, 18).fillRect(22, 7, 7, 18);
   if (picnic) graphics.fillRect(-42, 10, 84, 8).fillRect(-31, -20, 7, 50).fillRect(24, -20, 7, 50);
   else graphics.fillStyle(colour, 1).fillRoundedRect(-34, -25, 68, 15, 4);
-}
-
-function drawBin(graphics, item) {
-  const colour = item.id === "recycling-bin" ? 0x428667 : item.id === "commercial-bin" ? 0x59615d : 0x315c43;
-  const width = item.id === "commercial-bin" ? 42 : 29;
-  graphics.fillStyle(0x294637, 0.2).fillEllipse(-width / 2 - 6, 17, width + 12, 14);
-  graphics.fillStyle(0x273a31, 1).fillRoundedRect(-width / 2 - 3, -23, width + 6, 9, 3);
-  graphics.fillStyle(colour, 1).fillRoundedRect(-width / 2, -16, width, 39, 5);
-  if (item.id === "recycling-bin") graphics.lineStyle(3, 0xf5f1dc, 1).strokeCircle(0, 1, 8);
 }
 
 function drawDecoration(graphics, item) {
@@ -102,12 +95,14 @@ function drawDecoration(graphics, item) {
 export function createTownPlacedObject(scene, object, { preview = false, valid = true, onSelect = null } = {}) {
   const item = ITEM_CATALOG[object.itemId];
   if (!item) return null;
+  if (item.placeableType === "bin") {
+    return getTownBinVisualFactory(scene).createPlacedObject(object, { preview, valid, onSelect });
+  }
   const footprint = placeableFootprintFor(item);
   const container = scene.add.container(object.x, object.y);
   const graphics = scene.add.graphics();
   if (item.placeableType === "tree") drawTree(graphics, item, footprint);
   else if (item.placeableType === "bench") drawBench(graphics, item);
-  else if (item.placeableType === "bin") drawBin(graphics, item);
   else drawDecoration(graphics, item);
   container.add(graphics);
   if (preview) {
@@ -118,7 +113,7 @@ export function createTownPlacedObject(scene, object, { preview = false, valid =
     container.setAlpha(0.7);
   }
   container.setRotation(Number(object.rotation) || 0);
-  container.setDepth((preview ? 520 : 112) + object.y / 10);
+  container.setDepth(resolveTownSceneDepth(preview ? TOWN_DEPTH_POLICY_IDS.PLACED_OBJECT_PREVIEW : TOWN_DEPTH_POLICY_IDS.PLACED_OBJECT, object.y));
   container.setSize(footprint * 2, footprint * 2);
   if (!preview && typeof onSelect === "function") {
     container.setInteractive();

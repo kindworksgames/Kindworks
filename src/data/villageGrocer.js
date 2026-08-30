@@ -13,9 +13,9 @@ export const VILLAGE_GROCER_DISPLAY_IDS = Object.freeze([
 ]);
 
 export const VILLAGE_GROCER_FIXTURES = Object.freeze({
-  shelf: Object.freeze({ x: 5, y: 14, width: 90, height: 20, label: "ALLOTMENT SEEDS" }),
-  islandA: Object.freeze({ x: 5, y: 39, width: 90, height: 20, label: "APPLE SAPLINGS" }),
-  islandB: Object.freeze({ x: 5, y: 64, width: 62, height: 20, label: "ANIMAL FOOD" }),
+  shelf: Object.freeze({ x: 5, y: 14, width: 90, height: 20, label: "SEEDS" }),
+  islandA: Object.freeze({ x: 5, y: 39, width: 90, height: 20, label: "SAPLINGS" }),
+  islandB: Object.freeze({ x: 5, y: 64, width: 62, height: 20, label: "GARDEN GOODS" }),
   counter: Object.freeze({ x: 73, y: 64, width: 22, height: 20, label: "CHECKOUT" }),
 });
 

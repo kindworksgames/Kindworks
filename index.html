@@ -10,7 +10,7 @@
     <title>Kindworks</title>
   </head>
   <body>
-    <main class="game-shell" aria-label="Kindworks Phaser game">
+    <main class="game-shell" aria-label="KindWorks game">
       <div id="game"></div>
       <div id="world-lighting-overlay" class="world-lighting-overlay" data-phase="day" aria-hidden="true"></div>
       <div id="weather-effects" class="weather-effects" data-weather="clear" aria-hidden="true"></div>
@@ -111,7 +111,7 @@
         <div class="npc-story-card">
           <header class="npc-story-header">
             <div id="npc-story-portrait" class="npc-story-portrait" aria-hidden="true">📖</div>
-            <div><p>MILESTONE 39 · WILLOWMERE STORIES</p><h2 id="npc-story-name">Resident story</h2><span id="npc-story-identity">Willowmere resident</span></div>
+            <div><p>WILLOWMERE STORIES</p><h2 id="npc-story-name">Resident story</h2><span id="npc-story-identity">Willowmere resident</span></div>
             <button id="npc-story-close" type="button" aria-label="Close resident stories">✕</button>
           </header>
           <div class="npc-story-layout">
@@ -137,14 +137,46 @@
         <button id="grocer-exit" type="button">Return to Willowmere</button>
       </section>
       <section id="paws-hud" class="paws-hud hidden" aria-label="Paws and Wonders information">
-        <div><small>MILESTONE 36 · PERMANENT ADOPTIONS</small><strong>🐾 Paws &amp; Wonders</strong><span>Walk to a habitat or tap a companion · A adopts the selected companion</span></div>
+        <div><small>COMPANION ADOPTIONS</small><strong>🐾 Paws &amp; Wonders</strong><span>Walk to a habitat or tap a companion · A adopts the selected companion</span></div>
         <span id="paws-balance">🪙 100</span>
         <button id="paws-exit" type="button">Return to Willowmere</button>
       </section>
+      <section id="paws-mobile-panel" class="paws-mobile-panel" aria-label="Selected companion controls">
+        <div class="mobile-shop-cycle" aria-label="Browse companions">
+          <button id="paws-mobile-previous" type="button" aria-label="Previous companion">‹</button>
+          <button id="paws-mobile-next" type="button" aria-label="Next companion">›</button>
+        </div>
+        <strong id="paws-mobile-name">Selected companion</strong>
+        <span id="paws-mobile-summary">Choose a companion</span>
+        <button id="paws-mobile-adopt" class="mobile-shop-primary" type="button">Adopt</button>
+        <small id="paws-mobile-status" role="status" aria-live="polite">Browse companions with the arrows.</small>
+      </section>
       <section id="harbour-hud" class="harbour-hud hidden" aria-label="Harbour General information">
-        <div><small>MILESTONE 37 · PLAYER-OWNED BUSINESS</small><strong>🏪 Harbour General</strong><span>1–6 selects a display · [ ] changes product · P places · R restocks · C collects</span></div>
-        <span id="harbour-hud-stats">🪙 100 · Till 0 · 0 sales</span>
-        <button id="harbour-exit" type="button">Return to Willowmere</button>
+        <div class="harbour-hud-title" data-asset-label="KW-HARBOUR-GENERAL-HEADER" data-sprite-ai-label="harbour-general.header.shop-sign" data-sprite-ai-kind="shop-sign"><strong>⚓ HARBOUR GENERAL ⚓</strong></div>
+        <div class="harbour-hud-metric" data-asset-label="KW-HARBOUR-GENERAL-COINS"><small>COINS</small><strong>🪙 <span id="harbour-balance">100</span></strong></div>
+        <div class="harbour-hud-metric" data-asset-label="KW-HARBOUR-GENERAL-TODAY-SALES"><small>TODAY'S SALES</small><strong id="harbour-today-sales">0</strong></div>
+        <div class="harbour-hud-metric harbour-hud-till" data-asset-label="KW-HARBOUR-GENERAL-TILL"><small>TILL</small><strong id="harbour-till">0</strong></div>
+        <span id="harbour-hud-stats" class="sr-only">🪙 100 · Till 0 · 0 sales</span>
+        <button id="harbour-exit" type="button" aria-label="Return to Willowmere">✕</button>
+      </section>
+      <section id="harbour-mobile-panel" class="harbour-mobile-panel" aria-label="Harbour General product controls">
+        <div class="mobile-shop-cycle" aria-label="Browse products">
+          <button id="harbour-mobile-previous" type="button" aria-label="Previous product">‹</button>
+          <button id="harbour-mobile-next" type="button" aria-label="Next product">›</button>
+        </div>
+        <label for="harbour-mobile-slot">Display</label>
+        <select id="harbour-mobile-slot" aria-label="Selected shop display">
+          <option value="0">Display 1</option><option value="1">Display 2</option><option value="2">Display 3</option>
+          <option value="3">Display 4</option><option value="4">Display 5</option><option value="5">Display 6</option>
+        </select>
+        <div class="mobile-shop-product"><strong id="harbour-mobile-name">Selected product</strong><span id="harbour-mobile-summary">Choose stock</span></div>
+        <button id="harbour-mobile-restock" class="mobile-shop-secondary" type="button">Restock</button>
+        <button id="harbour-mobile-place" class="mobile-shop-primary" type="button">Place on shelf</button>
+        <div class="mobile-shop-cycle mobile-shop-footer">
+          <button id="harbour-mobile-clear" type="button">Clear</button>
+          <button id="harbour-mobile-collect" type="button">Till</button>
+        </div>
+        <small id="harbour-mobile-status" role="status" aria-live="polite">Choose a display and product.</small>
       </section>
       <section id="interaction-prompt" class="interaction-prompt hidden" aria-label="Nearby interaction" aria-hidden="true">
         <span class="interaction-key" aria-hidden="true">E</span>
@@ -180,7 +212,7 @@
       <section id="homeowner-gift-panel" class="homeowner-gift-panel hidden" data-phase="message" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="homeowner-gift-owner" aria-describedby="homeowner-gift-message homeowner-gift-status">
         <div class="homeowner-gift-card">
           <div class="homeowner-gift-house" aria-hidden="true">🏡</div>
-          <p class="homeowner-gift-eyebrow">MILESTONE 34 · NEIGHBOUR GRATITUDE</p>
+          <p class="homeowner-gift-eyebrow">A GIFT FROM YOUR NEIGHBOUR</p>
           <h2 id="homeowner-gift-owner">A grateful neighbour</h2>
           <p id="homeowner-gift-home" class="homeowner-gift-home">Willowmere home</p>
           <p id="homeowner-gift-message" class="homeowner-gift-message"></p>
@@ -203,14 +235,14 @@
         <div class="save-panel-card">
           <div class="save-panel-icon" aria-hidden="true">🛟</div>
           <div>
-            <p class="save-panel-eyebrow">MILESTONE 3 · SAFE SAVES</p>
+            <p class="save-panel-eyebrow">SAVE STATUS</p>
             <h2 id="save-panel-title">Safe saves are ready</h2>
           </div>
           <button id="save-panel-close" class="save-panel-close" type="button" aria-label="Close save information">✕</button>
-          <p id="save-panel-message">The new Phaser save area is separate from the original HTML game.</p>
+          <p id="save-panel-message">Your Willowmere progress is saved on this device.</p>
           <p id="save-panel-details" class="save-panel-details">No original save data will be overwritten.</p>
           <div class="save-panel-actions">
-            <button id="save-panel-primary" type="button">Create new Phaser save</button>
+            <button id="save-panel-primary" type="button">Start a new save</button>
           </div>
         </div>
       </section>
@@ -219,7 +251,7 @@
           <header class="economy-panel-header">
             <div class="economy-panel-icon" aria-hidden="true">🎒</div>
             <div>
-              <p class="economy-panel-eyebrow">MILESTONE 24 · COMPLETE ECONOMY</p>
+              <p class="economy-panel-eyebrow">WALLET &amp; INVENTORY</p>
               <h2 id="economy-panel-title">Wallet & inventory</h2>
             </div>
             <button id="economy-panel-close" class="economy-panel-close" type="button" aria-label="Close wallet and inventory">✕</button>
@@ -239,12 +271,12 @@
             <ol id="economy-ledger" class="economy-ledger"></ol>
           </section>
           <section id="economy-inventory-view" class="economy-view" role="tabpanel" aria-labelledby="economy-inventory-tab">
-            <p id="catalogue-status" class="catalogue-status">76 legacy item definitions ready</p>
+            <p id="catalogue-status" class="catalogue-status">Your collection is ready.</p>
             <div id="inventory-groups" class="inventory-groups"></div>
           </section>
           <section id="commerce-view" class="economy-view commerce-view hidden" role="tabpanel" aria-labelledby="economy-commerce-tab">
             <div class="commerce-hero">
-              <div><small>MILESTONE 41 · OPTIONAL COMMERCE</small><h3>Support KindWorks</h3><p>Paid coins and memberships are optional. Gameplay, your custom resident, and town restoration remain available without a purchase.</p></div>
+              <div><small>OPTIONAL SUPPORT</small><h3>Support KindWorks</h3><p>Paid coins and memberships are optional. Gameplay, your custom resident, and town restoration remain available without a purchase.</p></div>
               <span id="commerce-authority" data-ready="false">Real purchases unavailable in this web build</span>
             </div>
             <label class="commerce-confirmation"><input id="commerce-adult-confirmation" type="checkbox" /><span><strong>Adult confirmation</strong><small>I am an adult or have permission from a parent or guardian to open the store checkout.</small></span></label>
@@ -254,14 +286,14 @@
             <p id="commerce-status" class="commerce-status" data-status="neutral" role="status" aria-live="polite">No payment is taken inside this web preview. Packaged builds require Apple/Google billing and signed KindWorks server receipts.</p>
             <p class="commerce-privacy"><strong>Purchase safety:</strong> no date of birth is collected here, personalised advertising is not used by this system, and every paid grant is checked by the server and saved once.</p>
           </section>
-          <p class="economy-panel-note">Ordinary coin actions and verified paid grants save atomically. A failed save rolls the complete transaction back.</p>
+          <p class="economy-panel-note">Purchases save automatically. If a save fails, your balance will not change.</p>
         </div>
       </section>
       <section id="shop-panel" class="shop-panel hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="shop-panel-title" aria-describedby="shop-panel-description">
         <div class="shop-panel-card">
           <header class="shop-panel-header">
             <div>
-              <p class="shop-panel-eyebrow">MILESTONE 24 · COMPLETE COIN SHOP</p>
+              <p class="shop-panel-eyebrow">WILLOWMERE SHOP</p>
               <h2 id="shop-panel-title">🐟 Fresh Market</h2>
               <p id="shop-panel-description">Fresh fish, meat and pond food.</p>
             </div>
@@ -296,7 +328,7 @@
               <p id="shop-message" class="shop-message" data-status="neutral" aria-live="polite">Select a product to see its price and owned quantity.</p>
             </section>
           </div>
-          <p class="shop-panel-note">Ordinary in-game coins only. Every purchase and tool change saves immediately and safely rolls back if saving fails. Press Escape to return.</p>
+          <p class="shop-panel-note">Ordinary in-game coins only. Purchases and tool changes save automatically. Press Escape to return.</p>
         </div>
       </section>
       <section id="custom-resident-panel" class="custom-resident-panel hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="custom-resident-title" aria-describedby="custom-resident-description">
@@ -304,7 +336,7 @@
           <header class="custom-resident-header">
             <div class="custom-resident-heart" aria-hidden="true">💚</div>
             <div>
-              <p class="custom-resident-eyebrow">MILESTONES 9 &amp; 31 · RESIDENT &amp; HOME</p>
+              <p class="custom-resident-eyebrow">YOUR RESIDENT &amp; HOME</p>
               <h2 id="custom-resident-title">Create your resident</h2>
               <p id="custom-resident-description">One custom resident and their Level 1 starter cottage are included free.</p>
             </div>
@@ -428,7 +460,7 @@
       <section id="animal-friends-panel" class="animal-friends-panel hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="animal-friends-title" aria-describedby="animal-friends-status">
         <div class="animal-friends-card">
           <header class="animal-friends-header">
-            <div><p>MILESTONE 35 · COMPLETE WILDLIFE</p><h2 id="animal-friends-title">🐾 Willowmere Wildlife</h2></div>
+            <div><p>ANIMAL FRIENDS</p><h2 id="animal-friends-title">🐾 Willowmere Wildlife</h2></div>
             <span id="animal-family-count">0 adopted · no family limit</span>
             <button id="animal-friends-close" type="button" aria-label="Close Animal Friends">✕</button>
           </header>
@@ -460,7 +492,7 @@
         <h2 id="powerwash-title" class="sr-only">Playground Power Wash</h2>
         <section id="powerwash-gameplay" class="powerwash-gameplay hidden" aria-label="Active Playground Power Wash level">
           <div class="powerwash-board-frame">
-            <canvas id="powerwash-board" class="powerwash-board" width="1536" height="1024" role="img" aria-label="Playground Power Wash surface using the approved legacy artwork"></canvas>
+            <canvas id="powerwash-board" class="powerwash-board" width="1536" height="1024" role="img" aria-label="Washable playground surface"></canvas>
             <div class="powerwash-canvas-controls" aria-label="Pressure washer tools">
               <button id="powerwash-soap-tool" class="powerwash-integrated-tool soap" type="button" aria-label="Use soap"><span class="sr-only">Soap</span></button>
               <button id="powerwash-precision" class="powerwash-integrated-tool precision" type="button" aria-label="Use precision nozzle"><span class="sr-only">Precision</span></button>
@@ -506,38 +538,28 @@
         <p id="beach-status" class="beach-status" data-status="neutral" role="status" aria-live="assertive">Swipe across the sand to rake.</p>
         <section id="beach-result" class="beach-result hidden" aria-labelledby="beach-result-title"><h3 id="beach-result-title">Beach cleaned!</h3><p id="beach-result-message">The cleanup is saved.</p><div class="beach-result-stats"><span>Reward<strong id="beach-result-coins">+100</strong></span></div><div class="beach-result-actions"><button id="beach-return" type="button">Continue</button></div></section>
       </section>
-      <section id="lawn-care-hud" class="lawn-care-hud hidden" aria-labelledby="lawn-care-title">
-        <header class="lawn-care-header">
-          <div><h2 id="lawn-care-title">🌿 Lawn Care</h2></div>
-          <span id="lawn-care-balance">🪙 100</span>
-          <button id="lawn-care-exit" type="button" aria-label="Exit Lawn Care safely">Exit</button>
-        </header>
+      <section id="lawn-care-hud" class="lawn-care-hud hidden" aria-label="Lawn Care">
+        <button id="lawn-care-exit" type="button" aria-label="Exit Lawn Care safely">✕</button>
         <section id="lawn-care-gameplay" class="lawn-care-gameplay hidden" aria-label="Active Lawn Care level">
-          <div class="lawn-care-game-heading">
-            <div><small id="lawn-level-name">CURRENT JOB</small><strong id="lawn-level-band">Clear the whole lawn</strong></div>
-            <span>Cut<strong id="lawn-progress">0%</strong></span><span>Moves<strong id="lawn-moves">0 / 11</strong></span>
-          </div>
-          <div class="lawn-care-play-area">
-            <div id="lawn-board-viewport" class="lawn-board-viewport"><div id="lawn-board" class="lawn-board" role="grid" aria-label="Lawn Care board"></div></div>
-            <aside class="lawn-care-side">
-              <article><small>MOWER</small><strong id="lawn-mower">Old Green Mower</strong></article>
-              <button id="lawn-hint" type="button">💡 Hint</button>
-              <button id="lawn-undo" type="button" aria-label="Undo last mower swipe">↶ Undo</button>
-              <button id="lawn-retry" type="button">↻ Restart</button>
-              <button id="lawn-qa-complete" class="hidden" type="button">✓ Certified QA completion</button>
-            </aside>
+          <div id="lawn-board-viewport" class="lawn-board-viewport"><div id="lawn-board" class="lawn-board" role="grid" aria-label="Lawn Care board"></div></div>
+          <div class="lawn-care-actions" aria-label="Lawn Care controls">
+            <button id="lawn-undo" type="button" aria-label="Undo last mower swipe">↶ Undo</button>
+            <button id="lawn-hint" type="button">💡 Hint</button>
+            <button id="lawn-qa-complete" class="hidden" type="button">✓ Certified QA completion</button>
           </div>
         </section>
-        <p id="lawn-care-status" class="lawn-care-status" data-status="neutral" role="status" aria-live="assertive">Swipe to mow.</p>
+        <p id="lawn-care-status" class="sr-only" data-status="neutral" role="status" aria-live="assertive">Swipe to mow.</p>
         <section id="lawn-care-result" class="lawn-care-result hidden" aria-labelledby="lawn-result-title">
-          <h3 id="lawn-result-title">Lawn restored!</h3><div id="lawn-result-stars">★★★</div><p id="lawn-result-message">Every strip is freshly cut.</p>
-          <div class="lawn-result-stats"><span>Reward<strong id="lawn-result-coins">+100 coins</strong></span></div>
-          <div class="lawn-result-actions"><button id="lawn-replay" class="hidden" type="button">Try again</button><button id="lawn-return" type="button">Continue</button></div>
+          <div class="lawn-result-card">
+            <h3 id="lawn-result-title">Lawn restored!</h3><div id="lawn-result-stars">★★★</div><p id="lawn-result-message">Every strip is freshly cut.</p>
+            <div class="lawn-result-stats"><span>Reward<strong id="lawn-result-coins">+100 coins</strong></span></div>
+            <div class="lawn-result-actions"><button id="lawn-replay" class="hidden" type="button">Try again</button><button id="lawn-return" type="button">Continue</button></div>
+          </div>
         </section>
       </section>
       <section id="home-interior-hud" class="home-interior-hud hidden" aria-labelledby="home-interior-title">
         <header class="home-interior-header">
-          <div><p>MILESTONES 32–34 · HOMES, AQUARIUM &amp; GIFTS</p><h2 id="home-interior-title">🏡 Willowmere Home</h2><small id="home-interior-subtitle">A lived-in cottage</small></div>
+          <div><p>YOUR WILLOWMERE HOME</p><h2 id="home-interior-title">🏡 Willowmere Home</h2><small id="home-interior-subtitle">A lived-in cottage</small></div>
           <button id="home-interior-exit" type="button">Exit home</button>
         </header>
         <div id="home-interior-badges" class="home-interior-badges" aria-label="Home details"></div>
@@ -569,7 +591,7 @@
           <div class="house-rescue-stages"><span id="house-rescue-sort-stage" class="active">1 · Sort</span><span id="house-rescue-vacuum-stage">2 · Vacuum</span></div>
           <section id="house-rescue-sort-panel" class="house-rescue-sort-panel">
             <div class="house-rescue-stage-meta"><span>Left <strong id="house-rescue-remaining">9</strong></span><small>Tap an item, then a bin.</small></div>
-            <div class="house-rescue-sort-layout"><div id="house-rescue-sort-floor" class="house-rescue-sort-floor" aria-label="Rubbish waiting to be sorted"></div><div id="house-rescue-bins" class="house-rescue-bins" aria-label="Sorting bins"><button type="button" data-house-rescue-bin="organic"><span>🌿</span><strong>Organic</strong></button><button type="button" data-house-rescue-bin="recycle"><span>♻️</span><strong>Recycling</strong></button><button type="button" data-house-rescue-bin="garbage"><span>🗑️</span><strong>Garbage</strong></button></div></div>
+            <div class="house-rescue-sort-layout"><div id="house-rescue-sort-floor" class="house-rescue-sort-floor" aria-label="Rubbish waiting to be sorted"></div><div id="house-rescue-bins" class="house-rescue-bins" aria-label="Sorting bins"><button type="button" data-house-rescue-bin="organic" data-asset-label="KW-HOUSE-RESCUE-BIN-ORGANIC"><span>🌿</span><strong>Organic</strong></button><button type="button" data-house-rescue-bin="recycle" data-asset-label="KW-HOUSE-RESCUE-BIN-RECYCLING"><span>♻️</span><strong>Recycling</strong></button><button type="button" data-house-rescue-bin="garbage" data-asset-label="KW-HOUSE-RESCUE-BIN-GARBAGE"><span>🗑️</span><strong>Garbage</strong></button></div></div>
           </section>
           <section id="house-rescue-vacuum-panel" class="house-rescue-vacuum-panel hidden">
             <div class="house-rescue-stage-meta"><span>Tool <strong id="house-rescue-vacuum-tool">Starter Vacuum</strong></span><small>Swipe over every stain.</small></div>
@@ -610,7 +632,7 @@
       </section>
       <section id="cafe-hud" class="cafe-hud hidden" aria-labelledby="cafe-hud-title">
         <header class="cafe-hud-header">
-          <div><p>MILESTONE 14 · CAFÉ VERTICAL SLICE</p><h2 id="cafe-hud-title">☕ Corner Café</h2><small id="cafe-progress-summary">0 cleared · 0 stars · 0 served</small></div>
+          <div><p>CORNER CAFÉ</p><h2 id="cafe-hud-title">☕ Corner Café</h2><small id="cafe-progress-summary">0 cleared · 0 stars · 0 served</small></div>
           <span id="cafe-balance">🪙 100</span>
           <span id="cafe-live-stars" class="restaurant-live-stars" data-asset-label="KW-CAFE-LIVE-STARS" aria-label="Best rating: 0 of 3 stars">☆☆☆</span>
           <button id="cafe-exit" type="button" aria-label="Exit Corner Café safely">Exit</button>
@@ -637,7 +659,7 @@
       </section>
       <section id="morning-mug-hud" class="cafe-hud hidden" aria-labelledby="morning-mug-hud-title">
         <header class="cafe-hud-header">
-          <div><p>MILESTONE 21 · 150-LEVEL COFFEE CAMPAIGN</p><h2 id="morning-mug-hud-title">☕ Morning Mug Coffee</h2><small id="morning-mug-progress-summary">0 cleared · 0 stars · 0 served</small></div>
+          <div><p>COFFEE CAMPAIGN</p><h2 id="morning-mug-hud-title">☕ Morning Mug Coffee</h2><small id="morning-mug-progress-summary">0 cleared · 0 stars · 0 served</small></div>
           <span id="morning-mug-balance">🪙 100</span>
           <span id="morning-mug-live-stars" class="restaurant-live-stars" data-asset-label="KW-MUG-LIVE-STARS" aria-label="Best rating: 0 of 3 stars">☆☆☆</span>
           <button id="morning-mug-exit" type="button" aria-label="Save the Morning Mug shift and exit">Save &amp; Exit</button>
@@ -664,7 +686,7 @@
       </section>
       <section id="riverside-kitchen-hud" class="cafe-hud hidden" aria-labelledby="riverside-kitchen-hud-title">
         <header class="cafe-hud-header">
-          <div><p>MILESTONE 22 · 150-LEVEL RESTAURANT CAMPAIGN</p><h2 id="riverside-kitchen-hud-title">🍽️ Riverside Kitchen</h2><small id="riverside-kitchen-progress-summary">0 cleared · 0 stars · 0 served</small></div>
+          <div><p>RESTAURANT CAMPAIGN</p><h2 id="riverside-kitchen-hud-title">🍽️ Riverside Kitchen</h2><small id="riverside-kitchen-progress-summary">0 cleared · 0 stars · 0 served</small></div>
           <span id="riverside-kitchen-balance">🪙 100</span>
           <span id="riverside-kitchen-live-stars" class="restaurant-live-stars" data-asset-label="KW-RIVERSIDE-LIVE-STARS" aria-label="Best rating: 0 of 3 stars">☆☆☆</span>
           <button id="riverside-kitchen-exit" type="button" aria-label="Save the Riverside Kitchen shift and exit">Save &amp; Exit</button>
@@ -691,7 +713,7 @@
       </section>
       <section id="south-shore-scoops-hud" class="scoops-hud hidden" aria-labelledby="south-shore-scoops-hud-title" data-asset-label="KW-SCOOPS-HUD" data-sprite-ai-label="KW-SCOOPS-HUD" data-sprite-ai-kind="ui-panel">
         <header class="scoops-hud-header" data-asset-label="KW-SCOOPS-HUD-HEADER" data-sprite-ai-label="KW-SCOOPS-HUD-HEADER" data-sprite-ai-kind="ui-panel">
-          <div><p>MILESTONE 23 · 750-LEVEL BEACH COUNTER</p><h2 id="south-shore-scoops-hud-title">🍦 South Shore Scoops</h2><small id="south-shore-scoops-progress-summary">0 cleared · 0 stars · restoration tier 0</small></div>
+          <div><p>BEACH COUNTER</p><h2 id="south-shore-scoops-hud-title">🍦 South Shore Scoops</h2><small id="south-shore-scoops-progress-summary">0 cleared · 0 stars · restoration tier 0</small></div>
           <span id="south-shore-scoops-balance" data-asset-label="KW-SCOOPS-COIN-COUNTER" data-sprite-ai-label="KW-SCOOPS-COIN-COUNTER" data-sprite-ai-kind="ui-counter">🪙 100</span>
           <span id="south-shore-scoops-live-stars" class="restaurant-live-stars" data-asset-label="KW-SCOOPS-LIVE-STARS" data-sprite-ai-label="KW-SCOOPS-LIVE-STARS" data-sprite-ai-kind="ui-counter" aria-label="Best rating: 0 of 3 stars">☆☆☆</span>
           <button id="south-shore-scoops-exit" type="button" data-asset-label="KW-SCOOPS-EXIT-BUTTON" data-sprite-ai-label="KW-SCOOPS-EXIT-BUTTON" data-sprite-ai-kind="ui-button" aria-label="Save the South Shore Scoops shift and exit">Save &amp; Exit</button>
@@ -718,7 +740,7 @@
       </section>
       <section id="bakery-hud" class="bakery-hud hidden" aria-labelledby="bakery-hud-title">
         <header class="bakery-hud-header">
-          <div><p>MILESTONE 13 · BAKERY VERTICAL SLICE</p><h2 id="bakery-hud-title">🥖 Little Bakery</h2><small id="bakery-progress-summary">0 cleared · 0 stars · 0 served</small></div>
+          <div><p>BAKERY CAMPAIGN</p><h2 id="bakery-hud-title">🥖 Little Bakery</h2><small id="bakery-progress-summary">0 cleared · 0 stars · 0 served</small></div>
           <span id="bakery-balance">🪙 100</span>
           <span id="bakery-live-stars" class="restaurant-live-stars" data-asset-label="KW-BAKERY-LIVE-STARS" aria-label="Best rating: 0 of 3 stars">☆☆☆</span>
           <button id="bakery-exit" type="button" aria-label="Exit Little Bakery safely">Exit</button>
@@ -768,15 +790,24 @@
       </section>
       <section id="waste-campaign-hud" class="waste-campaign-hud hidden" aria-labelledby="waste-campaign-title">
         <header class="waste-campaign-header">
-          <div><h2 id="waste-campaign-title">🧹 Waste Collection</h2></div>
-          <span id="waste-campaign-balance">🪙 100</span>
-          <button id="waste-campaign-exit" type="button" aria-label="Exit Waste Collection safely">Exit</button>
+          <div><h2 id="waste-campaign-title">Waste Collection</h2></div>
+          <span id="waste-campaign-level">Level 1 / 750</span>
+          <span class="waste-header-remaining"><strong id="waste-level-remaining">30</strong> left</span>
+          <details class="waste-campaign-menu">
+            <summary aria-label="Open Waste Collection menu">☰</summary>
+            <div>
+              <span id="waste-campaign-balance">🪙 100</span>
+              <button id="waste-hint" type="button">💡 Hint</button>
+              <button id="waste-retry" type="button">↻ Restart</button>
+              <button id="waste-qa-solve" class="hidden" type="button">✓ QA clear</button>
+              <button id="waste-campaign-exit" type="button" aria-label="Exit Waste Collection safely">Exit</button>
+            </div>
+          </details>
         </header>
         <section id="waste-campaign-gameplay" class="waste-campaign-gameplay hidden" aria-label="Active Waste Collection level">
-          <div class="waste-campaign-heading"><div><small>CURRENT CLEANUP</small><strong>Match every card in threes</strong></div><span>Left<strong id="waste-level-remaining">30</strong></span><span>Tray<strong id="waste-level-tray-count">0 / 5</strong></span></div>
-          <div id="waste-board-viewport" class="waste-board-viewport"><div id="waste-board" class="waste-board" aria-label="Waste Collection matching board"></div></div>
-          <div class="waste-tray-wrap"><small>TRAY · THREE MATCHES CLEAR</small><div id="waste-tray" class="waste-tray" aria-label="Five-slot collection tray"></div></div>
-          <div class="waste-campaign-actions"><button id="waste-hint" type="button">💡 Hint</button><button id="waste-retry" type="button">↻ Restart</button><button id="waste-qa-solve" class="hidden" type="button">✓ QA clear</button></div>
+          <p class="waste-campaign-objective">Match cards in threes.</p>
+          <div id="waste-board-viewport" class="waste-board-viewport" data-asset-label="KW-WASTE-PARK-BOARD"><div id="waste-board" class="waste-board" aria-label="Waste Collection matching board"></div></div>
+          <div class="waste-tray-wrap" data-asset-label="KW-WASTE-COLLECTION-TRAY"><small id="waste-level-tray-count">0 / 5</small><div id="waste-tray" class="waste-tray" aria-label="Five-slot collection tray"></div></div>
         </section>
         <p id="waste-campaign-status" class="waste-campaign-status" data-status="neutral" role="status" aria-live="assertive">Pick an uncovered card. Match three before the tray fills.</p>
         <section id="waste-campaign-result" class="waste-campaign-result hidden" aria-labelledby="waste-result-title">
@@ -788,7 +819,7 @@
       <section id="cleanup-hud" class="cleanup-hud hidden" aria-labelledby="cleanup-hud-title">
         <header class="cleanup-hud-header">
           <div>
-            <p>MILESTONE 6 · FIRST CLEANUP JOB</p>
+            <p>WILLOWMERE CLEAN-UP</p>
             <h2 id="cleanup-hud-title">🧹 Waste Collection</h2>
           </div>
           <button id="cleanup-exit" type="button" aria-label="Exit Waste Collection without changing the town">Exit</button>

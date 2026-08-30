@@ -1,0 +1,879 @@
+{
+  "generatedAt": "2026-08-30T05:05:07.589Z",
+  "repository": "/Users/youyoulu/Documents/GitHub/Kindworks",
+  "method": "Fresh source scan; catalogue names are not treated as object-placement coverage.",
+  "totals": {
+    "productionScenes": 18,
+    "importantPlayerVisibleScenes": 17,
+    "catalogueSceneEntries": 18,
+    "objectLevelDataDrivenScenes": 1,
+    "surfaceOnlyImportantScenes": 16,
+    "objectLevelCoveragePercent": 5.9,
+    "directSceneLiteralPlacementOccurrences": 711,
+    "sharedRestaurantLiteralPlacementOccurrences": 276,
+    "globalUiSurfaces": 13,
+    "globalCssPlacementLines": 2040
+  },
+  "scenes": [
+    {
+      "sceneId": "BootScene",
+      "category": "transition",
+      "file": "src/scenes/BootScene.js",
+      "layoutId": "layout.scene.boot",
+      "layoutKind": "legacy-boundary",
+      "objectLevelInstances": 0,
+      "stableSurfaces": 1,
+      "depthPolicies": 0,
+      "sourceUsesSceneLayout": false,
+      "sourceRegistersInstances": false,
+      "directLiteralPlacementLines": 0,
+      "directLiteralPlacementOccurrences": 0,
+      "inheritedSharedPlacementOccurrences": 0,
+      "important": false,
+      "objectLevelDataDriven": false,
+      "coverageStatus": "TRANSITION-BOUNDARY",
+      "examples": []
+    },
+    {
+      "sceneId": "TownScene",
+      "category": "world",
+      "file": "src/scenes/TownScene.js",
+      "layoutId": "layout.scene.town",
+      "layoutKind": "legacy-boundary",
+      "objectLevelInstances": 0,
+      "stableSurfaces": 2,
+      "depthPolicies": 10,
+      "sourceUsesSceneLayout": true,
+      "sourceRegistersInstances": false,
+      "directLiteralPlacementLines": 236,
+      "directLiteralPlacementOccurrences": 310,
+      "inheritedSharedPlacementOccurrences": 0,
+      "important": true,
+      "objectLevelDataDriven": false,
+      "coverageStatus": "SURFACE-ONLY/UNDOCUMENTED-PLACEMENT",
+      "examples": [
+        {
+          "line": 289,
+          "occurrences": 2,
+          "snippet": "this.shadow = this.add.ellipse(spawn.x, spawn.y + 18, 31, 12, 0x24442f, 0.28).setDepth(resolveTownSceneDepth(TOWN_DEPTH_POLICY_IDS.PLAYER_SHADOW, spawn.y));"
+        },
+        {
+          "line": 624,
+          "occurrences": 2,
+          "snippet": "this.add.rectangle(WORLD.width / 2, WORLD.height / 2, WORLD.width, WORLD.height, COLORS.grass).setDepth(0);"
+        },
+        {
+          "line": 626,
+          "occurrences": 1,
+          "snippet": "const terrain = this.add.graphics().setDepth(1);"
+        },
+        {
+          "line": 629,
+          "occurrences": 1,
+          "snippet": "terrain.fillRoundedRect(district.x, district.y, district.width, district.height, 30);"
+        },
+        {
+          "line": 635,
+          "occurrences": 1,
+          "snippet": "terrain.fillCircle(random.between(30, WORLD.width - 30), random.between(30, WORLD.height - 30), random.between(2, 6));"
+        },
+        {
+          "line": 641,
+          "occurrences": 1,
+          "snippet": "const roadLayer = this.add.graphics().setDepth(10);"
+        },
+        {
+          "line": 676,
+          "occurrences": 1,
+          "snippet": "this.interactionHighlight = this.add.ellipse(0, 0, 86, 42, 0xfff2a3, 0.12)"
+        },
+        {
+          "line": 678,
+          "occurrences": 1,
+          "snippet": ".setDepth(475)"
+        }
+      ]
+    },
+    {
+      "sceneId": "HouseInteriorScene",
+      "category": "interior",
+      "file": "src/scenes/HouseInteriorScene.js",
+      "layoutId": "layout.scene.house-interior",
+      "layoutKind": "legacy-boundary",
+      "objectLevelInstances": 0,
+      "stableSurfaces": 2,
+      "depthPolicies": 0,
+      "sourceUsesSceneLayout": false,
+      "sourceRegistersInstances": false,
+      "directLiteralPlacementLines": 43,
+      "directLiteralPlacementOccurrences": 67,
+      "inheritedSharedPlacementOccurrences": 0,
+      "important": true,
+      "objectLevelDataDriven": false,
+      "coverageStatus": "SURFACE-ONLY/UNDOCUMENTED-PLACEMENT",
+      "examples": [
+        {
+          "line": 138,
+          "occurrences": 2,
+          "snippet": "this.visuals.push(this.add.rectangle(640, 360, 1280, 720, 0x233e31).setDepth(-20));"
+        },
+        {
+          "line": 139,
+          "occurrences": 1,
+          "snippet": "const graphics = this.add.graphics().setDepth(1);"
+        },
+        {
+          "line": 142,
+          "occurrences": 1,
+          "snippet": "graphics.fillStyle(0x6c5038, 1); graphics.fillRoundedRect(room.x - 12, room.y - 12, room.w + 24, room.h + 24, 15);"
+        },
+        {
+          "line": 143,
+          "occurrences": 1,
+          "snippet": "graphics.fillStyle(layout.theme.wall, 1); graphics.fillRoundedRect(room.x - 6, room.y - 6, room.w + 12, room.h + 12, 11);"
+        },
+        {
+          "line": 144,
+          "occurrences": 1,
+          "snippet": "graphics.fillStyle(layout.theme.floor, 1); graphics.fillRect(room.x, room.y, room.w, room.h);"
+        },
+        {
+          "line": 146,
+          "occurrences": 1,
+          "snippet": "for (let x = room.x + 18; x < room.x + room.w; x += 38) graphics.lineBetween(x, room.y, x, room.y + room.h);"
+        },
+        {
+          "line": 153,
+          "occurrences": 1,
+          "snippet": "graphics.fillStyle(0xb98654, 1); graphics.fillRect(door.x, door.y - 3, door.w, door.h + 7);"
+        },
+        {
+          "line": 157,
+          "occurrences": 1,
+          "snippet": "for (const [rx, ry, radius] of [[0.32, 0.41, 22], [0.58, 0.24, 15], [0.75, 0.78, 25], [0.20, 0.66, 18]]) graphics.fillCircle(room.x + room.w * rx, room.y + room.h * ry, radius);"
+        }
+      ]
+    },
+    {
+      "sceneId": "VillageGrocerScene",
+      "category": "shop",
+      "file": "src/scenes/VillageGrocerScene.js",
+      "layoutId": "layout.scene.village-grocer",
+      "layoutKind": "legacy-boundary",
+      "objectLevelInstances": 0,
+      "stableSurfaces": 2,
+      "depthPolicies": 0,
+      "sourceUsesSceneLayout": false,
+      "sourceRegistersInstances": false,
+      "directLiteralPlacementLines": 26,
+      "directLiteralPlacementOccurrences": 44,
+      "inheritedSharedPlacementOccurrences": 0,
+      "important": true,
+      "objectLevelDataDriven": false,
+      "coverageStatus": "SURFACE-ONLY/UNDOCUMENTED-PLACEMENT",
+      "examples": [
+        {
+          "line": 60,
+          "occurrences": 1,
+          "snippet": "this.add.rectangle(640, 360, 1280, 720, 0x193527);"
+        },
+        {
+          "line": 63,
+          "occurrences": 1,
+          "snippet": "floor.fillRoundedRect(room.x, room.y, room.width, room.height, 20);"
+        },
+        {
+          "line": 65,
+          "occurrences": 1,
+          "snippet": "floor.strokeRoundedRect(room.x, room.y, room.width, room.height, 20);"
+        },
+        {
+          "line": 67,
+          "occurrences": 1,
+          "snippet": "for (let x = room.x + 42; x < room.x + room.width; x += 84) floor.lineBetween(x, room.y + 10, x, room.y + room.height - 10);"
+        },
+        {
+          "line": 68,
+          "occurrences": 1,
+          "snippet": "for (let y = room.y + 42; y < room.y + room.height; y += 84) floor.lineBetween(room.x + 10, y, room.x + room.width - 10, y);"
+        },
+        {
+          "line": 70,
+          "occurrences": 1,
+          "snippet": "this.add.text(640, 35, VILLAGE_GROCER_INTERIOR.sign, {"
+        },
+        {
+          "line": 73,
+          "occurrences": 2,
+          "snippet": "}).setOrigin(0.5).setDepth(30);"
+        },
+        {
+          "line": 74,
+          "occurrences": 3,
+          "snippet": "this.add.text(640, 72, VILLAGE_GROCER_INTERIOR.subtitle, { color: \"#d7e8cf\", fontFamily: \"system-ui\", fontSize: \"14px\" }).setOrigin(0.5).setDepth(30);"
+        }
+      ]
+    },
+    {
+      "sceneId": "PawsWondersScene",
+      "category": "shop",
+      "file": "src/scenes/PawsWondersScene.js",
+      "layoutId": "layout.scene.paws-wonders",
+      "layoutKind": "legacy-boundary",
+      "objectLevelInstances": 0,
+      "stableSurfaces": 2,
+      "depthPolicies": 0,
+      "sourceUsesSceneLayout": false,
+      "sourceRegistersInstances": false,
+      "directLiteralPlacementLines": 37,
+      "directLiteralPlacementOccurrences": 80,
+      "inheritedSharedPlacementOccurrences": 0,
+      "important": true,
+      "objectLevelDataDriven": false,
+      "coverageStatus": "SURFACE-ONLY/UNDOCUMENTED-PLACEMENT",
+      "examples": [
+        {
+          "line": 67,
+          "occurrences": 1,
+          "snippet": "this.add.rectangle(640, 360, 1280, 720, 0x173126);"
+        },
+        {
+          "line": 70,
+          "occurrences": 1,
+          "snippet": "floor.fillRoundedRect(room.x, room.y, room.width, room.height, 20);"
+        },
+        {
+          "line": 72,
+          "occurrences": 1,
+          "snippet": "floor.strokeRoundedRect(room.x, room.y, room.width, room.height, 20);"
+        },
+        {
+          "line": 74,
+          "occurrences": 1,
+          "snippet": "for (let x = room.x + 38; x < room.x + room.width; x += 76) floor.lineBetween(x, room.y + 10, x, room.y + room.height - 10);"
+        },
+        {
+          "line": 75,
+          "occurrences": 1,
+          "snippet": "for (let y = room.y + 38; y < room.y + room.height; y += 76) floor.lineBetween(room.x + 10, y, room.x + room.width - 10, y);"
+        },
+        {
+          "line": 77,
+          "occurrences": 3,
+          "snippet": "this.add.text(640, 30, PAWS_WONDERS_INTERIOR.sign, { color: \"#fff2bd\", fontFamily: \"ui-monospace, monospace\", fontSize: \"29px\", fontStyle: \"bold\", backgroundColor: \"#315b43\", padding: { x: 18, y: 8 } }).setOrigin(0.5).setDepth(40);"
+        },
+        {
+          "line": 78,
+          "occurrences": 3,
+          "snippet": "this.add.text(640, 66, PAWS_WONDERS_INTERIOR.subtitle, { color: \"#d6e8d2\", fontFamily: \"system-ui\", fontSize: \"13px\" }).setOrigin(0.5).setDepth(40);"
+        },
+        {
+          "line": 85,
+          "occurrences": 1,
+          "snippet": "floor.fillRoundedRect(rect.x, rect.y, rect.width, rect.height, 10);"
+        }
+      ]
+    },
+    {
+      "sceneId": "HarbourGeneralScene",
+      "category": "shop/business",
+      "file": "src/scenes/HarbourGeneralScene.js",
+      "layoutId": "layout.scene.harbour-general",
+      "layoutKind": "legacy-boundary",
+      "objectLevelInstances": 0,
+      "stableSurfaces": 2,
+      "depthPolicies": 0,
+      "sourceUsesSceneLayout": false,
+      "sourceRegistersInstances": false,
+      "directLiteralPlacementLines": 59,
+      "directLiteralPlacementOccurrences": 114,
+      "inheritedSharedPlacementOccurrences": 0,
+      "important": true,
+      "objectLevelDataDriven": false,
+      "coverageStatus": "SURFACE-ONLY/UNDOCUMENTED-PLACEMENT",
+      "examples": [
+        {
+          "line": 77,
+          "occurrences": 1,
+          "snippet": "labelVisual(this.add.rectangle(640, 360, 1280, 720, 0x102d4b), \"harbour-general.surface.full-screen\", \"shop-surface\");"
+        },
+        {
+          "line": 79,
+          "occurrences": 1,
+          "snippet": "floor.setDepth(2);"
+        },
+        {
+          "line": 81,
+          "occurrences": 1,
+          "snippet": "floor.fillRect(room.x, room.y, room.width, 160);"
+        },
+        {
+          "line": 83,
+          "occurrences": 1,
+          "snippet": "floor.fillRect(room.x, room.y + 160, room.width, room.height - 160);"
+        },
+        {
+          "line": 92,
+          "occurrences": 1,
+          "snippet": "floor.fillRect(room.x, room.y + 150, room.width, 15);"
+        },
+        {
+          "line": 94,
+          "occurrences": 1,
+          "snippet": "floor.fillRect(room.x, room.y + 160, room.width, 5);"
+        },
+        {
+          "line": 113,
+          "occurrences": 1,
+          "snippet": "floor.fillRoundedRect(counter.x, counter.y, counter.width, counter.height, 7);"
+        },
+        {
+          "line": 115,
+          "occurrences": 1,
+          "snippet": "floor.fillRoundedRect(counter.x + 7, counter.y + 7, counter.width - 14, 22, 4);"
+        }
+      ]
+    },
+    {
+      "sceneId": "BakeryScene",
+      "category": "restaurant/service",
+      "file": "src/scenes/BakeryScene.js",
+      "layoutId": "layout.scene.bakery",
+      "layoutKind": "legacy-boundary",
+      "objectLevelInstances": 0,
+      "stableSurfaces": 2,
+      "depthPolicies": 0,
+      "sourceUsesSceneLayout": false,
+      "sourceRegistersInstances": false,
+      "directLiteralPlacementLines": 0,
+      "directLiteralPlacementOccurrences": 0,
+      "inheritedSharedPlacementOccurrences": 276,
+      "important": true,
+      "objectLevelDataDriven": false,
+      "coverageStatus": "SURFACE-ONLY/UNDOCUMENTED-PLACEMENT",
+      "examples": []
+    },
+    {
+      "sceneId": "CafeScene",
+      "category": "restaurant/service",
+      "file": "src/scenes/CafeScene.js",
+      "layoutId": "layout.scene.cafe",
+      "layoutKind": "legacy-boundary",
+      "objectLevelInstances": 0,
+      "stableSurfaces": 2,
+      "depthPolicies": 0,
+      "sourceUsesSceneLayout": false,
+      "sourceRegistersInstances": false,
+      "directLiteralPlacementLines": 0,
+      "directLiteralPlacementOccurrences": 0,
+      "inheritedSharedPlacementOccurrences": 276,
+      "important": true,
+      "objectLevelDataDriven": false,
+      "coverageStatus": "SURFACE-ONLY/UNDOCUMENTED-PLACEMENT",
+      "examples": []
+    },
+    {
+      "sceneId": "MorningMugScene",
+      "category": "restaurant/service",
+      "file": "src/scenes/MorningMugScene.js",
+      "layoutId": "layout.scene.morning-mug",
+      "layoutKind": "legacy-boundary",
+      "objectLevelInstances": 0,
+      "stableSurfaces": 2,
+      "depthPolicies": 0,
+      "sourceUsesSceneLayout": false,
+      "sourceRegistersInstances": false,
+      "directLiteralPlacementLines": 0,
+      "directLiteralPlacementOccurrences": 0,
+      "inheritedSharedPlacementOccurrences": 276,
+      "important": true,
+      "objectLevelDataDriven": false,
+      "coverageStatus": "SURFACE-ONLY/UNDOCUMENTED-PLACEMENT",
+      "examples": []
+    },
+    {
+      "sceneId": "RiversideKitchenScene",
+      "category": "restaurant/service",
+      "file": "src/scenes/RiversideKitchenScene.js",
+      "layoutId": "layout.scene.riverside-kitchen",
+      "layoutKind": "legacy-boundary",
+      "objectLevelInstances": 0,
+      "stableSurfaces": 2,
+      "depthPolicies": 0,
+      "sourceUsesSceneLayout": false,
+      "sourceRegistersInstances": false,
+      "directLiteralPlacementLines": 0,
+      "directLiteralPlacementOccurrences": 0,
+      "inheritedSharedPlacementOccurrences": 276,
+      "important": true,
+      "objectLevelDataDriven": false,
+      "coverageStatus": "SURFACE-ONLY/UNDOCUMENTED-PLACEMENT",
+      "examples": []
+    },
+    {
+      "sceneId": "SouthShoreScoopsScene",
+      "category": "restaurant/service",
+      "file": "src/scenes/SouthShoreScoopsScene.js",
+      "layoutId": "layout.scene.south-shore-scoops",
+      "layoutKind": "legacy-boundary",
+      "objectLevelInstances": 0,
+      "stableSurfaces": 2,
+      "depthPolicies": 0,
+      "sourceUsesSceneLayout": false,
+      "sourceRegistersInstances": false,
+      "directLiteralPlacementLines": 0,
+      "directLiteralPlacementOccurrences": 0,
+      "inheritedSharedPlacementOccurrences": 276,
+      "important": true,
+      "objectLevelDataDriven": false,
+      "coverageStatus": "SURFACE-ONLY/UNDOCUMENTED-PLACEMENT",
+      "examples": []
+    },
+    {
+      "sceneId": "RiverClearoutScene",
+      "category": "cleanup-minigame",
+      "file": "src/scenes/RiverClearoutScene.js",
+      "layoutId": "layout.scene.river-clearout",
+      "layoutKind": "legacy-boundary",
+      "objectLevelInstances": 0,
+      "stableSurfaces": 2,
+      "depthPolicies": 0,
+      "sourceUsesSceneLayout": false,
+      "sourceRegistersInstances": false,
+      "directLiteralPlacementLines": 8,
+      "directLiteralPlacementOccurrences": 13,
+      "inheritedSharedPlacementOccurrences": 0,
+      "important": true,
+      "objectLevelDataDriven": false,
+      "coverageStatus": "SURFACE-ONLY/UNDOCUMENTED-PLACEMENT",
+      "examples": [
+        {
+          "line": 43,
+          "occurrences": 1,
+          "snippet": "this.add.rectangle(ROOM.width / 2, ROOM.height / 2, ROOM.width, ROOM.height, 0x7fc16d);"
+        },
+        {
+          "line": 45,
+          "occurrences": 2,
+          "snippet": "art.fillStyle(0x4b8f57, 0.45); art.fillRoundedRect(20, 20, 350, 680, 70); art.fillRoundedRect(910, 20, 350, 680, 70);"
+        },
+        {
+          "line": 46,
+          "occurrences": 1,
+          "snippet": "art.fillStyle(0x3f91af, 1); art.fillRoundedRect(355, -40, 570, 800, 150);"
+        },
+        {
+          "line": 47,
+          "occurrences": 1,
+          "snippet": "art.fillStyle(0x66bed0, 1); art.fillRoundedRect(400, -40, 480, 800, 130);"
+        },
+        {
+          "line": 50,
+          "occurrences": 1,
+          "snippet": "art.fillRoundedRect(450 + (y % 148 ? 30 : 0), y, 280, 13, 7);"
+        },
+        {
+          "line": 51,
+          "occurrences": 1,
+          "snippet": "art.fillRoundedRect(690, y + 30, 130, 9, 5);"
+        },
+        {
+          "line": 54,
+          "occurrences": 3,
+          "snippet": "this.add.text(x, y, icon, { fontSize: \"54px\" }).setOrigin(0.5).setDepth(2);"
+        },
+        {
+          "line": 56,
+          "occurrences": 3,
+          "snippet": "this.add.text(640, 26, \"RIVER CLEAR-OUT · WILLOWMERE RESTORATION TEAM\", { color: \"#e9ffff\", fontFamily: \"ui-monospace, monospace\", fontSize: \"17px\", fontStyle: \"bold\", stroke: \"#1f5266\", strokeThickness: 5 }).setOrigin(0.5).setDepth(4);"
+        }
+      ]
+    },
+    {
+      "sceneId": "HouseRescueScene",
+      "category": "cleanup-minigame",
+      "file": "src/scenes/HouseRescueScene.js",
+      "layoutId": "layout.scene.house-rescue",
+      "layoutKind": "legacy-boundary",
+      "objectLevelInstances": 0,
+      "stableSurfaces": 2,
+      "depthPolicies": 0,
+      "sourceUsesSceneLayout": false,
+      "sourceRegistersInstances": false,
+      "directLiteralPlacementLines": 9,
+      "directLiteralPlacementOccurrences": 11,
+      "inheritedSharedPlacementOccurrences": 0,
+      "important": true,
+      "objectLevelDataDriven": false,
+      "coverageStatus": "SURFACE-ONLY/UNDOCUMENTED-PLACEMENT",
+      "examples": [
+        {
+          "line": 58,
+          "occurrences": 1,
+          "snippet": "this.add.rectangle(640, 360, 1280, 720, 0xc9d7ad).setName(\"KW-HOUSE-RESCUE-BACKGROUND\");"
+        },
+        {
+          "line": 61,
+          "occurrences": 1,
+          "snippet": "art.fillStyle(0x5c4938, 1); art.fillRoundedRect(58, 37, 1164, 636, 20);"
+        },
+        {
+          "line": 62,
+          "occurrences": 1,
+          "snippet": "art.fillStyle(wallColour, 1); art.fillRoundedRect(76, 55, 1128, 600, 16);"
+        },
+        {
+          "line": 63,
+          "occurrences": 1,
+          "snippet": "art.fillStyle(floorColour, 1); art.fillRoundedRect(92, 72, 1096, 565, 10);"
+        },
+        {
+          "line": 65,
+          "occurrences": 1,
+          "snippet": "for (let y = 88; y < 630; y += 24) art.lineBetween(96, y, 1184, y);"
+        },
+        {
+          "line": 69,
+          "occurrences": 1,
+          "snippet": "art.lineBetween(room.x + partition.x / 100 * room.w, room.y + partition.y / 100 * room.h, room.x + partition.x2 / 100 * room.w, room.y + partition.y2 / 100 * room.h);"
+        },
+        {
+          "line": 77,
+          "occurrences": 1,
+          "snippet": "art.fillRoundedRect(x, y, w, h, 7);"
+        },
+        {
+          "line": 78,
+          "occurrences": 2,
+          "snippet": "this.add.text(x + w / 2, y + h / 2, furnitureIcon(item.kind), { fontSize: `${Math.max(18, Math.min(42, Math.min(w, h) * 0.58))}px` }).setOrigin(0.5).setName(`KW-HOUSE-RESCUE-FURNITURE-${item.kind.toUpperCase()}-${item.id.toUpperCase()}`);"
+        }
+      ]
+    },
+    {
+      "sceneId": "WasteCollectionScene",
+      "category": "cleanup-minigame",
+      "file": "src/scenes/WasteCollectionScene.js",
+      "layoutId": "layout.scene.waste-collection",
+      "layoutKind": "legacy-boundary",
+      "objectLevelInstances": 0,
+      "stableSurfaces": 2,
+      "depthPolicies": 0,
+      "sourceUsesSceneLayout": false,
+      "sourceRegistersInstances": false,
+      "directLiteralPlacementLines": 10,
+      "directLiteralPlacementOccurrences": 14,
+      "inheritedSharedPlacementOccurrences": 0,
+      "important": true,
+      "objectLevelDataDriven": false,
+      "coverageStatus": "SURFACE-ONLY/UNDOCUMENTED-PLACEMENT",
+      "examples": [
+        {
+          "line": 51,
+          "occurrences": 1,
+          "snippet": "this.add.rectangle(ROOM.width / 2, ROOM.height / 2, ROOM.width, ROOM.height, 0x5b9649);"
+        },
+        {
+          "line": 53,
+          "occurrences": 1,
+          "snippet": "art.fillStyle(0x8bc86f, 0.62); art.fillRoundedRect(25, 25, 1230, 670, 60);"
+        },
+        {
+          "line": 54,
+          "occurrences": 1,
+          "snippet": "art.fillStyle(0xd9c29a, 1); art.fillRoundedRect(55, 310, 1170, 95, 28);"
+        },
+        {
+          "line": 56,
+          "occurrences": 1,
+          "snippet": "for (const [x, y] of [[105, 95], [1130, 110], [150, 610], [1080, 600]]) art.fillCircle(x, y, 72);"
+        },
+        {
+          "line": 57,
+          "occurrences": 2,
+          "snippet": "art.fillStyle(0x765238, 1); art.fillRect(98, 120, 16, 80); art.fillRect(1122, 130, 16, 80);"
+        },
+        {
+          "line": 60,
+          "occurrences": 1,
+          "snippet": "art.fillCircle(35 + ((index * 137) % 1210), 35 + ((index * 83) % 650), 2 + (index % 3));"
+        },
+        {
+          "line": 62,
+          "occurrences": 2,
+          "snippet": "this.backdropTitle = this.add.text(ROOM.width / 2, 27, \"WASTE COLLECTION · WILLOWMERE PARK TEAM\", { color: \"#fff6c9\", fontFamily: \"ui-monospace, monospace\", fontSize: \"17px\", fontStyle: \"bold\", stroke: \"#283d32\", strokeThickness: 5 }).setOrigin(0.5);"
+        },
+        {
+          "line": 287,
+          "occurrences": 1,
+          "snippet": "const backing = this.add.rectangle(0, 0, 78, 64, item.color, 0.96).setStrokeStyle(4, 0x294637, 0.72);"
+        }
+      ]
+    },
+    {
+      "sceneId": "LawnCareScene",
+      "category": "cleanup-minigame",
+      "file": "src/scenes/LawnCareScene.js",
+      "layoutId": "layout.scene.lawn-care",
+      "layoutKind": "legacy-boundary",
+      "objectLevelInstances": 0,
+      "stableSurfaces": 2,
+      "depthPolicies": 0,
+      "sourceUsesSceneLayout": false,
+      "sourceRegistersInstances": false,
+      "directLiteralPlacementLines": 6,
+      "directLiteralPlacementOccurrences": 8,
+      "inheritedSharedPlacementOccurrences": 0,
+      "important": true,
+      "objectLevelDataDriven": false,
+      "coverageStatus": "SURFACE-ONLY/UNDOCUMENTED-PLACEMENT",
+      "examples": [
+        {
+          "line": 56,
+          "occurrences": 1,
+          "snippet": "this.add.rectangle(ROOM.width / 2, ROOM.height / 2, ROOM.width, ROOM.height, 0x78a956);"
+        },
+        {
+          "line": 59,
+          "occurrences": 1,
+          "snippet": "art.fillRoundedRect(22, 20, 1236, 680, 28);"
+        },
+        {
+          "line": 61,
+          "occurrences": 1,
+          "snippet": "art.fillRoundedRect(52, 48, 1176, 624, 24);"
+        },
+        {
+          "line": 63,
+          "occurrences": 1,
+          "snippet": "for (let x = 80; x < 1230; x += 68) art.lineBetween(x, 72, x, 648);"
+        },
+        {
+          "line": 64,
+          "occurrences": 1,
+          "snippet": "for (let y = 95; y < 650; y += 74) art.lineBetween(70, y, 1210, y);"
+        },
+        {
+          "line": 66,
+          "occurrences": 3,
+          "snippet": "this.add.text(x, y, icon, { fontSize: \"48px\" }).setOrigin(0.5).setDepth(2);"
+        }
+      ]
+    },
+    {
+      "sceneId": "BeachCleanupScene",
+      "category": "cleanup-minigame",
+      "file": "src/scenes/BeachCleanupScene.js",
+      "layoutId": "layout.scene.beach-cleanup",
+      "layoutKind": "legacy-boundary",
+      "objectLevelInstances": 0,
+      "stableSurfaces": 2,
+      "depthPolicies": 0,
+      "sourceUsesSceneLayout": false,
+      "sourceRegistersInstances": false,
+      "directLiteralPlacementLines": 3,
+      "directLiteralPlacementOccurrences": 3,
+      "inheritedSharedPlacementOccurrences": 0,
+      "important": true,
+      "objectLevelDataDriven": false,
+      "coverageStatus": "SURFACE-ONLY/UNDOCUMENTED-PLACEMENT",
+      "examples": [
+        {
+          "line": 43,
+          "occurrences": 1,
+          "snippet": "this.add.rectangle(ROOM.width / 2, ROOM.height / 2, ROOM.width, ROOM.height, 0x103146);"
+        },
+        {
+          "line": 45,
+          "occurrences": 1,
+          "snippet": "art.fillStyle(0x2b9eb8, 1); art.fillRect(0, 0, ROOM.width, ROOM.height);"
+        },
+        {
+          "line": 46,
+          "occurrences": 1,
+          "snippet": "art.lineStyle(3, 0xb7edf0, 0.35); for (let y = 28; y < ROOM.height; y += 44) for (let x = -20; x < ROOM.width; x += 74) art.strokeEllipse(x + ((y / 44) % 2) * 30, y, 64, 18);"
+        }
+      ]
+    },
+    {
+      "sceneId": "PlaygroundPowerwashScene",
+      "category": "cleanup-minigame",
+      "file": "src/scenes/PlaygroundPowerwashScene.js",
+      "layoutId": "layout.scene.playground-powerwash",
+      "layoutKind": "legacy-boundary",
+      "objectLevelInstances": 0,
+      "stableSurfaces": 2,
+      "depthPolicies": 0,
+      "sourceUsesSceneLayout": false,
+      "sourceRegistersInstances": false,
+      "directLiteralPlacementLines": 6,
+      "directLiteralPlacementOccurrences": 9,
+      "inheritedSharedPlacementOccurrences": 0,
+      "important": true,
+      "objectLevelDataDriven": false,
+      "coverageStatus": "SURFACE-ONLY/UNDOCUMENTED-PLACEMENT",
+      "examples": [
+        {
+          "line": 61,
+          "occurrences": 1,
+          "snippet": "this.add.rectangle(ROOM.width / 2, ROOM.height / 2, ROOM.width, ROOM.height, 0x07142b);"
+        },
+        {
+          "line": 63,
+          "occurrences": 1,
+          "snippet": "art.fillStyle(0x739040, 1); art.fillRect(0, 0, ROOM.width, ROOM.height);"
+        },
+        {
+          "line": 64,
+          "occurrences": 1,
+          "snippet": "art.fillStyle(0x8ca64b, 0.75); for (let x = 0; x < ROOM.width; x += 42) for (let y = 0; y < ROOM.height; y += 38) art.fillRect(x + ((y / 38) % 2) * 10, y, 5, 3);"
+        },
+        {
+          "line": 65,
+          "occurrences": 2,
+          "snippet": "art.fillStyle(0x102745, 0.96); art.fillRect(0, 0, ROOM.width, 56); art.fillRect(0, ROOM.height - 64, ROOM.width, 64);"
+        },
+        {
+          "line": 66,
+          "occurrences": 3,
+          "snippet": "this.add.text(640, 28, \"PLAYGROUND POWER WASH · WILLOW COMMONS\", { color: \"#fff1bc\", fontFamily: \"ui-monospace, monospace\", fontSize: \"18px\", fontStyle: \"bold\", stroke: \"#020611\", strokeThickness: 5 }).setOrigin(0.5).setDepth(4);"
+        },
+        {
+          "line": 243,
+          "occurrences": 1,
+          "snippet": "context.fillStyle = \"#07142b\"; context.fillRect(0, 0, width, height);"
+        }
+      ]
+    },
+    {
+      "sceneId": "FishingScene",
+      "category": "action-minigame",
+      "file": "src/scenes/FishingScene.js",
+      "layoutId": "layout.scene.fishing",
+      "layoutKind": "object-layout",
+      "objectLevelInstances": 12,
+      "stableSurfaces": 2,
+      "depthPolicies": 0,
+      "sourceUsesSceneLayout": true,
+      "sourceRegistersInstances": true,
+      "directLiteralPlacementLines": 30,
+      "directLiteralPlacementOccurrences": 38,
+      "inheritedSharedPlacementOccurrences": 0,
+      "important": true,
+      "objectLevelDataDriven": true,
+      "coverageStatus": "PARTIAL-PILOT",
+      "examples": [
+        {
+          "line": 94,
+          "occurrences": 1,
+          "snippet": "this.add.rectangle(room.width / 2, room.height / 2, room.width, room.height, magnet ? 0x173e48 : 0x4f8450);"
+        },
+        {
+          "line": 112,
+          "occurrences": 1,
+          "snippet": "art.fillRect(0, 0, room.width, this.sceneLayout.presentation.topBandHeight);"
+        },
+        {
+          "line": 114,
+          "occurrences": 1,
+          "snippet": "art.fillRoundedRect(waterArea.x, waterArea.y, waterArea.width, waterArea.height, 26);"
+        },
+        {
+          "line": 116,
+          "occurrences": 1,
+          "snippet": "art.strokeRoundedRect(waterArea.x, waterArea.y, waterArea.width, waterArea.height, 26);"
+        },
+        {
+          "line": 120,
+          "occurrences": 1,
+          "snippet": "art.lineBetween(wave.startX + (row % 2) * wave.alternateOffsetX, wave.startY + row * wave.rowGap, wave.endX - (row % 3) * wave.thirdOffsetX, wave.startY + row * wave.rowGap);"
+        },
+        {
+          "line": 131,
+          "occurrences": 1,
+          "snippet": "const label = this.add.text(labelLayout.visual.position.x, labelLayout.visual.position.y, this.spot.waterBody, { color: \"#fff6d8\", fontFamily: \"system-ui\", fontSize: \"15px\", fontStyle: \"bold\" })"
+        },
+        {
+          "line": 137,
+          "occurrences": 2,
+          "snippet": "this.aim = this.registerLayoutVisual(FISHING_LAYOUT_INSTANCE_IDS.AIM, this.add.circle(this.target.x, this.target.y, 24, 0xfff0a0, 0.18), { slotId: \"outer\", captureLocalOffset: true }).setStrokeStyle(4, 0xfff0a0, 0.92).setDepth(aimLayout.visual.depth);"
+        },
+        {
+          "line": 138,
+          "occurrences": 2,
+          "snippet": "this.aimInner = this.registerLayoutVisual(FISHING_LAYOUT_INSTANCE_IDS.AIM, this.add.circle(this.target.x, this.target.y, 5, 0xfff0a0, 1), { slotId: \"inner\", captureLocalOffset: true, localDepthOffset: 1 }).setDepth(aimLayout.visual.depth + 1);"
+        }
+      ]
+    }
+  ],
+  "sharedRenderers": {
+    "restaurantPresentation": {
+      "file": "src/ui/RestaurantPresentation.js",
+      "sourceUsesSceneLayout": false,
+      "sourceRegistersInstances": false,
+      "literalPlacementLines": 169,
+      "literalPlacementOccurrences": 276,
+      "examples": [
+        {
+          "line": 42,
+          "occurrences": 1,
+          "snippet": "}).setDepth(4);"
+        },
+        {
+          "line": 49,
+          "occurrences": 1,
+          "snippet": "graphics.fillStyle(INK, 0.22); graphics.fillRect(x - 17 * scale, y + 23 * scale, 38 * scale, 10 * scale);"
+        },
+        {
+          "line": 50,
+          "occurrences": 1,
+          "snippet": "graphics.fillStyle(shirt, active ? 1 : 0.35); graphics.fillRoundedRect(x - 16 * scale, y + 6 * scale, 32 * scale, 28 * scale, 4 * scale);"
+        },
+        {
+          "line": 51,
+          "occurrences": 2,
+          "snippet": "graphics.lineStyle(6 * scale, INK, active ? 1 : 0.35); graphics.lineBetween(x - 14 * scale, y + 13 * scale, x - 27 * scale, y + 27 * scale); graphics.lineBetween(x + 14 * scale, y + 13 * scale, x + 27 * scale, y + 27 * scale);"
+        },
+        {
+          "line": 52,
+          "occurrences": 2,
+          "snippet": "graphics.fillStyle(skin, active ? 1 : 0.35); graphics.fillCircle(x - 29 * scale, y + 29 * scale, 5 * scale); graphics.fillCircle(x + 29 * scale, y + 29 * scale, 5 * scale);"
+        },
+        {
+          "line": 53,
+          "occurrences": 2,
+          "snippet": "graphics.fillStyle(INK, active ? 1 : 0.35); graphics.fillRect(x - 14 * scale, y + 32 * scale, 11 * scale, 17 * scale); graphics.fillRect(x + 3 * scale, y + 32 * scale, 11 * scale, 17 * scale);"
+        },
+        {
+          "line": 54,
+          "occurrences": 2,
+          "snippet": "graphics.fillStyle(0x34303b, active ? 1 : 0.35); graphics.fillRect(x - 17 * scale, y + 47 * scale, 14 * scale, 6 * scale); graphics.fillRect(x + 3 * scale, y + 47 * scale, 14 * scale, 6 * scale);"
+        },
+        {
+          "line": 55,
+          "occurrences": 1,
+          "snippet": "graphics.fillStyle(skin, active ? 1 : 0.35); graphics.fillRect(x - 12 * scale, y - 18 * scale, 24 * scale, 25 * scale);"
+        }
+      ]
+    }
+  },
+  "globalUi": {
+    "layoutId": "layout.global.ui-surfaces",
+    "stableSurfaces": 13,
+    "objectLevelInstances": 0,
+    "cssPlacementLines": 2040,
+    "examples": [
+      "    top: 7px;",
+      "    min-height: 44px !important;",
+      "    right: 7px;",
+      "    min-width: 84px;",
+      "    padding: 0 10px !important;",
+      "    left: 7px;",
+      "    width: 44px;",
+      "    padding: 0 !important;",
+      "  body[data-game-scene=\"HouseRescueScene\"] #house-rescue-qa-complete { left: 57px; padding: 0 8px; color: #fff !important; background: rgb(105 72 127 / 94%) !important; }",
+      "    top: 7px;",
+      "    left: 50%;",
+      "    min-width: 82px;"
+    ]
+  }
+}

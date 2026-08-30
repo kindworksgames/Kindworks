@@ -82,6 +82,53 @@ test("a timed fish catch enters inventory exactly once and updates streaks", () 
   assert.equal(repository.load().state.inventory.consumables["river-minnows"], 1);
 });
 
+test("full fish stacks are removed before catch selection and never waste a cast", () => {
+  const mixed = createFreshGameState({ now: 0 });
+  mixed.inventory.consumables["river-minnows"] = FISHING_CONFIG.maxInventoryPerFish;
+  const { gameState: mixedState, fishing: mixedFishing } = runtime({ state: mixed, random: () => 0 });
+  beginAtHiddenZone(mixedFishing);
+  const caught = mixedFishing.reelFish({ quality: 0 });
+  assert.equal(caught.ok, true);
+  assert.equal(caught.itemId, "river-trout");
+  assert.equal(mixedState.getSnapshot().inventory.consumables["river-minnows"], FISHING_CONFIG.maxInventoryPerFish);
+  assert.equal(mixedState.getSnapshot().inventory.consumables["river-trout"], 1);
+
+  const full = createFreshGameState({ now: 0 });
+  full.inventory.consumables["river-minnows"] = FISHING_CONFIG.maxInventoryPerFish;
+  full.inventory.consumables["river-trout"] = FISHING_CONFIG.maxInventoryPerFish;
+  const { gameState: fullState, fishing: fullFishing } = runtime({ state: full });
+  const begun = fullFishing.begin("fish", "fishing-commons");
+  const blocked = fullFishing.cast(begun.session.hiddenZones[0]);
+  assert.equal(blocked.code, "storage-full");
+  assert.equal(fullState.getSnapshot().fishing.castsToday, 0);
+  assert.equal(fullState.getSnapshot().fishing.totalCasts, 0);
+});
+
+test("ornamental fish remain catchable for safe release without a tank but respect a placed tank species cap", () => {
+  const noTank = createFreshGameState({ now: 0 });
+  for (const spot of FISHING_SPOTS) {
+    for (const entry of spot.catchTable) {
+      if (!ORNAMENTAL_FISH_IDS.includes(entry.itemId)) noTank.inventory.consumables[entry.itemId] = FISHING_CONFIG.maxInventoryPerFish;
+    }
+  }
+  const { fishing: releaseFishing } = runtime({ state: noTank });
+  const released = beginAtHiddenZone(releaseFishing, "fish", "fishing-reedbank");
+  assert.equal(released.ok, true);
+  assert.equal(releaseFishing.reelFish({ forcedItemId: "reedbank-koi" }).disposition, "released-no-tank");
+
+  const withTank = createFreshGameState({ now: 0 });
+  withTank.homeInteriors.placements.push({
+    id: "home-placement-fish-tank-test", itemId: "ornamental-fish-tank", rx: 0.78, ry: 0.72,
+    rotation: 0, placedAt: 1,
+  });
+  withTank.fishing.aquariumByItem["reedbank-koi"] = FISHING_CONFIG.maxAquariumPerSpecies;
+  const { fishing: tankFishing } = runtime({ state: withTank, random: () => 0.999999 });
+  beginAtHiddenZone(tankFishing, "fish", "fishing-reedbank");
+  const result = tankFishing.reelFish({ forcedItemId: "reedbank-koi" });
+  assert.equal(result.ok, true);
+  assert.notEqual(result.itemId, "reedbank-koi");
+});
+
 test("ornamental Reedbank catches are recorded and safely released when no home tank is placed", () => {
   const { gameState, fishing } = runtime();
   beginAtHiddenZone(fishing, "fish", "fishing-reedbank");

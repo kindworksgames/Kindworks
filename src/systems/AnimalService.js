@@ -11,6 +11,7 @@ import {
   adoptionChance,
   adoptionRulesFor,
   animalEnvironmentBonus,
+  activeRareVisitor,
   missedRareEncounter,
   rareVisitState,
   speciesFor,
@@ -55,6 +56,8 @@ export class AnimalService {
     this.random = random;
     this.inventory = new InventoryService();
     this.listeners = new Set();
+    this.presentationCache = null;
+    this.unsubscribePresentationCache = this.gameState.subscribe(() => { this.presentationCache = null; });
   }
 
   subscribe(listener) {
@@ -69,7 +72,7 @@ export class AnimalService {
   }
 
   getSnapshot() {
-    return structuredClone(this.gameState.getSnapshot().animals);
+    return this.gameState.getDomainSnapshot("animals");
   }
 
   getResidents() {
@@ -82,8 +85,10 @@ export class AnimalService {
   }
 
   getWorldPresentations() {
-    const state = this.gameState.getSnapshot();
-    return worldAnimalPresentations(state.animals, state.world, state);
+    if (this.presentationCache) return this.presentationCache;
+    const state = this.gameState.getDomainsSnapshot("animals", "world", "environment", "townPlacement");
+    this.presentationCache = worldAnimalPresentations(state.animals, state.world, state);
+    return this.presentationCache;
   }
 
   resolveCareInto(state, { offline = false } = {}) {
@@ -171,29 +176,26 @@ export class AnimalService {
 
   refreshRareVisits({ persist = true } = {}) {
     const current = this.gameState.getSnapshot();
-    const pending = WILDLIFE_DEFINITIONS.map((definition) => {
-      const resident = current.animals.residents[definition.id];
-      const config = RARE_ANIMAL_ENCOUNTERS[definition.species];
-      const visit = rareVisitState(definition,current.world,resident);
-      if (!config || resident.adopted || !visit.active) return null;
-      const key = `${visit.source}:${visit.startAbsoluteMinute}`;
-      return resident.lastRareNoticeKey === key ? null : { definition, config, visit, key };
-    }).filter(Boolean);
-    if (!pending.length) return { ok: true, code: "rare-visits-current", notices: [] };
+    const pending = activeRareVisitor(current.animals,current.world,current.environment);
+    if (!pending) return { ok: true, code: "rare-visits-current", notices: [] };
+    const { definition, visit } = pending;
+    const resident = current.animals.residents[definition.id];
+    const config = RARE_ANIMAL_ENCOUNTERS[definition.species];
+    const key = `${visit.source}:${visit.startAbsoluteMinute}`;
+    if (resident.lastRareNoticeKey === key) return { ok: true, code: "rare-visits-current", notices: [] };
     return this.commit((state) => {
       const notices = [];
-      for (const pendingVisit of pending) {
-        const resident = state.animals.residents[pendingVisit.definition.id];
-        if (!resident || resident.adopted || resident.lastRareNoticeKey === pendingVisit.key) continue;
-        resident.lastRareNoticeKey = pendingVisit.key;
-        resident.rareVisitCount += 1;
+      const nextResident = state.animals.residents[definition.id];
+      if (nextResident && !nextResident.adopted && nextResident.lastRareNoticeKey !== key) {
+        nextResident.lastRareNoticeKey = key;
+        nextResident.rareVisitCount += 1;
         state.animals.eventSerial += 1;
         notices.push({
-          animalId: pendingVisit.definition.id,
-          species: pendingVisit.definition.species,
-          message: pendingVisit.config.arrivalMessage,
-          source: pendingVisit.visit.source,
-          key: pendingVisit.key,
+          animalId: definition.id,
+          species: definition.species,
+          message: config.arrivalMessage,
+          source: visit.source,
+          key,
         });
       }
       return { ok: true, code: notices.length ? "rare-animal-arrived" : "rare-visits-current", notices };

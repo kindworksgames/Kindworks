@@ -1,10 +1,12 @@
 import Phaser from "phaser";
 import { npcActivityVisual } from "../data/legacyVisualStates.js";
 import { setSpriteAiLabelHint } from "../plugins/SpriteAiLabelPlugin.js";
+import { resolveTownSceneDepth, TOWN_DEPTH_POLICY_IDS } from "../visual/layouts/sceneLayoutCatalog.js";
+import { isWithinCameraMargin } from "../visual/renderers/VisualViewportCulling.js";
 
 export class NpcCharacter extends Phaser.GameObjects.Container {
-  constructor(scene, resident) {
-    super(scene, resident.x, resident.y);
+  constructor(scene, resident, presentationPosition = null) {
+    super(scene, presentationPosition?.x ?? resident.x, presentationPosition?.y ?? resident.y);
     this.residentId = resident.id;
     setSpriteAiLabelHint(this, { id: `character.npc.${resident.id}`, label: `${resident.name} — ${resident.role}`, kind: "character-sprite" });
     this.walkPhase = (Number(resident.id.slice(-2)) || 1) * 0.73;
@@ -38,13 +40,22 @@ export class NpcCharacter extends Phaser.GameObjects.Container {
     this.on("pointerover", () => { this.hovered = true; this.label.setVisible(true); });
     this.on("pointerout", () => { this.hovered = false; this.label.setVisible(false); });
     scene.add.existing(this);
-    this.applyResident(resident, 0, false);
+    this.applyResident(resident, 0, false, presentationPosition);
   }
 
-  applyResident(resident, deltaMilliseconds, playerNearby) {
-    this.setPosition(resident.x, resident.y);
-    this.setVisible(resident.visible);
-    this.setDepth(185 + resident.y / 10);
+  applyResident(resident, deltaMilliseconds, playerNearby, presentationPosition = null) {
+    const position = presentationPosition || resident;
+    this.setPosition(position.x, position.y);
+    this.setDepth(resolveTownSceneDepth(TOWN_DEPTH_POLICY_IDS.NPC, position.y));
+    const view = this.scene?.cameras?.main?.worldView;
+    const insideView = isWithinCameraMargin(position, view);
+    const presentationVisible = Boolean(resident.visible && insideView);
+    this.setVisible(presentationVisible);
+    if (!presentationVisible) {
+      this.label.setVisible(false);
+      this.reaction.setVisible(false);
+      return;
+    }
     this.label.setVisible(resident.visible && (this.hovered || playerNearby));
     this.drawAppearance(resident);
     const walking = resident.phase === "commuting" || (resident.phase === "controlled" && this.controlMoving);
@@ -70,12 +81,15 @@ export class NpcCharacter extends Phaser.GameObjects.Container {
     this.accessory.scaleX = this.scaleX;
     this.carry.scaleX = this.scaleX;
     const carryIcons = { cup: "🥤", wrapper: "🍬", bottle: "🧴", bag: "🛍️", paper: "📰" };
-    this.carry.setText(resident.carryItem ? carryIcons[resident.carryItem] || "📦" : activityVisual.prop);
+    const carryText = resident.carryItem ? carryIcons[resident.carryItem] || "📦" : activityVisual.prop;
+    if (this.carry.text !== carryText) this.carry.setText(carryText);
     this.carry.setPosition(working ? 23 : 17, working ? 8 : seated ? 10 : 4);
     setSpriteAiLabelHint(this.carry, { id: activityVisual.assetId, label: `${resident.name} ${activityVisual.id} activity prop`, kind: "activity-prop" });
-    this.reaction.setText(resident.greetingIcon || (resident.actionState === "HELPING" ? resident.reactionIcon : ""));
+    const reactionText = resident.greetingIcon || (resident.actionState === "HELPING" ? resident.reactionIcon : "");
+    if (this.reaction.text !== reactionText) this.reaction.setText(reactionText);
     this.reaction.setVisible(resident.visible && Boolean(this.reaction.text));
-    this.label.setText(`${resident.name}\n${resident.activity || resident.role}`);
+    const labelText = `${resident.name}\n${resident.activity || resident.role}`;
+    if (this.label.text !== labelText) this.label.setText(labelText);
   }
 
   drawAppearance(resident) {

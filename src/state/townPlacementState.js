@@ -76,7 +76,10 @@ export function sanitizeTownPlacementState(raw, { inventory = null, now = Date.n
       returnedToInventory[item.id] = (returnedToInventory[item.id] || 0) + 1;
       continue;
     }
-    const placement = validateTownPlacement(item.id, source.x, source.y, { objects: accepted });
+    // Previously valid saved placements are grandfathered on resident walking
+    // corridors. Runtime navigation detours around them, while new placements
+    // are prevented from creating another obstruction.
+    const placement = validateTownPlacement(item.id, source.x, source.y, { objects: accepted, allowNavigationCorridor: true });
     if (!placement.ok) {
       returnedToInventory[item.id] = (returnedToInventory[item.id] || 0) + 1;
       continue;
@@ -127,7 +130,7 @@ export function validateTownPlacementState(state) {
       continue;
     }
     if (object.type !== item.placeableType || !Number.isFinite(object.rotation) || normalizeTownRotation(object.rotation) !== object.rotation) errors.push(`${object.id} has invalid type or rotation data.`);
-    const placement = validateTownPlacement(item.id, object.x, object.y, { objects: accepted });
+    const placement = validateTownPlacement(item.id, object.x, object.y, { objects: accepted, allowNavigationCorridor: true });
     if (!placement.ok) errors.push(`${object.id} is not in a valid town position (${placement.code}).`);
     const expectedHooks = placementBehaviorHooks(item, object);
     if (JSON.stringify(object.hooks) !== JSON.stringify(expectedHooks)) errors.push(`${object.id} has stale behaviour hooks.`);

@@ -1,0 +1,8 @@
+{
+  "description": "Assigns a production asset to a category that conflicts with its registered Phase 10 family.",
+  "assetId": "scene.fishing.reedbank.background",
+  "operation": "set",
+  "path": "categoryContractId",
+  "value": "category.ui",
+  "expectedCodes": ["family-category-contract-mismatch"]
+}

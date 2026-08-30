@@ -157,7 +157,7 @@ export class RiverClearoutScene extends Phaser.Scene {
 
   setSceneInterface() {
     document.body.dataset.gameScene = this.scene.key;
-    const badge = document.querySelector(".milestone-badge"); if (badge) badge.textContent = "RIVER CLEAR-OUT · MILESTONE 15";
+    const badge = document.querySelector(".milestone-badge"); if (badge) badge.textContent = "RIVER CLEAR-OUT";
     setText("#location-status", "River Clear-Out");
     setText("#control-hint", "Swipe left/right/down · tap or swipe up to rotate · long down drops · portrait play");
   }
@@ -282,6 +282,7 @@ export class RiverClearoutScene extends Phaser.Scene {
   }
 
   updateDomState() {
+    if (!import.meta.env.DEV) return;
     const game = document.querySelector("#game"); if (!game) return;
     const session = this.river.getActiveSession(); const diagnostics = this.river.getDiagnostics();
     game.dataset.scene = this.scene.key; game.dataset.riverLevel = String(session?.level.id || diagnostics.nextLevel);

@@ -187,6 +187,7 @@ export class SpriteAiInventory {
   }
 
   publishDomCoverage(documentRef) {
+    if (!import.meta.env.DEV) return;
     const document = documentRef?.body ? documentRef : documentRef?.ownerDocument;
     if (!document?.body) return;
     const audit = this.auditDocument(document);

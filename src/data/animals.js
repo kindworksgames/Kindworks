@@ -1,6 +1,7 @@
 import { absoluteWorldMinute } from "./farming.js";
 import { RIVER_SECTIONS } from "./livingEnvironment.js";
-import { HOUSES, RIVER_PATH, SHOPS, WORLD } from "./town.js";
+import { RIVER_PATH, WORLD } from "./town.js";
+import { TOWN_LOGICAL_GEOMETRY } from "./townGeometry.js";
 
 export const ANIMAL_STATE_SCHEMA_VERSION = 2;
 
@@ -23,6 +24,8 @@ export const SOUTH_MEADOW = Object.freeze({
 export const WILDLIFE_ROTATION = Object.freeze({ baseVisible: 3, maxVisible: 4, slotDurationMinutes: 240, slotStaggerMinutes: 80, transitionSeconds: 0.7 });
 export const ANIMAL_RELOCATION_CONFIG = Object.freeze({ triggerDistance: 520, fadeOutSeconds: 0.22, fadeInSeconds: 0.28 });
 export const ANIMAL_VISUAL_FIDELITY_VERSION = "v44-reference-master";
+// Deprecated compatibility exports. Production rendering resolves the semantic
+// character.animal.reference-sheet entry through VisualRegistry.
 export const ANIMAL_REFERENCE_TEXTURE_KEY = "animal-reference-master-v44";
 export const ANIMAL_REFERENCE_SHEET_PATH = "/assets/animals/reference-master-v44.png";
 export const ANIMAL_REFERENCE_FRAMES = Object.freeze({
@@ -206,12 +209,21 @@ function nearestRiverPoint(x, y) {
   return best;
 }
 
-const staticAnimalObstacles = [...HOUSES,...SHOPS];
+const staticAnimalObstacles = TOWN_LOGICAL_GEOMETRY.navigationObstacles;
 
 function groundPointBlocked(x, y) {
   if (x < 18 || x > WORLD.width - 18 || y < 18 || y > WORLD.height - 18) return true;
   if (nearestRiverPoint(x,y).distance < 96) return true;
   return staticAnimalObstacles.some(obstacle => x >= obstacle.x - 18 && x <= obstacle.x + obstacle.width + 18 && y >= obstacle.y - 18 && y <= obstacle.y + obstacle.height + 18);
+}
+
+export function groundAnimalSegmentBlocked(from, to, spacing = 4) {
+  const count = Math.max(1, Math.ceil(Math.hypot(to.x - from.x, to.y - from.y) / spacing));
+  for (let index = 0; index <= count; index += 1) {
+    const amount = index / count;
+    if (groundPointBlocked(from.x + (to.x - from.x) * amount, from.y + (to.y - from.y) * amount)) return true;
+  }
+  return false;
 }
 
 function safeGroundPoint(id, x, y, maxSearch = 180) {
@@ -225,7 +237,27 @@ function safeGroundPoint(id, x, y, maxSearch = 180) {
       if (!groundPointBlocked(candidate.x,candidate.y)) return candidate;
     }
   }
-  return {x:clamp(x,18,WORLD.width - 18),y:clamp(y,18,WORLD.height - 18)};
+  for (let gridY = 18; gridY <= WORLD.height - 18; gridY += 36) {
+    for (let gridX = 18; gridX <= WORLD.width - 18; gridX += 36) {
+      if (!groundPointBlocked(gridX, gridY)) return { x: gridX, y: gridY };
+    }
+  }
+  throw new RangeError(`No safe logical ground point exists for ${id}.`);
+}
+
+function safeGroundRoutePoint(id, initial, ideal, radius) {
+  const seed = [...id].reduce((sum, character) => sum + character.charCodeAt(0), 0);
+  const candidates = [safeGroundPoint(id, ideal.x, ideal.y, Math.min(180, radius + 70))];
+  for (let ring = radius; ring >= 18; ring -= 18) {
+    for (let step = 0; step < 24; step += 1) {
+      const angle = (seed % 360) * Math.PI / 180 + step * Math.PI * 2 / 24;
+      candidates.push({
+        x: clamp(initial.x + Math.cos(angle) * ring, 18, WORLD.width - 18),
+        y: clamp(initial.y + Math.sin(angle) * ring * .72, 18, WORLD.height - 18),
+      });
+    }
+  }
+  return candidates.find((candidate) => !groundPointBlocked(candidate.x, candidate.y) && !groundAnimalSegmentBlocked(initial, candidate)) || initial;
 }
 
 function territoryRoute(speciesId, anchor, index) {
@@ -244,7 +276,7 @@ function territoryRoute(speciesId, anchor, index) {
     const angle = (seed % 360) * Math.PI / 180 + step * Math.PI * 2 / 6;
     const distance = radius * (.48 + ((seed + step * 19) % 28) / 100);
     const ideal = {x:clamp(initial.x + Math.cos(angle) * distance,18,WORLD.width - 18),y:clamp(initial.y + Math.sin(angle) * distance * .72,18,WORLD.height - 18)};
-    const candidate = AERIAL_SPECIES.has(speciesId) ? ideal : safeGroundPoint(`${speciesId}-${index}`,ideal.x,ideal.y,Math.min(90,radius * .55));
+    const candidate = AERIAL_SPECIES.has(speciesId) ? ideal : safeGroundRoutePoint(`${speciesId}-${index}-${step}`, initial, ideal, radius);
     points.push([candidate.x,candidate.y]);
     if (!AERIAL_SPECIES.has(speciesId)) points.push([initial.x,initial.y]);
   }
@@ -484,7 +516,10 @@ function rareEncounterPosition(definition, visit, absoluteMinute, speed, offset 
   if (!config) return positionOnRoute(definition.route,absoluteMinute,speed,offset,definition);
   const forestPoint = WATER_SPECIES.has(definition.species) ? nearestRiverPoint(config.forest[0],config.forest[1]) : {x:config.forest[0],y:config.forest[1]};
   const forest = {x:Math.round(forestPoint.x),y:Math.round(forestPoint.y)};
-  const town = definition.habitatAnchor;
+  // Rare-arrival endpoints are protected gameplay locations, not visual route
+  // anchors. Keep the authored encounter contract exact even when a normal
+  // habitat route is adjusted around logical obstacles.
+  const town = { x: config.town[0], y: config.town[1] };
   if (!visit.active) return forest;
   if (visit.phase === "entering") {
     const amount = clamp(visit.elapsed / config.entryMinutes,0,1);
@@ -495,6 +530,24 @@ function rareEncounterPosition(definition, visit, absoluteMinute, speed, offset 
     return {x:Math.round((town.x + (forest.x - town.x) * amount) * 10) / 10,y:Math.round((town.y + (forest.y - town.y) * amount) * 10) / 10};
   }
   return positionOnRoute(definition.route,absoluteMinute,speed,offset,definition);
+}
+
+export function activeRareVisitor(animalState, world, environmentState = null) {
+  const residents = animalState?.residents || {};
+  return WILDLIFE_DEFINITIONS
+    .filter(definition => speciesFor(definition)?.rare && !residents[definition.id]?.adopted)
+    .map(definition => ({
+      definition,
+      visit: rareVisitState(definition,world,residents[definition.id]),
+    }))
+    .filter(({definition,visit}) => visit.active && animalScheduleVisible(definition,world,residents[definition.id],environmentState))
+    .sort((left,right) => {
+      const leftReplay = left.visit.source === "offline-replay" ? 0 : 1;
+      const rightReplay = right.visit.source === "offline-replay" ? 0 : 1;
+      return leftReplay - rightReplay
+        || left.visit.startAbsoluteMinute - right.visit.startAbsoluteMinute
+        || left.definition.id.localeCompare(right.definition.id);
+    })[0] || null;
 }
 
 export function worldAnimalPresentations(animalState, world, context = {}) {
@@ -518,15 +571,8 @@ export function worldAnimalPresentations(animalState, world, context = {}) {
     usedSpecies.add(chosen.species);
   }
 
-  const activeRareVisitors = WILDLIFE_DEFINITIONS
-    .filter(candidate => speciesFor(candidate)?.rare)
-    .sort((left,right) => Number(WATER_SPECIES.has(right.species)) - Number(WATER_SPECIES.has(left.species)) || left.id.localeCompare(right.id));
-  for (const definition of activeRareVisitors) {
-    const resident = residents[definition.id];
-    if (!resident?.adopted && animalScheduleVisible(definition,world,resident,environmentState) && roster.length < WILDLIFE_ROTATION.maxVisible) {
-      roster.push(definition);
-    }
-  }
+  const rareVisitor = activeRareVisitor(animalState,world,environmentState);
+  if (rareVisitor && roster.length < WILDLIFE_ROTATION.maxVisible) roster.push(rareVisitor.definition);
 
   const visibleIds = new Set([...roster,...adopted].map(definition => definition.id));
   return ANIMAL_DEFINITIONS
@@ -563,6 +609,7 @@ export function worldAnimalPresentations(animalState, world, context = {}) {
         resident,
         state: resident,
         visible,
+        interactionReady: visible && !following,
         location: following ? "following" : resident?.adopted ? SOUTH_MEADOW.id : "wild",
         position,
         environment,

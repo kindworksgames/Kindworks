@@ -1,0 +1,8 @@
+{
+  "description": "Duplicates a visual variant token.",
+  "assetId": "scene.fishing.reedbank.background",
+  "operation": "set",
+  "path": "variants",
+  "value": ["default", "default"],
+  "expectedCodes": ["duplicate-contract-token"]
+}

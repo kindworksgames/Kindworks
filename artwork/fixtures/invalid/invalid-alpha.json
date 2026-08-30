@@ -1,0 +1,8 @@
+{
+  "description": "Requires alpha from an opaque WebP.",
+  "assetId": "scene.fishing.reedbank.background",
+  "operation": "set",
+  "path": "output.alpha",
+  "value": true,
+  "expectedCodes": ["alpha-mismatch"]
+}

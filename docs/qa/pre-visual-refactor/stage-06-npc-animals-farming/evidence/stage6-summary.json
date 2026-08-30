@@ -1,0 +1,69 @@
+{
+  "stage": 6,
+  "verdict": "SAFE TO CONTINUE WITH DOCUMENTED USER DECISIONS",
+  "branch": "phase-2-ui-simplification",
+  "startingCommit": "3387bcb48964c41edbdc26f4257d2990fcdaf8d5",
+  "protectedHtmlSha256": "0b85bd71385b83e7a13676f7593ce376245959fa4ebf1a6b9a0e6765297aa5a5",
+  "previousGate": "READY FOR NEXT QA STAGE",
+  "tests": {
+    "stage6Focused": { "passed": 146, "failed": 0 },
+    "stage6New": { "passed": 5, "failed": 0 },
+    "stage6Repair": { "passed": 3, "failed": 0 },
+    "fullSuite": { "passed": 629, "failed": 0, "skipped": 0 },
+    "productionBuild": { "status": "PASS", "modulesTransformed": 179 }
+  },
+  "inventory": {
+    "npcResidents": 35,
+    "npcHomes": 19,
+    "navigationNodes": 133,
+    "navigationLinks": 138,
+    "relationshipPairs": 67,
+    "npcNarratives": 35,
+    "narrativeStagesPerNpc": 4,
+    "animalSpecies": 37,
+    "animalIdentities": 56,
+    "wildlifeIdentities": 45,
+    "pawsCompanions": 11,
+    "rareSpecies": 5,
+    "allotmentBeds": 6,
+    "cropTypes": 3,
+    "orchardTreeCapacity": 24
+  },
+  "deterministicProbes": {
+    "npcStress": {
+      "days": 7,
+      "intervalMinutes": 1,
+      "snapshots": 10080,
+      "exactPairSamples": 75865,
+      "nearPairSamples": 76993,
+      "maximumNearPairsInOneSnapshot": 38
+    },
+    "regularWildlife": {
+      "days": 180,
+      "intervalMinutes": 30,
+      "regularSpeciesObserved": 27,
+      "maximumVisibleWildlife": 4,
+      "catObservations": 4300,
+      "turtleObservations": 202
+    },
+    "rareSchedule": {
+      "days": 840,
+      "intervalMinutes": 5,
+      "maximumConcurrentRareVisitors": 3
+    }
+  },
+  "liveBrowser": {
+    "viewport": "1280x720",
+    "route": "?qa=animal-fidelity",
+    "isolatedSave": true,
+    "wildlifeTrust": "Nettle 15% -> 22%; 22% retained after reload",
+    "narrative": "Maya conversation evidence 0/2 -> 1/2; 1/2 retained after reload",
+    "farmingPurchase": "Carrot seeds 1 -> 2 and coins 100 -> 70; both retained after reload",
+    "npcSeparation": "Two adjacent separated resident targets opened Theo and Ella independently"
+  },
+  "findings": [
+    { "id": "S6-NPC-001", "severity": "P2", "status": "FIXED" },
+    { "id": "S6-ANIMAL-001", "severity": "P2", "status": "FIXED" },
+    { "id": "S6-UDR-001", "severity": "USER DECISION REQUIRED", "status": "OPEN" }
+  ]
+}

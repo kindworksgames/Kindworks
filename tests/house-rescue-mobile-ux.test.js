@@ -5,16 +5,22 @@ import { readFile } from "node:fs/promises";
 const root = new URL("../", import.meta.url);
 const readText = async (path) => readFile(new URL(path, root), "utf8");
 
-test("keeps House Rescue play and touch controls inside the landscape safe viewport", async () => {
-  const [markup, styles] = await Promise.all([readText("index.html"), readText("src/style.css")]);
+test("uses the full landscape room with contextual compact physical bins", async () => {
+  const [markup, styles, scene] = await Promise.all([readText("index.html"), readText("src/style.css"), readText("src/scenes/HouseRescueScene.js")]);
   assert.match(markup, /id="house-rescue-exit"[^>]*aria-label="Save House Rescue and exit safely"[^>]*>Exit<\/button>/);
-  assert.match(styles, /\.house-rescue-hud \{ position: fixed; inset: max\(4px, env\(safe-area-inset-top\)\)/);
-  assert.match(styles, /\.house-rescue-hud \{[^\n]*grid-template-rows: auto minmax\(0, 1fr\) auto/);
-  assert.match(styles, /\.house-rescue-sort-layout \{ grid-template-columns: minmax\(0, 1fr\) 136px; min-height: 0; height: 100%/);
-  assert.match(styles, /\.house-rescue-sort-floor, \.house-rescue-vacuum-floor \{ width: 100%; height: 100%; min-height: 0/);
+  for (const label of ["KW-HOUSE-RESCUE-BIN-ORGANIC", "KW-HOUSE-RESCUE-BIN-RECYCLING", "KW-HOUSE-RESCUE-BIN-GARBAGE"]) assert.ok(markup.includes(label), label);
+  assert.match(styles, /House Rescue full-room fidelity recovery/);
+  assert.match(styles, /body\[data-game-scene="HouseRescueScene"\] \.house-rescue-sort-floor,[\s\S]*?position: absolute !important;[\s\S]*?inset: 0 !important;/);
+  assert.match(styles, /\.house-rescue-bins\.is-open \{ pointer-events: auto; opacity: 1; transform: none; \}/);
+  assert.match(styles, /\.house-rescue-bins button \{[\s\S]*?width: 44px;[\s\S]*?min-height: 44px !important;/);
+  assert.match(styles, /data-house-rescue-bin="organic"\][\s\S]*?--bin-colour: #579b55/);
+  assert.match(styles, /data-house-rescue-bin="recycle"\][\s\S]*?--bin-colour: #438dcc/);
+  assert.match(styles, /data-house-rescue-bin="garbage"\][\s\S]*?--bin-colour: #555d5f/);
   assert.match(styles, /\.house-rescue-hud button, \.house-rescue-hud select \{ min-height: var\(--kw-touch-min\)/);
-  assert.match(styles, /@media \(max-height: 430px\)[\s\S]*\.house-rescue-item \{ width: var\(--kw-touch-min\); min-height: var\(--kw-touch-min\) !important; \}[\s\S]*\.house-rescue-item small \{ display: none; \}/);
-  assert.match(styles, /\.house-rescue-item\.compact-slot-1 \{ left: 10% !important; top: 36% !important; \}/);
+  assert.doesNotMatch(styles, /\.house-rescue-item\.compact-slot-1 \{ left:/);
+  assert.match(scene, /data-house-room-layout=/);
+  assert.match(scene, /KW-HOUSE-RESCUE-ZONE-/);
+  assert.match(scene, /this\.bins\?\.classList\.toggle\("is-open", Boolean\(this\.selectedItemId\)\)/);
   assert.match(styles, /body\[data-orientation-blocked="true"\] \.landscape-required \{[\s\S]*?transform: none;[\s\S]*?border: 0;/);
 });
 

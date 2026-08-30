@@ -1,13 +1,19 @@
 import { LAWN_PLOTS } from "./farming.js";
 import { ITEM_CATALOG, placeableFootprintFor } from "./items.js";
-import { NPC_NAVIGATION_NODES } from "./npcTownLife.js";
+import { NPC_NAVIGATION_LINKS, NPC_NAVIGATION_NODES } from "./npcTownLife.js";
 import { COLLISION_RECTS, HOUSES, LANDMARKS, RIVER_PATH, ROADS, SHOPS, WORLD } from "./town.js";
+import { TOWN_HOUSE_GEOMETRY, TOWN_SHOP_GEOMETRY } from "./townGeometry.js";
 
 export const TOWN_PLACEMENT_SCHEMA_VERSION = 1;
 export const TOWN_PLACEMENT_LIMIT = 500;
 export const TOWN_PLACEMENT_ROTATION_STEP = Math.PI / 2;
 export const PLACEABLE_ITEM_IDS = Object.freeze(Object.values(ITEM_CATALOG).filter((item) => item.category === "placeable").map((item) => item.id));
 export const RELEASED_PLACEABLE_ITEM_IDS = Object.freeze(Object.values(ITEM_CATALOG).filter((item) => item.category === "placeable" && !item.qaOnly && !item.subscriptionOnly).map((item) => item.id));
+export const NPC_NAVIGATION_CORRIDOR_CLEARANCE = 22;
+
+function clamp(value, minimum, maximum) {
+  return Math.max(minimum, Math.min(maximum, value));
+}
 
 const WATER_AREAS = Object.freeze([
   Object.freeze({ kind: "ellipse", x: 1430, y: 1075, radiusX: 205, radiusY: 135, label: "Willow Commons pond" }),
@@ -16,8 +22,8 @@ const WATER_AREAS = Object.freeze([
 ]);
 
 export const TOWN_ENTRANCES = Object.freeze([
-  ...HOUSES.map((house) => Object.freeze({ id: `${house.id}-entrance`, x: house.x + house.width / 2, y: house.y + house.height + 44, radius: 56 })),
-  ...SHOPS.map((shop, index) => Object.freeze({ id: `shop-${index + 1}-entrance`, x: shop.x + shop.width / 2, y: shop.y + shop.height + 34, radius: 58 })),
+  ...HOUSES.map((house) => TOWN_HOUSE_GEOMETRY[house.id].entrance),
+  ...SHOPS.map((shop) => TOWN_SHOP_GEOMETRY[shop.title].entrance),
 ]);
 
 export function normalizeTownRotation(value) {
@@ -33,6 +39,54 @@ function distanceToSegment(x, y, [ax, ay], [bx, by]) {
   if (!lengthSquared) return Math.hypot(x - ax, y - ay);
   const t = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / lengthSquared));
   return Math.hypot(x - (ax + dx * t), y - (ay + dy * t));
+}
+
+const navigationNodeById = new Map(NPC_NAVIGATION_NODES.map((node) => [node.id, node]));
+
+export function distanceToNpcNavigation(x, y) {
+  return NPC_NAVIGATION_LINKS.reduce((best, [fromId, toId]) => {
+    const from = navigationNodeById.get(fromId);
+    const to = navigationNodeById.get(toId);
+    if (!from || !to) return best;
+    return Math.min(best, distanceToSegment(x, y, [from.x, from.y], [to.x, to.y]));
+  }, Infinity);
+}
+
+export function npcNavigationEdgeBlockedByPlacements(from, to, objects = []) {
+  return (objects || []).some((object) => {
+    if (!object || !Number.isFinite(Number(object.x)) || !Number.isFinite(Number(object.y))) return false;
+    const item = ITEM_CATALOG[object.itemId];
+    const radius = Math.max(18, Number(object.hooks?.playerCollision?.radius) || (item ? placeableFootprintFor(item) : 18));
+    return distanceToSegment(Number(object.x), Number(object.y), [from.x, from.y], [to.x, to.y]) < radius + NPC_NAVIGATION_CORRIDOR_CLEARANCE;
+  });
+}
+
+export function npcNavigationDetour(from, to, objects = [], seed = "resident") {
+  const blockers = (objects || []).flatMap((object) => {
+    const item = ITEM_CATALOG[object?.itemId];
+    if (!object || !item || !Number.isFinite(Number(object.x)) || !Number.isFinite(Number(object.y))) return [];
+    const radius = Math.max(18, Number(object.hooks?.playerCollision?.radius) || placeableFootprintFor(item)) + NPC_NAVIGATION_CORRIDOR_CLEARANCE + 10;
+    const distance = distanceToSegment(Number(object.x), Number(object.y), [from.x, from.y], [to.x, to.y]);
+    return distance < radius ? [{ object, radius, distanceFromStart: Math.hypot(Number(object.x) - from.x, Number(object.y) - from.y) }] : [];
+  }).sort((left, right) => left.distanceFromStart - right.distanceFromStart);
+  const blocker = blockers[0];
+  if (!blocker) return Object.freeze([]);
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const length = Math.hypot(dx, dy) || 1;
+  const ux = dx / length;
+  const uy = dy / length;
+  const hash = [...String(seed)].reduce((value, character) => Math.imul(value ^ character.charCodeAt(0), 16777619), 2166136261) >>> 0;
+  const side = hash % 2 ? 1 : -1;
+  const px = -uy * side;
+  const py = ux * side;
+  const centreX = Number(blocker.object.x);
+  const centreY = Number(blocker.object.y);
+  const radius = blocker.radius;
+  return Object.freeze([
+    Object.freeze({ x: clamp(centreX - ux * radius + px * radius, 18, WORLD.width - 18), y: clamp(centreY - uy * radius + py * radius, 18, WORLD.height - 18) }),
+    Object.freeze({ x: clamp(centreX + ux * radius + px * radius, 18, WORLD.width - 18), y: clamp(centreY + uy * radius + py * radius, 18, WORLD.height - 18) }),
+  ]);
 }
 
 export function distanceToPolyline(x, y, polyline) {
@@ -81,7 +135,7 @@ export function placementBehaviorHooks(item, object = null) {
   };
 }
 
-export function validateTownPlacement(itemId, xValue, yValue, { objects = [], ignoreObjectId = null } = {}) {
+export function validateTownPlacement(itemId, xValue, yValue, { objects = [], ignoreObjectId = null, allowNavigationCorridor = false } = {}) {
   const item = ITEM_CATALOG[itemId];
   const x = Number(xValue);
   const y = Number(yValue);
@@ -97,11 +151,14 @@ export function validateTownPlacement(itemId, xValue, yValue, { objects = [], ig
   }
   const roadClearance = (item.placementRules?.minRoadClearance ?? 12) + Math.min(18, footprint * 0.2);
   if (distanceToRoads(x, y) < roadClearance) return { ok: false, code: "road", message: "Keep this item clear of the road.", footprint };
+  if (!allowNavigationCorridor && distanceToNpcNavigation(x, y) < footprint + NPC_NAVIGATION_CORRIDOR_CLEARANCE) {
+    return { ok: false, code: "navigation-corridor", message: "Keep resident walking routes clear.", footprint };
+  }
   for (const house of HOUSES) {
-    if (circleTouchesRect(x, y, footprint, house)) return { ok: false, code: "building", message: "A cottage occupies this space.", footprint };
+    if (circleTouchesRect(x, y, footprint, TOWN_HOUSE_GEOMETRY[house.id].collision)) return { ok: false, code: "building", message: "A cottage occupies this space.", footprint };
   }
   for (const shop of SHOPS) {
-    if (circleTouchesRect(x, y, footprint, shop)) return { ok: false, code: "building", message: "A business occupies this space.", footprint };
+    if (circleTouchesRect(x, y, footprint, TOWN_SHOP_GEOMETRY[shop.title].collision)) return { ok: false, code: "building", message: "A business occupies this space.", footprint };
   }
   if (TOWN_ENTRANCES.some((entrance) => Math.hypot(entrance.x - x, entrance.y - y) < entrance.radius + footprint)) {
     return { ok: false, code: "entrance", message: "Keep building entrances and their approaches clear.", footprint };

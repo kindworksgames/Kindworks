@@ -1,0 +1,8 @@
+{
+  "description": "Introduces an arbitrary unversioned contract field.",
+  "assetId": "scene.fishing.reedbank.background",
+  "operation": "set",
+  "path": "output.magicGeneratorHint",
+  "value": "unvalidated",
+  "expectedCodes": ["unknown-contract-field"]
+}

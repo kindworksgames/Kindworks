@@ -1,0 +1,77 @@
+{
+  "stage": 5,
+  "verdict": "READY FOR NEXT QA STAGE",
+  "baseline": {
+    "branch": "phase-2-ui-simplification",
+    "commit": "3387bcb48964c41edbdc26f4257d2990fcdaf8d5",
+    "protectedHtmlSha256": "0b85bd71385b83e7a13676f7593ce376245959fa4ebf1a6b9a0e6765297aa5a5",
+    "previousGate": "READY FOR NEXT QA STAGE"
+  },
+  "levels": {
+    "lawn": 750,
+    "waste": 750,
+    "river": 750,
+    "houseRescue": 750,
+    "beach": 750,
+    "powerwash": 750,
+    "bakery": 150,
+    "cafe": 150,
+    "morningMug": 150,
+    "riversideKitchen": 150,
+    "southShoreScoops": 750,
+    "total": 5850,
+    "validated": 5850
+  },
+  "verification": {
+    "focusedTestsPassed": 56,
+    "focusedTestsFailed": 0,
+    "fullTestsPassed": 621,
+    "fullTestsFailed": 0,
+    "fullTestsSkipped": 0,
+    "differentialParity": "PASS",
+    "minigameParity": "PASS",
+    "productionBuild": "PASS",
+    "productionModules": 179,
+    "performanceBudget": "PASS"
+  },
+  "runtime": {
+    "freshOrigin": "http://127.0.0.1:5176/",
+    "returningFixtureRoute": "http://127.0.0.1:5173/?qa=fidelity",
+    "freshSaveIsolated": true,
+    "realPlayerSaveUsed": false,
+    "finalLevelsOpened": [
+      "lawn:750",
+      "cafe:150",
+      "south-shore-scoops:750"
+    ],
+    "consoleErrorsObserved": 0,
+    "missingResourcesObserved": 0
+  },
+  "findings": [
+    {
+      "id": "S5-F01",
+      "severity": "P2",
+      "status": "FIXED",
+      "summary": "Incomplete first-time setup can be dismissed, exposing town systems before resident/home creation."
+    },
+    {
+      "id": "S5-F02",
+      "severity": "P2",
+      "status": "FIXED",
+      "summary": "Interrupted creator step and draft are not persisted or automatically resumed."
+    }
+  ],
+  "physicalDevicesTested": false,
+  "productionCodeChanged": true,
+  "repairVerification": {
+    "focusedTestsPassed": 56,
+    "fullTestsPassed": 621,
+    "liveMandatorySetup": "PASS",
+    "liveDraftResume": "PASS",
+    "liveCompletionReload": "PASS",
+    "minigameParity": "PASS",
+    "differentialParity": "PASS",
+    "productionBuild": "PASS",
+    "performanceBudget": "PASS"
+  }
+}

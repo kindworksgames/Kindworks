@@ -51,10 +51,12 @@ test("does not change protected fishing data or reward formulas", async () => {
 });
 
 test("restores the protected rod, curved line, bobber ripples and magnet descent phases", async () => {
-  const scene = await readText("src/scenes/FishingScene.js");
-  for (const contract of ["FISH_RIG", "MAGNET_RIG", "floatMarker", "drawRod", "drawCurvedLine", "controlX", "lineTo", "drawActiveRig", "spawnRipple", 'this.phase = "sinking"', 'this.phase = "settling"', "Magnet sinking…", "Magnet settling on the riverbed…"]) assert.ok(scene.includes(contract), contract);
+  const [scene, layout] = await Promise.all([readText("src/scenes/FishingScene.js"), readText("src/visual/layouts/fishingSceneLayout.js")]);
+  for (const contract of ["FISHING_LAYOUT_SOCKET_IDS.FISH_ROD_GRIP", "FISHING_LAYOUT_SOCKET_IDS.MAGNET_REST", "floatMarker", "drawRod", "drawCurvedLine", "controlX", "lineTo", "drawActiveRig", "spawnRipple", 'this.phase = "sinking"', 'this.phase = "settling"', "Magnet sinking…", "Magnet settling on the riverbed…"]) assert.ok(scene.includes(contract), contract);
+  assert.match(layout, /castArc: 190/);
+  assert.match(layout, /bedOffset: 72/);
   assert.match(scene, /Math\.sin\(Math\.PI \* progress\) \* 146/);
-  assert.match(scene, /Math\.sin\(Math\.PI \* progress\) \* 190/);
+  assert.match(scene, /Math\.sin\(Math\.PI \* progress\) \* rules\.castArc/);
   assert.match(scene, /this\.drawActiveRig\(performance\.now\(\)\)/);
   assert.doesNotMatch(scene, /legacy-magnet-fishing/);
 });

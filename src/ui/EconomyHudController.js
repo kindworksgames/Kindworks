@@ -1,4 +1,4 @@
-import { INVENTORY_BUCKETS, ITEM_CATALOG, ITEM_IDS, itemUseDestinationFor } from "../data/items.js";
+import { INVENTORY_BUCKETS, ITEM_CATALOG, itemUseDestinationFor } from "../data/items.js";
 
 const BUCKET_LABELS = Object.freeze({
   equipment: "Tools",
@@ -230,7 +230,7 @@ export class EconomyHudController {
     }
     if (this.balance) this.balance.textContent = formatCoins(state.economy.coins);
     if (this.lifetime) this.lifetime.textContent = `${formatCoins(state.economy.lifetimeCoinsEarned)} earned · ${formatCoins(state.economy.lifetimeCoinsSpent)} spent`;
-    if (this.catalogueStatus) this.catalogueStatus.textContent = `${ITEM_IDS.length} legacy item definitions ready · ${ownedTypes} types currently owned${aquarium?.owned ? ` · ${aquarium.totalFish} aquarium fish` : ""}`;
+    if (this.catalogueStatus) this.catalogueStatus.textContent = `${ownedTypes} item types owned${aquarium?.owned ? ` · ${aquarium.totalFish} aquarium fish` : ""}`;
     this.renderLedger(state.economy);
     this.renderInventory(state, aquarium);
   }

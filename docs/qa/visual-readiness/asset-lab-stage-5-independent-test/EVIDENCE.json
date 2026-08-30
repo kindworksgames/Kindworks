@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "testedAt": "2026-08-30",
+  "startingPoint": "phase-2-ui-simplification@3387bcb",
+  "verdict": "NOT_APPROVED",
+  "selectedContract": "scene.fishing.reedbank.background",
+  "controlledAsset": {
+    "kind": "existing-controlled-pipeline-fixture",
+    "staging": "artwork/staging/scene/fishing/reedbank-background/v1/fishing-reedbank-background.v1.webp",
+    "master": "artwork/masters/scene/fishing/reedbank-background/v1/fishing-reedbank-background.v1.webp",
+    "runtime": "public/assets/runtime/scene/fishing/fishing-reedbank-background.v1.webp",
+    "sha256": "ade1c03c8ae32dad0b98ded9c1d6e485cf9422560777f5d8f3a41c6189b8c5bb",
+    "singleAssetValidation": "PASS"
+  },
+  "assetLab": {
+    "catalogRecords": 112,
+    "foundBySemanticId": true,
+    "runtimeValidation": "valid",
+    "approval": "approved",
+    "warnings": 0,
+    "displayedCategory": "scene",
+    "displayedContract": null,
+    "displayedProductionFamily": null,
+    "usage": {
+      "scenes": ["FishingScene"],
+      "scenePacks": ["pack.scene.fishing"],
+      "prefabs": ["prefab.scene.fishing.reedbank.background"],
+      "instances": ["instance.fishing.reedbank.background.main"],
+      "legacyKeys": ["legacy-fishing"]
+    }
+  },
+  "requiredVisualCoverage": {
+    "fishingStates": ["default"],
+    "fishingFrames": 0,
+    "fishingDirections": 0,
+    "residentDirectionsTested": ["down", "left", "right", "up"],
+    "residentFramesPerDirectionTested": 4,
+    "residentFrameChecks": 16,
+    "animationRestart": "PASS",
+    "animationPlayPause": "PASS",
+    "frameScrubbing": "PASS",
+    "sameRecordContractAndGeometry": "FAIL"
+  },
+  "overlays": {
+    "enabled": ["canvas", "frame", "opaque", "origin", "ground", "sockets", "standing", "bounds", "collision", "navigation", "interaction", "touch"],
+    "fishingVisualGeometry": "PASS",
+    "residentRuntimeGeometry": "ABSENT",
+    "phase8aResidentContractGeometry": "PASS_WITH_FALLBACK_ONLY"
+  },
+  "viewports": [
+    {"width": 1280, "height": 720, "kind": "browser-emulated", "result": "PASS"},
+    {"width": 568, "height": 320, "kind": "browser-emulated", "result": "PASS", "documentOverflowX": false, "documentOverflowY": false, "minimumButtonHeight": 44, "panelHeight": 308, "expandedPanelScrollHeight": 3010},
+    {"width": 1024, "height": 768, "kind": "browser-emulated", "result": "PASS", "documentOverflowX": false, "documentOverflowY": false}
+  ],
+  "invalidVariant": {
+    "temporaryRoot": "/tmp/kindworks-assetlab-stage5.zYbLRQ",
+    "declaredCanvas": {"width": 719, "height": 405},
+    "actualCanvas": {"width": 720, "height": 405},
+    "validatorResult": "REJECTED_AS_EXPECTED",
+    "codes": ["invalid-visible-bounds-contract", "dimension-mismatch"],
+    "assetLabRecordCreated": false,
+    "temporaryRootRemoved": true
+  },
+  "findings": [
+    {"id": "ALAB-ST5-001", "severity": "HIGH", "summary": "No staging-candidate intake path"},
+    {"id": "ALAB-ST5-002", "severity": "HIGH", "summary": "Production leaf contracts are absent from runtime records"},
+    {"id": "ALAB-ST5-003", "severity": "HIGH", "summary": "Pixels, directional contract, and geometry cannot be inspected together"},
+    {"id": "ALAB-ST5-004", "severity": "MEDIUM", "summary": "Invalid staged candidates are not visible in the Lab"},
+    {"id": "ALAB-ST5-005", "severity": "LOW", "summary": "First-time instructions are incomplete"},
+    {"id": "ALAB-ST5-006", "severity": "LOW", "summary": "Phone metadata review is scroll-heavy"}
+  ],
+  "temporaryFixtureRemoved": true,
+  "gameplayCodeEdited": false,
+  "physicalDeviceTested": false
+}

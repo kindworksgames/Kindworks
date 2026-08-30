@@ -1,4 +1,6 @@
 {
+  "role": "extraction-provenance-only",
+  "runtimeSourceOfTruth": "/src/visual/visualManifest.js",
   "source": "protected-legacy-html",
   "assets": {
     "POWERWASH_MASTER_ART": {

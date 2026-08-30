@@ -1,3 +1,9 @@
+import {
+  CUSTOM_RESIDENT_APPEARANCE,
+  CUSTOM_RESIDENT_HOBBIES,
+  PERSONAL_HOME_OPTIONS,
+} from "../data/customResident.js";
+
 export const ONBOARDING_STATE_SCHEMA_VERSION = 1;
 export const ONBOARDING_GAME_KEYS = Object.freeze(["lawn", "waste", "river"]);
 export const ONBOARDING_TRACKED_GAME_KEYS = Object.freeze([...ONBOARDING_GAME_KEYS, "beach", "playground"]);
@@ -13,6 +19,51 @@ export const LOGIN_REWARD_CONFIG = Object.freeze({
 function whole(value, minimum = 0) {
   const number = Math.floor(Number(value));
   return Number.isFinite(number) ? Math.max(minimum, number) : minimum;
+}
+
+function allowedKey(catalogue, value, fallback) {
+  return Object.prototype.hasOwnProperty.call(catalogue, value) ? value : fallback;
+}
+
+function validDraftName(value) {
+  return /[\p{L}\p{N}]/u.test(String(value || ""));
+}
+
+export function normalizeOnboardingCreatorDraft(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const name = String(value.name ?? "").replace(/[\u0000-\u001f\u007f]/g, "").slice(0, 18);
+  const hair = Math.max(0, Math.min(3, Math.floor(Number(value.hair) || 0)));
+  const outfit = Math.max(0, Math.min(5, Math.floor(Number(value.outfit) || 0)));
+  const hobbies = [...new Set(Array.isArray(value.hobbies) ? value.hobbies : [])]
+    .filter((id) => Object.prototype.hasOwnProperty.call(CUSTOM_RESIDENT_HOBBIES, id))
+    .slice(0, 3);
+  return {
+    name,
+    skin: allowedKey(CUSTOM_RESIDENT_APPEARANCE.skin, value.skin, "warm"),
+    hair,
+    hairColor: allowedKey(CUSTOM_RESIDENT_APPEARANCE.hairColor, value.hairColor, "dark-brown"),
+    accessory: allowedKey(CUSTOM_RESIDENT_APPEARANCE.accessory, value.accessory, "none"),
+    outfit,
+    bodyBuild: allowedKey(CUSTOM_RESIDENT_APPEARANCE.bodyBuild, value.bodyBuild, "average"),
+    hobbies,
+    home: {
+      wallColor: allowedKey(PERSONAL_HOME_OPTIONS.wallColor, value.home?.wallColor, "cream"),
+      roofStyle: allowedKey(PERSONAL_HOME_OPTIONS.roofStyle, value.home?.roofStyle, "gable"),
+      roofColor: allowedKey(PERSONAL_HOME_OPTIONS.roofColor, value.home?.roofColor, "terracotta"),
+    },
+  };
+}
+
+function normalizeCreatorStep(value, draft) {
+  const step = Math.max(0, Math.min(2, Math.floor(Number(value) || 0)));
+  return step > 0 && !validDraftName(draft?.name) ? 0 : step;
+}
+
+function legacyCreatorStep(value) {
+  const step = Math.max(0, Math.min(4, Math.floor(Number(value) || 0)));
+  if (step <= 1) return 0;
+  if (step === 2) return 1;
+  return 2;
 }
 
 export function validateTownName(value) {
@@ -116,6 +167,8 @@ export function createFreshOnboardingState({ now = Date.now() } = {}) {
     schemaVersion: ONBOARDING_STATE_SCHEMA_VERSION,
     townNamed: false,
     complete: false,
+    creatorStep: 0,
+    creatorDraft: null,
     tutorialSeen: blankTracking(),
     tried: blankTracking(),
     journey: normalizeOnboardingJourneyState(null),
@@ -134,6 +187,10 @@ export function normalizeOnboardingState(value, { state = null, now = Date.now()
     : Boolean(raw.townNamed);
   fresh.townNamed = townNamed;
   fresh.complete = residentCreated && townNamed;
+  if (townNamed && !residentCreated) {
+    fresh.creatorDraft = normalizeOnboardingCreatorDraft(raw.creatorDraft);
+    fresh.creatorStep = normalizeCreatorStep(raw.creatorStep, fresh.creatorDraft);
+  }
   for (const key of ONBOARDING_TRACKED_GAME_KEYS) {
     fresh.tutorialSeen[key] = Boolean(raw.tutorialSeen?.[key]);
     fresh.tried[key] = Boolean(raw.tried?.[key]) || fresh.tutorialSeen[key];
@@ -154,6 +211,8 @@ export function projectLegacyOnboarding(legacy, state, { now = Date.now() } = {}
   const projected = normalizeOnboardingState({
     townNamed: setup.townNamed,
     complete: setup.complete,
+    creatorStep: legacyCreatorStep(setup.creatorStep),
+    creatorDraft: setup.creatorDraft,
     tutorialSeen: legacy?.onboarding?.tutorialSeen,
     tried: legacy?.onboarding?.tried,
     starterGrantClaimed: true,
@@ -178,6 +237,11 @@ export function validateOnboardingState(value, state = null) {
   if (value.schemaVersion !== ONBOARDING_STATE_SCHEMA_VERSION) errors.push("Onboarding schema version is invalid.");
   if (typeof value.townNamed !== "boolean" || typeof value.complete !== "boolean") errors.push("Onboarding setup flags are invalid.");
   if (value.complete && (!value.townNamed || !state?.customResident?.profile)) errors.push("Completed onboarding requires a named town and resident.");
+  if (!Number.isInteger(value.creatorStep) || value.creatorStep < 0 || value.creatorStep > 2) errors.push("Onboarding creator step is invalid.");
+  const creatorDraft = normalizeOnboardingCreatorDraft(value.creatorDraft);
+  if (value.creatorDraft !== null && JSON.stringify(creatorDraft) !== JSON.stringify(value.creatorDraft)) errors.push("Onboarding creator draft is invalid.");
+  if (value.complete && (value.creatorStep !== 0 || value.creatorDraft !== null)) errors.push("Completed onboarding cannot retain a creator checkpoint.");
+  if (value.creatorStep > 0 && !validDraftName(creatorDraft?.name)) errors.push("Advanced onboarding creator steps require a resident name.");
   if (validateTownName(state?.identity?.townName).ok !== true) errors.push("Onboarding town name is invalid.");
   for (const key of ONBOARDING_TRACKED_GAME_KEYS) {
     if (typeof value.tutorialSeen?.[key] !== "boolean" || typeof value.tried?.[key] !== "boolean") errors.push(`Onboarding tracking for ${key} is invalid.`);

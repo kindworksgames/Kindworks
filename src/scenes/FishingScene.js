@@ -4,25 +4,30 @@ import {
   FISHING_SPOT_BY_ID,
   MAGNET_FISHING_CONFIG,
   MAGNET_FISHING_SPOT,
-  MAGNET_TARGETING_CONFIG,
   TARGETING_CONFIG,
   fishingItem,
   pointInWater,
   pointInMagnetWater,
 } from "../data/fishing.js";
+import {
+  VISUAL_ASSET_IDS,
+  VISUAL_SCENE_INSTANCE_IDS,
+} from "../visual/visualManifest.js";
+import {
+  FISHING_LAYOUT_INSTANCE_IDS,
+  FISHING_LAYOUT_SOCKET_IDS,
+  FISHING_LAYOUT_ZONE_IDS,
+  FISHING_SCENE_LAYOUT,
+  fishingDefaultTargetSocketId,
+  fishingWaterZoneId,
+} from "../visual/layouts/fishingSceneLayout.js";
+import {
+  getSceneLayoutInstance,
+  getSceneLayoutSocket,
+  getSceneLayoutZone,
+} from "../visual/layouts/sceneLayoutContracts.js";
 
-const ROOM = Object.freeze({ width: 1280, height: 720 });
-const FISHING_REFERENCE_KEY = "legacy-fishing";
-const FISHING_REFERENCE_PATH = "/assets/legacy-reference/fishing.webp";
-const FISH_RIG = Object.freeze({
-  base: Object.freeze({ x: 334, y: 517 }),
-  idleTip: Object.freeze({ x: 825, y: 149 }),
-});
-const MAGNET_RIG = Object.freeze({
-  ropeStart: Object.freeze({ x: 114, y: 588 }),
-  rest: Object.freeze({ x: 235, y: 542 }),
-  bedOffset: 72,
-});
+const FISHING_REFERENCE_LEGACY_KEY = "legacy-fishing";
 
 function clamp(value, minimum, maximum) { return Math.max(minimum, Math.min(maximum, value)); }
 function lerp(from, to, progress) { return from + (to - from) * progress; }
@@ -37,7 +42,10 @@ export class FishingScene extends Phaser.Scene {
   }
 
   preload() {
-    if (!this.textures.exists(FISHING_REFERENCE_KEY)) this.load.image(FISHING_REFERENCE_KEY, FISHING_REFERENCE_PATH);
+    this.visualRegistry = this.registry.get("visualRegistry");
+    this.visualRegistry?.queueScenePacks(this, this.scene.key);
+    this.fishingReferenceKey = this.visualRegistry?.getTextureKey(VISUAL_ASSET_IDS.FISHING_REEDBANK_BACKGROUND)
+      || FISHING_REFERENCE_LEGACY_KEY;
   }
 
   create() {
@@ -56,13 +64,14 @@ export class FishingScene extends Phaser.Scene {
     this.confirmingExit = false;
     this.biteStartedAt = 0;
     this.pendingTimers = [];
+    this.sceneLayout = this.sceneLayouts?.layout || FISHING_SCENE_LAYOUT;
     this.qaMode = import.meta.env.DEV ? new URLSearchParams(window.location.search).get("qa") : null;
     this.timingScale = this.qaMode === "fishing" || this.qaMode === "magnet" ? 0.28 : 1;
     const firstZone = this.session.hiddenZones[0];
-    const targetArea = this.mode === "magnet" ? MAGNET_TARGETING_CONFIG.waterArea : TARGETING_CONFIG.waterArea;
+    const defaultTarget = this.layoutSocket(fishingDefaultTargetSocketId(this.mode)).position;
     this.target = this.qaMode && firstZone
       ? { x: firstZone.x, y: firstZone.y }
-      : { x: targetArea.x + targetArea.width * 0.62, y: targetArea.y + targetArea.height * 0.52 };
+      : { ...defaultTarget };
 
     this.worldSimulation?.setPaused("activity", true);
     this.npcTownLife?.setPaused("activity", true);
@@ -70,6 +79,7 @@ export class FishingScene extends Phaser.Scene {
     this.bindInterface();
     this.setSceneInterface();
     this.refreshInterface(this.mode === "magnet" ? "Tap water to place the magnet." : "Tap water to cast.");
+    this.installReferenceOverlay();
     this.cameras.main.fadeIn(220, 12, 35, 42);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.shutdownScene());
   }
@@ -78,44 +88,66 @@ export class FishingScene extends Phaser.Scene {
     const magnet = this.mode === "magnet";
     const reedbank = this.spot.id === "fishing-reedbank";
     const harbour = this.spot.id === "fishing-harbour";
-    const waterArea = magnet ? MAGNET_TARGETING_CONFIG.waterArea : TARGETING_CONFIG.waterArea;
-    this.add.rectangle(ROOM.width / 2, ROOM.height / 2, ROOM.width, ROOM.height, magnet ? 0x173e48 : 0x4f8450);
-    const recoveredReference = !magnet && reedbank && this.textures.exists(FISHING_REFERENCE_KEY);
+    const room = this.sceneLayout.canonicalSize;
+    const waterArea = this.layoutZone(fishingWaterZoneId(this.mode)).geometry;
+    const backgroundLayout = this.layoutInstance(FISHING_LAYOUT_INSTANCE_IDS.BACKGROUND);
+    this.add.rectangle(room.width / 2, room.height / 2, room.width, room.height, magnet ? 0x173e48 : 0x4f8450);
+    const fishingReferenceKey = this.fishingReferenceKey
+      || this.visualRegistry?.resolveLegacyTextureKey(FISHING_REFERENCE_LEGACY_KEY)
+      || FISHING_REFERENCE_LEGACY_KEY;
+    const recoveredReference = !magnet && reedbank && this.textures.exists(fishingReferenceKey);
     if (recoveredReference) {
-      this.add.image(ROOM.width / 2, ROOM.height / 2, FISHING_REFERENCE_KEY)
-        .setDisplaySize(ROOM.width, ROOM.height)
-        .setDepth(1)
+      const background = this.add.image(backgroundLayout.visual.position.x, backgroundLayout.visual.position.y, fishingReferenceKey)
+        .setOrigin(backgroundLayout.visual.origin.x, backgroundLayout.visual.origin.y)
+        .setDisplaySize(backgroundLayout.visual.bounds.width, backgroundLayout.visual.bounds.height)
+        .setDepth(backgroundLayout.visual.depth)
         .setData("spriteAiLabel", "legacy-reference.fishing.environment");
+      this.visualRegistry?.tagSceneInstance(background, VISUAL_SCENE_INSTANCE_IDS.FISHING_REEDBANK_BACKGROUND);
+      this.registerLayoutVisual(FISHING_LAYOUT_INSTANCE_IDS.BACKGROUND, background);
     }
-    const art = this.add.graphics().setData("spriteAiLabel", magnet ? "minigame.magnet-fishing.live-environment" : `minigame.fishing.${this.spot.id}.live-environment`);
+    const art = this.registerLayoutVisual(FISHING_LAYOUT_INSTANCE_IDS.ENVIRONMENT, this.add.graphics())
+      .setData("spriteAiLabel", magnet ? "minigame.magnet-fishing.live-environment" : `minigame.fishing.${this.spot.id}.live-environment`);
     if (!recoveredReference) {
       art.fillStyle(magnet ? 0x233c3f : harbour ? 0xc5a96f : 0x72a957, 1);
-      art.fillRect(0, 0, ROOM.width, 134);
+      art.fillRect(0, 0, room.width, this.sceneLayout.presentation.topBandHeight);
       art.fillStyle(magnet ? 0x237e91 : harbour ? 0x1687a5 : reedbank ? 0x1687a5 : 0x3a98ad, 1);
       art.fillRoundedRect(waterArea.x, waterArea.y, waterArea.width, waterArea.height, 26);
       art.lineStyle(7, 0x172638, 0.95);
       art.strokeRoundedRect(waterArea.x, waterArea.y, waterArea.width, waterArea.height, 26);
       art.lineStyle(3, 0x8ed9dc, 0.38);
-      for (let row = 0; row < 6; row += 1) art.lineBetween(155 + (row % 2) * 55, 195 + row * 54, 1115 - (row % 3) * 42, 195 + row * 54);
+      const wave = this.sceneLayout.presentation.wave;
+      for (let row = 0; row < this.sceneLayout.presentation.waveRows; row += 1) {
+        art.lineBetween(wave.startX + (row % 2) * wave.alternateOffsetX, wave.startY + row * wave.rowGap, wave.endX - (row % 3) * wave.thirdOffsetX, wave.startY + row * wave.rowGap);
+      }
       if (magnet) this.drawBridge(art);
       else this.drawFishingBank(art, reedbank, harbour);
-      this.add.text(34, 28, `${this.spot.icon} ${this.spot.shortTitle.toUpperCase()}`, {
+      const titleLayout = this.layoutInstance(FISHING_LAYOUT_INSTANCE_IDS.TITLE);
+      const title = this.add.text(titleLayout.visual.position.x, titleLayout.visual.position.y, `${this.spot.icon} ${this.spot.shortTitle.toUpperCase()}`, {
         color: "#fff1c8", fontFamily: "ui-monospace, monospace", fontSize: "25px", fontStyle: "bold",
         backgroundColor: "#172638", padding: { x: 13, y: 8 },
-      }).setDepth(10);
-      this.add.text(36, 86, this.spot.waterBody, { color: "#fff6d8", fontFamily: "system-ui", fontSize: "15px", fontStyle: "bold" }).setDepth(10);
+      }).setOrigin(titleLayout.visual.origin.x, titleLayout.visual.origin.y).setDepth(titleLayout.visual.depth);
+      this.registerLayoutVisual(FISHING_LAYOUT_INSTANCE_IDS.TITLE, title);
+      const labelLayout = this.layoutInstance(FISHING_LAYOUT_INSTANCE_IDS.WATER_BODY);
+      const label = this.add.text(labelLayout.visual.position.x, labelLayout.visual.position.y, this.spot.waterBody, { color: "#fff6d8", fontFamily: "system-ui", fontSize: "15px", fontStyle: "bold" })
+        .setOrigin(labelLayout.visual.origin.x, labelLayout.visual.origin.y).setDepth(labelLayout.visual.depth);
+      this.registerLayoutVisual(FISHING_LAYOUT_INSTANCE_IDS.WATER_BODY, label);
     }
 
-    this.aim = this.add.circle(this.target.x, this.target.y, 24, 0xfff0a0, 0.18).setStrokeStyle(4, 0xfff0a0, 0.92).setDepth(20);
-    this.aimInner = this.add.circle(this.target.x, this.target.y, 5, 0xfff0a0, 1).setDepth(21);
-    this.line = this.add.graphics().setDepth(25).setData("spriteAiLabel", magnet ? "minigame.magnet-fishing.live-rope" : "minigame.fishing.live-line");
-    this.rod = this.add.graphics().setDepth(24).setData("spriteAiLabel", "minigame.fishing.live-rod-reel");
-    this.floatMarker = this.add.container(this.target.x, this.target.y).setVisible(false).setDepth(29);
+    const aimLayout = this.layoutInstance(FISHING_LAYOUT_INSTANCE_IDS.AIM);
+    this.aim = this.registerLayoutVisual(FISHING_LAYOUT_INSTANCE_IDS.AIM, this.add.circle(this.target.x, this.target.y, 24, 0xfff0a0, 0.18), { slotId: "outer", captureLocalOffset: true }).setStrokeStyle(4, 0xfff0a0, 0.92).setDepth(aimLayout.visual.depth);
+    this.aimInner = this.registerLayoutVisual(FISHING_LAYOUT_INSTANCE_IDS.AIM, this.add.circle(this.target.x, this.target.y, 5, 0xfff0a0, 1), { slotId: "inner", captureLocalOffset: true, localDepthOffset: 1 }).setDepth(aimLayout.visual.depth + 1);
+    const rigLayout = this.layoutInstance(FISHING_LAYOUT_INSTANCE_IDS.LIVE_RIG);
+    this.line = this.registerLayoutVisual(FISHING_LAYOUT_INSTANCE_IDS.LIVE_RIG, this.add.graphics(), { slotId: "line", captureLocalOffset: true }).setDepth(rigLayout.visual.depth).setData("spriteAiLabel", magnet ? "minigame.magnet-fishing.live-rope" : "minigame.fishing.live-line");
+    this.rod = this.registerLayoutVisual(FISHING_LAYOUT_INSTANCE_IDS.LIVE_RIG, this.add.graphics(), { slotId: "rod", captureLocalOffset: true, localDepthOffset: -1 }).setDepth(rigLayout.visual.depth - 1).setData("spriteAiLabel", "minigame.fishing.live-rod-reel");
+    const bobberLayout = this.layoutInstance(FISHING_LAYOUT_INSTANCE_IDS.BOBBER);
+    this.floatMarker = this.registerLayoutVisual(FISHING_LAYOUT_INSTANCE_IDS.BOBBER, this.add.container(this.target.x, this.target.y), { captureLocalOffset: true }).setVisible(false).setDepth(bobberLayout.visual.depth);
     const floatArt = this.add.graphics();
     floatArt.lineStyle(3, 0x172638, 1); floatArt.fillStyle(0xfff7dc, 1); floatArt.fillCircle(0, 0, 9); floatArt.strokeCircle(0, 0, 9);
     floatArt.fillStyle(0xe7564d, 1); floatArt.fillRect(-8, -8, 16, 8); floatArt.lineStyle(3, 0x172638, 1); floatArt.lineBetween(0, -19, 0, -8);
     this.floatMarker.add(floatArt);
-    this.resultIcon = this.add.text(this.target.x, this.target.y - 20, magnet ? "🧲" : "🎣", { fontSize: "45px" }).setOrigin(0.5).setVisible(magnet).setDepth(30)
+    const resultLayout = this.layoutInstance(FISHING_LAYOUT_INSTANCE_IDS.RESULT);
+    this.resultIcon = this.registerLayoutVisual(FISHING_LAYOUT_INSTANCE_IDS.RESULT, this.add.text(this.target.x, this.target.y + this.sceneLayout.presentation.resultOffsetY, magnet ? "🧲" : "🎣", { fontSize: "45px" }), { captureLocalOffset: true })
+      .setOrigin(resultLayout.visual.origin.x, resultLayout.visual.origin.y).setVisible(magnet).setDepth(resultLayout.visual.depth)
       .setData("spriteAiLabel", magnet ? "minigame.magnet-fishing.live-magnet-and-find" : "minigame.fishing.live-catch");
     this.phaseStartedAt = performance.now();
     this.drawActiveRig(this.phaseStartedAt);
@@ -123,30 +155,72 @@ export class FishingScene extends Phaser.Scene {
   }
 
   drawFishingBank(art, reedbank, harbour) {
+    const shore = this.layoutZone(FISHING_LAYOUT_ZONE_IDS.SHORE).geometry;
+    const dock = this.layoutZone(FISHING_LAYOUT_ZONE_IDS.DOCK).geometry;
+    const dockBoards = this.sceneLayout.presentation.dock;
     art.fillStyle(harbour ? 0xd0b072 : 0x6fa050, 1);
-    art.fillRect(0, 540, ROOM.width, 180);
+    art.fillRect(shore.x, shore.y, shore.width, shore.height);
     art.fillStyle(0x6d432c, 1);
-    art.fillRect(465, 500, 350, 220);
+    art.fillRect(dock.x, dock.y, dock.width, dock.height);
     art.fillStyle(0xb97b43, 1);
-    for (let y = 508; y < 720; y += 30) art.fillRect(476, y, 328, 21);
+    for (let y = dockBoards.boardStartY; y < dockBoards.endY; y += dockBoards.boardGapY) art.fillRect(dockBoards.boardStartX, y, dockBoards.boardWidth, dockBoards.boardHeight);
     if (reedbank) {
-      for (const [x, y] of [[180, 230], [320, 410], [930, 230], [1040, 440], [720, 300]]) {
+      for (const { x, y } of this.sceneLayout.presentation.reeds) {
         art.fillStyle(0x4d8939, 1); art.fillEllipse(x, y, 64, 28); art.fillStyle(0xf2a5b8, 1); art.fillCircle(x + 8, y - 5, 7);
       }
     }
-    this.add.text(410, 610, "🧍", { fontSize: "70px" }).setOrigin(0.5).setDepth(15);
-    this.add.text(390, 562, "🎣", { fontSize: "60px" }).setOrigin(0.5).setAngle(-24).setDepth(16);
+    const playerLayout = this.layoutInstance(FISHING_LAYOUT_INSTANCE_IDS.FISH_PLAYER);
+    const player = this.add.text(playerLayout.visual.position.x, playerLayout.visual.position.y, "🧍", { fontSize: "70px" })
+      .setOrigin(playerLayout.visual.origin.x, playerLayout.visual.origin.y).setDepth(playerLayout.visual.depth);
+    this.registerLayoutVisual(FISHING_LAYOUT_INSTANCE_IDS.FISH_PLAYER, player);
+    const toolLayout = this.layoutInstance(FISHING_LAYOUT_INSTANCE_IDS.FISH_TOOL);
+    const tool = this.add.text(toolLayout.visual.position.x, toolLayout.visual.position.y, "🎣", { fontSize: "60px" })
+      .setOrigin(toolLayout.visual.origin.x, toolLayout.visual.origin.y).setRotation(toolLayout.visual.rotation).setDepth(toolLayout.visual.depth);
+    this.registerLayoutVisual(FISHING_LAYOUT_INSTANCE_IDS.FISH_TOOL, tool);
   }
 
   drawBridge(art) {
+    const room = this.sceneLayout.canonicalSize;
+    const bridge = this.layoutZone(FISHING_LAYOUT_ZONE_IDS.BRIDGE).geometry;
+    const bridgeBoards = this.sceneLayout.presentation.bridge;
     art.fillStyle(0x523b31, 1);
-    art.fillRect(0, 520, ROOM.width, 200);
+    art.fillRect(bridge.x, bridge.y, bridge.width, bridge.height);
     art.fillStyle(0xb77b42, 1);
-    for (let x = 0; x < ROOM.width; x += 92) art.fillRect(x + 7, 532, 75, 180);
+    for (let x = 0; x < room.width; x += bridgeBoards.boardGapX) art.fillRect(x + bridgeBoards.boardStartX, bridgeBoards.boardStartY, bridgeBoards.boardWidth, bridgeBoards.boardHeight);
     art.fillStyle(0x172638, 1);
-    art.fillRect(0, 515, ROOM.width, 15);
-    this.add.text(155, 575, "🧍", { fontSize: "70px" }).setOrigin(0.5).setDepth(15);
-    this.add.text(210, 574, "🪢", { fontSize: "37px" }).setOrigin(0.5).setDepth(16);
+    art.fillRect(0, bridgeBoards.railY, room.width, bridgeBoards.railHeight);
+    const playerLayout = this.layoutInstance(FISHING_LAYOUT_INSTANCE_IDS.MAGNET_PLAYER);
+    const player = this.add.text(playerLayout.visual.position.x, playerLayout.visual.position.y, "🧍", { fontSize: "70px" })
+      .setOrigin(playerLayout.visual.origin.x, playerLayout.visual.origin.y).setDepth(playerLayout.visual.depth);
+    this.registerLayoutVisual(FISHING_LAYOUT_INSTANCE_IDS.MAGNET_PLAYER, player);
+    const toolLayout = this.layoutInstance(FISHING_LAYOUT_INSTANCE_IDS.MAGNET_TOOL);
+    const tool = this.add.text(toolLayout.visual.position.x, toolLayout.visual.position.y, "🪢", { fontSize: "37px" })
+      .setOrigin(toolLayout.visual.origin.x, toolLayout.visual.origin.y).setDepth(toolLayout.visual.depth);
+    this.registerLayoutVisual(FISHING_LAYOUT_INSTANCE_IDS.MAGNET_TOOL, tool);
+  }
+
+  layoutInstance(id) { return getSceneLayoutInstance(this.sceneLayout, id); }
+  layoutZone(id) { return getSceneLayoutZone(this.sceneLayout, id); }
+  layoutSocket(id) { return getSceneLayoutSocket(this.sceneLayout, id); }
+
+  registerLayoutVisual(instanceId, displayObject, options) {
+    return this.sceneLayouts?.register(instanceId, displayObject, options) || displayObject;
+  }
+
+  applyLayoutVisualPosition(instanceId, position) {
+    return this.sceneLayouts?.applyVisualPosition(instanceId, position) || false;
+  }
+
+  installReferenceOverlay() {
+    if (!import.meta.env.DEV || this.qaMode !== "reference-overlay") return;
+    import("../visual/dev/ReferenceOverlayController.js").then(({ ReferenceOverlayController }) => {
+      if (!this.scene.isActive() || this.transitioning) return;
+      this.referenceOverlay = new ReferenceOverlayController(this, {
+        layout: this.sceneLayout,
+        referenceTextureKey: this.fishingReferenceKey,
+        referenceContractId: "reference.fishing.reedbank",
+      });
+    }).catch((failure) => console.error("Reference overlay could not start.", failure));
   }
 
   setTarget(x, y) {
@@ -159,6 +233,7 @@ export class FishingScene extends Phaser.Scene {
   }
 
   handlePrimaryAction(pointer = null) {
+    if (this.referenceOverlay?.capturesGameplayPointer?.(pointer)) return false;
     if (this.transitioning) return false;
     if (["bite", "ready"].includes(this.phase)) return this.reel();
     if (this.phase === "waiting" && this.mode === "fish") return this.reelEarly();
@@ -327,26 +402,29 @@ export class FishingScene extends Phaser.Scene {
     this.floatMarker.setVisible(false);
     const fishPose = this.fishingPose(this.target);
     const resultPosition = this.mode === "magnet"
-      ? MAGNET_RIG.rest
-      : { x: fishPose.liftTip.x, y: fishPose.liftTip.y + 58 };
+      ? this.layoutSocket(FISHING_LAYOUT_SOCKET_IDS.MAGNET_REST).position
+      : { x: fishPose.liftTip.x, y: fishPose.liftTip.y + this.sceneLayout.presentation.resultLiftOffsetY };
     this.resultIcon.setText(icon).setVisible(true).setAlpha(1).setScale(1.2).setPosition(resultPosition.x, resultPosition.y);
     this.aim.setVisible(true).setPosition(this.target.x, this.target.y);
     this.aimInner.setVisible(true).setPosition(this.target.x, this.target.y);
-    this.tweens.add({ targets: this.resultIcon, y: this.resultIcon.y - 22, duration: 380, yoyo: true, ease: "Sine.easeOut" });
+    this.tweens.add({ targets: this.resultIcon, y: this.resultIcon.y - this.sceneLayout.presentation.resultBounceY, duration: 380, yoyo: true, ease: "Sine.easeOut" });
   }
 
   fishingPose(target = this.target) {
+    const base = this.layoutSocket(FISHING_LAYOUT_SOCKET_IDS.FISH_ROD_GRIP).position;
+    const idleTip = this.layoutSocket(FISHING_LAYOUT_SOCKET_IDS.FISH_ROD_IDLE_TIP).position;
+    const rules = this.sceneLayout.rig.fish;
     const waterTip = {
-      x: clamp(FISH_RIG.base.x + (target.x - FISH_RIG.base.x) * 0.76, 128, 1102),
-      y: clamp(target.y - 146, 85, 402),
+      x: clamp(base.x + (target.x - base.x) * rules.castBlend, rules.waterTipBounds.minX, rules.waterTipBounds.maxX),
+      y: clamp(target.y + rules.targetOffsetY, rules.waterTipBounds.minY, rules.waterTipBounds.maxY),
     };
     return {
-      base: FISH_RIG.base,
-      idleTip: FISH_RIG.idleTip,
+      base,
+      idleTip,
       waterTip,
       liftTip: {
-        x: clamp(waterTip.x + (FISH_RIG.base.x - waterTip.x) * 0.12, 124, 1048),
-        y: clamp(waterTip.y - 60, 75, 320),
+        x: clamp(waterTip.x + (base.x - waterTip.x) * rules.liftBlend, rules.liftTipBounds.minX, rules.liftTipBounds.maxX),
+        y: clamp(waterTip.y + rules.liftOffsetY, rules.liftTipBounds.minY, rules.liftTipBounds.maxY),
       },
     };
   }
@@ -387,28 +465,31 @@ export class FishingScene extends Phaser.Scene {
 
   drawActiveRig(now = performance.now()) {
     if (this.mode === "magnet") {
+      const rest = this.layoutSocket(FISHING_LAYOUT_SOCKET_IDS.MAGNET_REST).position;
+      const ropeStart = this.layoutSocket(FISHING_LAYOUT_SOCKET_IDS.MAGNET_ROPE_START).position;
+      const rules = this.sceneLayout.rig.magnet;
       this.rod.clear();
-      let magnet = { ...MAGNET_RIG.rest };
+      let magnet = { ...rest };
       if (this.phase === "casting") {
         const progress = ease((now - this.castStartedAt) / this.duration(MAGNET_FISHING_CONFIG.castAnimationMs));
         magnet = {
-          x: lerp(MAGNET_RIG.rest.x, this.target.x, progress),
-          y: lerp(MAGNET_RIG.rest.y, this.target.y, progress) - Math.sin(Math.PI * progress) * 190,
+          x: lerp(rest.x, this.target.x, progress),
+          y: lerp(rest.y, this.target.y, progress) - Math.sin(Math.PI * progress) * rules.castArc,
         };
       } else if (this.phase === "sinking") {
         const progress = ease((now - this.phaseStartedAt) / this.duration(MAGNET_FISHING_CONFIG.sinkAnimationMs));
-        magnet = { x: this.target.x, y: lerp(this.target.y, this.target.y + MAGNET_RIG.bedOffset, progress) };
+        magnet = { x: this.target.x, y: lerp(this.target.y, this.target.y + rules.bedOffset, progress) };
       } else if (["settling", "ready"].includes(this.phase)) {
-        magnet = { x: this.target.x, y: this.target.y + MAGNET_RIG.bedOffset + Math.sin(now / 230) * 2 };
+        magnet = { x: this.target.x, y: this.target.y + rules.bedOffset + Math.sin(now / 230) * 2 };
       } else if (this.phase === "reeling") {
         const progress = ease((now - this.reelStartedAt) / this.duration(MAGNET_FISHING_CONFIG.reelAnimationMs));
         magnet = {
-          x: lerp(this.target.x, MAGNET_RIG.rest.x, progress),
-          y: lerp(this.target.y + MAGNET_RIG.bedOffset, MAGNET_RIG.rest.y, progress) - Math.sin(Math.PI * progress) * 64,
+          x: lerp(this.target.x, rest.x, progress),
+          y: lerp(this.target.y + rules.bedOffset, rest.y, progress) - Math.sin(Math.PI * progress) * rules.reelArc,
         };
       }
       if (!["success", "miss"].includes(this.phase)) this.resultIcon.setText("🧲").setVisible(true).setPosition(magnet.x, magnet.y);
-      this.drawCurvedLine(MAGNET_RIG.ropeStart.x, MAGNET_RIG.ropeStart.y, magnet.x - 20, magnet.y + 14, { sag: 34 });
+      this.drawCurvedLine(ropeStart.x, ropeStart.y, magnet.x - 20, magnet.y + 14, { sag: 34 });
       return;
     }
 
@@ -432,11 +513,11 @@ export class FishingScene extends Phaser.Scene {
       tip = { x: lerp(pose.waterTip.x, pose.liftTip.x, progress), y: lerp(pose.waterTip.y, pose.liftTip.y, progress) };
       hook = {
         x: lerp(this.target.x, pose.liftTip.x, progress),
-        y: lerp(this.target.y, pose.liftTip.y + 58, progress) - Math.sin(Math.PI * progress) * 50,
+        y: lerp(this.target.y, pose.liftTip.y + this.sceneLayout.presentation.resultLiftOffsetY, progress) - Math.sin(Math.PI * progress) * 50,
       };
     } else if (["success", "miss"].includes(this.phase)) {
       tip = { ...pose.liftTip };
-      hook = { x: pose.liftTip.x, y: pose.liftTip.y + 58 };
+      hook = { x: pose.liftTip.x, y: pose.liftTip.y + this.sceneLayout.presentation.resultLiftOffsetY };
     }
     this.drawRod(pose.base, tip);
     if (!hook) {
@@ -510,7 +591,7 @@ export class FishingScene extends Phaser.Scene {
       event.preventDefault();
       const dx = event.key === "ArrowLeft" ? -34 : event.key === "ArrowRight" ? 34 : 0;
       const dy = event.key === "ArrowUp" ? -28 : event.key === "ArrowDown" ? 28 : 0;
-      const area = this.mode === "magnet" ? MAGNET_TARGETING_CONFIG.waterArea : TARGETING_CONFIG.waterArea;
+      const area = this.layoutZone(fishingWaterZoneId(this.mode)).geometry;
       this.setTarget(Phaser.Math.Clamp(this.target.x + dx, area.x, area.x + area.width), Phaser.Math.Clamp(this.target.y + dy, area.y, area.y + area.height));
     };
     window.addEventListener("keydown", this.onKeyDown);
@@ -521,7 +602,7 @@ export class FishingScene extends Phaser.Scene {
     const badge = document.querySelector(".milestone-badge");
     const location = document.querySelector("#location-status");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = `${this.mode === "magnet" ? "MAGNET FISHING" : this.spot.id === "fishing-reedbank" ? "FISHING + HOME AQUARIUM" : "FISHING"} · MILESTONE ${this.mode === "magnet" ? 15 : 33}`;
+    if (badge) badge.textContent = this.mode === "magnet" ? "MAGNET FISHING" : this.spot.id === "fishing-reedbank" ? "FISHING + HOME AQUARIUM" : "FISHING";
     if (location) location.textContent = this.spot.title;
     if (hint) hint.textContent = "Tap water or use arrows to aim · Enter/Space casts or reels · Escape exits safely";
     const landscapeMessage = document.querySelector("#landscape-required-message");
@@ -599,6 +680,7 @@ export class FishingScene extends Phaser.Scene {
   }
 
   updateDomState() {
+    if (!import.meta.env.DEV) return;
     const game = document.querySelector("#game");
     if (!game) return;
     game.dataset.scene = this.scene.key;
@@ -619,6 +701,8 @@ export class FishingScene extends Phaser.Scene {
   }
 
   shutdownScene() {
+    this.referenceOverlay?.destroy?.();
+    this.referenceOverlay = null;
     for (const timer of this.pendingTimers) timer.remove(false);
     this.castButton?.removeEventListener("click", this.onCast);
     this.reelButton?.removeEventListener("click", this.onReel);

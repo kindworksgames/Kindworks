@@ -19,11 +19,12 @@ test("ships the exact protected Harbour, Fishing and Magnet Fishing artwork", as
   }
 });
 
-test("uses recovered art only where live gameplay can be layered faithfully", async () => {
+test("keeps protected reference files archived while active scenes remain interactive", async () => {
   const harbour = await readFile(new URL("src/scenes/HarbourGeneralScene.js", root), "utf8");
   const fishing = await readFile(new URL("src/scenes/FishingScene.js", root), "utf8");
-  assert.match(harbour, /legacy-harbour-general/);
-  assert.match(harbour, /legacy-reference\.harbour-general\.complete-interior/);
+  assert.doesNotMatch(harbour, /legacy-harbour-general|harbour-general\.webp/);
+  assert.match(harbour, /harbour-general\.floor\.mint-checker-and-wood-wall/);
+  assert.match(harbour, /harbour-general\.fixture\.harbour-view-window/);
   assert.match(fishing, /legacy-fishing/);
   assert.match(fishing, /legacy-reference\.fishing\.environment/);
   assert.match(fishing, /const recoveredReference = !magnet && reedbank/);

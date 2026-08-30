@@ -1,0 +1,8 @@
+{
+  "description": "Requests linear filtering for pixel artwork.",
+  "assetId": "scene.fishing.reedbank.background",
+  "operation": "set",
+  "path": "output.textureFiltering",
+  "value": "linear",
+  "expectedCodes": ["invalid-texture-filtering"]
+}

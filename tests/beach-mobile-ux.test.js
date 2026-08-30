@@ -35,6 +35,15 @@ test("uses short contextual Beach Cleanup actions while preserving optional chal
   assert.match(scene, /buttons\.retry\.classList\.toggle\("hidden", state\.moves === 0\)/);
 });
 
+test("keeps the armed Beach Cleanup exit confirmation visible and resets it safely", async () => {
+  const scene = await readText("src/scenes/BeachCleanupScene.js");
+  assert.match(scene, /this\.onExit = \(\) => \{ const exited = this\.requestExit\(\); if \(exited\) this\.closeMenu\(\); else this\.menu\?\.setAttribute\("open", ""\); return exited; \}/);
+  assert.doesNotMatch(scene, /this\.onExit = \(\) => \{ this\.closeMenu\(\); return this\.requestExit\(\); \}/);
+  assert.match(scene, /this\.buttons\.exit\.setAttribute\("aria-label", "Confirm exit Beach Cleanup"\)/);
+  assert.match(scene, /const armedUntil = this\.exitArmedUntil;[\s\S]*this\.exitArmedUntil !== armedUntil[\s\S]*this\.exitArmedUntil = 0/);
+  assert.match(scene, /this\.time\.delayedCall\(3000,[\s\S]*this\.buttons\.exit\.textContent = "Exit";[\s\S]*"Exit Beach Cleanup safely"/);
+});
+
 test("renders the protected five-groove rake paths instead of a generic stripe fill", async () => {
   const [scene, renderer, styles] = await Promise.all([readText("src/scenes/BeachCleanupScene.js"), readText("src/ui/BeachRakePattern.js"), readText("src/style.css")]);
   assert.match(scene, /renderBeachRakeGrooves\(state\.rakePatterns\[key\] \|\| "h"\)/);

@@ -106,7 +106,7 @@ export class SouthShoreScoopsScene extends Phaser.Scene {
 
   setSceneInterface() {
     document.body.dataset.gameScene = this.scene.key;
-    const badge = document.querySelector(".milestone-badge"); if (badge) badge.textContent = "SOUTH SHORE SCOOPS · MILESTONE 23";
+    const badge = document.querySelector(".milestone-badge"); if (badge) badge.textContent = "SOUTH SHORE SCOOPS";
     const status = document.querySelector("#location-status"); if (status) status.textContent = "Inside South Shore Scoops";
     const hint = document.querySelector("#control-hint"); if (hint) hint.textContent = "Match each picture · One customer served at a time · Save & exit preserves every part";
     const landscapeMessage = document.querySelector("#landscape-required-message");
@@ -230,6 +230,7 @@ export class SouthShoreScoopsScene extends Phaser.Scene {
   }
 
   updateDomState() {
+    if (!import.meta.env.DEV) return;
     const game = document.querySelector("#game"); if (!game) return;
     const session = this.scoops.getActiveSession(); const diagnostics = this.scoops.getDiagnostics();
     game.dataset.scene = this.scene.key;

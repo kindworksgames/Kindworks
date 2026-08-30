@@ -165,7 +165,7 @@ export function createRestaurantPresentation(scene, venue) {
   semanticSlot(scene, `KW-${venueId}-KITCHEN-HOB`, 919, 550, 170, 128);
   semanticSlot(scene, `KW-${venueId}-KITCHEN-CUTTING-BOARD`, 1069, 550, 105, 128);
   semanticSlot(scene, `KW-${venueId}-KITCHEN-INGREDIENTS`, 1185, 550, 106, 128);
-  label(scene, 26, 23, `${venue === "bakery" ? "LITTLE BAKERY" : venue === "mug" ? "MORNING MUG COFFEE" : venue === "riverside" ? "RIVERSIDE KITCHEN" : "CORNER CAFÉ"} · WILLOWMERE`, 17).setDepth(5);
+  label(scene, 140, 23, `${venue === "bakery" ? "LITTLE BAKERY" : venue === "mug" ? "MORNING MUG COFFEE" : venue === "riverside" ? "RIVERSIDE KITCHEN" : "CORNER CAFÉ"} · WILLOWMERE`, 17).setDepth(5);
   const dynamic = assetLabel(scene.add.container(0, 0), `KW-${venue.toUpperCase()}-DYNAMIC-PRESENTATION`).setDepth(8);
   const worker = assetLabel(scene.add.graphics(), `KW-${venue.toUpperCase()}-WORKER-PIXEL`); pixelPerson(worker, 1080, 437, 0, palette.uniform, true, 1.35); dynamic.add(worker);
   const workerTag = assetLabel(label(scene, 1080, 488, "READY", 8, "#292238"), `KW-${venue.toUpperCase()}-WORKER-STATE`).setOrigin(0.5).setDepth(9); workerTag.setBackgroundColor("#fff1c9").setPadding(5, 3); dynamic.add(workerTag);

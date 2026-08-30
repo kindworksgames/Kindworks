@@ -1,0 +1,8 @@
+{
+  "description": "Adds a dirty state without an aligned layer for that state.",
+  "assetId": "scene.fishing.reedbank.background",
+  "operation": "set",
+  "path": "states",
+  "value": ["default", "dirty"],
+  "expectedCodes": ["missing-layer-state"]
+}

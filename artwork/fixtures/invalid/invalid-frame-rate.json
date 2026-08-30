@@ -1,0 +1,8 @@
+{
+  "description": "Defines a zero-rate animation.",
+  "assetId": "scene.fishing.reedbank.background",
+  "operation": "set",
+  "path": "animations",
+  "value": [{"id":"idle","action":"idle","direction":null,"frames":[0],"frameRate":0,"repeat":0}],
+  "expectedCodes": ["invalid-frame-rate"]
+}

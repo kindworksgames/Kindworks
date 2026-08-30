@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import { setSpriteAiLabelHint } from "../plugins/SpriteAiLabelPlugin.js";
 import { spriteAiInventory } from "../assets/spriteAiLabels.js";
+import { VISUAL_ANIMATION_IDS, VISUAL_ASSET_IDS } from "../visual/visualManifest.js";
 
 const DIRECTIONS = ["down", "left", "right", "up"];
 const WALK_FRAMES = 4;
@@ -71,11 +72,12 @@ function drawResidentFrame(graphics, direction, frame) {
 }
 
 export function createPlayerAssets(scene) {
+  const registry = scene.registry.get("visualRegistry");
   const graphics = scene.add.graphics();
 
   for (const direction of DIRECTIONS) {
     for (let frame = 0; frame < WALK_FRAMES; frame += 1) {
-      const key = `resident-${direction}-${frame}`;
+      const key = registry.getGeneratedTextureKey(VISUAL_ASSET_IDS.RESIDENT_GENERATED_FRAMES, { direction, frame });
       spriteAiInventory.register({
         id: `texture.player.${direction}.${frame}`,
         label: `Player character — ${direction} walk frame ${frame + 1}`,
@@ -91,23 +93,14 @@ export function createPlayerAssets(scene) {
   }
   graphics.destroy();
 
-  for (const direction of DIRECTIONS) {
-    const key = `resident-walk-${direction}`;
-    if (scene.anims.exists(key)) continue;
-    scene.anims.create({
-      key,
-      frames: Array.from({ length: WALK_FRAMES }, (_, frame) => ({
-        key: `resident-${direction}-${frame}`,
-      })),
-      frameRate: 9,
-      repeat: -1,
-    });
-  }
+  registry.createSceneAnimations(scene, "BootScene");
 }
 
 export class PlayerCharacter extends Phaser.GameObjects.Sprite {
   constructor(scene, x, y, { direction = "down" } = {}) {
-    super(scene, x, y, `resident-${direction}-0`);
+    const registry = scene.registry.get("visualRegistry");
+    super(scene, x, y, registry.getGeneratedTextureKey(VISUAL_ASSET_IDS.RESIDENT_GENERATED_FRAMES, { direction, frame: 0 }));
+    this.visualRegistry = registry;
     setSpriteAiLabelHint(this, { id: "character.player.main", label: "Player character — all walk and idle directions", kind: "character-sprite" });
     scene.add.existing(this);
     this.direction = direction;
@@ -122,13 +115,14 @@ export class PlayerCharacter extends Phaser.GameObjects.Sprite {
         : (dy < 0 ? "up" : "down");
       this.direction = nextDirection;
       this.moving = true;
-      this.play(`resident-walk-${nextDirection}`, true);
+      const animationId = VISUAL_ANIMATION_IDS[`RESIDENT_WALK_${nextDirection.toUpperCase()}`];
+      this.play(this.visualRegistry.getAnimationKey(animationId), true);
       return;
     }
 
     if (this.moving || this.anims.isPlaying) {
       this.stop();
-      this.setTexture(`resident-${this.direction}-0`);
+      this.setTexture(this.visualRegistry.getGeneratedTextureKey(VISUAL_ASSET_IDS.RESIDENT_GENERATED_FRAMES, { direction: this.direction, frame: 0 }));
     }
     this.moving = false;
   }

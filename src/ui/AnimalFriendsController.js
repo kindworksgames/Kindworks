@@ -1,5 +1,6 @@
-import { ANIMAL_BY_ID, ANIMAL_REFERENCE_SHEET_PATH, COMPANION_CARE_CONFIG, SOUTH_MEADOW, WILDLIFE_DEFINITIONS, adoptionChance, animalReferenceFrame, speciesFor } from "../data/animals.js";
+import { ANIMAL_BY_ID, COMPANION_CARE_CONFIG, SOUTH_MEADOW, WILDLIFE_DEFINITIONS, adoptionChance, animalReferenceFrame, speciesFor } from "../data/animals.js";
 import { ITEM_CATALOG } from "../data/items.js";
+import { VISUAL_ASSET_IDS } from "../visual/visualManifest.js";
 
 function locationLabel(entry) {
   if (entry.location === "following") return "Following you";
@@ -7,17 +8,19 @@ function locationLabel(entry) {
   return entry.visible ? `Exploring ${speciesFor(entry.definition).habitat}` : "Exploring elsewhere";
 }
 
-function referenceSpriteStyle(definition) {
+function referenceSpriteStyle(definition, assetUrl) {
   const frame = animalReferenceFrame(definition);
   const column = frame % 6;
   const row = Math.floor(frame / 6);
-  return `background-image:url('${ANIMAL_REFERENCE_SHEET_PATH}');background-position:${column * 20}% ${row * (100 / 7)}%;`;
+  return `background-image:url('${assetUrl}');background-position:${column * 20}% ${row * (100 / 7)}%;`;
 }
 
 export class AnimalFriendsController {
-  constructor(animals, { onModalChange = () => {} } = {}) {
+  constructor(animals, { onModalChange = () => {}, visualRegistry = null } = {}) {
     this.animals = animals;
     this.onModalChange = onModalChange;
+    this.visualRegistry = visualRegistry;
+    this.referenceSheetUrl = visualRegistry?.assetUrl(VISUAL_ASSET_IDS.ANIMAL_REFERENCE_SHEET) || "";
     this.panel = document.querySelector("#animal-friends-panel");
     this.status = document.querySelector("#animal-friends-status");
     this.selectedAnimalId = WILDLIFE_DEFINITIONS[0].id;
@@ -99,7 +102,7 @@ export class AnimalFriendsController {
       const definition = entry.definition;
       const species = speciesFor(definition);
       const current = definition.id === this.selectedAnimalId;
-      return `<button type="button" data-animal-id="${definition.id}" class="animal-list-card ${current ? "selected" : ""}" aria-pressed="${current}"><span class="animal-reference-thumb" style="${referenceSpriteStyle(definition)}" aria-hidden="true"></span><div><strong>${entry.state.name}</strong><small>${definition.personality} ${species.label} · ${entry.state.trust}% trust</small></div><em>${entry.state.active ? "Following" : entry.state.adopted ? "Adopted" : entry.visible ? "Nearby" : "Away"}</em></button>`;
+      return `<button type="button" data-animal-id="${definition.id}" class="animal-list-card ${current ? "selected" : ""}" aria-pressed="${current}"><span class="animal-reference-thumb" style="${referenceSpriteStyle(definition, this.referenceSheetUrl)}" aria-hidden="true"></span><div><strong>${entry.state.name}</strong><small>${definition.personality} ${species.label} · ${entry.state.trust}% trust</small></div><em>${entry.state.active ? "Following" : entry.state.adopted ? "Adopted" : entry.visible ? "Nearby" : "Away"}</em></button>`;
     }).join("");
 
     const entry = byId[this.selectedAnimalId] || presentations[0];
@@ -108,7 +111,7 @@ export class AnimalFriendsController {
     const detailIcon = document.querySelector("#animal-detail-icon");
     detailIcon.textContent = "";
     detailIcon.classList.add("animal-reference-detail");
-    detailIcon.setAttribute("style", referenceSpriteStyle(entry.definition));
+    detailIcon.setAttribute("style", referenceSpriteStyle(entry.definition, this.referenceSheetUrl));
     document.querySelector("#animal-detail-name").textContent = resident.name;
     document.querySelector("#animal-detail-kind").textContent = `${entry.definition.personality} ${species.label} · ${locationLabel(entry)}`;
     const progress = document.querySelector("#animal-trust-progress");

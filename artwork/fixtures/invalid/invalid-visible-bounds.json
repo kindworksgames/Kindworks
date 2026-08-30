@@ -1,0 +1,8 @@
+{
+  "description": "Allows visible artwork outside the declared canvas.",
+  "assetId": "scene.fishing.reedbank.background",
+  "operation": "set",
+  "path": "validation.maximumVisibleBounds.width",
+  "value": 721,
+  "expectedCodes": ["invalid-visible-bounds-contract"]
+}

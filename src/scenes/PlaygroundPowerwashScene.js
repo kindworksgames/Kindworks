@@ -5,6 +5,7 @@ import {
   POWERWASH_NOZZLES,
 } from "../data/playgroundPowerwash.js";
 import { LegacyPowerwashRenderer } from "../rendering/LegacyPowerwashRenderer.js";
+import { VISUAL_ASSET_IDS } from "../visual/visualManifest.js";
 
 const ROOM = Object.freeze({ width: 1280, height: 720 });
 
@@ -35,19 +36,17 @@ export class PlaygroundPowerwashScene extends Phaser.Scene {
   }
 
   prepareApprovedArtwork() {
-    const load = (path) => new Promise((resolve, reject) => {
-      const image = new Image();
-      image.decoding = "async";
-      image.addEventListener("load", () => resolve(image), { once: true });
-      image.addEventListener("error", () => reject(new Error(`Power Washing artwork failed to load: ${path}`)), { once: true });
-      image.src = `${import.meta.env.BASE_URL}assets/powerwash/${path}`;
-    });
+    const visualRegistry = this.registry.get("visualRegistry");
     this.artworkReady = false;
-    Promise.all([load("playground-master.png"), load("playground-reference-dirt.png"), load("tool-precision.png"), load("tool-standard.png"), load("tool-wide.png")]).then(([master, dirt, precision, standard, wide]) => {
+    visualRegistry.loadNativeScenePacks(this.scene.key).then((artwork) => {
       if (!this.scene?.isActive?.()) return;
-      this.masterArtwork = master;
-      this.referenceDirtArtwork = dirt;
-      this.toolArtwork = { precision, standard, wide };
+      this.masterArtwork = artwork.get(VISUAL_ASSET_IDS.POWERWASH_PLAYGROUND_MASTER);
+      this.referenceDirtArtwork = artwork.get(VISUAL_ASSET_IDS.POWERWASH_PLAYGROUND_DIRT);
+      this.toolArtwork = {
+        precision: artwork.get(VISUAL_ASSET_IDS.POWERWASH_TOOL_PRECISION),
+        standard: artwork.get(VISUAL_ASSET_IDS.POWERWASH_TOOL_STANDARD),
+        wide: artwork.get(VISUAL_ASSET_IDS.POWERWASH_TOOL_WIDE),
+      };
       this.artworkReady = true;
       this.buildVisualRenderer();
       this.render();
@@ -248,7 +247,7 @@ export class PlaygroundPowerwashScene extends Phaser.Scene {
     }
     if (!this.visualRenderer || this.visualRenderer.level !== state.level) this.buildVisualRenderer(true);
     this.visualRenderer?.draw(state, this.spraying && Boolean(this.pointerCell));
-    this.canvas.setAttribute("aria-label", "Playground Power Wash surface using the approved legacy artwork");
+    this.canvas.setAttribute("aria-label", "Washable playground surface");
   }
 
   buildVisualRenderer(force = false) {
@@ -272,7 +271,7 @@ export class PlaygroundPowerwashScene extends Phaser.Scene {
   }
 
   setMessage(message, status = "neutral") { const element = document.querySelector("#powerwash-status"); if (element) { element.textContent = message || "Continue power washing."; element.dataset.status = status; } }
-  updateDomState() { const game = document.querySelector("#game"); if (!game) return; const session = this.powerwash.getActiveSession(); const state = this.powerwash.getSessionState(); const diagnostics = this.powerwash.getDiagnostics(); game.dataset.scene = this.scene.key; game.dataset.powerwashLevel = String(session?.assignedLevel || diagnostics.nextLevel); game.dataset.powerwashMode = session?.mode || this.lastResultContext?.mode || "starting"; game.dataset.powerwashPhase = this.lastResultContext ? "result" : session?.status || "starting"; game.dataset.powerwashClean = String(this.visualRenderer?.lastPercent ?? state?.percent ?? 0); game.dataset.powerwashTool = state?.toolMode || "none"; game.dataset.powerwashNozzle = state?.nozzle || "none"; game.dataset.powerwashCompleted = String(diagnostics.completed); game.dataset.powerwashCatalogue = String(diagnostics.totalLevels); game.dataset.powerwashCatalogueValid = String(diagnostics.catalogueValid); }
+  updateDomState() { if (!import.meta.env.DEV) return; const game = document.querySelector("#game"); if (!game) return; const session = this.powerwash.getActiveSession(); const state = this.powerwash.getSessionState(); const diagnostics = this.powerwash.getDiagnostics(); game.dataset.scene = this.scene.key; game.dataset.powerwashLevel = String(session?.assignedLevel || diagnostics.nextLevel); game.dataset.powerwashMode = session?.mode || this.lastResultContext?.mode || "starting"; game.dataset.powerwashPhase = this.lastResultContext ? "result" : session?.status || "starting"; game.dataset.powerwashClean = String(this.visualRenderer?.lastPercent ?? state?.percent ?? 0); game.dataset.powerwashTool = state?.toolMode || "none"; game.dataset.powerwashNozzle = state?.nozzle || "none"; game.dataset.powerwashCompleted = String(diagnostics.completed); game.dataset.powerwashCatalogue = String(diagnostics.totalLevels); game.dataset.powerwashCatalogueValid = String(diagnostics.catalogueValid); }
 
   requestExit() { const session = this.powerwash.getActiveSession(); if (session && Date.now() > this.exitArmedUntil) { this.exitArmedUntil = Date.now() + 3000; if (this.buttons.exit) { this.buttons.exit.textContent = "✓"; this.buttons.exit.setAttribute("aria-label", "Confirm exit"); } this.time.delayedCall(3000, () => { if (!this.transitioning && this.buttons.exit) { this.buttons.exit.textContent = "✕"; this.buttons.exit.setAttribute("aria-label", "Exit Playground Power Wash safely"); } }); this.setMessage("Tap Confirm Exit to leave this attempt.", "error"); return false; } return this.returnToTown(false); }
   returnToTown(complete) { if (this.transitioning) return false; this.transitioning = true; const active = this.powerwash.getActiveSession(); const context = active || this.lastResultContext || {}; if (active) this.powerwash.cancel(active.id); const position = context.returnPosition || this.entryData.returnPosition || { x: 1940, y: 1180 }; const facing = context.returnFacing || this.entryData.returnFacing || "up"; this.gameState.updatePlayer({ scene: "TownScene", x: position.x, y: position.y, facing }); document.querySelector("#game")?.setAttribute("data-transition", complete ? "powerwash-complete" : "leaving-powerwash"); this.cameras.main.fadeOut(220, 7, 20, 43); this.time.delayedCall(240, () => this.scene.start("TownScene", { returnPosition: position, returnFacing: facing, transitionCount: Number(this.entryData.transitionCount || 0) + 1 })); return true; }

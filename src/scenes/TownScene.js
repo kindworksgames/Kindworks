@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { resolveTownSceneDepth, TOWN_DEPTH_POLICY_IDS } from "../visual/layouts/sceneLayoutCatalog.js";
 import {
   BEACH_CLEANUP,
   BRIDGES,
@@ -13,7 +14,6 @@ import {
   MORNING_MUG,
   PATHS,
   PLAYGROUND_POWERWASH,
-  PLAYER_START,
   RIVERSIDE_KITCHEN,
   SOUTH_SHORE_SCOOPS,
   TOWN_REFERENCE_LAYOUT,
@@ -31,6 +31,7 @@ import { HARBOUR_GENERAL } from "../data/harbourGeneral.js";
 import { InteractionSystem } from "../systems/InteractionSystem.js";
 import { MovementController } from "../systems/MovementController.js";
 import { TownCameraController } from "../systems/TownCameraController.js";
+import { npcPresentationPositions } from "../systems/NpcTownLifeService.js";
 import { NpcCharacter } from "../entities/NpcCharacter.js";
 import { AnimalCharacter } from "../entities/AnimalCharacter.js";
 import {
@@ -51,6 +52,8 @@ import { FISHING_SPOTS, MAGNET_FISHING_SPOT } from "../data/fishing.js";
 import { ITEM_CATALOG, placeableFootprintFor } from "../data/items.js";
 import { createTownPlacedObject } from "../entities/TownPlacedObject.js";
 import { createMunicipalCollectionVehicle } from "../entities/MunicipalCollectionVehicle.js";
+import { getTownBinVisualFactory } from "../visual/renderers/TownBinVisualFactory.js";
+import { snapshotVisualBounds } from "../visual/renderers/VisualViewportCulling.js";
 import { RESTORATION_MILESTONE_ORDER } from "../data/restorationMilestones.js";
 import { cinemaAccess } from "../data/impactProjects.js";
 import { RUBBISH_PRESENTATION, riverItemPosition } from "../data/livingEnvironment.js";
@@ -64,6 +67,10 @@ import {
 import { houseExteriorDirtStage } from "../data/houseRescue.js";
 import { setSpriteAiLabelHint } from "../plugins/SpriteAiLabelPlugin.js";
 import { startLazyScene } from "./lazyScenes.js";
+import { TOWN_HOUSE_GEOMETRY, TOWN_LOGICAL_GEOMETRY, TOWN_SHOP_GEOMETRY } from "../data/townGeometry.js";
+import { preloadApprovedSceneVisuals, mountApprovedSceneVisuals } from "../visual/renderers/ApprovedSceneVisualRuntime.js";
+import { DENSE_TOUCH_RENDER_FPS, renderFrameTarget } from "../visual/ResponsiveFramePolicy.js";
+import { createTownApprovedSceneBindings } from "../presentation/TownApprovedSceneBindings.js";
 
 const PLAYER_RADIUS = 17;
 const WALK_SPEED = 270;
@@ -154,7 +161,13 @@ export class TownScene extends Phaser.Scene {
     this.townBrowseMode = true;
   }
 
+  preload() {
+    getTownBinVisualFactory(this).preload();
+    preloadApprovedSceneVisuals(this);
+  }
+
   create() {
+    this.gameplayGeometry = TOWN_LOGICAL_GEOMETRY;
     this.gameState = this.registry.get("gameState");
     this.shopController = this.registry.get("shopController");
     this.cleanupService = this.registry.get("cleanupService");
@@ -191,11 +204,14 @@ export class TownScene extends Phaser.Scene {
     this.river = this.registry.get("river");
     this.houseRescue = this.registry.get("houseRescue");
     this.townPlacement = this.registry.get("townPlacement");
+    this.townBinVisualFactory = getTownBinVisualFactory(this);
     this.houseRescue?.refreshJobs?.();
     this.worldSimulation?.setPaused("activity", false);
     const savedState = this.gameState?.getSnapshot();
-    this.cameras.main.setBounds(0, 0, WORLD.width, WORLD.height);
+    const cameraBounds = TOWN_LOGICAL_GEOMETRY.cameraBounds;
+    this.cameras.main.setBounds(cameraBounds.x, cameraBounds.y, cameraBounds.width, cameraBounds.height);
     this.drawTown();
+    this.captureStaticTownVisibilityIndex();
     this.updateWorldObjectLighting(savedState?.world);
     this.renderLivingEnvironment();
     this.renderTownPlacements();
@@ -276,17 +292,19 @@ export class TownScene extends Phaser.Scene {
     const spawn = this.entryData.returnPosition
       || qaSpawn
       || savedTownPosition
-      || PLAYER_START;
+      || TOWN_LOGICAL_GEOMETRY.spawnPoints[0];
     const direction = this.entryData.returnFacing || (qaTarget ? "up" : "down");
-    this.shadow = this.add.ellipse(spawn.x, spawn.y + 18, 31, 12, 0x24442f, 0.28).setDepth(190);
-    this.player = new PlayerCharacter(this, spawn.x, spawn.y, { direction }).setDepth(200);
+    this.shadow = this.add.ellipse(spawn.x, spawn.y + 18, 31, 12, 0x24442f, 0.28).setDepth(resolveTownSceneDepth(TOWN_DEPTH_POLICY_IDS.PLAYER_SHADOW, spawn.y));
+    this.player = new PlayerCharacter(this, spawn.x, spawn.y, { direction }).setDepth(resolveTownSceneDepth(TOWN_DEPTH_POLICY_IDS.PLAYER, spawn.y));
     this.player.setVisible(false);
     this.shadow.setVisible(false);
     this.onboardingJourneyOrigin = { x: spawn.x, y: spawn.y };
     this.onboardingMovementRecorded = Boolean(this.onboarding?.getSnapshot?.().journey?.moved);
+    const initialResidents = this.npcTownLife?.getResidents?.() || [];
+    this.npcPresentationPositions = npcPresentationPositions(initialResidents);
     this.npcCharacters = new Map();
-    for (const resident of this.npcTownLife?.getResidents?.() || []) {
-      this.npcCharacters.set(resident.id, new NpcCharacter(this, resident));
+    for (const resident of initialResidents) {
+      this.npcCharacters.set(resident.id, new NpcCharacter(this, resident, this.npcPresentationPositions.get(resident.id)));
     }
     this.animalCharacters = new Map(ANIMAL_DEFINITIONS.map((definition) => [definition.id, new AnimalCharacter(this, definition)]));
     this.customResidentCharacter = null;
@@ -438,12 +456,13 @@ export class TownScene extends Phaser.Scene {
         },
     ];
     this.npcInteractables = new Map();
-    for (const resident of this.npcTownLife?.getResidents?.() || []) {
+    for (const resident of initialResidents) {
+      const position = this.npcPresentationPositions.get(resident.id) || resident;
       const interaction = {
         id: `story-${resident.id}`,
         kind: "npc-story",
-        x: resident.x,
-        y: resident.y,
+        x: position.x,
+        y: position.y,
         radius: 78,
         enabled: resident.visible,
         icon: "💬",
@@ -582,6 +601,10 @@ export class TownScene extends Phaser.Scene {
     });
     this.stateSyncElapsed = 0;
     this.cachedNpcDiagnostics = this.npcTownLife?.getDiagnostics?.() || null;
+    this.cachedPresentationResidents = this.npcTownLife?.getPresentationResidents?.() || this.npcTownLife?.getResidents?.() || [];
+    this.cachedMunicipalPresentation = this.refreshMunicipalCollectionPresentation();
+    this.cachedWorldSnapshot = this.gameState?.getDomainSnapshot?.("world") || savedState?.world || null;
+    this.npcSimulationElapsed = 0;
     this.farmingSyncElapsed = 0;
     this.unsubscribeFarming = this.farming?.subscribe?.((snapshot, result) => this.handleFarmingChange(snapshot, result));
     this.unsubscribeHouseRescue = this.houseRescue?.subscribe?.(() => this.drawHouseRescueMarkers());
@@ -596,6 +619,7 @@ export class TownScene extends Phaser.Scene {
       ? spawn
       : { x: WORLD.width / 2, y: WORLD.height / 2 };
     this.cameras.main.centerOn(initialFocus.x, initialFocus.y);
+    this.refreshStaticTownVisibility(true);
 
     this.input.on("wheel", (pointer, _objects, _dx, dy) => {
       this.townCamera?.setZoomAt(this.cameras.main.zoom * (dy > 0 ? 0.9 : 1.1), pointer.x, pointer.y);
@@ -607,6 +631,8 @@ export class TownScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.unbindInterface());
     this.updateStatus();
     this.time.delayedCall(420, () => this.restorationMilestoneController?.maybeOpen?.());
+    this.approvedSceneVisuals = mountApprovedSceneVisuals(this, { bindings: createTownApprovedSceneBindings(this) });
+    this.approvedVisualRefreshElapsed = 0;
   }
 
   drawTown() {
@@ -619,9 +645,30 @@ export class TownScene extends Phaser.Scene {
     }
 
     const random = new Phaser.Math.RandomDataGenerator(["willowmere-town"]);
+    const cacheDecorativeVectors = window.innerWidth > 600 && window.innerWidth <= 1024;
+    const grassDetailTexture = "kindworks-town-grass-detail-4x-v1";
+    if (cacheDecorativeVectors && !this.textures.exists(grassDetailTexture)) {
+      const detail = this.make.graphics({ add: false });
+      detail.fillStyle(0xffffff, 1).fillCircle(32, 32, 24);
+      detail.generateTexture(grassDetailTexture, 64, 64);
+      detail.destroy();
+      this.textures.get(grassDetailTexture).setFilter(Phaser.Textures.FilterMode.NEAREST);
+    }
     for (let index = 0; index < 260; index += 1) {
-      terrain.fillStyle(index % 3 === 0 ? COLORS.grassDark : COLORS.grassLight, 0.18);
-      terrain.fillCircle(random.between(30, WORLD.width - 30), random.between(30, WORLD.height - 30), random.between(2, 6));
+      const x = random.between(30, WORLD.width - 30);
+      const y = random.between(30, WORLD.height - 30);
+      const radius = random.between(2, 6);
+      if (!cacheDecorativeVectors) {
+        terrain.fillStyle(index % 3 === 0 ? COLORS.grassDark : COLORS.grassLight, 0.18);
+        terrain.fillCircle(x, y, radius);
+        continue;
+      }
+      const detail = this.add.image(x, y, grassDetailTexture)
+        .setTint(index % 3 === 0 ? COLORS.grassDark : COLORS.grassLight)
+        .setAlpha(0.18)
+        .setScale(radius / 24)
+        .setDepth(1);
+      setSpriteAiLabelHint(detail, { id: `world.terrain.grass-detail-${index + 1}`, label: `Willowmere grass detail ${index + 1}`, kind: "terrain-detail" });
     }
 
     this.drawReferenceWaterways();
@@ -647,6 +694,7 @@ export class TownScene extends Phaser.Scene {
     this.drawBridges();
     this.drawParkDetails();
     this.drawReferenceBeachDetails();
+    this.cacheStaticTownBackdrop();
     HOUSES.forEach((house) => this.drawHouse(house));
     this.drawHouseRescueMarkers();
     SHOPS.forEach((shop) => this.drawShop(shop));
@@ -672,6 +720,56 @@ export class TownScene extends Phaser.Scene {
     this.add.rectangle(WORLD.width / 2, WORLD.height / 2, WORLD.width - 24, WORLD.height - 24)
       .setStrokeStyle(24, 0x315e3f, 1)
       .setDepth(300);
+  }
+
+  cacheStaticTownBackdrop() {
+    if (renderFrameTarget() !== DENSE_TOUCH_RENDER_FPS) return;
+    const staticObjects = this.children.list.filter((object) => (
+      object.visible
+      && object.depth <= 30
+      && object.type !== "Zone"
+      && !object.input?.enabled
+    ));
+    if (!staticObjects.length) return;
+
+    const tileWidth = Math.ceil(WORLD.width / 2);
+    this.staticTownBackdrop = [0, tileWidth].map((tileX) => {
+      const width = Math.min(tileWidth, WORLD.width - tileX);
+      const tile = this.add.renderTexture(tileX, 0, width, WORLD.height)
+        .setOrigin(0)
+        .setDepth(2);
+      tile.draw(staticObjects, -tileX, 0);
+      return tile;
+    });
+    for (const object of staticObjects) object.setVisible(false);
+  }
+
+  captureStaticTownVisibilityIndex() {
+    if (window.innerWidth > 1024) {
+      this.staticTownVisibilityIndex = [];
+      return;
+    }
+    this.staticTownVisibilityIndex = this.children.list
+      .map(snapshotVisualBounds)
+      .filter(Boolean);
+    this.staticTownVisibilitySignature = null;
+  }
+
+  refreshStaticTownVisibility(force = false) {
+    if (!this.staticTownVisibilityIndex?.length) return;
+    const camera = this.cameras.main;
+    const signature = `${Math.round(camera.scrollX)}:${Math.round(camera.scrollY)}:${camera.zoom.toFixed(3)}`;
+    if (!force && signature === this.staticTownVisibilitySignature) return;
+    this.staticTownVisibilitySignature = signature;
+    const margin = 300;
+    const view = camera.worldView;
+    const left = view.x - margin;
+    const top = view.y - margin;
+    const right = view.right + margin;
+    const bottom = view.bottom + margin;
+    for (const entry of this.staticTownVisibilityIndex) {
+      entry.object.visible = entry.right >= left && entry.left <= right && entry.bottom >= top && entry.top <= bottom;
+    }
   }
 
   drawReferenceWaterways() {
@@ -748,7 +846,37 @@ export class TownScene extends Phaser.Scene {
 
   drawReferenceWoodland() {
     const { woodland } = TOWN_REFERENCE_LAYOUT;
-    const forest = this.add.graphics().setDepth(16);
+    const useCachedWoodland = window.innerWidth > 600;
+    const textureKey = "kindworks-town-perimeter-tree-v1";
+    // Keep the complete legacy vector silhouette inside the generated canvas.
+    // The former 80x104 canvas clipped the upper and side canopy pixels, which
+    // made the performance optimization visible at narrow landscape profiles.
+    const textureWidth = 96;
+    const textureHeight = 120;
+    const groundX = 48;
+    const groundY = 82;
+    const textureRenderScale = 4;
+    if (useCachedWoodland && !this.textures.exists(textureKey)) {
+      const tree = this.make.graphics({ add: false });
+      const px = (value) => value * textureRenderScale;
+      tree.fillStyle(0x233f2b, 0.24);
+      tree.fillEllipse(px(groundX + 5), px(groundY + 22), px(69), px(26));
+      tree.fillStyle(0x684a31, 1);
+      tree.fillRect(px(groundX - 6), px(groundY - 2), px(12), px(35));
+      tree.fillStyle(0x285f34, 1);
+      tree.fillCircle(px(groundX - 18), px(groundY - 10), px(25));
+      tree.fillCircle(px(groundX + 16), px(groundY - 17), px(28));
+      tree.fillCircle(px(groundX), px(groundY - 35), px(27));
+      tree.fillStyle(0x448c43, 1);
+      tree.fillCircle(px(groundX - 12), px(groundY - 29), px(16));
+      tree.fillCircle(px(groundX + 13), px(groundY - 36), px(15));
+      tree.fillStyle(0x79bb4d, 0.82);
+      tree.fillCircle(px(groundX - 16), px(groundY - 42), px(8));
+      tree.fillCircle(px(groundX + 6), px(groundY - 50), px(9));
+      tree.generateTexture(textureKey, Math.ceil(px(textureWidth)), Math.ceil(px(textureHeight)));
+      tree.destroy();
+      this.textures.get(textureKey).setFilter(Phaser.Textures.FilterMode.NEAREST);
+    }
     const trees = [];
     const addTree = (x, y, scale = 1) => {
       if (Math.abs(x - woodland.riverClearCenterX) < woodland.riverClearHalfWidth) return;
@@ -763,23 +891,34 @@ export class TownScene extends Phaser.Scene {
       addTree(WORLD.width - 30 - (index % 3) * 25, y + 20, 0.95 + (index % 3) * 0.07);
     }
     for (const [x, y, scale] of woodland.interiorTrees) addTree(x, y, scale);
-    for (const [x, y, scale] of trees) {
-      forest.fillStyle(0x233f2b, 0.24);
-      forest.fillEllipse(x + 5 * scale, y + 22 * scale, 69 * scale, 26 * scale);
-      forest.fillStyle(0x684a31, 1);
-      forest.fillRect(x - 6 * scale, y - 2 * scale, 12 * scale, 35 * scale);
-      forest.fillStyle(0x285f34, 1);
-      forest.fillCircle(x - 18 * scale, y - 10 * scale, 25 * scale);
-      forest.fillCircle(x + 16 * scale, y - 17 * scale, 28 * scale);
-      forest.fillCircle(x, y - 35 * scale, 27 * scale);
-      forest.fillStyle(0x448c43, 1);
-      forest.fillCircle(x - 12 * scale, y - 29 * scale, 16 * scale);
-      forest.fillCircle(x + 13 * scale, y - 36 * scale, 15 * scale);
-      forest.fillStyle(0x79bb4d, 0.82);
-      forest.fillCircle(x - 16 * scale, y - 42 * scale, 8 * scale);
-      forest.fillCircle(x + 6 * scale, y - 50 * scale, 9 * scale);
+    if (!useCachedWoodland) {
+      const forest = this.add.graphics().setDepth(16);
+      for (const [x, y, scale] of trees) {
+        forest.fillStyle(0x233f2b, 0.24);
+        forest.fillEllipse(x + 5 * scale, y + 22 * scale, 69 * scale, 26 * scale);
+        forest.fillStyle(0x684a31, 1);
+        forest.fillRect(x - 6 * scale, y - 2 * scale, 12 * scale, 35 * scale);
+        forest.fillStyle(0x285f34, 1);
+        forest.fillCircle(x - 18 * scale, y - 10 * scale, 25 * scale);
+        forest.fillCircle(x + 16 * scale, y - 17 * scale, 28 * scale);
+        forest.fillCircle(x, y - 35 * scale, 27 * scale);
+        forest.fillStyle(0x448c43, 1);
+        forest.fillCircle(x - 12 * scale, y - 29 * scale, 16 * scale);
+        forest.fillCircle(x + 13 * scale, y - 36 * scale, 15 * scale);
+        forest.fillStyle(0x79bb4d, 0.82);
+        forest.fillCircle(x - 16 * scale, y - 42 * scale, 8 * scale);
+        forest.fillCircle(x + 6 * scale, y - 50 * scale, 9 * scale);
+      }
+      setSpriteAiLabelHint(forest, { id: "world.woodland.perimeter", label: "Dense woodland surrounding Willowmere with clear river banks", kind: "woodland" });
+      return;
     }
-    setSpriteAiLabelHint(forest, { id: "world.woodland.perimeter", label: "Dense woodland surrounding Willowmere with clear river banks", kind: "woodland" });
+    for (const [index, [x, y, scale]] of trees.entries()) {
+      const tree = this.add.image(x, y, textureKey)
+        .setOrigin(groundX / textureWidth, groundY / textureHeight)
+        .setScale(scale / textureRenderScale)
+        .setDepth(16);
+      setSpriteAiLabelHint(tree, { id: `world.woodland.perimeter-tree-${index + 1}`, label: `Willowmere perimeter tree ${index + 1}`, kind: "woodland" });
+    }
   }
 
   drawReferencePonds() {
@@ -919,13 +1058,29 @@ export class TownScene extends Phaser.Scene {
       [1120, 1360], [1330, 1380], [1570, 1385], [2300, 1930], [280, 2200], [500, 2270],
       [720, 2180], [2920, 250], [3070, 220], [3190, 310], [2950, 395], [3110, 420],
     ];
-    for (const [x, y] of trees) {
-      graphics.fillStyle(COLORS.trunk, 1);
-      graphics.fillRect(x - 8, y, 16, 30);
-      graphics.fillStyle(COLORS.tree, 1);
-      graphics.fillCircle(x, y - 9, 33);
-      graphics.fillStyle(COLORS.grassLight, 0.65);
-      graphics.fillCircle(x - 10, y - 19, 14);
+    const cacheDecorativeVectors = window.innerWidth > 600 && window.innerWidth <= 1024;
+    const parkTreeTexture = "kindworks-town-park-tree-4x-v1";
+    if (cacheDecorativeVectors && !this.textures.exists(parkTreeTexture)) {
+      const tree = this.make.graphics({ add: false });
+      tree.fillStyle(COLORS.trunk, 1).fillRect(120, 200, 64, 120);
+      tree.fillStyle(COLORS.tree, 1).fillCircle(152, 164, 132);
+      tree.fillStyle(COLORS.grassLight, 0.65).fillCircle(112, 124, 56);
+      tree.generateTexture(parkTreeTexture, 304, 336);
+      tree.destroy();
+      this.textures.get(parkTreeTexture).setFilter(Phaser.Textures.FilterMode.NEAREST);
+    }
+    for (const [index, [x, y]] of trees.entries()) {
+      if (!cacheDecorativeVectors) {
+        graphics.fillStyle(COLORS.trunk, 1);
+        graphics.fillRect(x - 8, y, 16, 30);
+        graphics.fillStyle(COLORS.tree, 1);
+        graphics.fillCircle(x, y - 9, 33);
+        graphics.fillStyle(COLORS.grassLight, 0.65);
+        graphics.fillCircle(x - 10, y - 19, 14);
+        continue;
+      }
+      const tree = this.add.image(x, y, parkTreeTexture).setOrigin(0.5, 200 / 336).setScale(0.25).setDepth(20);
+      setSpriteAiLabelHint(tree, { id: `world.park.tree-${index + 1}`, label: `Willowmere park tree ${index + 1}`, kind: "tree" });
     }
   }
 
@@ -1064,7 +1219,8 @@ export class TownScene extends Phaser.Scene {
         backgroundColor: "rgba(255, 253, 241, 0.94)", padding: { x: 6, y: 3 },
       }).setOrigin(0.5).setDepth(90 + house.y / 100);
     }
-    const collision = { id: `building-${house.id}`, x: x - 8, y: y - 15, width: width + 16, height: height + 18 };
+    const logical = TOWN_HOUSE_GEOMETRY[house.id]?.collision;
+    const collision = { id: `building-${house.id}`, x: logical.x, y: logical.y, width: logical.width, height: logical.height };
     const collisionIndex = this.buildingCollisions.findIndex((entry) => entry.id === collision.id);
     if (collisionIndex >= 0) this.buildingCollisions[collisionIndex] = collision;
     else this.buildingCollisions.push(collision);
@@ -1266,7 +1422,8 @@ export class TownScene extends Phaser.Scene {
     }).setOrigin(0.5).setDepth(95 + shop.y / 100);
     setSpriteAiLabelHint(layer, { id: visual.assetId, label: `${shop.title} ${visual.fixture} exterior`, kind: "shop-exterior" });
     setSpriteAiLabelHint(sign, { id: `${visual.assetId}.sign`, label: `${shop.title} exterior sign`, kind: "shop-sign" });
-    this.buildingCollisions.push({ x: shop.x - 8, y: shop.y - 8, width: shop.width + 16, height: shop.height + 16 });
+    const logical = TOWN_SHOP_GEOMETRY[shop.title]?.collision;
+    this.buildingCollisions.push({ id: logical.id, x: logical.x, y: logical.y, width: logical.width, height: logical.height });
   }
 
   drawSouthShoreScoopsRestoration() {
@@ -1828,19 +1985,7 @@ export class TownScene extends Phaser.Scene {
     if (signature === this.publicBinSignature) return;
     this.publicBinSignature = signature;
     this.publicBinVisuals.forEach((visual) => visual.destroy());
-    this.publicBinVisuals = bins.map((bin) => {
-      const container = this.add.container(bin.x, bin.y).setDepth(176 + bin.y / 10);
-      container.setData("collectionIdentity", `public:${bin.id}`);
-      const shadow = this.add.ellipse(0, 14, 34, 13, 0x20382c, 0.25);
-      const body = this.add.rectangle(bin.tipped ? 8 : 0, bin.tipped ? 9 : 0, 25, 33, bin.tipped ? 0x8b6f54 : 0x426b58).setStrokeStyle(3, 0x294637, 0.9);
-      if (bin.tipped) body.setRotation(Math.PI / 2.5);
-      const lid = this.add.rectangle(bin.tipped ? -3 : 0, bin.tipped ? 0 : -18, 31, 7, 0x294637);
-      if (bin.tipped) lid.setRotation(Math.PI / 2.5);
-      const fill = this.add.text(0, -36, `${bin.fill}/${bin.capacity}`, { color: "#294637", fontFamily: "system-ui", fontSize: "10px", fontStyle: "bold", backgroundColor: "rgba(255,253,241,.92)", padding: { x: 4, y: 2 } }).setOrigin(0.5);
-      const warning = this.add.text(18, -23, bin.tipped ? "⚠️" : bin.fill >= bin.capacity ? "🚫" : "", { fontSize: "14px" }).setOrigin(0.5);
-      container.add([shadow, body, lid, fill, warning]);
-      return container;
-    });
+    this.publicBinVisuals = bins.map((bin) => this.townBinVisualFactory.createPublicBin(bin));
   }
 
   refreshMunicipalCollectionPresentation() {
@@ -2214,7 +2359,7 @@ export class TownScene extends Phaser.Scene {
     document.body.dataset.gameScene = this.scene.key;
     const badge = document.querySelector(".milestone-badge");
     const hint = document.querySelector("#control-hint");
-    if (badge) badge.textContent = "OPTIONAL COMMERCE · MILESTONE 41";
+    if (badge) badge.textContent = "SUPPORT KINDWORKS";
     if (hint) hint.textContent = "Drag to explore · Pinch to zoom · Tap a place or resident";
   }
 
@@ -2254,7 +2399,7 @@ export class TownScene extends Phaser.Scene {
     const weather = String(world?.weather?.current?.kind || "clear");
     const glow = night ? 0.9 : ["rain", "storm", "snow"].includes(weather) ? 0.32 : 0.08;
     for (const windowLight of this.townWindowLights || []) windowLight.setAlpha(glow);
-    document.querySelector("#game")?.setAttribute("data-town-window-light", night ? "night" : weather === "clear" ? "day" : "weather-dim");
+    if (import.meta.env.DEV) document.querySelector("#game")?.setAttribute("data-town-window-light", night ? "night" : weather === "clear" ? "day" : "weather-dim");
   }
 
   enterBakery() {
@@ -2669,7 +2814,10 @@ export class TownScene extends Phaser.Scene {
 
     const resident = (this.npcTownLife?.getResidents?.() || [])
       .filter((entry) => entry.visible)
-      .map((entry) => ({ entry, distance: Math.hypot(entry.x - x, entry.y - y) }))
+      .map((entry) => {
+        const position = this.npcPresentationPositions?.get(entry.id) || entry;
+        return { entry, distance: Math.hypot(position.x - x, position.y - y) };
+      })
       .filter(({ distance }) => distance <= screenTapRadius)
       .sort((left, right) => left.distance - right.distance)[0]?.entry;
     if (resident) {
@@ -2677,7 +2825,7 @@ export class TownScene extends Phaser.Scene {
       return this.npcNarrativeController?.open?.(resident.id, { selectThought: true }) || { ok: false, reason: "That resident is unavailable." };
     }
 
-    const shop = SHOPS.find((entry) => containsWithRadius(entry, x, y, 0));
+    const shop = SHOPS.find((entry) => containsWithRadius(TOWN_SHOP_GEOMETRY[entry.title].interactionZone, x, y, 0));
     const shopInteractionId = shop && SHOP_INTERACTION_IDS[shop.title];
     if (shopInteractionId) {
       const interaction = this.interactions?.interactables?.find((entry) => entry.id === shopInteractionId && entry.enabled !== false);
@@ -2721,7 +2869,8 @@ export class TownScene extends Phaser.Scene {
 
   isBlocked(x, y) {
     const edge = 34;
-    if (x < edge || y < edge || x > WORLD.width - edge || y > WORLD.height - edge) return true;
+    const bounds = TOWN_LOGICAL_GEOMETRY.worldBounds;
+    if (x < bounds.x + edge || y < bounds.y + edge || x > bounds.x + bounds.width - edge || y > bounds.y + bounds.height - edge) return true;
     if ([...COLLISION_RECTS, ...this.buildingCollisions].some((rect) => containsWithRadius(rect, x, y))) return true;
     if (this.farming?.treeCollisionAt?.(x, y, PLAYER_RADIUS)?.blocked) return true;
     if (this.municipalCollection?.collisionAt?.(x, y, PLAYER_RADIUS)?.blocked) return true;
@@ -2755,7 +2904,8 @@ export class TownScene extends Phaser.Scene {
   updateStatus() {
     const status = document.querySelector("#location-status");
     if (!status) return;
-    const controlling = Boolean(this.customResident?.getSnapshot?.().controlling);
+    const residentSnapshot = this.currentCustomSnapshot || this.customResident?.getSnapshot?.();
+    const controlling = Boolean(residentSnapshot?.controlling);
     const position = controlling
       ? this.activePosition()
       : { x: this.cameras.main.midPoint.x, y: this.cameras.main.midPoint.y };
@@ -2763,8 +2913,11 @@ export class TownScene extends Phaser.Scene {
     for (const district of DISTRICTS) {
       if (containsWithRadius(district, position.x, position.y, 0)) label = district.title;
     }
-    const prefix = controlling ? `${this.customResident.getSnapshot().profile.name} · ` : "";
-    status.textContent = `${prefix}${label} · ${Math.round(position.x)}, ${Math.round(position.y)}`;
+    const prefix = controlling ? `${residentSnapshot.profile.name} · ` : "";
+    const nextText = `${prefix}${label}`;
+    if (this.lastStatusText === nextText) return;
+    this.lastStatusText = nextText;
+    status.textContent = `${prefix}${label}`;
   }
 
   refreshAnimalPresentations(delta = 0) {
@@ -2775,7 +2928,7 @@ export class TownScene extends Phaser.Scene {
       character?.applyPresentation(presentation, delta, playerPosition);
       const interaction = this.animalInteractables?.get(presentation.definition.id);
       if (!interaction || !character) continue;
-      interaction.enabled = presentation.visible && character.alpha > 0.55 && presentation.location !== "following";
+      interaction.enabled = presentation.interactionReady;
       interaction.x = character.x;
       interaction.y = character.y;
       interaction.label = presentation.state.adopted ? `Visit ${presentation.state.name}` : `Meet ${presentation.state.name}`;
@@ -2783,34 +2936,52 @@ export class TownScene extends Phaser.Scene {
     }
   }
 
-  update(_time, delta) {
-    this.worldSimulation?.tick(delta);
-    const controlling = Boolean(this.customResident?.getSnapshot?.().controlling);
-    const activePosition = this.activePosition();
-    const currentWorld = this.gameState?.getSnapshot().world;
-    if (controlling) this.npcTownLife?.updatePlayerProximity?.(activePosition.x, activePosition.y, currentWorld);
-    this.npcTownLife?.update(delta, currentWorld);
-    this.municipalCollection?.update?.(delta, currentWorld);
-    this.npcTownLife?.refreshPublicBins?.();
-    this.renderNpcPublicBins();
-    const collectionPresentation = this.refreshMunicipalCollectionPresentation();
-    const residents = this.npcTownLife?.getResidents?.() || [];
+  refreshTownCharacterPresentations(delta = 0, controlling = Boolean(this.customResident?.getSnapshot?.().controlling), activePosition = this.activePosition()) {
+    const residents = this.cachedPresentationResidents || [];
+    this.npcPresentationPositions = npcPresentationPositions(residents);
     for (const resident of residents) {
-      const nearby = controlling && Math.hypot(resident.x - activePosition.x, resident.y - activePosition.y) <= 92;
-      this.npcCharacters.get(resident.id)?.applyResident(resident, delta, nearby);
+      const position = this.npcPresentationPositions.get(resident.id) || resident;
+      const nearby = controlling && Math.hypot(position.x - activePosition.x, position.y - activePosition.y) <= 92;
+      this.npcCharacters.get(resident.id)?.applyResident(resident, delta, nearby, position);
       const interaction = this.npcInteractables?.get(resident.id);
       if (interaction) {
-        interaction.x = resident.x;
-        interaction.y = resident.y;
+        interaction.x = position.x;
+        interaction.y = position.y;
         interaction.enabled = resident.visible;
         interaction.detail = `${resident.role} · ${resident.activity}`;
       }
     }
+    this.refreshAnimalPresentations(delta);
+  }
+
+  update(_time, delta) {
+    this.refreshStaticTownVisibility();
+    this.worldSimulation?.tick(delta);
+    const customSnapshot = this.customResident?.getSnapshot?.();
+    const controlling = Boolean(customSnapshot?.controlling);
+    const activePosition = this.activePosition();
+    this.npcSimulationElapsed += delta;
+    let presentationDelta = 0;
+    if (this.npcSimulationElapsed >= 33) {
+      const simulationDelta = this.npcSimulationElapsed;
+      this.npcSimulationElapsed = 0;
+      presentationDelta = simulationDelta;
+      this.cachedWorldSnapshot = this.gameState?.getDomainSnapshot("world") || this.cachedWorldSnapshot;
+      if (controlling) this.npcTownLife?.updatePlayerProximity?.(activePosition.x, activePosition.y, this.cachedWorldSnapshot);
+      this.npcTownLife?.update(simulationDelta, this.cachedWorldSnapshot);
+      this.municipalCollection?.update?.(simulationDelta, this.cachedWorldSnapshot);
+      this.cachedPresentationResidents = this.npcTownLife?.getPresentationResidents?.() || this.npcTownLife?.getResidents?.() || [];
+      this.cachedMunicipalPresentation = this.refreshMunicipalCollectionPresentation();
+    }
+    const currentWorld = this.cachedWorldSnapshot;
+    const collectionPresentation = this.cachedMunicipalPresentation;
+    const residents = this.cachedPresentationResidents;
+    if (presentationDelta) this.refreshTownCharacterPresentations(presentationDelta, controlling, activePosition);
     const { dx, dy, sprinting } = controlling ? this.movement.getVector() : { dx: 0, dy: 0, sprinting: false };
     const speed = sprinting ? SPRINT_SPEED : WALK_SPEED;
     const moving = controlling && this.moveActiveCharacter(dx, dy, speed * Math.min(delta, 50) / 1000);
     if (controlling) {
-      const facing = Math.abs(dx) > Math.abs(dy) && dx ? (dx < 0 ? "left" : "right") : dy ? (dy < 0 ? "up" : "down") : this.customResident.getSnapshot().location.facing;
+      const facing = Math.abs(dx) > Math.abs(dy) && dx ? (dx < 0 ? "left" : "right") : dy ? (dy < 0 ? "up" : "down") : customSnapshot.location.facing;
       this.customResidentCharacter?.setControlMovement(dx, dy, moving);
       this.customResident?.setRuntimePosition?.({ x: this.customResidentCharacter.x, y: this.customResidentCharacter.y, facing });
       const personal = this.customResident.getResident();
@@ -2820,7 +2991,11 @@ export class TownScene extends Phaser.Scene {
       const personal = this.customResident?.getResident?.();
       if (personal) this.customResidentCharacter?.applyResident(personal, delta, false);
     }
-    this.refreshAnimalPresentations(delta);
+    this.approvedVisualRefreshElapsed += delta;
+    if (this.approvedVisualRefreshElapsed >= 100) {
+      this.approvedVisualRefreshElapsed = 0;
+      this.approvedSceneVisuals?.refresh?.();
+    }
     this.stateSyncElapsed += delta;
     this.farmingSyncElapsed += delta;
     if (this.farmingSyncElapsed >= 5000) {
@@ -2840,6 +3015,8 @@ export class TownScene extends Phaser.Scene {
     }
     if (this.stateSyncElapsed >= 250) {
       this.stateSyncElapsed = 0;
+      this.npcTownLife?.refreshPublicBins?.();
+      this.renderNpcPublicBins();
       this.updateWorldObjectLighting(currentWorld);
       this.cachedNpcDiagnostics = this.npcTownLife?.getDiagnostics?.() || this.cachedNpcDiagnostics;
     }
@@ -2850,11 +3027,13 @@ export class TownScene extends Phaser.Scene {
     }
 
     this.shadow.setPosition(this.player.x, this.player.y + 20);
-    this.player.setDepth(200 + this.player.y / 10);
-    this.shadow.setDepth(190 + this.player.y / 10);
+    this.player.setDepth(resolveTownSceneDepth(TOWN_DEPTH_POLICY_IDS.PLAYER, this.player.y));
+    this.shadow.setDepth(resolveTownSceneDepth(TOWN_DEPTH_POLICY_IDS.PLAYER_SHADOW, this.player.y));
+    this.currentCustomSnapshot = customSnapshot;
     this.updateStatus();
+    this.currentCustomSnapshot = null;
     const gameElement = document.querySelector("#game");
-    if (gameElement) {
+    if (import.meta.env.DEV && gameElement) {
       gameElement.dataset.scene = this.scene.key;
       gameElement.dataset.playerX = Math.round(this.player.x);
       gameElement.dataset.playerY = Math.round(this.player.y);
@@ -2986,6 +3165,7 @@ export class TownScene extends Phaser.Scene {
   }
 
   getMilestoneState() {
+    if (!import.meta.env.DEV) return { scene: this.scene.key };
     return {
       scene: this.scene.key,
       world: { ...WORLD },

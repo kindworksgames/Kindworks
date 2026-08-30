@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-08-30",
+  "branch": "phase-2-ui-simplification",
+  "startingCommit": "3387bcb48964c41edbdc26f4257d2990fcdaf8d5",
+  "existingTargetedTests": {
+    "status": "PASS",
+    "passed": 50,
+    "failed": 0
+  },
+  "completeTestSuite": {
+    "status": "PASS",
+    "passed": 728,
+    "failed": 0
+  },
+  "rootProductionBuild": "PASS",
+  "nonRootProductionBuild": {
+    "status": "PASS",
+    "base": "/kindworks/",
+    "scene": "TownScene"
+  },
+  "liveValidAssetLoading": {
+    "bootAnimalSheet": "PASS",
+    "fishingPhaserImage": "PASS",
+    "fishingReentry": "PASS",
+    "powerWashCanvasPack": "PASS"
+  },
+  "controlledMissingRequiredProductionAsset": {
+    "assetId": "character.animal.reference-sheet",
+    "assetRemovedOnlyFromDisposableBuild": true,
+    "sceneAfterFailure": "TownScene",
+    "visibleError": false,
+    "result": "FAIL_REQUIRED_ASSET_GATE"
+  },
+  "adversarialCases": [
+    {
+      "case": "generated-cache-key-collision",
+      "mutation": "character.animal.reference-sheet runtime texture key changed to generated key resident-down-0",
+      "validatorAccepted": true,
+      "expected": "duplicate-cache-key rejection",
+      "result": "FAIL"
+    },
+    {
+      "case": "semantically-incomplete-spritesheet-grid",
+      "mutation": "animal sheet frame width changed from 64 to 128",
+      "declaredFrameCount": 24,
+      "highestConsumerFrame": 42,
+      "validatorAccepted": true,
+      "expected": "out-of-range consumer-frame rejection",
+      "result": "FAIL"
+    },
+    {
+      "case": "preexisting-phaser-cache-key",
+      "mutation": "Phaser texture cache pre-populated under the Fishing runtime key before the registry queued the pack",
+      "queuedLoads": 0,
+      "reportedFailures": 0,
+      "expected": "ownership or fingerprint rejection",
+      "result": "FAIL"
+    },
+    {
+      "case": "critical-phaser-loaderror",
+      "mutation": "Fishing asset marked gameplay-critical and its Phaser loaderror emitted",
+      "fallbackInstalledUnderRequestedKey": true,
+      "blockingSignal": false,
+      "expected": "scene-blocking pack failure",
+      "result": "FAIL"
+    },
+    {
+      "case": "optional-native-loaderror",
+      "mutation": "Power Wash precision tool marked optional and its native image load failed",
+      "packRejected": true,
+      "expected": "optional warning or omission without rejecting the pack",
+      "result": "FAIL"
+    }
+  ]
+}

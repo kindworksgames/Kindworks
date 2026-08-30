@@ -4,8 +4,10 @@ import {
   getLawnLevel,
   lawnTravelPlan,
   lawnCellKey,
-  lawnLevelSummary,
 } from "../data/lawnCare.js";
+import { preloadApprovedSceneVisuals, mountApprovedSceneVisuals } from "../visual/renderers/ApprovedSceneVisualRuntime.js";
+import { createLawnApprovedSceneBindings } from "../presentation/LawnApprovedSceneBindings.js";
+import { applyApprovedLawnDomVisuals } from "../presentation/LawnApprovedDomVisuals.js";
 
 const ROOM = Object.freeze({ width: 1280, height: 720 });
 const DIRECTION_KEYS = Object.freeze({ U: "up", D: "down", L: "left", R: "right" });
@@ -35,6 +37,10 @@ export class LawnCareScene extends Phaser.Scene {
     this.queuedDirection = null;
   }
 
+  preload() {
+    preloadApprovedSceneVisuals(this);
+  }
+
   create() {
     this.lawnCare = this.registry.get("lawnCare");
     this.onboarding = this.registry.get("onboarding");
@@ -49,6 +55,8 @@ export class LawnCareScene extends Phaser.Scene {
     if (!this.lawnCare.getActiveSession()) this.startLevel(this.entryData.level || this.lawnCare.getCampaignSnapshot().nextLevel);
     this.setSceneInterface();
     this.render();
+    this.approvedSceneVisuals = mountApprovedSceneVisuals(this, { bindings: createLawnApprovedSceneBindings(this) });
+    this.removeApprovedLawnDomVisuals = applyApprovedLawnDomVisuals(this);
     this.cameras.main.fadeIn(220, 38, 75, 42);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.shutdownScene());
   }
@@ -66,25 +74,26 @@ export class LawnCareScene extends Phaser.Scene {
     for (const [x, y, icon] of [[92, 108, "🌳"], [1190, 112, "🌳"], [105, 600, "🌼"], [1175, 600, "🌷"], [238, 95, "🐦"], [1030, 610, "🦋"]]) {
       this.add.text(x, y, icon, { fontSize: "48px" }).setOrigin(0.5).setDepth(2);
     }
-    this.add.text(640, 27, "LAWN CARE · WILLOWMERE GARDEN TEAM", {
-      color: "#f4ffcf", fontFamily: "ui-monospace, monospace", fontSize: "18px", fontStyle: "bold", stroke: "#27472e", strokeThickness: 5,
-    }).setOrigin(0.5).setDepth(4);
   }
 
   bindInterface() {
     this.hud = document.querySelector("#lawn-care-hud");
     this.exitButton = document.querySelector("#lawn-care-exit");
+    if (this.exitButton) {
+      this.exitButton.textContent = "✕";
+      this.exitButton.setAttribute("aria-label", "Exit Lawn Care safely");
+      this.exitButton.classList.remove("confirming");
+    }
     this.boardElement = document.querySelector("#lawn-board");
     this.buttons = {
       undo: document.querySelector("#lawn-undo"), hint: document.querySelector("#lawn-hint"),
-      retry: document.querySelector("#lawn-retry"), qa: document.querySelector("#lawn-qa-complete"),
+      qa: document.querySelector("#lawn-qa-complete"),
       replay: document.querySelector("#lawn-replay"),
       return: document.querySelector("#lawn-return"),
     };
     this.onExit = () => this.requestExit();
     this.onUndo = () => this.runServiceAction(() => this.lawnCare.undo(this.lawnCare.getActiveSession()?.id));
     this.onHint = () => this.showHint();
-    this.onRetry = () => this.restart();
     this.onQa = () => this.runCertifiedCompletion();
     this.onReplay = () => this.startLevel(this.lastResultContext?.level || 1);
     this.onReturn = () => this.returnToTown(true);
@@ -95,7 +104,7 @@ export class LawnCareScene extends Phaser.Scene {
       if (direction) { event.preventDefault(); this.mow(direction); }
       else if (key === "z") { event.preventDefault(); this.onUndo(); }
       else if (key === "h") { event.preventDefault(); this.onHint(); }
-      else if (key === "r") { event.preventDefault(); this.onRetry(); }
+      else if (key === "r") { event.preventDefault(); this.restart(); }
     };
     this.onPointerDown = (event) => { this.pointerStart = { x: event.clientX, y: event.clientY, id: event.pointerId }; };
     this.onPointerUp = (event) => {
@@ -110,7 +119,6 @@ export class LawnCareScene extends Phaser.Scene {
     this.exitButton?.addEventListener("click", this.onExit);
     this.buttons.undo?.addEventListener("click", this.onUndo);
     this.buttons.hint?.addEventListener("click", this.onHint);
-    this.buttons.retry?.addEventListener("click", this.onRetry);
     this.buttons.qa?.addEventListener("click", this.onQa);
     this.buttons.replay?.addEventListener("click", this.onReplay);
     this.buttons.return?.addEventListener("click", this.onReturn);
@@ -132,7 +140,7 @@ export class LawnCareScene extends Phaser.Scene {
   setSceneInterface() {
     document.body.dataset.gameScene = this.scene.key;
     const badge = document.querySelector(".milestone-badge");
-    if (badge) badge.textContent = "LAWN CARE · MILESTONE 18";
+    if (badge) badge.textContent = "LAWN CARE";
     setText("#location-status", "Lawn Care");
     setText("#control-hint", "Swipe, arrows or WASD mow · Z undoes · H hints · landscape play");
     setText("#landscape-required-message", "Lawn Care is designed for landscape play. Turn your phone sideways to continue mowing.");
@@ -207,6 +215,11 @@ export class LawnCareScene extends Phaser.Scene {
     const result = this.lawnCare.hint(session.id);
     if (!result.ok) { this.setMessage(result.message, "error"); return false; }
     this.boardElement?.setAttribute("data-hint-direction", DIRECTION_KEYS[result.direction] || "");
+    if (this.buttons.hint) {
+      const arrows = { U: "↑", D: "↓", L: "←", R: "→" };
+      this.buttons.hint.textContent = `${arrows[result.direction] || "💡"} Swipe`;
+      this.buttons.hint.classList.add("hinted");
+    }
     this.setMessage(result.message, "hint");
     return true;
   }
@@ -257,26 +270,22 @@ export class LawnCareScene extends Phaser.Scene {
     this.boardElement.style.setProperty("--lawn-columns", String(level.width));
     this.boardElement.style.setProperty("--lawn-rows", String(level.height));
     this.boardElement.innerHTML = cells.join("");
-    this.boardElement.setAttribute("aria-label", `Lawn Care Level ${assignedLevel}, ${sessionState.percent}% cut, ${sessionState.movesLeft} moves left`);
+    this.boardElement.setAttribute("aria-label", `Lawn Care board, ${sessionState.percent}% cut, ${sessionState.movesLeft} moves left`);
   }
 
   render() {
     const session = this.lawnCare.getActiveSession();
-    setText("#lawn-care-balance", `🪙 ${this.gameState.getSnapshot().economy.coins}`);
     if (!session) { this.updateDomState(); return; }
     const state = this.lawnCare.getSessionState();
-    const summary = lawnLevelSummary(session.assignedLevel);
-    const mower = this.lawnCare.getMowerLoadout();
-    setText("#lawn-level-name", session.mode === "town-job" ? "NEIGHBOUR'S LAWN" : "CURRENT JOB");
-    setText("#lawn-level-band", summary.woodyWeeds ? "Clear the grass and woody weeds" : summary.toughWeeds ? "Clear the grass and tough weeds" : "Clear the whole lawn");
-    setText("#lawn-progress", `${state.percent}%`);
-    setText("#lawn-moves", `${state.moves} / ${state.moveLimit}`);
-    setText("#lawn-mower", mower.label);
+    if (this.buttons.hint) {
+      this.buttons.hint.textContent = "💡 Hint";
+      this.buttons.hint.classList.remove("hinted");
+    }
     this.buttons.undo.disabled = state.ended || session.undoStack.length === 0;
     this.buttons.hint.disabled = state.ended;
-    this.buttons.retry.disabled = state.moves === 0 && session.status !== "failed";
     if (this.buttons.qa) this.buttons.qa.disabled = state.ended;
     this.renderBoard(state, session.assignedLevel);
+    this.approvedSceneVisuals?.refresh?.();
     this.updateDomState();
   }
 
@@ -287,7 +296,7 @@ export class LawnCareScene extends Phaser.Scene {
       returnPosition: session?.returnPosition,
       returnFacing: session?.returnFacing,
     };
-    show("#lawn-care-gameplay", false);
+    show("#lawn-care-gameplay", true);
     show("#lawn-care-result", true);
     const won = !failed && result.stars >= 1;
     if (won) this.onboarding?.recordJobCompleted?.("lawn");
@@ -308,6 +317,7 @@ export class LawnCareScene extends Phaser.Scene {
   }
 
   updateDomState() {
+    if (!import.meta.env.DEV) return;
     const game = document.querySelector("#game");
     if (!game) return;
     const session = this.lawnCare.getActiveSession();
@@ -328,8 +338,18 @@ export class LawnCareScene extends Phaser.Scene {
     const session = this.lawnCare.getActiveSession();
     if (session && Date.now() > this.exitArmedUntil) {
       this.exitArmedUntil = Date.now() + 3000;
-      if (this.exitButton) this.exitButton.textContent = "Confirm exit level";
-      this.setMessage("Tap Confirm exit to leave this attempt.", "error");
+      if (this.exitButton) {
+        this.exitButton.textContent = "!";
+        this.exitButton.setAttribute("aria-label", "Confirm exit Lawn Care");
+        this.exitButton.classList.add("confirming");
+      }
+      this.time.delayedCall(3000, () => {
+        if (!this.exitButton || this.transitioning || Date.now() <= this.exitArmedUntil) return;
+        this.exitButton.textContent = "✕";
+        this.exitButton.setAttribute("aria-label", "Exit Lawn Care safely");
+        this.exitButton.classList.remove("confirming");
+      });
+      this.setMessage("Tap the exit button again to leave this attempt.", "error");
       return false;
     }
     return this.returnToTown(false);
@@ -354,14 +374,20 @@ export class LawnCareScene extends Phaser.Scene {
     this.exitButton?.removeEventListener("click", this.onExit);
     this.buttons.undo?.removeEventListener("click", this.onUndo);
     this.buttons.hint?.removeEventListener("click", this.onHint);
-    this.buttons.retry?.removeEventListener("click", this.onRetry);
     this.buttons.qa?.removeEventListener("click", this.onQa);
     this.buttons.replay?.removeEventListener("click", this.onReplay);
     this.buttons.return?.removeEventListener("click", this.onReturn);
     this.boardElement?.removeEventListener("pointerdown", this.onPointerDown);
     this.boardElement?.removeEventListener("pointerup", this.onPointerUp);
     window.removeEventListener("keydown", this.onKeyDown);
+    if (this.exitButton) {
+      this.exitButton.textContent = "✕";
+      this.exitButton.setAttribute("aria-label", "Exit Lawn Care safely");
+      this.exitButton.classList.remove("confirming");
+    }
     this.hud?.classList.add("hidden");
+    this.removeApprovedLawnDomVisuals?.();
+    this.removeApprovedLawnDomVisuals = null;
     this.worldSimulation?.setPaused("activity", false);
     this.npcTownLife?.setPaused("activity", false);
   }

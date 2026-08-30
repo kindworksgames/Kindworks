@@ -92,7 +92,7 @@ export class MorningMugScene extends Phaser.Scene {
 
   setSceneInterface() {
     document.body.dataset.gameScene = this.scene.key;
-    const badge = document.querySelector(".milestone-badge"); if (badge) badge.textContent = "MORNING MUG · MILESTONE 21";
+    const badge = document.querySelector(".milestone-badge"); if (badge) badge.textContent = "MORNING MUG";
     const status = document.querySelector("#location-status"); if (status) status.textContent = "Inside Morning Mug Coffee";
     const hint = document.querySelector("#control-hint"); if (hint) hint.textContent = "Choose a drink tray · Follow highlighted steps · Save & exit preserves the shift";
     const landscapeMessage = document.querySelector("#landscape-required-message");
@@ -224,6 +224,7 @@ export class MorningMugScene extends Phaser.Scene {
   }
 
   updateDomState() {
+    if (!import.meta.env.DEV) return;
     const game = document.querySelector("#game"); if (!game) return;
     const session = this.morningMug.getActiveSession(); const diagnostics = this.morningMug.getDiagnostics();
     game.dataset.scene = this.scene.key; game.dataset.morningMugLevel = String(session?.level.level || diagnostics.unlockedLevel);

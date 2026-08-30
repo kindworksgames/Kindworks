@@ -115,7 +115,8 @@ add("bridge-south", 2560, 1545, "bridge", "Willow Bridge"); add("shore0", 2695, 
 
 add("harbour0", 3710, 2020); add("harbour1", 3740, 2100, "harbour", "South Harbour", true); add("harbourmid1", 3740, 2260); add("harbour2", 3590, 2500, "beach", "South Shore", true); link("shore3", "harbour0"); chain(["harbour0", "harbour1", "harbourmid1", "harbour2"]);
 
-add("eastplaza1", 2900, 840); add("eastplaza2", 3180, 840); add("eastplaza3", 3460, 840); add("eastplazaside", 3600, 930); chain(["eastplaza1", "eastplaza2", "eastplaza3", "eastplazaside"]);
+add("eastplaza1", 2900, 840); add("eastplaza2", 3180, 840); add("eastplaza3", 3460, 840); add("eastplazaside", 3620, 870);
+chain(["eastplaza1", "eastplaza2", "eastplaza3", "eastplazaside"]);
 add("biz_restaurant1", 2900, 790, "restaurant", "Riverside Kitchen", true); link("biz_restaurant1", "eastplaza1");
 add("biz_pub1", 3180, 790, "pub", "The Willow Arms", true); link("biz_pub1", "eastplaza2");
 add("biz_coffee2", 3460, 790, "cafe", "Morning Mug Coffee", true); link("biz_coffee2", "eastplaza3");

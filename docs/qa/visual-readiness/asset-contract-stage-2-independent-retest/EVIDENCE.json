@@ -1,0 +1,4268 @@
+{
+  "schemaVersion": 1,
+  "id": "kindworks.asset-contract-stage2-independent-retest",
+  "generatedAt": "2026-08-30T19:48:41.138Z",
+  "environment": {
+    "platform": "darwin",
+    "node": "v24.19.0"
+  },
+  "summary": {
+    "total": 167,
+    "passed": 167,
+    "falseNegatives": 0,
+    "falsePositives": 0,
+    "wrongReason": 0,
+    "categoriesExercised": 15,
+    "outputTypesExercised": 8,
+    "executableErrorCodes": 134,
+    "executableErrorCodesCovered": 134,
+    "currentLeafContracts": 23,
+    "currentLeafCategories": {
+      "category.animal": 1,
+      "category.building": 1,
+      "category.character": 2,
+      "category.minigame": 5,
+      "category.prop": 4,
+      "category.terrain": 5,
+      "category.ui": 2,
+      "category.vegetation": 3
+    },
+    "currentLeafOutputTypes": {
+      "single-image": 9,
+      "spritesheet": 14
+    }
+  },
+  "results": [
+    {
+      "id": "baseline-production-contract",
+      "group": "valid",
+      "expectation": "accept",
+      "expectedCode": null,
+      "accepted": true,
+      "classification": "PASS",
+      "codes": [],
+      "messages": [],
+      "note": ""
+    },
+    {
+      "id": "valid-category.calibration",
+      "group": "category-valid",
+      "expectation": "accept",
+      "expectedCode": null,
+      "accepted": true,
+      "classification": "PASS",
+      "codes": [],
+      "messages": [],
+      "note": "Scale rulers, calibration specimens, and non-player production references."
+    },
+    {
+      "id": "valid-category.system-fallback",
+      "group": "category-valid",
+      "expectation": "accept",
+      "expectedCode": null,
+      "accepted": true,
+      "classification": "PASS",
+      "codes": [],
+      "messages": [],
+      "note": "Visible development and safe production missing-asset fallbacks."
+    },
+    {
+      "id": "valid-category.terrain",
+      "group": "category-valid",
+      "expectation": "accept",
+      "expectedCode": null,
+      "accepted": true,
+      "classification": "PASS",
+      "codes": [],
+      "messages": [],
+      "note": "Terrain, roads, paths, banks, water, shorelines, and repeatable transitions."
+    },
+    {
+      "id": "valid-category.structure",
+      "group": "category-valid",
+      "expectation": "accept",
+      "expectedCode": null,
+      "accepted": true,
+      "classification": "PASS",
+      "codes": [],
+      "messages": [],
+      "note": "Bridges, docks, fences, gates, and other modular world structures."
+    },
+    {
+      "id": "valid-category.vegetation",
+      "group": "category-valid",
+      "expectation": "accept",
+      "expectedCode": null,
+      "accepted": true,
+      "classification": "PASS",
+      "codes": [],
+      "messages": [],
+      "note": "Trees, crops, grass growth, shrubs, flowers, and harvestable plants."
+    },
+    {
+      "id": "valid-category.prop",
+      "group": "category-valid",
+      "expectation": "accept",
+      "expectedCode": null,
+      "accepted": true,
+      "classification": "PASS",
+      "codes": [],
+      "messages": [],
+      "note": "Reusable world props, furniture, rubbish, bins, decorations, tools, and equipment."
+    },
+    {
+      "id": "valid-category.effect",
+      "group": "category-valid",
+      "expectation": "accept",
+      "expectedCode": null,
+      "accepted": true,
+      "classification": "PASS",
+      "codes": [],
+      "messages": [],
+      "note": "Environment, interaction, reward, dirt, stain, and restoration effects."
+    },
+    {
+      "id": "valid-category.vehicle",
+      "group": "category-valid",
+      "expectation": "accept",
+      "expectedCode": null,
+      "accepted": true,
+      "classification": "PASS",
+      "codes": [],
+      "messages": [],
+      "note": "Vehicles and mobile equipment with direction and movement presentation."
+    },
+    {
+      "id": "valid-category.building",
+      "group": "category-valid",
+      "expectation": "accept",
+      "expectedCode": null,
+      "accepted": true,
+      "classification": "PASS",
+      "codes": [],
+      "messages": [],
+      "note": "House, shop, venue, and landmark exteriors with aligned condition or upgrade states."
+    },
+    {
+      "id": "valid-category.character",
+      "group": "category-valid",
+      "expectation": "accept",
+      "expectedCode": null,
+      "accepted": true,
+      "classification": "PASS",
+      "codes": [],
+      "messages": [],
+      "note": "Player and NPC rigs, appearance components, clothing, expressions, and actions."
+    },
+    {
+      "id": "valid-category.animal",
+      "group": "category-valid",
+      "expectation": "accept",
+      "expectedCode": null,
+      "accepted": true,
+      "classification": "PASS",
+      "codes": [],
+      "messages": [],
+      "note": "Wildlife, companion, pet-shop, and aquarium animal rigs."
+    },
+    {
+      "id": "valid-category.ui",
+      "group": "category-valid",
+      "expectation": "accept",
+      "expectedCode": null,
+      "accepted": true,
+      "classification": "PASS",
+      "codes": [],
+      "messages": [],
+      "note": "Buttons, panels, dialogs, icons, cards, counters, and player feedback."
+    },
+    {
+      "id": "valid-category.interior",
+      "group": "category-valid",
+      "expectation": "accept",
+      "expectedCode": null,
+      "accepted": true,
+      "classification": "PASS",
+      "codes": [],
+      "messages": [],
+      "note": "Room construction, furniture, appliances, counters, stations, and interior overlays."
+    },
+    {
+      "id": "valid-category.minigame",
+      "group": "category-valid",
+      "expectation": "accept",
+      "expectedCode": null,
+      "accepted": true,
+      "classification": "PASS",
+      "codes": [],
+      "messages": [],
+      "note": "Minigame-specific boards, actors, tools, stations, objects, masks, and feedback."
+    },
+    {
+      "id": "valid-category.audio",
+      "group": "category-valid",
+      "expectation": "accept",
+      "expectedCode": null,
+      "accepted": true,
+      "classification": "PASS",
+      "codes": [],
+      "messages": [],
+      "note": "Music, ambience, voice, and interaction sound effects."
+    },
+    {
+      "id": "valid-output-single-image",
+      "group": "output-valid",
+      "expectation": "accept",
+      "expectedCode": null,
+      "accepted": true,
+      "classification": "PASS",
+      "codes": [],
+      "messages": [],
+      "note": ""
+    },
+    {
+      "id": "valid-output-tileset",
+      "group": "output-valid",
+      "expectation": "accept",
+      "expectedCode": null,
+      "accepted": true,
+      "classification": "PASS",
+      "codes": [],
+      "messages": [],
+      "note": ""
+    },
+    {
+      "id": "valid-output-spritesheet",
+      "group": "output-valid",
+      "expectation": "accept",
+      "expectedCode": null,
+      "accepted": true,
+      "classification": "PASS",
+      "codes": [],
+      "messages": [],
+      "note": ""
+    },
+    {
+      "id": "valid-output-atlas",
+      "group": "output-valid",
+      "expectation": "accept",
+      "expectedCode": null,
+      "accepted": true,
+      "classification": "PASS",
+      "codes": [],
+      "messages": [],
+      "note": ""
+    },
+    {
+      "id": "valid-output-layer-set",
+      "group": "output-valid",
+      "expectation": "accept",
+      "expectedCode": null,
+      "accepted": true,
+      "classification": "PASS",
+      "codes": [],
+      "messages": [],
+      "note": ""
+    },
+    {
+      "id": "valid-output-nine-slice",
+      "group": "output-valid",
+      "expectation": "accept",
+      "expectedCode": null,
+      "accepted": true,
+      "classification": "PASS",
+      "codes": [],
+      "messages": [],
+      "note": ""
+    },
+    {
+      "id": "valid-output-effect-sheet",
+      "group": "output-valid",
+      "expectation": "accept",
+      "expectedCode": null,
+      "accepted": true,
+      "classification": "PASS",
+      "codes": [],
+      "messages": [],
+      "note": ""
+    },
+    {
+      "id": "valid-output-audio",
+      "group": "output-valid",
+      "expectation": "accept",
+      "expectedCode": null,
+      "accepted": true,
+      "classification": "PASS",
+      "codes": [],
+      "messages": [],
+      "note": ""
+    },
+    {
+      "id": "invalid-semantic-id",
+      "group": "identity",
+      "expectation": "reject",
+      "expectedCode": "invalid-semantic-id",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-semantic-id"
+      ],
+      "messages": [
+        {
+          "code": "invalid-semantic-id",
+          "message": "Provider FINAL Asset is not a stable generator-neutral semantic id.",
+          "path": "assets[0].semanticId",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "unknown-category",
+      "group": "category",
+      "expectation": "reject",
+      "expectedCode": "unknown-category-contract",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "unknown-category-contract"
+      ],
+      "messages": [
+        {
+          "code": "unknown-category-contract",
+          "message": "audit.prop.valid references unknown category contract category.missing.",
+          "path": "assets[0].categoryContractId",
+          "expected": [
+            "category.calibration",
+            "category.system-fallback",
+            "category.terrain",
+            "category.structure",
+            "category.vegetation",
+            "category.prop",
+            "category.effect",
+            "category.vehicle",
+            "category.building",
+            "category.character",
+            "category.animal",
+            "category.ui",
+            "category.interior",
+            "category.minigame",
+            "category.audio"
+          ],
+          "actual": "category.missing"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "category-output-mismatch",
+      "group": "category",
+      "expectation": "reject",
+      "expectedCode": "category-output-mismatch",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-output-format",
+        "invalid-audio-contract",
+        "audio-visual-metadata-forbidden",
+        "category-output-mismatch"
+      ],
+      "messages": [
+        {
+          "code": "invalid-output-format",
+          "message": "audit.prop.valid has unsupported audio format png.",
+          "path": "assets[0].output.format",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "invalid-audio-contract",
+          "message": "audit.prop.valid has incomplete audio technical metadata.",
+          "path": "assets[0].output.audio",
+          "expected": "1/2 channels, sampleRate 8000..192000, positive durationMs, loop policy, LUFS target",
+          "actual": null
+        },
+        {
+          "code": "audio-visual-metadata-forbidden",
+          "message": "audit.prop.valid audio contract contains visual-only output fields.",
+          "path": "assets[0].output",
+          "expected": "format plus audio metadata only",
+          "actual": [
+            "canvas",
+            "alpha",
+            "colourMode",
+            "bitDepth",
+            "pixelArt",
+            "textureFiltering",
+            "smoothing",
+            "trimFrames"
+          ]
+        },
+        {
+          "code": "category-output-mismatch",
+          "message": "audit.prop.valid output type is not allowed by category.prop.",
+          "path": "assets[0].output.type",
+          "expected": [
+            "single-image",
+            "spritesheet",
+            "atlas",
+            "layer-set"
+          ],
+          "actual": "audio"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "unsupported-format",
+      "group": "format",
+      "expectation": "reject",
+      "expectedCode": "invalid-output-format",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-output-format",
+        "category-format-mismatch"
+      ],
+      "messages": [
+        {
+          "code": "invalid-output-format",
+          "message": "audit.prop.valid has unsupported runtime format gif.",
+          "path": "assets[0].output.format",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "category-format-mismatch",
+          "message": "audit.prop.valid format is not allowed by category.prop.",
+          "path": "assets[0].output.format",
+          "expected": [
+            "png",
+            "webp"
+          ],
+          "actual": "gif"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "zero-canvas",
+      "group": "dimensions",
+      "expectation": "reject",
+      "expectedCode": "invalid-canvas-size",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-canvas-size",
+        "invalid-visible-bounds-contract",
+        "invalid-ground-anchor"
+      ],
+      "messages": [
+        {
+          "code": "invalid-canvas-size",
+          "message": "audit.prop.valid requires positive exact canvas dimensions.",
+          "path": "assets[0].output.canvas",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "invalid-visible-bounds-contract",
+          "message": "audit.prop.valid maximum visible bounds must fit inside its canvas.",
+          "path": "assets[0].validation.maximumVisibleBounds",
+          "expected": {
+            "width": 0,
+            "height": 4
+          },
+          "actual": {
+            "x": 0,
+            "y": 0,
+            "width": 4,
+            "height": 4
+          }
+        },
+        {
+          "code": "invalid-ground-anchor",
+          "message": "audit.prop.valid ground contact must be inside its declared canvas.",
+          "path": "assets[0].anchor.groundContact",
+          "expected": {
+            "width": 0,
+            "height": 4
+          },
+          "actual": {
+            "x": 2,
+            "y": 4
+          }
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "invalid-colour-mode",
+      "group": "colour",
+      "expectation": "reject",
+      "expectedCode": "invalid-colour-contract",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-colour-contract"
+      ],
+      "messages": [
+        {
+          "code": "invalid-colour-contract",
+          "message": "audit.prop.valid requires a consistent RGB/RGBA 8-bit colour contract.",
+          "path": "assets[0].output",
+          "expected": "RGB alpha=false or RGBA alpha=true, bitDepth=8",
+          "actual": {
+            "colourMode": "CMYK",
+            "alpha": true,
+            "bitDepth": 8
+          }
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "invalid-anchor",
+      "group": "anchor",
+      "expectation": "reject",
+      "expectedCode": "invalid-anchor",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-anchor"
+      ],
+      "messages": [
+        {
+          "code": "invalid-anchor",
+          "message": "audit.prop.valid requires a normalized anchor inside its canvas.",
+          "path": "assets[0].anchor.normalized",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "invalid-scale",
+      "group": "scale",
+      "expectation": "reject",
+      "expectedCode": "invalid-scale-contract",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-scale-contract"
+      ],
+      "messages": [
+        {
+          "code": "invalid-scale-contract",
+          "message": "audit.prop.valid has incomplete scaling metadata.",
+          "path": "assets[0].masterScale",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "missing-required-state",
+      "group": "state",
+      "expectation": "reject",
+      "expectedCode": "missing-required-state",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "category-states-required",
+        "invalid-token-list",
+        "missing-required-state",
+        "unknown-layer-state"
+      ],
+      "messages": [
+        {
+          "code": "category-states-required",
+          "message": "audit.prop.valid requires at least one state for category.prop.",
+          "path": "assets[0].states",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "invalid-token-list",
+          "message": "assets[0].states must be a non-empty array.",
+          "path": "assets[0].states",
+          "expected": "unique kebab-case tokens",
+          "actual": []
+        },
+        {
+          "code": "missing-required-state",
+          "message": "audit.prop.valid omits required state default.",
+          "path": "assets[0].states",
+          "expected": [
+            "default"
+          ],
+          "actual": []
+        },
+        {
+          "code": "unknown-layer-state",
+          "message": "audit.prop.valid.main references undeclared state default.",
+          "path": "assets[0].layers[0].states",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "duplicate-variant",
+      "group": "variant",
+      "expectation": "reject",
+      "expectedCode": "duplicate-contract-token",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "duplicate-contract-token"
+      ],
+      "messages": [
+        {
+          "code": "duplicate-contract-token",
+          "message": "assets[0].variants contains duplicate values.",
+          "path": "assets[0].variants",
+          "expected": "unique tokens",
+          "actual": [
+            "default"
+          ]
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "missing-required-direction",
+      "group": "direction",
+      "expectation": "reject",
+      "expectedCode": "missing-required-direction",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "category-directions-required",
+        "missing-required-direction",
+        "missing-required-direction"
+      ],
+      "messages": [
+        {
+          "code": "category-directions-required",
+          "message": "audit.character.valid requires directional metadata for category.character.",
+          "path": "assets[0].directions",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "missing-required-direction",
+          "message": "audit.character.valid omits required direction left.",
+          "path": "assets[0].directions",
+          "expected": [
+            "left",
+            "right"
+          ],
+          "actual": []
+        },
+        {
+          "code": "missing-required-direction",
+          "message": "audit.character.valid omits required direction right.",
+          "path": "assets[0].directions",
+          "expected": [
+            "left",
+            "right"
+          ],
+          "actual": []
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "invalid-frame-grid",
+      "group": "spritesheet",
+      "expectation": "reject",
+      "expectedCode": "invalid-frame-grid-metadata",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-frame-grid-metadata",
+        "frame-grid-mismatch"
+      ],
+      "messages": [
+        {
+          "code": "invalid-frame-grid-metadata",
+          "message": "audit.character.valid requires positive integer frame geometry and non-negative padding/spacing.",
+          "path": "assets[0].output.spriteSheet",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "frame-grid-mismatch",
+          "message": "audit.character.valid frame grid does not fill its declared canvas.",
+          "path": "assets[0].output.spriteSheet",
+          "expected": "8x4",
+          "actual": "0x4"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "wrong-frame-count",
+      "group": "spritesheet",
+      "expectation": "reject",
+      "expectedCode": "frame-count-mismatch",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "frame-count-mismatch",
+        "invalid-animation-frame"
+      ],
+      "messages": [
+        {
+          "code": "frame-count-mismatch",
+          "message": "audit.character.valid declares 2 cells but 1 frame-order entries.",
+          "path": "assets[0].output.spriteSheet.frameOrder",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "invalid-animation-frame",
+          "message": "audit.character.valid.move-right references missing frame move.right.",
+          "path": "assets[0].animations[1]",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "duplicate-frame-name",
+      "group": "spritesheet",
+      "expectation": "reject",
+      "expectedCode": "duplicate-frame-name",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "duplicate-frame-name",
+        "invalid-animation-frame"
+      ],
+      "messages": [
+        {
+          "code": "duplicate-frame-name",
+          "message": "audit.character.valid frame order contains duplicate names.",
+          "path": "assets[0].output.spriteSheet.frameOrder",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "invalid-animation-frame",
+          "message": "audit.character.valid.move-right references missing frame move.right.",
+          "path": "assets[0].animations[1]",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "invalid-frame-rate",
+      "group": "animation",
+      "expectation": "reject",
+      "expectedCode": "invalid-frame-rate",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-frame-rate"
+      ],
+      "messages": [
+        {
+          "code": "invalid-frame-rate",
+          "message": "audit.character.valid.move-left frame rate must be within 1..60.",
+          "path": "assets[0].animations[0].frameRate",
+          "expected": "1..60",
+          "actual": 0
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "invalid-loop-policy",
+      "group": "animation",
+      "expectation": "reject",
+      "expectedCode": "invalid-loop-policy",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-loop-policy"
+      ],
+      "messages": [
+        {
+          "code": "invalid-loop-policy",
+          "message": "audit.character.valid.move-left repeat must be -1 or a non-negative integer.",
+          "path": "assets[0].animations[0].repeat",
+          "expected": "integer >= -1",
+          "actual": -2
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "empty-animation",
+      "group": "animation",
+      "expectation": "reject",
+      "expectedCode": "empty-animation",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "empty-animation"
+      ],
+      "messages": [
+        {
+          "code": "empty-animation",
+          "message": "audit.character.valid.move-left requires at least one frame.",
+          "path": "assets[0].animations[0].frames",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "missing-animation-frame",
+      "group": "animation",
+      "expectation": "reject",
+      "expectedCode": "invalid-animation-frame",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-animation-frame"
+      ],
+      "messages": [
+        {
+          "code": "invalid-animation-frame",
+          "message": "audit.character.valid.move-left references missing frame move.missing.",
+          "path": "assets[0].animations[0]",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "smoothing-enabled",
+      "group": "pixel",
+      "expectation": "reject",
+      "expectedCode": "smoothing-forbidden",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "smoothing-forbidden"
+      ],
+      "messages": [
+        {
+          "code": "smoothing-forbidden",
+          "message": "audit.prop.valid must disable smoothing.",
+          "path": "assets[0].output.smoothing",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "trimming-enabled",
+      "group": "pixel",
+      "expectation": "reject",
+      "expectedCode": "frame-trimming-forbidden",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "frame-trimming-forbidden"
+      ],
+      "messages": [
+        {
+          "code": "frame-trimming-forbidden",
+          "message": "audit.prop.valid must preserve untrimmed frame canvases.",
+          "path": "assets[0].output.trimFrames",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "linear-filtering",
+      "group": "pixel",
+      "expectation": "reject",
+      "expectedCode": "invalid-texture-filtering",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-texture-filtering"
+      ],
+      "messages": [
+        {
+          "code": "invalid-texture-filtering",
+          "message": "audit.prop.valid must require nearest-neighbour filtering.",
+          "path": "assets[0].output.textureFiltering",
+          "expected": "nearest",
+          "actual": "linear"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "missing-geometry-channel",
+      "group": "geometry",
+      "expectation": "reject",
+      "expectedCode": "missing-geometry-channel",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "missing-geometry-channel"
+      ],
+      "messages": [
+        {
+          "code": "missing-geometry-channel",
+          "message": "audit.prop.valid must explicitly declare collision geometry.",
+          "path": "assets[0].geometry.collision",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "invalid-visual-geometry",
+      "group": "geometry",
+      "expectation": "reject",
+      "expectedCode": "invalid-visual-geometry",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-visual-geometry",
+        "invalid-geometry-shape"
+      ],
+      "messages": [
+        {
+          "code": "invalid-visual-geometry",
+          "message": "audit.prop.valid requires positive logical visual bounds.",
+          "path": "assets[0].geometry.visual",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "invalid-geometry-shape",
+          "message": "audit.prop.valid rectangle geometry requires finite x/y and positive width/height.",
+          "path": "assets[0].geometry.visual",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "gameplay-geometry-change",
+      "group": "geometry",
+      "expectation": "reject",
+      "expectedCode": "gameplay-geometry-digest-mismatch",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "gameplay-geometry-digest-mismatch"
+      ],
+      "messages": [
+        {
+          "code": "gameplay-geometry-digest-mismatch",
+          "message": "audit.prop.valid gameplay geometry differs from its protected digest.",
+          "path": "assets[0].validation.gameplayGeometrySha256",
+          "expected": "42a9d4270622350438573de876af14699cd7ff25319d462fb6d8c063bf0868df",
+          "actual": "6e7d75175c4fdd5143249a42510ff3860dab1ba8e9e61a4981005043b92472d4"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "missing-accessibility",
+      "group": "accessibility",
+      "expectation": "reject",
+      "expectedCode": "missing-accessibility-contract",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "missing-accessibility-contract",
+        "missing-category-required-metadata"
+      ],
+      "messages": [
+        {
+          "code": "missing-accessibility-contract",
+          "message": "audit.ui.valid requires UI readability/accessibility metadata.",
+          "path": "assets[0].accessibility",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "missing-category-required-metadata",
+          "message": "audit.ui.valid is missing executable metadata required by category.ui: accessibility.",
+          "path": "assets[0].categoryMetadata",
+          "expected": [
+            "intendedDisplaySize",
+            "safeContentInsets",
+            "accessibility"
+          ],
+          "actual": [
+            "accessibility"
+          ]
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "incomplete-art-rules",
+      "group": "style",
+      "expectation": "reject",
+      "expectedCode": "incomplete-art-rules",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "incomplete-art-rules"
+      ],
+      "messages": [
+        {
+          "code": "incomplete-art-rules",
+          "message": "audit.prop.valid has incomplete art-bible rules.",
+          "path": "assets[0].artRules",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "unknown-field",
+      "group": "schema",
+      "expectation": "reject",
+      "expectedCode": "unknown-contract-field",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "unknown-contract-field"
+      ],
+      "messages": [
+        {
+          "code": "unknown-contract-field",
+          "message": "assets[0].generatorHint is not defined by artwork schema v2.",
+          "path": "assets[0].generatorHint",
+          "expected": [
+            "schemaVersion",
+            "semanticId",
+            "version",
+            "familyId",
+            "category",
+            "categoryContractId",
+            "categoryMetadata",
+            "gameplayPurpose",
+            "intendedScenes",
+            "output",
+            "camera",
+            "masterScale",
+            "anchor",
+            "sockets",
+            "geometry",
+            "states",
+            "variants",
+            "directions",
+            "layers",
+            "animations",
+            "artRules",
+            "expectedFilenames",
+            "filenameStem",
+            "forbiddenOutput",
+            "validation",
+            "accessibility",
+            "productionStatus",
+            "workflow",
+            "provenance",
+            "dependencies",
+            "scenePackId"
+          ],
+          "actual": "generatorHint"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "duplicate-socket",
+      "group": "socket",
+      "expectation": "reject",
+      "expectedCode": "duplicate-socket-id",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "duplicate-socket-id"
+      ],
+      "messages": [
+        {
+          "code": "duplicate-socket-id",
+          "message": "audit.prop.valid contains a duplicate or missing socket id.",
+          "path": "assets[0].sockets",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "invalid-socket",
+      "group": "socket",
+      "expectation": "reject",
+      "expectedCode": "invalid-socket",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-socket"
+      ],
+      "messages": [
+        {
+          "code": "invalid-socket",
+          "message": "audit.prop.valid.interaction socket requires finite logical coordinates.",
+          "path": "assets[0].sockets[0]",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "missing-fallback",
+      "group": "fallback",
+      "expectation": "reject",
+      "expectedCode": "missing-fallback",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "missing-fallback"
+      ],
+      "messages": [
+        {
+          "code": "missing-fallback",
+          "message": "audit.prop.valid references an unregistered production fallback.",
+          "path": "assets[0].validation.fallbackSemanticId",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "missing-dependency",
+      "group": "dependency",
+      "expectation": "reject",
+      "expectedCode": "missing-dependency",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "missing-dependency"
+      ],
+      "messages": [
+        {
+          "code": "missing-dependency",
+          "message": "audit.prop.valid depends on unknown artwork asset.missing.",
+          "path": "assets[0].dependencies",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "invalid-scene-pack-prefix",
+      "group": "scene-pack",
+      "expectation": "reject",
+      "expectedCode": "orphaned-scene-pack",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "orphaned-scene-pack"
+      ],
+      "messages": [
+        {
+          "code": "orphaned-scene-pack",
+          "message": "audit.prop.valid is not assigned to a valid scene pack.",
+          "path": "assets[0].scenePackId",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "invalid-production-status",
+      "group": "workflow",
+      "expectation": "reject",
+      "expectedCode": "invalid-production-status",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-production-status"
+      ],
+      "messages": [
+        {
+          "code": "invalid-production-status",
+          "message": "audit.prop.valid has invalid production status done.",
+          "path": "assets[0].productionStatus",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "incomplete-provenance",
+      "group": "provenance",
+      "expectation": "reject",
+      "expectedCode": "incomplete-provenance",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "incomplete-provenance"
+      ],
+      "messages": [
+        {
+          "code": "incomplete-provenance",
+          "message": "audit.prop.valid has incomplete provenance/version metadata.",
+          "path": "assets[0].provenance",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "orphan-scene",
+      "group": "scene",
+      "expectation": "reject",
+      "expectedCode": "orphaned-artwork-entry",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "orphaned-artwork-entry",
+        "unknown-scene-pack"
+      ],
+      "messages": [
+        {
+          "code": "orphaned-artwork-entry",
+          "message": "audit.prop.valid is not assigned to a scene.",
+          "path": "assets[0].intendedScenes",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "unknown-scene-pack",
+          "message": "audit.prop.valid scene pack is not derived from any intended scene.",
+          "path": "assets[0].scenePackId",
+          "expected": [],
+          "actual": "pack.scene.audit"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "invalid-padding-contract",
+      "group": "padding",
+      "expectation": "reject",
+      "expectedCode": "invalid-padding-contract",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-padding-contract"
+      ],
+      "messages": [
+        {
+          "code": "invalid-padding-contract",
+          "message": "audit.prop.valid requires non-negative integer transparent-padding limits.",
+          "path": "assets[0].validation.maximumTransparentPadding",
+          "expected": "non-negative top/right/bottom/left",
+          "actual": {
+            "top": 4,
+            "right": 4,
+            "bottom": 4,
+            "left": -1
+          }
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "invalid-visible-bounds",
+      "group": "bounds",
+      "expectation": "reject",
+      "expectedCode": "invalid-visible-bounds-contract",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-visible-bounds-contract"
+      ],
+      "messages": [
+        {
+          "code": "invalid-visible-bounds-contract",
+          "message": "audit.prop.valid maximum visible bounds must fit inside its canvas.",
+          "path": "assets[0].validation.maximumVisibleBounds",
+          "expected": {
+            "width": 4,
+            "height": 4
+          },
+          "actual": {
+            "x": 0,
+            "y": 0,
+            "width": 5,
+            "height": 4
+          }
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "invalid-output-type",
+      "group": "output",
+      "expectation": "reject",
+      "expectedCode": "invalid-output-type",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-output-type",
+        "category-output-mismatch"
+      ],
+      "messages": [
+        {
+          "code": "invalid-output-type",
+          "message": "audit.prop.valid has unsupported output type movie.",
+          "path": "assets[0].output.type",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "category-output-mismatch",
+          "message": "audit.prop.valid output type is not allowed by category.prop.",
+          "path": "assets[0].output.type",
+          "expected": [
+            "single-image",
+            "spritesheet",
+            "atlas",
+            "layer-set"
+          ],
+          "actual": "movie"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "unexpected-frame-grid",
+      "group": "spritesheet",
+      "expectation": "reject",
+      "expectedCode": "unexpected-frame-grid",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "unexpected-frame-grid"
+      ],
+      "messages": [
+        {
+          "code": "unexpected-frame-grid",
+          "message": "audit.prop.valid is not a spritesheet but declares a frame grid.",
+          "path": "assets[0].output.spriteSheet",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "missing-frame-grid",
+      "group": "spritesheet",
+      "expectation": "reject",
+      "expectedCode": "missing-frame-grid",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "missing-frame-grid"
+      ],
+      "messages": [
+        {
+          "code": "missing-frame-grid",
+          "message": "audit.prop.valid requires sprite-sheet metadata.",
+          "path": "assets[0].output.spriteSheet",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "unknown-frame-action",
+      "group": "spritesheet",
+      "expectation": "reject",
+      "expectedCode": "unknown-frame-action",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "unknown-frame-action",
+        "invalid-animation-frame"
+      ],
+      "messages": [
+        {
+          "code": "unknown-frame-action",
+          "message": "audit.character.valid frame fly.left uses undeclared action fly.",
+          "path": "assets[0].output.spriteSheet.frameOrder",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "invalid-animation-frame",
+          "message": "audit.character.valid.move-left references missing frame move.left.",
+          "path": "assets[0].animations[0]",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "unknown-frame-direction",
+      "group": "spritesheet",
+      "expectation": "reject",
+      "expectedCode": "unknown-frame-direction",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "unknown-frame-direction",
+        "invalid-animation-frame"
+      ],
+      "messages": [
+        {
+          "code": "unknown-frame-direction",
+          "message": "audit.character.valid frame move.up uses undeclared direction up.",
+          "path": "assets[0].output.spriteSheet.frameOrder",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "invalid-animation-frame",
+          "message": "audit.character.valid.move-left references missing frame move.left.",
+          "path": "assets[0].animations[0]",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "atlas-frame-count-mismatch",
+      "group": "atlas",
+      "expectation": "reject",
+      "expectedCode": "atlas-frame-mismatch",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "atlas-frame-mismatch"
+      ],
+      "messages": [
+        {
+          "code": "atlas-frame-mismatch",
+          "message": "audit.character.valid atlas frame count disagrees with the sheet grid.",
+          "path": "assets[0].output.atlas",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "atlas-invalid-frame-names",
+      "group": "atlas",
+      "expectation": "reject",
+      "expectedCode": "invalid-atlas-frame-names",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-atlas-frame-names",
+        "missing-atlas-frame",
+        "missing-atlas-frame"
+      ],
+      "messages": [
+        {
+          "code": "invalid-atlas-frame-names",
+          "message": "audit.character.valid atlas frame names must be unique.",
+          "path": "assets[0].output.atlas.frameNames",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "missing-atlas-frame",
+          "message": "audit.character.valid atlas omits move.right.",
+          "path": "assets[0].output.atlas.frameNames",
+          "expected": "move.right",
+          "actual": [
+            "move.left",
+            "move.left"
+          ]
+        },
+        {
+          "code": "missing-atlas-frame",
+          "message": "audit.character.valid.move-right references atlas frame move.right that is not declared.",
+          "path": "assets[0].animations[1].frames",
+          "expected": [
+            "move.left",
+            "move.left"
+          ],
+          "actual": "move.right"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "atlas-missing-declared-frame",
+      "group": "atlas",
+      "expectation": "reject",
+      "expectedCode": "missing-atlas-frame",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "missing-atlas-frame",
+        "missing-atlas-frame"
+      ],
+      "messages": [
+        {
+          "code": "missing-atlas-frame",
+          "message": "audit.character.valid atlas omits move.right.",
+          "path": "assets[0].output.atlas.frameNames",
+          "expected": "move.right",
+          "actual": [
+            "move.left",
+            "idle"
+          ]
+        },
+        {
+          "code": "missing-atlas-frame",
+          "message": "audit.character.valid.move-right references atlas frame move.right that is not declared.",
+          "path": "assets[0].animations[1].frames",
+          "expected": [
+            "move.left",
+            "idle"
+          ],
+          "actual": "move.right"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "atlas-unsafe-transform",
+      "group": "atlas",
+      "expectation": "reject",
+      "expectedCode": "unsafe-atlas-transform",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "unsafe-atlas-transform"
+      ],
+      "messages": [
+        {
+          "code": "unsafe-atlas-transform",
+          "message": "audit.character.valid atlas must forbid trimming and rotation.",
+          "path": "assets[0].output.atlas",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "duplicate-layer-id",
+      "group": "layer",
+      "expectation": "reject",
+      "expectedCode": "duplicate-layer-id",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "duplicate-layer-id",
+        "duplicate-layer-order"
+      ],
+      "messages": [
+        {
+          "code": "duplicate-layer-id",
+          "message": "audit.prop.valid contains a duplicate or missing layer id.",
+          "path": "assets[0].layers[1]",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "duplicate-layer-order",
+          "message": "audit.prop.valid layers require unique integer orders.",
+          "path": "assets[0].layers[1].order",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "invalid-layer-alignment",
+      "group": "layer",
+      "expectation": "reject",
+      "expectedCode": "invalid-layer-alignment",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-layer-alignment"
+      ],
+      "messages": [
+        {
+          "code": "invalid-layer-alignment",
+          "message": "audit.prop.valid.main has unsupported canvas alignment.",
+          "path": "assets[0].layers[0].canvasAlignment",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "missing-layer-state",
+      "group": "layer",
+      "expectation": "reject",
+      "expectedCode": "missing-layer-state",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "missing-layer-state"
+      ],
+      "messages": [
+        {
+          "code": "missing-layer-state",
+          "message": "audit.prop.valid state dirty has no canvas-aligned layer.",
+          "path": "assets[0].states",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "invalid-animation-id",
+      "group": "animation",
+      "expectation": "reject",
+      "expectedCode": "invalid-animation",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-animation"
+      ],
+      "messages": [
+        {
+          "code": "invalid-animation",
+          "message": "audit.character.valid animation requires stable id and action.",
+          "path": "assets[0].animations[0]",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "duplicate-animation-id",
+      "group": "animation",
+      "expectation": "reject",
+      "expectedCode": "duplicate-animation-id",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "duplicate-animation-id"
+      ],
+      "messages": [
+        {
+          "code": "duplicate-animation-id",
+          "message": "audit.character.valid contains duplicate animation move-left.",
+          "path": "assets[0].animations[2].id",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "invalid-animation-action",
+      "group": "animation",
+      "expectation": "reject",
+      "expectedCode": "invalid-animation-action",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-animation-action"
+      ],
+      "messages": [
+        {
+          "code": "invalid-animation-action",
+          "message": "audit.character.valid.move-left references undeclared action fly.",
+          "path": "assets[0].animations[0]",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "invalid-animation-direction",
+      "group": "animation",
+      "expectation": "reject",
+      "expectedCode": "invalid-animation-direction",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-animation-direction"
+      ],
+      "messages": [
+        {
+          "code": "invalid-animation-direction",
+          "message": "audit.character.valid.move-left references undeclared direction up.",
+          "path": "assets[0].animations[0]",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "invalid-token",
+      "group": "token",
+      "expectation": "reject",
+      "expectedCode": "invalid-contract-token",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-contract-token",
+        "missing-required-state",
+        "unknown-layer-state",
+        "missing-layer-state"
+      ],
+      "messages": [
+        {
+          "code": "invalid-contract-token",
+          "message": "assets[0].states contains invalid token Default State.",
+          "path": "assets[0].states",
+          "expected": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "actual": "Default State"
+        },
+        {
+          "code": "missing-required-state",
+          "message": "audit.prop.valid omits required state default.",
+          "path": "assets[0].states",
+          "expected": [
+            "default"
+          ],
+          "actual": [
+            "Default State"
+          ]
+        },
+        {
+          "code": "unknown-layer-state",
+          "message": "audit.prop.valid.main references undeclared state default.",
+          "path": "assets[0].layers[0].states",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "missing-layer-state",
+          "message": "audit.prop.valid state Default State has no canvas-aligned layer.",
+          "path": "assets[0].states",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "category-variants-required",
+      "group": "category",
+      "expectation": "reject",
+      "expectedCode": "category-variants-required",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "category-variants-required",
+        "invalid-token-list"
+      ],
+      "messages": [
+        {
+          "code": "category-variants-required",
+          "message": "audit.prop.valid requires at least one variant for category.prop.",
+          "path": "assets[0].variants",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "invalid-token-list",
+          "message": "assets[0].variants must be a non-empty array.",
+          "path": "assets[0].variants",
+          "expected": "unique kebab-case tokens",
+          "actual": []
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "category-directions-required",
+      "group": "category",
+      "expectation": "reject",
+      "expectedCode": "category-directions-required",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "category-directions-required"
+      ],
+      "messages": [
+        {
+          "code": "category-directions-required",
+          "message": "audit.character.valid requires directional metadata for category.character.",
+          "path": "assets[0].directions",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "category-animations-required",
+      "group": "category",
+      "expectation": "reject",
+      "expectedCode": "category-animations-required",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "category-animations-required"
+      ],
+      "messages": [
+        {
+          "code": "category-animations-required",
+          "message": "audit.effect.valid requires animation definitions for category.effect.",
+          "path": "assets[0].animations",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "art-bible-version-mismatch",
+      "group": "style",
+      "expectation": "reject",
+      "expectedCode": "art-bible-version-mismatch",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "art-bible-version-mismatch"
+      ],
+      "messages": [
+        {
+          "code": "art-bible-version-mismatch",
+          "message": "audit.prop.valid does not use manifest art bible KindWorks Visual Style Bible v4.",
+          "path": "assets[0].artRules.artBibleVersion",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "invalid-artwork-schema",
+      "group": "manifest",
+      "expectation": "reject",
+      "expectedCode": "invalid-artwork-schema",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-artwork-schema"
+      ],
+      "messages": [
+        {
+          "code": "invalid-artwork-schema",
+          "message": "Expected artwork schema 2.",
+          "path": "schemaVersion",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "workflow-status-order",
+      "group": "manifest",
+      "expectation": "reject",
+      "expectedCode": "workflow-status-contract-mismatch",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "workflow-status-contract-mismatch"
+      ],
+      "messages": [
+        {
+          "code": "workflow-status-contract-mismatch",
+          "message": "Manifest workflow status order does not match the executable contract.",
+          "path": "workflowStatuses",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "invalid-contract-policy",
+      "group": "manifest",
+      "expectation": "reject",
+      "expectedCode": "invalid-contract-policy",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-contract-policy"
+      ],
+      "messages": [
+        {
+          "code": "invalid-contract-policy",
+          "message": "Artwork manifest requires a closed, non-empty schema-v2 contract policy.",
+          "path": "contractPolicy",
+          "expected": "schema v2, catalog ID, non-empty required IDs, allowUncontractedAssets=false",
+          "actual": {
+            "schemaVersion": 2,
+            "catalogId": "kindworks.asset-category-contracts",
+            "scope": "approved-runtime-artwork",
+            "requiredSemanticIds": [
+              "audit.prop.valid"
+            ],
+            "allowUncontractedAssets": true,
+            "generationBlockedUntilArtBibleLocked": true
+          }
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "invalid-asset-contract-version",
+      "group": "schema",
+      "expectation": "reject",
+      "expectedCode": "invalid-asset-contract-version",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-asset-contract-version"
+      ],
+      "messages": [
+        {
+          "code": "invalid-asset-contract-version",
+          "message": "audit.prop.valid must use artwork schema v2.",
+          "path": "assets[0].schemaVersion",
+          "expected": 2,
+          "actual": 999
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "missing-required-spec-field",
+      "group": "schema",
+      "expectation": "reject",
+      "expectedCode": "missing-spec-field",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "missing-spec-field"
+      ],
+      "messages": [
+        {
+          "code": "missing-spec-field",
+          "message": "audit.prop.valid is missing gameplayPurpose.",
+          "path": "assets[0].gameplayPurpose",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "duplicate-semantic-id",
+      "group": "identity",
+      "expectation": "reject",
+      "expectedCode": "duplicate-semantic-id",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "duplicate-semantic-id",
+        "duplicate-output-filename",
+        "duplicate-output-filename",
+        "duplicate-output-filename"
+      ],
+      "messages": [
+        {
+          "code": "duplicate-semantic-id",
+          "message": "Duplicate artwork semantic id audit.prop.valid.",
+          "path": "assets[1].semanticId",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "duplicate-output-filename",
+          "message": "audit.prop.valid staging reuses artwork/staging/audit-prop.v1.png, already owned by audit.prop.valid.",
+          "path": "assets[1].expectedFilenames.staging",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "duplicate-output-filename",
+          "message": "audit.prop.valid master reuses artwork/masters/audit-prop.v1.png, already owned by audit.prop.valid.",
+          "path": "assets[1].expectedFilenames.master",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "duplicate-output-filename",
+          "message": "audit.prop.valid runtime reuses public/assets/runtime/audit-prop.v1.png, already owned by audit.prop.valid.",
+          "path": "assets[1].expectedFilenames.runtime",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "missing-required-contract",
+      "group": "policy",
+      "expectation": "reject",
+      "expectedCode": "missing-required-contract",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "missing-required-contract"
+      ],
+      "messages": [
+        {
+          "code": "missing-required-contract",
+          "message": "Required artwork contract audit.prop.valid is absent.",
+          "path": "contractPolicy.requiredSemanticIds",
+          "expected": "audit.prop.valid",
+          "actual": "missing"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "unapproved-contract",
+      "group": "policy",
+      "expectation": "reject",
+      "expectedCode": "unapproved-contract",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "duplicate-output-filename",
+        "duplicate-output-filename",
+        "duplicate-output-filename",
+        "unapproved-contract"
+      ],
+      "messages": [
+        {
+          "code": "duplicate-output-filename",
+          "message": "audit.unapproved.extra staging reuses artwork/staging/audit-prop.v1.png, already owned by audit.prop.valid.",
+          "path": "assets[1].expectedFilenames.staging",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "duplicate-output-filename",
+          "message": "audit.unapproved.extra master reuses artwork/masters/audit-prop.v1.png, already owned by audit.prop.valid.",
+          "path": "assets[1].expectedFilenames.master",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "duplicate-output-filename",
+          "message": "audit.unapproved.extra runtime reuses public/assets/runtime/audit-prop.v1.png, already owned by audit.prop.valid.",
+          "path": "assets[1].expectedFilenames.runtime",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "unapproved-contract",
+          "message": "audit.unapproved.extra is not listed by the manifest contract policy.",
+          "path": "contractPolicy.requiredSemanticIds",
+          "expected": [
+            "audit.prop.valid"
+          ],
+          "actual": "audit.unapproved.extra"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "duplicate-output-filename",
+      "group": "filename",
+      "expectation": "reject",
+      "expectedCode": "duplicate-output-filename",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "duplicate-output-filename",
+        "duplicate-output-filename",
+        "duplicate-output-filename"
+      ],
+      "messages": [
+        {
+          "code": "duplicate-output-filename",
+          "message": "audit.duplicate.filename staging reuses artwork/staging/audit-prop.v1.png, already owned by audit.prop.valid.",
+          "path": "assets[1].expectedFilenames.staging",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "duplicate-output-filename",
+          "message": "audit.duplicate.filename master reuses artwork/masters/audit-prop.v1.png, already owned by audit.prop.valid.",
+          "path": "assets[1].expectedFilenames.master",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "duplicate-output-filename",
+          "message": "audit.duplicate.filename runtime reuses public/assets/runtime/audit-prop.v1.png, already owned by audit.prop.valid.",
+          "path": "assets[1].expectedFilenames.runtime",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "audio-animation-forbidden",
+      "group": "audio",
+      "expectation": "reject",
+      "expectedCode": "audio-animation-forbidden",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "audio-animation-forbidden"
+      ],
+      "messages": [
+        {
+          "code": "audio-animation-forbidden",
+          "message": "audit.audio.valid audio contract cannot declare visual animations.",
+          "path": "assets[0].animations",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "unknown-family-contract",
+      "group": "family",
+      "expectation": "reject",
+      "expectedCode": "unknown-family-contract",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "unknown-family-contract"
+      ],
+      "messages": [
+        {
+          "code": "unknown-family-contract",
+          "message": "audit.prop.valid references unknown Phase 10 family family.missing.",
+          "path": "assets[0].familyId",
+          "expected": [
+            "foundation.calibration-specimens",
+            "foundation.shadow-profiles",
+            "system.visual-fallbacks",
+            "terrain.grass-soil-tiles",
+            "terrain.transition-atlas",
+            "terrain.road-marking-tiles",
+            "terrain.pavement-path-tiles",
+            "terrain.river-water-tiles",
+            "terrain.river-bank-edge-atlas",
+            "terrain.pond-wetland-kit",
+            "terrain.beach-shore-kit",
+            "structure.bridge-kit",
+            "structure.harbour-dock-kit",
+            "terrain.woodland-boundary",
+            "vegetation.tree-layer-family",
+            "vegetation.crop-growth-sheets",
+            "vegetation.shrub-flower-atlas",
+            "prop.fence-gate-tiles",
+            "prop.bin-family",
+            "prop.bench-seating-family",
+            "prop.street-decoration-atlas",
+            "prop.prestige-landmark-layers",
+            "rubbish.shared-atlas",
+            "effects.environment-atlas",
+            "effects.interaction-reward-atlas",
+            "vehicle.municipal-collection-sheet",
+            "building.house-modular-kits",
+            "building.house-condition-overlays",
+            "building.personal-home-levels",
+            "terrain.house-lawn-states",
+            "building.shopfront-module-system",
+            "building.shop-sign-awning-atlas",
+            "building.shopfront-composites",
+            "landmark.world-assemblies",
+            "landmark.restoration-state-layers",
+            "character.resident-base-rig",
+            "character.appearance-components",
+            "character.clothing-accessory-atlas",
+            "character.expression-action-atlas",
+            "character.npc-population-recipes",
+            "animal.rig-template-library",
+            "animal.species-identity-sheets",
+            "animal.pet-shop-presentations",
+            "animal.aquarium-fish-sheets",
+            "ui.button-nine-slices",
+            "ui.panel-dialog-nine-slices",
+            "ui.global-icon-atlas",
+            "ui.resource-status-atlas",
+            "ui.card-slot-components",
+            "ui.progress-feedback-components",
+            "ui.orientation-loading-error",
+            "interior.room-construction-tiles",
+            "interior.six-theme-materials",
+            "interior.fixed-furniture-atlas",
+            "interior.placeable-furniture-atlas",
+            "interior.aquarium-layers",
+            "interior.dirt-clean-overlays",
+            "interior.village-grocer-kit",
+            "interior.paws-wonders-kit",
+            "interior.harbour-general-kit",
+            "interior.restaurant-shared-shell",
+            "minigame.lawn-care-pack",
+            "minigame.waste-collection-pack",
+            "minigame.river-clearout-pack",
+            "minigame.house-rescue-pack",
+            "minigame.beach-cleanup-pack",
+            "minigame.powerwash-pack",
+            "minigame.fishing-magnet-pack",
+            "minigame.restaurant-shared-pack",
+            "minigame.corner-cafe-pack",
+            "minigame.little-bakery-pack",
+            "minigame.morning-mug-pack",
+            "minigame.riverside-kitchen-pack",
+            "minigame.south-shore-scoops-pack"
+          ],
+          "actual": "family.missing"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "family-category-mismatch",
+      "group": "family",
+      "expectation": "reject",
+      "expectedCode": "family-category-contract-mismatch",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "family-category-contract-mismatch",
+        "missing-accessibility-contract",
+        "missing-category-required-metadata"
+      ],
+      "messages": [
+        {
+          "code": "family-category-contract-mismatch",
+          "message": "scene.fishing.reedbank.background category disagrees with its registered family.",
+          "path": "assets[0].categoryContractId",
+          "expected": "category.minigame",
+          "actual": "category.ui"
+        },
+        {
+          "code": "missing-accessibility-contract",
+          "message": "scene.fishing.reedbank.background requires UI readability/accessibility metadata.",
+          "path": "assets[0].accessibility",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "missing-category-required-metadata",
+          "message": "scene.fishing.reedbank.background is missing executable metadata required by category.ui: intendedDisplaySize, safeContentInsets, accessibility.",
+          "path": "assets[0].categoryMetadata",
+          "expected": [
+            "intendedDisplaySize",
+            "safeContentInsets",
+            "accessibility"
+          ],
+          "actual": [
+            "intendedDisplaySize",
+            "safeContentInsets",
+            "accessibility"
+          ]
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "geometry-unknown-shape",
+      "group": "loophole",
+      "expectation": "reject",
+      "expectedCode": "invalid-geometry-shape",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-geometry-shape"
+      ],
+      "messages": [
+        {
+          "code": "invalid-geometry-shape",
+          "message": "audit.prop.valid uses unsupported geometry kind dragon.",
+          "path": "assets[0].geometry.collision",
+          "expected": [
+            "rectangle",
+            "circle"
+          ],
+          "actual": "dragon"
+        }
+      ],
+      "note": "The digest protects change, but the shape itself is not schema-validated."
+    },
+    {
+      "id": "ground-contact-outside-canvas",
+      "group": "loophole",
+      "expectation": "reject",
+      "expectedCode": "invalid-ground-anchor",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-ground-anchor"
+      ],
+      "messages": [
+        {
+          "code": "invalid-ground-anchor",
+          "message": "audit.prop.valid ground contact must be inside its declared canvas.",
+          "path": "assets[0].anchor.groundContact",
+          "expected": {
+            "width": 4,
+            "height": 4
+          },
+          "actual": {
+            "x": 999,
+            "y": -999
+          }
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "socket-invalid-id",
+      "group": "loophole",
+      "expectation": "reject",
+      "expectedCode": "invalid-socket-id",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-socket-id"
+      ],
+      "messages": [
+        {
+          "code": "invalid-socket-id",
+          "message": "audit.prop.valid socket Door Socket FINAL requires a stable token ID.",
+          "path": "assets[0].sockets[0].id",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "layer-invalid-alpha-alignment",
+      "group": "loophole",
+      "expectation": "reject",
+      "expectedCode": "invalid-layer-alpha-alignment",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-layer-alpha-alignment"
+      ],
+      "messages": [
+        {
+          "code": "invalid-layer-alpha-alignment",
+          "message": "audit.prop.valid.main has unsupported alpha alignment.",
+          "path": "assets[0].layers[0].alphaAlignment",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "layer-unknown-state",
+      "group": "loophole",
+      "expectation": "reject",
+      "expectedCode": "unknown-layer-state",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "unknown-layer-state"
+      ],
+      "messages": [
+        {
+          "code": "unknown-layer-state",
+          "message": "audit.prop.valid.main references undeclared state undeclared.",
+          "path": "assets[0].layers[0].states",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "layer-duplicate-order",
+      "group": "loophole",
+      "expectation": "reject",
+      "expectedCode": "duplicate-layer-order",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "duplicate-layer-order"
+      ],
+      "messages": [
+        {
+          "code": "duplicate-layer-order",
+          "message": "audit.prop.valid layers require unique integer orders.",
+          "path": "assets[0].layers[1].order",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "duplicate-dependency",
+      "group": "loophole",
+      "expectation": "reject",
+      "expectedCode": "duplicate-dependency",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "duplicate-dependency",
+        "dependency-cycle",
+        "dependency-cycle"
+      ],
+      "messages": [
+        {
+          "code": "duplicate-dependency",
+          "message": "audit.prop.valid declares a dependency more than once.",
+          "path": "assets[0].dependencies",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "dependency-cycle",
+          "message": "Artwork dependency cycle detected: audit.prop.valid -> audit.prop.valid.",
+          "path": "assets.audit.prop.valid.dependencies",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "dependency-cycle",
+          "message": "Artwork dependency cycle detected: audit.prop.valid -> audit.prop.valid.",
+          "path": "assets.audit.prop.valid.dependencies",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "self-dependency",
+      "group": "loophole",
+      "expectation": "reject",
+      "expectedCode": "dependency-cycle",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "dependency-cycle"
+      ],
+      "messages": [
+        {
+          "code": "dependency-cycle",
+          "message": "Artwork dependency cycle detected: audit.prop.valid -> audit.prop.valid.",
+          "path": "assets.audit.prop.valid.dependencies",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "scene-pack-does-not-exist",
+      "group": "loophole",
+      "expectation": "reject",
+      "expectedCode": "unknown-scene-pack",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "unknown-scene-pack"
+      ],
+      "messages": [
+        {
+          "code": "unknown-scene-pack",
+          "message": "audit.prop.valid scene pack is not derived from any intended scene.",
+          "path": "assets[0].scenePackId",
+          "expected": [
+            "pack.scene.audit"
+          ],
+          "actual": "pack.scene.does-not-exist"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "invalid-filename-stem",
+      "group": "loophole",
+      "expectation": "reject",
+      "expectedCode": "invalid-filename-stem",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-filename-stem"
+      ],
+      "messages": [
+        {
+          "code": "invalid-filename-stem",
+          "message": "audit.prop.valid filename stem must be a stable kebab-case token.",
+          "path": "assets[0].filenameStem",
+          "expected": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "actual": "Provider FINAL"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "require-alpha-conflict",
+      "group": "loophole",
+      "expectation": "reject",
+      "expectedCode": "invalid-require-alpha",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-require-alpha"
+      ],
+      "messages": [
+        {
+          "code": "invalid-require-alpha",
+          "message": "audit.prop.valid alpha validation must match the output alpha contract.",
+          "path": "assets[0].validation.requireAlpha",
+          "expected": true,
+          "actual": false
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "require-exact-dimensions-disabled",
+      "group": "loophole",
+      "expectation": "reject",
+      "expectedCode": "invalid-require-exact-dimensions",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-require-exact-dimensions"
+      ],
+      "messages": [
+        {
+          "code": "invalid-require-exact-dimensions",
+          "message": "audit.prop.valid must require exact canvas dimensions.",
+          "path": "assets[0].validation.requireExactDimensions",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "require-untrimmed-disabled",
+      "group": "loophole",
+      "expectation": "reject",
+      "expectedCode": "invalid-require-untrimmed",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-require-untrimmed"
+      ],
+      "messages": [
+        {
+          "code": "invalid-require-untrimmed",
+          "message": "audit.prop.valid must require untrimmed frames.",
+          "path": "assets[0].validation.requireUntrimmedFrames",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "invalid-runtime-budget",
+      "group": "loophole",
+      "expectation": "reject",
+      "expectedCode": "invalid-runtime-budget",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-runtime-budget"
+      ],
+      "messages": [
+        {
+          "code": "invalid-runtime-budget",
+          "message": "audit.prop.valid requires a positive integer runtime-byte budget.",
+          "path": "assets[0].validation.maximumRuntimeBytes",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "missing-tileset-specific-contract",
+      "group": "output-loophole",
+      "expectation": "reject",
+      "expectedCode": "missing-tileset-metadata",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "missing-tileset-metadata"
+      ],
+      "messages": [
+        {
+          "code": "missing-tileset-metadata",
+          "message": "audit.terrain.valid tileset requires a positive tile grid and seam policy.",
+          "path": "assets[0].output.tileset",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": "No executable tile grid and seam policy field exists in schema v2."
+    },
+    {
+      "id": "missing-layer-set-specific-contract",
+      "group": "output-loophole",
+      "expectation": "reject",
+      "expectedCode": "missing-layer-set-metadata",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "missing-layer-set-metadata"
+      ],
+      "messages": [
+        {
+          "code": "missing-layer-set-metadata",
+          "message": "audit.prop.valid layer set requires unique layer IDs and state mapping.",
+          "path": "assets[0].output.layerSet",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": "No executable layer file/state mapping field exists in schema v2."
+    },
+    {
+      "id": "missing-nine-slice-specific-contract",
+      "group": "output-loophole",
+      "expectation": "reject",
+      "expectedCode": "missing-nine-slice-metadata",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "missing-nine-slice-metadata"
+      ],
+      "messages": [
+        {
+          "code": "missing-nine-slice-metadata",
+          "message": "audit.ui.valid nine-slice requires valid margins and a safe centre.",
+          "path": "assets[0].output.nineSlice",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": "No executable nine-slice margins and safe centre field exists in schema v2."
+    },
+    {
+      "id": "invalid-tileset-grid",
+      "group": "output",
+      "expectation": "reject",
+      "expectedCode": "invalid-tileset-grid",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-tileset-grid"
+      ],
+      "messages": [
+        {
+          "code": "invalid-tileset-grid",
+          "message": "audit.terrain.valid tileset grid must fill the declared canvas.",
+          "path": "assets[0].output.tileset",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "effect-missing-blend-lifetime",
+      "group": "output-loophole",
+      "expectation": "reject",
+      "expectedCode": "missing-effect-metadata",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "missing-effect-metadata"
+      ],
+      "messages": [
+        {
+          "code": "missing-effect-metadata",
+          "message": "audit.effect.valid effect requires blend, lifetime, and state mapping metadata.",
+          "path": "assets[0].output.effect",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": "blendPolicy/lifetime/stateMapping exist only in category requiredMetadata prose."
+    },
+    {
+      "id": "required-metadata-category.system-fallback",
+      "group": "required-metadata",
+      "expectation": "reject",
+      "expectedCode": "missing-category-required-metadata",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "missing-category-required-metadata"
+      ],
+      "messages": [
+        {
+          "code": "missing-category-required-metadata",
+          "message": "audit.system-fallback.valid is missing executable metadata required by category.system-fallback: fallbackPolicy.",
+          "path": "assets[0].categoryMetadata",
+          "expected": [
+            "fallbackPolicy"
+          ],
+          "actual": [
+            "fallbackPolicy"
+          ]
+        }
+      ],
+      "note": "Catalogue requires fallbackPolicy, but schema v2 has no executable leaf field for these requirements."
+    },
+    {
+      "id": "required-metadata-category.terrain",
+      "group": "required-metadata",
+      "expectation": "reject",
+      "expectedCode": "missing-category-required-metadata",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "missing-category-required-metadata"
+      ],
+      "messages": [
+        {
+          "code": "missing-category-required-metadata",
+          "message": "audit.terrain.valid is missing executable metadata required by category.terrain: tileGrid, seamPolicy.",
+          "path": "assets[0].categoryMetadata",
+          "expected": [
+            "tileGrid",
+            "seamPolicy",
+            "perspective",
+            "scale"
+          ],
+          "actual": [
+            "tileGrid",
+            "seamPolicy"
+          ]
+        }
+      ],
+      "note": "Catalogue requires tileGrid, seamPolicy, but schema v2 has no executable leaf field for these requirements."
+    },
+    {
+      "id": "required-metadata-category.effect",
+      "group": "required-metadata",
+      "expectation": "reject",
+      "expectedCode": "missing-category-required-metadata",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "missing-category-required-metadata"
+      ],
+      "messages": [
+        {
+          "code": "missing-category-required-metadata",
+          "message": "audit.effect.valid is missing executable metadata required by category.effect: blendPolicy, lifetime, stateMapping.",
+          "path": "assets[0].categoryMetadata",
+          "expected": [
+            "blendPolicy",
+            "lifetime",
+            "stateMapping"
+          ],
+          "actual": [
+            "blendPolicy",
+            "lifetime",
+            "stateMapping"
+          ]
+        }
+      ],
+      "note": "Catalogue requires blendPolicy, lifetime, stateMapping, but schema v2 has no executable leaf field for these requirements."
+    },
+    {
+      "id": "required-metadata-category.building",
+      "group": "required-metadata",
+      "expectation": "reject",
+      "expectedCode": "missing-category-required-metadata",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "missing-category-required-metadata"
+      ],
+      "messages": [
+        {
+          "code": "missing-category-required-metadata",
+          "message": "audit.building.valid is missing executable metadata required by category.building: stateAlignment, doorSockets.",
+          "path": "assets[0].categoryMetadata",
+          "expected": [
+            "stateAlignment",
+            "doorSockets",
+            "geometry",
+            "shadowPolicy"
+          ],
+          "actual": [
+            "stateAlignment",
+            "doorSockets"
+          ]
+        }
+      ],
+      "note": "Catalogue requires stateAlignment, doorSockets, but schema v2 has no executable leaf field for these requirements."
+    },
+    {
+      "id": "required-metadata-category.character",
+      "group": "required-metadata",
+      "expectation": "reject",
+      "expectedCode": "missing-category-required-metadata",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "missing-category-required-metadata"
+      ],
+      "messages": [
+        {
+          "code": "missing-category-required-metadata",
+          "message": "audit.character.valid is missing executable metadata required by category.character: rig.",
+          "path": "assets[0].categoryMetadata",
+          "expected": [
+            "rig",
+            "directions",
+            "groundContact",
+            "frameOrder"
+          ],
+          "actual": [
+            "rig"
+          ]
+        }
+      ],
+      "note": "Catalogue requires rig, but schema v2 has no executable leaf field for these requirements."
+    },
+    {
+      "id": "required-metadata-category.animal",
+      "group": "required-metadata",
+      "expectation": "reject",
+      "expectedCode": "missing-category-required-metadata",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "missing-category-required-metadata"
+      ],
+      "messages": [
+        {
+          "code": "missing-category-required-metadata",
+          "message": "audit.animal.valid is missing executable metadata required by category.animal: rig, habitatPresentation.",
+          "path": "assets[0].categoryMetadata",
+          "expected": [
+            "rig",
+            "habitatPresentation",
+            "groundContact",
+            "frameOrder"
+          ],
+          "actual": [
+            "rig",
+            "habitatPresentation"
+          ]
+        }
+      ],
+      "note": "Catalogue requires rig, habitatPresentation, but schema v2 has no executable leaf field for these requirements."
+    },
+    {
+      "id": "required-metadata-category.interior",
+      "group": "required-metadata",
+      "expectation": "reject",
+      "expectedCode": "missing-category-required-metadata",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "missing-category-required-metadata"
+      ],
+      "messages": [
+        {
+          "code": "missing-category-required-metadata",
+          "message": "audit.interior.valid is missing executable metadata required by category.interior: roomGrid.",
+          "path": "assets[0].categoryMetadata",
+          "expected": [
+            "roomGrid",
+            "anchor",
+            "sockets",
+            "geometry"
+          ],
+          "actual": [
+            "roomGrid"
+          ]
+        }
+      ],
+      "note": "Catalogue requires roomGrid, but schema v2 has no executable leaf field for these requirements."
+    },
+    {
+      "id": "required-metadata-category.minigame",
+      "group": "required-metadata",
+      "expectation": "reject",
+      "expectedCode": "missing-category-required-metadata",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "missing-category-required-metadata"
+      ],
+      "messages": [
+        {
+          "code": "missing-category-required-metadata",
+          "message": "audit.minigame.valid is missing executable metadata required by category.minigame: minigameId, stateMapping.",
+          "path": "assets[0].categoryMetadata",
+          "expected": [
+            "minigameId",
+            "playfieldScale",
+            "geometry",
+            "stateMapping"
+          ],
+          "actual": [
+            "minigameId",
+            "stateMapping"
+          ]
+        }
+      ],
+      "note": "Catalogue requires minigameId, stateMapping, but schema v2 has no executable leaf field for these requirements."
+    },
+    {
+      "id": "valid-category-catalog",
+      "group": "catalog",
+      "expectation": "accept",
+      "expectedCode": null,
+      "accepted": true,
+      "classification": "PASS",
+      "codes": [],
+      "messages": [],
+      "note": ""
+    },
+    {
+      "id": "catalog-duplicate-id",
+      "group": "catalog",
+      "expectation": "reject",
+      "expectedCode": "duplicate-category-contract",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "duplicate-category-contract"
+      ],
+      "messages": [
+        {
+          "code": "duplicate-category-contract",
+          "message": "category.calibration is missing or duplicated.",
+          "path": "categoryContracts[15].id",
+          "expected": "unique category contract ID",
+          "actual": "category.calibration"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "catalog-unsupported-output",
+      "group": "catalog",
+      "expectation": "reject",
+      "expectedCode": "unsupported-category-output-type",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "unsupported-category-output-type"
+      ],
+      "messages": [
+        {
+          "code": "unsupported-category-output-type",
+          "message": "category.calibration allows unknown output type movie.",
+          "path": "categoryContracts[0].allowedOutputTypes",
+          "expected": [
+            "single-image",
+            "tileset",
+            "spritesheet",
+            "atlas",
+            "layer-set",
+            "nine-slice",
+            "effect-sheet",
+            "audio"
+          ],
+          "actual": "movie"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "catalog-duplicate-required-metadata",
+      "group": "catalog",
+      "expectation": "reject",
+      "expectedCode": "invalid-required-metadata",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-required-metadata"
+      ],
+      "messages": [
+        {
+          "code": "invalid-required-metadata",
+          "message": "category.calibration required metadata must be a unique array of metadata tokens.",
+          "path": "categoryContracts[0].requiredMetadata",
+          "expected": "unique metadata-token string array",
+          "actual": [
+            "masterScale",
+            "anchor",
+            "masterScale"
+          ]
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "catalog-unknown-field",
+      "group": "catalog",
+      "expectation": "reject",
+      "expectedCode": "unknown-contract-field",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "unknown-contract-field"
+      ],
+      "messages": [
+        {
+          "code": "unknown-contract-field",
+          "message": "categoryContracts[0].generatorHint is not part of asset-contract schema v2.",
+          "path": "categoryContracts[0].generatorHint",
+          "expected": [
+            "schemaVersion",
+            "id",
+            "description",
+            "allowedOutputTypes",
+            "allowedFormats",
+            "requiresPerspective",
+            "requiresScale",
+            "requiresGeometry",
+            "requiresStates",
+            "requiresVariants",
+            "requiresDirections",
+            "requiresAnimationContract",
+            "requiresTransparencyContract",
+            "requiresAccessibilityMetadata",
+            "requiredMetadata"
+          ],
+          "actual": "generatorHint"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "catalog-missing-family",
+      "group": "catalog",
+      "expectation": "reject",
+      "expectedCode": "missing-family-contract",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "missing-family-contract"
+      ],
+      "messages": [
+        {
+          "code": "missing-family-contract",
+          "message": "minigame.south-shore-scoops-pack has no machine-readable category contract assignment.",
+          "path": "familyAssignments",
+          "expected": "one assignment",
+          "actual": "missing"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "catalog-orphan-family",
+      "group": "catalog",
+      "expectation": "reject",
+      "expectedCode": "orphan-family-contract",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "orphan-family-contract"
+      ],
+      "messages": [
+        {
+          "code": "orphan-family-contract",
+          "message": "audit.orphan-family is not a Phase 10 family.",
+          "path": "familyAssignments.audit.orphan-family",
+          "expected": "registered Phase 10 family",
+          "actual": "audit.orphan-family"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "catalog-invalid-version",
+      "group": "catalog",
+      "expectation": "reject",
+      "expectedCode": "invalid-category-contract-version",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-category-contract-version"
+      ],
+      "messages": [
+        {
+          "code": "invalid-category-contract-version",
+          "message": "category.calibration must use schema v2.",
+          "path": "categoryContracts[0].schemaVersion",
+          "expected": 2,
+          "actual": 999
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "catalog-duplicate-family",
+      "group": "catalog",
+      "expectation": "reject",
+      "expectedCode": "duplicate-family-contract",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "duplicate-family-contract"
+      ],
+      "messages": [
+        {
+          "code": "duplicate-family-contract",
+          "message": "foundation.calibration-specimens is missing or duplicated.",
+          "path": "familyAssignments[74].familyId",
+          "expected": "unique Phase 10 family ID",
+          "actual": "foundation.calibration-specimens"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "catalog-invalid-family-version",
+      "group": "catalog",
+      "expectation": "reject",
+      "expectedCode": "invalid-family-contract-version",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-family-contract-version"
+      ],
+      "messages": [
+        {
+          "code": "invalid-family-contract-version",
+          "message": "foundation.calibration-specimens must use schema v2.",
+          "path": "familyAssignments[0].schemaVersion",
+          "expected": 2,
+          "actual": 999
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "catalog-invalid-family-readiness",
+      "group": "catalog",
+      "expectation": "reject",
+      "expectedCode": "invalid-family-readiness",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-family-readiness"
+      ],
+      "messages": [
+        {
+          "code": "invalid-family-readiness",
+          "message": "foundation.calibration-specimens must explicitly declare readiness and the blocking reason.",
+          "path": "familyAssignments[0].productionReady",
+          "expected": "boolean plus reason when false",
+          "actual": false
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "catalog-invalid-id-token",
+      "group": "catalog-loophole",
+      "expectation": "reject",
+      "expectedCode": "invalid-category-contract-id",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-category-contract-id",
+        "missing-category-contract",
+        "missing-category-contract"
+      ],
+      "messages": [
+        {
+          "code": "invalid-category-contract-id",
+          "message": "Category FINAL must be a stable category.* token.",
+          "path": "categoryContracts[0].id",
+          "expected": "^category\\.[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "actual": "Category FINAL"
+        },
+        {
+          "code": "missing-category-contract",
+          "message": "foundation.calibration-specimens references unknown category.calibration.",
+          "path": "familyAssignments[0].categoryContractId",
+          "expected": [
+            "Category FINAL",
+            "category.system-fallback",
+            "category.terrain",
+            "category.structure",
+            "category.vegetation",
+            "category.prop",
+            "category.effect",
+            "category.vehicle",
+            "category.building",
+            "category.character",
+            "category.animal",
+            "category.ui",
+            "category.interior",
+            "category.minigame",
+            "category.audio"
+          ],
+          "actual": "category.calibration"
+        },
+        {
+          "code": "missing-category-contract",
+          "message": "foundation.shadow-profiles references unknown category.calibration.",
+          "path": "familyAssignments[1].categoryContractId",
+          "expected": [
+            "Category FINAL",
+            "category.system-fallback",
+            "category.terrain",
+            "category.structure",
+            "category.vegetation",
+            "category.prop",
+            "category.effect",
+            "category.vehicle",
+            "category.building",
+            "category.character",
+            "category.animal",
+            "category.ui",
+            "category.interior",
+            "category.minigame",
+            "category.audio"
+          ],
+          "actual": "category.calibration"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "catalog-invalid-format",
+      "group": "catalog-loophole",
+      "expectation": "reject",
+      "expectedCode": "unsupported-category-format",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "unsupported-category-format"
+      ],
+      "messages": [
+        {
+          "code": "unsupported-category-format",
+          "message": "category.calibration allows unsupported format gif.",
+          "path": "categoryContracts[0].allowedFormats",
+          "expected": [
+            "png",
+            "webp",
+            "mp3",
+            "ogg",
+            "wav"
+          ],
+          "actual": "gif"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "catalog-nonboolean-requirement",
+      "group": "catalog-loophole",
+      "expectation": "reject",
+      "expectedCode": "invalid-category-requirement",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-category-requirement"
+      ],
+      "messages": [
+        {
+          "code": "invalid-category-requirement",
+          "message": "category.calibration requiresScale must be boolean.",
+          "path": "categoryContracts[0].requiresScale",
+          "expected": "boolean",
+          "actual": "sometimes"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "catalog-nonstring-required-metadata",
+      "group": "catalog-loophole",
+      "expectation": "reject",
+      "expectedCode": "invalid-required-metadata",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-required-metadata"
+      ],
+      "messages": [
+        {
+          "code": "invalid-required-metadata",
+          "message": "category.calibration required metadata must be a unique array of metadata tokens.",
+          "path": "categoryContracts[0].requiredMetadata",
+          "expected": "unique metadata-token string array",
+          "actual": [
+            42
+          ]
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "valid-rgba-png",
+      "group": "binary",
+      "expectation": "accept",
+      "expectedCode": null,
+      "accepted": true,
+      "classification": "PASS",
+      "codes": [],
+      "messages": [],
+      "note": ""
+    },
+    {
+      "id": "valid-rgb-png",
+      "group": "binary",
+      "expectation": "accept",
+      "expectedCode": null,
+      "accepted": true,
+      "classification": "PASS",
+      "codes": [],
+      "messages": [],
+      "note": ""
+    },
+    {
+      "id": "empty-alpha-png",
+      "group": "binary",
+      "expectation": "reject",
+      "expectedCode": "empty-or-uninspectable-alpha",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "empty-or-uninspectable-alpha",
+        "empty-or-uninspectable-alpha",
+        "empty-or-uninspectable-alpha"
+      ],
+      "messages": [
+        {
+          "code": "empty-or-uninspectable-alpha",
+          "message": "audit.binary.png staging has no opaque pixels.",
+          "path": "artwork/staging/audit-binary-png.v1.png",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "empty-or-uninspectable-alpha",
+          "message": "audit.binary.png master has no opaque pixels.",
+          "path": "artwork/masters/audit-binary-png.v1.png",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "empty-or-uninspectable-alpha",
+          "message": "audit.binary.png runtime has no opaque pixels.",
+          "path": "public/assets/runtime/audit-binary-png.v1.png",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "wrong-pixel-dimensions",
+      "group": "binary",
+      "expectation": "reject",
+      "expectedCode": "dimension-mismatch",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "dimension-mismatch",
+        "dimension-mismatch",
+        "dimension-mismatch"
+      ],
+      "messages": [
+        {
+          "code": "dimension-mismatch",
+          "message": "audit.binary.png staging is 4×4; expected 5×4.",
+          "path": "artwork/staging/audit-binary-png.v1.png",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "dimension-mismatch",
+          "message": "audit.binary.png master is 4×4; expected 5×4.",
+          "path": "artwork/masters/audit-binary-png.v1.png",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "dimension-mismatch",
+          "message": "audit.binary.png runtime is 4×4; expected 5×4.",
+          "path": "public/assets/runtime/audit-binary-png.v1.png",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "wrong-pixel-alpha",
+      "group": "binary",
+      "expectation": "reject",
+      "expectedCode": "alpha-mismatch",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "alpha-mismatch",
+        "colour-mode-mismatch",
+        "alpha-mismatch",
+        "colour-mode-mismatch",
+        "alpha-mismatch",
+        "colour-mode-mismatch"
+      ],
+      "messages": [
+        {
+          "code": "alpha-mismatch",
+          "message": "audit.binary.png staging alpha=true; expected false.",
+          "path": "artwork/staging/audit-binary-png.v1.png",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "colour-mode-mismatch",
+          "message": "audit.binary.png staging colour mode is RGBA; expected RGB.",
+          "path": "artwork/staging/audit-binary-png.v1.png",
+          "expected": "RGB",
+          "actual": "RGBA"
+        },
+        {
+          "code": "alpha-mismatch",
+          "message": "audit.binary.png master alpha=true; expected false.",
+          "path": "artwork/masters/audit-binary-png.v1.png",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "colour-mode-mismatch",
+          "message": "audit.binary.png master colour mode is RGBA; expected RGB.",
+          "path": "artwork/masters/audit-binary-png.v1.png",
+          "expected": "RGB",
+          "actual": "RGBA"
+        },
+        {
+          "code": "alpha-mismatch",
+          "message": "audit.binary.png runtime alpha=true; expected false.",
+          "path": "public/assets/runtime/audit-binary-png.v1.png",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "colour-mode-mismatch",
+          "message": "audit.binary.png runtime colour mode is RGBA; expected RGB.",
+          "path": "public/assets/runtime/audit-binary-png.v1.png",
+          "expected": "RGB",
+          "actual": "RGBA"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "missing-required-file-path",
+      "group": "binary",
+      "expectation": "reject",
+      "expectedCode": "missing-required-file-path",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "missing-required-file-path"
+      ],
+      "messages": [
+        {
+          "code": "missing-required-file-path",
+          "message": "audit.binary.png has no runtime filename.",
+          "path": "assets[0].expectedFilenames.runtime",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "unsafe-output-location",
+      "group": "binary",
+      "expectation": "reject",
+      "expectedCode": "unsafe-output-location",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "unsafe-output-location"
+      ],
+      "messages": [
+        {
+          "code": "unsafe-output-location",
+          "message": "audit.binary.png runtime file is outside public/assets/runtime/.",
+          "path": "assets[0].expectedFilenames.runtime",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "filename-format-mismatch",
+      "group": "binary",
+      "expectation": "reject",
+      "expectedCode": "filename-format-mismatch",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "filename-format-mismatch"
+      ],
+      "messages": [
+        {
+          "code": "filename-format-mismatch",
+          "message": "audit.binary.png runtime filename does not match png.",
+          "path": "assets[0].expectedFilenames.runtime",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "filename-contract-mismatch",
+      "group": "binary",
+      "expectation": "reject",
+      "expectedCode": "filename-contract-mismatch",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "filename-contract-mismatch"
+      ],
+      "messages": [
+        {
+          "code": "filename-contract-mismatch",
+          "message": "audit.binary.png runtime filename must begin with audit-binary-png.",
+          "path": "assets[0].expectedFilenames.runtime",
+          "expected": "audit-binary-png.*.png",
+          "actual": "unrelated.v1.png"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "excess-transparent-padding",
+      "group": "binary",
+      "expectation": "reject",
+      "expectedCode": "transparent-padding-exceeded",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "transparent-padding-exceeded",
+        "transparent-padding-exceeded",
+        "transparent-padding-exceeded"
+      ],
+      "messages": [
+        {
+          "code": "transparent-padding-exceeded",
+          "message": "audit.binary.png staging transparent padding exceeds its contract.",
+          "path": "artwork/staging/audit-binary-png.v1.png",
+          "expected": {
+            "top": 0,
+            "right": 0,
+            "bottom": 0,
+            "left": 0
+          },
+          "actual": {
+            "top": 1,
+            "left": 1,
+            "right": 2,
+            "bottom": 2
+          }
+        },
+        {
+          "code": "transparent-padding-exceeded",
+          "message": "audit.binary.png master transparent padding exceeds its contract.",
+          "path": "artwork/masters/audit-binary-png.v1.png",
+          "expected": {
+            "top": 0,
+            "right": 0,
+            "bottom": 0,
+            "left": 0
+          },
+          "actual": {
+            "top": 1,
+            "left": 1,
+            "right": 2,
+            "bottom": 2
+          }
+        },
+        {
+          "code": "transparent-padding-exceeded",
+          "message": "audit.binary.png runtime transparent padding exceeds its contract.",
+          "path": "public/assets/runtime/audit-binary-png.v1.png",
+          "expected": {
+            "top": 0,
+            "right": 0,
+            "bottom": 0,
+            "left": 0
+          },
+          "actual": {
+            "top": 1,
+            "left": 1,
+            "right": 2,
+            "bottom": 2
+          }
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "visible-pixels-outside-bounds",
+      "group": "binary",
+      "expectation": "reject",
+      "expectedCode": "visible-bounds-exceeded",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "visible-bounds-exceeded",
+        "visible-bounds-exceeded",
+        "visible-bounds-exceeded"
+      ],
+      "messages": [
+        {
+          "code": "visible-bounds-exceeded",
+          "message": "audit.binary.png staging visible pixels exceed the approved bounds.",
+          "path": "artwork/staging/audit-binary-png.v1.png",
+          "expected": {
+            "x": 0,
+            "y": 0,
+            "width": 1,
+            "height": 1
+          },
+          "actual": {
+            "x": 2,
+            "y": 2,
+            "width": 1,
+            "height": 1
+          }
+        },
+        {
+          "code": "visible-bounds-exceeded",
+          "message": "audit.binary.png master visible pixels exceed the approved bounds.",
+          "path": "artwork/masters/audit-binary-png.v1.png",
+          "expected": {
+            "x": 0,
+            "y": 0,
+            "width": 1,
+            "height": 1
+          },
+          "actual": {
+            "x": 2,
+            "y": 2,
+            "width": 1,
+            "height": 1
+          }
+        },
+        {
+          "code": "visible-bounds-exceeded",
+          "message": "audit.binary.png runtime visible pixels exceed the approved bounds.",
+          "path": "public/assets/runtime/audit-binary-png.v1.png",
+          "expected": {
+            "x": 0,
+            "y": 0,
+            "width": 1,
+            "height": 1
+          },
+          "actual": {
+            "x": 2,
+            "y": 2,
+            "width": 1,
+            "height": 1
+          }
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "runtime-texture-over-budget",
+      "group": "binary",
+      "expectation": "reject",
+      "expectedCode": "texture-budget-exceeded",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "texture-budget-exceeded"
+      ],
+      "messages": [
+        {
+          "code": "texture-budget-exceeded",
+          "message": "audit.binary.png runtime export is 77 bytes; budget is 1.",
+          "path": "public/assets/runtime/audit-binary-png.v1.png",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "corrupt-header-only-rgb-png",
+      "group": "binary",
+      "expectation": "reject",
+      "expectedCode": "corrupt-or-unsupported-image",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "corrupt-or-unsupported-image",
+        "corrupt-or-unsupported-image",
+        "corrupt-or-unsupported-image"
+      ],
+      "messages": [
+        {
+          "code": "corrupt-or-unsupported-image",
+          "message": "audit.binary.png staging is not a decodable supported image.",
+          "path": "artwork/staging/audit-binary-png.v1.png",
+          "expected": "png",
+          "actual": "Input buffer has corrupt header:"
+        },
+        {
+          "code": "corrupt-or-unsupported-image",
+          "message": "audit.binary.png master is not a decodable supported image.",
+          "path": "artwork/masters/audit-binary-png.v1.png",
+          "expected": "png",
+          "actual": "Input buffer has corrupt header:"
+        },
+        {
+          "code": "corrupt-or-unsupported-image",
+          "message": "audit.binary.png runtime is not a decodable supported image.",
+          "path": "public/assets/runtime/audit-binary-png.v1.png",
+          "expected": "png",
+          "actual": "Input buffer has corrupt header:"
+        }
+      ],
+      "note": "Header-only RGB PNG has no chunks or pixels."
+    },
+    {
+      "id": "corrupt-png-crc",
+      "group": "binary",
+      "expectation": "reject",
+      "expectedCode": "corrupt-or-unsupported-image",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "corrupt-or-unsupported-image",
+        "corrupt-or-unsupported-image",
+        "corrupt-or-unsupported-image"
+      ],
+      "messages": [
+        {
+          "code": "corrupt-or-unsupported-image",
+          "message": "audit.binary.png staging is not a decodable supported image.",
+          "path": "artwork/staging/audit-binary-png.v1.png",
+          "expected": "png",
+          "actual": "vipspng: libpng read error"
+        },
+        {
+          "code": "corrupt-or-unsupported-image",
+          "message": "audit.binary.png master is not a decodable supported image.",
+          "path": "artwork/masters/audit-binary-png.v1.png",
+          "expected": "png",
+          "actual": "vipspng: libpng read error"
+        },
+        {
+          "code": "corrupt-or-unsupported-image",
+          "message": "audit.binary.png runtime is not a decodable supported image.",
+          "path": "public/assets/runtime/audit-binary-png.v1.png",
+          "expected": "png",
+          "actual": "vipspng: libpng read error"
+        }
+      ],
+      "note": "PNG chunk CRC is deliberately invalid."
+    },
+    {
+      "id": "valid-interlaced-rgba-png",
+      "group": "binary",
+      "expectation": "accept",
+      "expectedCode": null,
+      "accepted": true,
+      "classification": "PASS",
+      "codes": [],
+      "messages": [],
+      "note": "Valid Adam7-interlaced RGBA data exercises platform/parser parity."
+    },
+    {
+      "id": "corrupt-alpha-webp-header-only",
+      "group": "binary",
+      "expectation": "reject",
+      "expectedCode": "corrupt-or-unsupported-image",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "corrupt-or-unsupported-image",
+        "corrupt-or-unsupported-image",
+        "corrupt-or-unsupported-image"
+      ],
+      "messages": [
+        {
+          "code": "corrupt-or-unsupported-image",
+          "message": "audit.binary.webp staging is not a decodable supported image.",
+          "path": "artwork/staging/audit-binary-webp.v1.webp",
+          "expected": "webp",
+          "actual": "Input buffer has corrupt header: webp: unable to parse image"
+        },
+        {
+          "code": "corrupt-or-unsupported-image",
+          "message": "audit.binary.webp master is not a decodable supported image.",
+          "path": "artwork/masters/audit-binary-webp.v1.webp",
+          "expected": "webp",
+          "actual": "Input buffer has corrupt header: webp: unable to parse image"
+        },
+        {
+          "code": "corrupt-or-unsupported-image",
+          "message": "audit.binary.webp runtime is not a decodable supported image.",
+          "path": "public/assets/runtime/audit-binary-webp.v1.webp",
+          "expected": "webp",
+          "actual": "Input buffer has corrupt header: webp: unable to parse image"
+        }
+      ],
+      "note": "VP8X header has no image payload; bounds and padding cannot be inspected."
+    },
+    {
+      "id": "file-format-mismatch",
+      "group": "binary",
+      "expectation": "reject",
+      "expectedCode": "file-format-mismatch",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "file-format-mismatch",
+        "file-format-mismatch",
+        "file-format-mismatch"
+      ],
+      "messages": [
+        {
+          "code": "file-format-mismatch",
+          "message": "audit.binary.png staging bytes are webp, expected png.",
+          "path": "artwork/staging/audit-binary-png.v1.png",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "file-format-mismatch",
+          "message": "audit.binary.png master bytes are webp, expected png.",
+          "path": "artwork/masters/audit-binary-png.v1.png",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "file-format-mismatch",
+          "message": "audit.binary.png runtime bytes are webp, expected png.",
+          "path": "public/assets/runtime/audit-binary-png.v1.png",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "pixel-bit-depth-mismatch",
+      "group": "binary",
+      "expectation": "reject",
+      "expectedCode": "bit-depth-mismatch",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "bit-depth-mismatch",
+        "bit-depth-mismatch",
+        "bit-depth-mismatch"
+      ],
+      "messages": [
+        {
+          "code": "bit-depth-mismatch",
+          "message": "audit.binary.png staging bit depth is 16; expected 8.",
+          "path": "artwork/staging/audit-binary-png.v1.png",
+          "expected": 8,
+          "actual": 16
+        },
+        {
+          "code": "bit-depth-mismatch",
+          "message": "audit.binary.png master bit depth is 16; expected 8.",
+          "path": "artwork/masters/audit-binary-png.v1.png",
+          "expected": 8,
+          "actual": 16
+        },
+        {
+          "code": "bit-depth-mismatch",
+          "message": "audit.binary.png runtime bit depth is 16; expected 8.",
+          "path": "public/assets/runtime/audit-binary-png.v1.png",
+          "expected": 8,
+          "actual": 16
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "staging-master-alignment",
+      "group": "binary",
+      "expectation": "reject",
+      "expectedCode": "stage-master-alignment-mismatch",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "dimension-mismatch",
+        "stage-master-alignment-mismatch",
+        "master-runtime-alignment-mismatch"
+      ],
+      "messages": [
+        {
+          "code": "dimension-mismatch",
+          "message": "audit.binary.png master is 5×4; expected 4×4.",
+          "path": "artwork/masters/audit-binary-png.v1.png",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "stage-master-alignment-mismatch",
+          "message": "audit.binary.png staging/master canvases disagree.",
+          "path": "assets[0]",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "master-runtime-alignment-mismatch",
+          "message": "audit.binary.png master/runtime canvases disagree.",
+          "path": "assets[0]",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "master-runtime-alignment",
+      "group": "binary",
+      "expectation": "reject",
+      "expectedCode": "master-runtime-alignment-mismatch",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "dimension-mismatch",
+        "master-runtime-alignment-mismatch"
+      ],
+      "messages": [
+        {
+          "code": "dimension-mismatch",
+          "message": "audit.binary.png runtime is 5×4; expected 4×4.",
+          "path": "public/assets/runtime/audit-binary-png.v1.png",
+          "expected": null,
+          "actual": null
+        },
+        {
+          "code": "master-runtime-alignment-mismatch",
+          "message": "audit.binary.png master/runtime canvases disagree.",
+          "path": "assets[0]",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "corrupt-ogg-random-bytes",
+      "group": "binary",
+      "expectation": "reject",
+      "expectedCode": "file-format-mismatch",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "file-format-mismatch",
+        "file-format-mismatch",
+        "file-format-mismatch"
+      ],
+      "messages": [
+        {
+          "code": "file-format-mismatch",
+          "message": "audit.audio.valid staging bytes are unknown, expected ogg.",
+          "path": "artwork/staging/audit-audio.v1.ogg",
+          "expected": "ogg",
+          "actual": "unknown"
+        },
+        {
+          "code": "file-format-mismatch",
+          "message": "audit.audio.valid master bytes are unknown, expected ogg.",
+          "path": "artwork/masters/audit-audio.v1.ogg",
+          "expected": "ogg",
+          "actual": "unknown"
+        },
+        {
+          "code": "file-format-mismatch",
+          "message": "audit.audio.valid runtime bytes are unknown, expected ogg.",
+          "path": "public/assets/runtime/audit-audio.v1.ogg",
+          "expected": "ogg",
+          "actual": "unknown"
+        }
+      ],
+      "note": "The extension hint must not substitute for parsing bytes."
+    },
+    {
+      "id": "runtime-audio-over-budget",
+      "group": "binary",
+      "expectation": "reject",
+      "expectedCode": "audio-budget-exceeded",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "audio-budget-exceeded"
+      ],
+      "messages": [
+        {
+          "code": "audio-budget-exceeded",
+          "message": "audit.audio.valid runtime audio is 34 bytes; budget is 1.",
+          "path": "public/assets/runtime/audit-audio.v1.ogg",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "valid-atlas-json",
+      "group": "binary",
+      "expectation": "accept",
+      "expectedCode": null,
+      "accepted": true,
+      "classification": "PASS",
+      "codes": [],
+      "messages": [],
+      "note": ""
+    },
+    {
+      "id": "missing-atlas-data-path",
+      "group": "binary",
+      "expectation": "reject",
+      "expectedCode": "missing-atlas-data-path",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "missing-atlas-data-path"
+      ],
+      "messages": [
+        {
+          "code": "missing-atlas-data-path",
+          "message": "audit.prop.valid atlas has no JSON data filename.",
+          "path": "assets[0].expectedFilenames.atlas",
+          "expected": null,
+          "actual": null
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "unsafe-atlas-location",
+      "group": "binary",
+      "expectation": "reject",
+      "expectedCode": "unsafe-atlas-location",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "unsafe-atlas-location"
+      ],
+      "messages": [
+        {
+          "code": "unsafe-atlas-location",
+          "message": "audit.prop.valid atlas JSON must live in masters or runtime assets.",
+          "path": "assets[0].expectedFilenames.atlas",
+          "expected": "artwork/masters/ or public/assets/runtime/",
+          "actual": "unsafe/audit-prop.v1.json"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "atlas-filename-mismatch",
+      "group": "binary",
+      "expectation": "reject",
+      "expectedCode": "atlas-filename-mismatch",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "atlas-filename-mismatch"
+      ],
+      "messages": [
+        {
+          "code": "atlas-filename-mismatch",
+          "message": "audit.prop.valid atlas filename disagrees with output.atlas.dataFilename.",
+          "path": "assets[0].expectedFilenames.atlas",
+          "expected": "audit-prop.v1.json",
+          "actual": "wrong-name.v1.json"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "atlas-file-frame-count",
+      "group": "binary",
+      "expectation": "reject",
+      "expectedCode": "atlas-file-frame-count-mismatch",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "atlas-file-frame-count-mismatch"
+      ],
+      "messages": [
+        {
+          "code": "atlas-file-frame-count-mismatch",
+          "message": "audit.prop.valid atlas JSON contains 2 frames.",
+          "path": "public/assets/runtime/audit-prop.v1.json",
+          "expected": 1,
+          "actual": 2
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "atlas-file-missing-frame",
+      "group": "binary",
+      "expectation": "reject",
+      "expectedCode": "missing-atlas-file-frame",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "missing-atlas-file-frame"
+      ],
+      "messages": [
+        {
+          "code": "missing-atlas-file-frame",
+          "message": "audit.prop.valid atlas JSON omits idle.",
+          "path": "public/assets/runtime/audit-prop.v1.json",
+          "expected": "idle",
+          "actual": [
+            "other"
+          ]
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "atlas-frame-out-of-bounds",
+      "group": "binary",
+      "expectation": "reject",
+      "expectedCode": "invalid-atlas-frame-rectangle",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "invalid-atlas-frame-rectangle"
+      ],
+      "messages": [
+        {
+          "code": "invalid-atlas-frame-rectangle",
+          "message": "audit.prop.valid atlas frame idle is outside the texture canvas.",
+          "path": "public/assets/runtime/audit-prop.v1.json",
+          "expected": {
+            "width": 4,
+            "height": 4
+          },
+          "actual": {
+            "x": 0,
+            "y": 0,
+            "w": 5,
+            "h": 4
+          }
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "atlas-file-unsafe-transform",
+      "group": "binary",
+      "expectation": "reject",
+      "expectedCode": "unsafe-atlas-file-transform",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "unsafe-atlas-file-transform"
+      ],
+      "messages": [
+        {
+          "code": "unsafe-atlas-file-transform",
+          "message": "audit.prop.valid atlas frame idle is trimmed or rotated.",
+          "path": "public/assets/runtime/audit-prop.v1.json",
+          "expected": "trimmed=false, rotated=false",
+          "actual": {
+            "trimmed": false,
+            "rotated": true
+          }
+        }
+      ],
+      "note": ""
+    },
+    {
+      "id": "incorrect-filesystem-case",
+      "group": "binary",
+      "expectation": "reject",
+      "expectedCode": "filename-case-mismatch",
+      "accepted": false,
+      "classification": "PASS",
+      "codes": [
+        "filename-case-mismatch",
+        "filename-case-mismatch",
+        "filename-case-mismatch"
+      ],
+      "messages": [
+        {
+          "code": "filename-case-mismatch",
+          "message": "audit.binary.png staging path case does not exactly match the filesystem.",
+          "path": "artwork/staging/audit-binary-png.v1.png",
+          "expected": "artwork/staging/audit-binary-png.v1.png",
+          "actual": "case-insensitive match or missing exact entry"
+        },
+        {
+          "code": "filename-case-mismatch",
+          "message": "audit.binary.png master path case does not exactly match the filesystem.",
+          "path": "artwork/masters/audit-binary-png.v1.png",
+          "expected": "artwork/masters/audit-binary-png.v1.png",
+          "actual": "case-insensitive match or missing exact entry"
+        },
+        {
+          "code": "filename-case-mismatch",
+          "message": "audit.binary.png runtime path case does not exactly match the filesystem.",
+          "path": "public/assets/runtime/audit-binary-png.v1.png",
+          "expected": "public/assets/runtime/audit-binary-png.v1.png",
+          "actual": "case-insensitive match or missing exact entry"
+        }
+      ],
+      "note": "On a case-insensitive macOS volume, access() resolves the wrong case unless the validator compares directory entries exactly."
+    }
+  ]
+}

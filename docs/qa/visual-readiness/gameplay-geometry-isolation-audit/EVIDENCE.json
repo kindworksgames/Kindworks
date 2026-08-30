@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "auditDate": "2026-08-30",
+  "branch": "phase-2-ui-simplification",
+  "startingCommit": "3387bcb48964c41edbdc26f4257d2990fcdaf8d5",
+  "verdict": "FAIL",
+  "sourceScan": {
+    "gameplaySpriteIntrinsicDimensionReads": 0,
+    "gameplayDisplayDimensionReads": 0,
+    "gameplayGetBoundsReads": 0,
+    "automaticPhysicsBodies": 0,
+    "intentionalSetInteractiveSites": 12,
+    "freshSaveFragileVisualFields": 0
+  },
+  "navigation": {
+    "npcNodes": 133,
+    "npcLinks": 138,
+    "staticNpcLinkViolations": 1,
+    "staticNpcWitness": {
+      "from": "eastplaza3",
+      "to": "eastplazaside",
+      "obstacle": "Paws & Wonders",
+      "samplePoint": { "x": 3533.3333333333335, "y": 887.1428571428571 }
+    },
+    "placedObjectNpcWitness": {
+      "itemId": "town-planter",
+      "x": 405,
+      "y": 1155,
+      "footprint": 30,
+      "route": ["market1", "market2"],
+      "distanceToRoute": 0
+    }
+  },
+  "animals": {
+    "definitions": 56,
+    "sampledGroundSegments": 481,
+    "groundSegmentViolations": 20,
+    "affectedIds": [
+      "animal-rabbit-1",
+      "animal-raccoon-2",
+      "animal-wolf-1",
+      "animal-mouse-1",
+      "pet-dog-husky"
+    ],
+    "waterRoutePointViolations": 0
+  },
+  "replacementFixtures": [
+    { "kind": "small-canvas", "width": 32, "height": 32, "result": "PASS_FISHING" },
+    { "kind": "large-padded-different-origin", "width": 2048, "height": 1024, "padding": 128, "result": "PASS_FISHING" },
+    { "kind": "optional-fallback", "width": 1, "height": 1, "result": "PASS_FISHING" }
+  ],
+  "runtime": {
+    "physicalDeviceTesting": false,
+    "profiles": [
+      { "width": 568, "height": 320, "kind": "browser-emulated" },
+      { "width": 1024, "height": 768, "kind": "browser-emulated" }
+    ],
+    "scenarios": [
+      "TownScene",
+      "VillageGrocerScene",
+      "HouseInteriorScene",
+      "LawnCareScene",
+      "PlaygroundPowerwashScene",
+      "CafeScene"
+    ],
+    "pageOverflowFailures": 0,
+    "sceneMarkerFailures": 0,
+    "consoleWarningsOrErrors": 0,
+    "touchTargetFailures": [
+      { "scene": "HouseInteriorScene", "control": "Furnish home", "viewport": "568x320", "width": 233.9140625, "height": 40, "minimum": 44 }
+    ]
+  },
+  "verification": {
+    "targetedTests": { "status": "PASS", "passed": 9, "failed": 0 },
+    "fullTests": { "status": "PASS" },
+    "productionBuild": { "status": "PASS" }
+  }
+}

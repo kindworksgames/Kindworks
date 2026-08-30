@@ -1,7 +1,15 @@
+import { createFreshGameState, validateGameState } from "../state/GameState.js";
+
+const NEW_GAME_CONFIRMATION_DELAY_MS = 700;
+
 export class SaveStatusController {
-  constructor(runtime, { onModalChange = () => {} } = {}) {
+  constructor(runtime, { onModalChange = () => {}, onNewGame = () => {}, now = () => Date.now() } = {}) {
     this.runtime = runtime;
     this.onModalChange = onModalChange;
+    this.onNewGame = onNewGame;
+    this.now = now;
+    this.resetArmed = false;
+    this.resetArmedAt = 0;
     this.button = document.querySelector("#save-status-button");
     this.panel = document.querySelector("#save-panel");
     this.title = document.querySelector("#save-panel-title");
@@ -12,7 +20,7 @@ export class SaveStatusController {
     this.previousFocus = null;
     this.onOpen = () => this.open();
     this.onClose = () => this.close();
-    this.onPrimary = () => this.createSafeSave();
+    this.onPrimary = () => this.runPrimaryAction();
     this.onKeyDown = (event) => {
       if (this.panel?.classList.contains("hidden")) return;
       if (event.key === "Escape") this.close();
@@ -50,7 +58,7 @@ export class SaveStatusController {
   render() {
     const status = this.getStatus();
     const game = document.querySelector("#game");
-    if (game) {
+    if (import.meta.env.DEV && game) {
       game.dataset.saveStatus = status.hasCurrent ? "healthy" : status.hasRecovery ? "attention" : "not-started";
       game.dataset.saveSchema = "2";
       game.dataset.legacyDetected = String(status.legacyAvailable);
@@ -67,21 +75,25 @@ export class SaveStatusController {
     }
     if (!this.title || !this.message || !this.details || !this.primary) return;
     if (status.hasCurrent) {
-      this.title.textContent = "Your Phaser save is healthy";
-      this.message.textContent = "Kindworks is using its separate Phaser save area. The original HTML save remains untouched.";
-      this.details.textContent = status.hasBackup ? "A verified backup is also available." : "The first verified backup will be created before a later save replaces this one.";
-      this.primary.classList.add("hidden");
+      this.title.textContent = "Your save is healthy";
+      this.message.textContent = "Your Willowmere progress is safely stored on this device.";
+      this.details.textContent = this.resetArmed
+        ? "Your current progress will remain available as the verified backup. Choose confirm only if you want to begin again."
+        : status.hasBackup ? "A verified backup is also available." : "The first verified backup will be created before a later save replaces this one.";
+      this.primary.textContent = this.resetArmed ? "Confirm new game" : "Start new game";
+      this.primary.dataset.action = this.resetArmed ? "confirm-new-game" : "arm-new-game";
+      this.primary.classList.remove("hidden");
     } else if (status.legacyAvailable) {
-      this.title.textContent = "A legacy Kindworks save was found";
-      this.message.textContent = `Version ${status.legacyVersion} can be copied into the new Phaser save area. This will not edit or delete the original HTML save.`;
-      this.details.textContent = "The complete legacy snapshot is preserved for later economy, inventory, NPC, animal and progression migrations.";
-      this.primary.textContent = "Create safe Phaser copy";
+      this.title.textContent = "Earlier KindWorks progress found";
+      this.message.textContent = "You can bring your earlier progress into this version of KindWorks.";
+      this.details.textContent = "Your original progress will remain available as a backup.";
+      this.primary.textContent = "Bring progress across";
       this.primary.classList.remove("hidden");
     } else {
       this.title.textContent = "Safe saves are ready";
-      this.message.textContent = "No legacy save was found for this web address. You can create a new Phaser save without affecting the original HTML game.";
-      this.details.textContent = "The new save uses a checked, versioned envelope with separate backup and recovery storage.";
-      this.primary.textContent = "Create new Phaser save";
+      this.message.textContent = "No earlier progress was found on this device. You can start a new Willowmere save.";
+      this.details.textContent = "A backup will be kept automatically as you play.";
+      this.primary.textContent = "Start a new save";
       this.primary.classList.remove("hidden");
     }
   }
@@ -98,10 +110,25 @@ export class SaveStatusController {
 
   close() {
     if (!this.panel) return;
+    this.resetArmed = false;
+    this.resetArmedAt = 0;
     this.panel.classList.add("hidden");
     this.panel.setAttribute("aria-hidden", "true");
     this.onModalChange(false);
     this.previousFocus?.focus?.({ preventScroll: true });
+  }
+
+  runPrimaryAction() {
+    const status = this.getStatus();
+    if (!status.hasCurrent) return this.createSafeSave();
+    if (!this.resetArmed) {
+      this.resetArmed = true;
+      this.resetArmedAt = this.now();
+      this.render();
+      return { ok: false, code: "new-game-confirmation-required" };
+    }
+    if (this.now() - this.resetArmedAt < NEW_GAME_CONFIRMATION_DELAY_MS) return { ok: false, code: "new-game-confirmation-delay" };
+    return this.startNewGame();
   }
 
   createSafeSave() {
@@ -109,16 +136,40 @@ export class SaveStatusController {
     const state = selected
       ? this.runtime.legacyImporter.createImportedState(selected)
       : this.runtime.gameState.getSnapshot();
-    const replaced = this.runtime.gameState.replace(state);
-    const result = replaced.ok ? this.runtime.repository.save(state) : replaced;
+    const validation = validateGameState(state);
+    const result = validation.ok ? this.runtime.repository.save(state) : validation;
     if (!result.ok) {
       this.title.textContent = "The save was not created";
       this.message.textContent = "Kindworks kept the existing data unchanged.";
       this.details.textContent = result.reason || result.errors?.join(" ") || "Storage is unavailable in this browser.";
       return result;
     }
+    const replaced = this.runtime.gameState.replace(state);
+    if (!replaced.ok) return replaced;
     this.render();
     return result;
+  }
+
+  startNewGame() {
+    const checkpoint = this.runtime.gameState.getSnapshot();
+    const fresh = createFreshGameState({ now: this.now() });
+    const saved = this.runtime.repository.save(fresh, { now: this.now() });
+    if (!saved.ok) {
+      this.title.textContent = "The new game was not started";
+      this.message.textContent = "Your current progress is unchanged.";
+      this.details.textContent = saved.reason || saved.errors?.join(" ") || "Storage is unavailable in this browser.";
+      return saved;
+    }
+    const replaced = this.runtime.gameState.replace(fresh);
+    if (!replaced.ok) {
+      this.runtime.repository.save(checkpoint, { now: this.now() });
+      return replaced;
+    }
+    this.resetArmed = false;
+    this.resetArmedAt = 0;
+    this.render();
+    this.onNewGame({ save: saved, state: this.runtime.gameState.getSnapshot() });
+    return { ...saved, code: "new-game-started" };
   }
 
   destroy() {

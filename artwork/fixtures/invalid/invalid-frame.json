@@ -1,0 +1,19 @@
+{
+  "description": "Declares a two-frame grid but supplies one frame-order entry.",
+  "assetId": "scene.fishing.reedbank.background",
+  "operation": "merge",
+  "path": "output",
+  "value": {
+    "type": "spritesheet",
+    "spriteSheet": {
+      "rows": 1,
+      "columns": 2,
+      "frameWidth": 360,
+      "frameHeight": 405,
+      "frameOrder": ["idle.down.0"],
+      "actions": ["idle"],
+      "directions": ["down"]
+    }
+  },
+  "expectedCodes": ["frame-count-mismatch"]
+}

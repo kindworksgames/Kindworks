@@ -1,5 +1,13 @@
 node_modules/
 dist/
+.pnpm-store/
+dist-test-metrics/
 .DS_Store
 *.log
-
+artifacts/controlled-artwork-replacement/
+artifacts/visual-readiness-mobile-audit/
+artifacts/visual-regression/
+artwork/.credentials/
+artwork/.secrets/
+artwork/local-generator-cache/
+artwork/**/.DS_Store

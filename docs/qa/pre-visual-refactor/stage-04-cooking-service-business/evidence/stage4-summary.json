@@ -1,0 +1,52 @@
+{
+  "stage": 4,
+  "verdict": "READY FOR NEXT QA STAGE",
+  "baseline": {
+    "branch": "phase-2-ui-simplification",
+    "commit": "3387bcb48964c41edbdc26f4257d2990fcdaf8d5",
+    "protectedHtmlSha256": "0b85bd71385b83e7a13676f7593ce376245959fa4ebf1a6b9a0e6765297aa5a5",
+    "previousGate": "READY FOR NEXT QA STAGE"
+  },
+  "campaigns": {
+    "bakery": { "levels": 150, "recipes": 24, "stepsUsed": 57, "stepsDefined": 57, "simulated": 15 },
+    "cafe": { "levels": 150, "recipes": 64, "stepsUsed": 86, "stepsDefined": 88, "simulated": 15 },
+    "morningMug": { "levels": 150, "recipes": 54, "stepsUsed": 33, "stepsDefined": 33, "simulated": 15 },
+    "riverside": { "levels": 150, "recipes": 32, "stepsUsed": 67, "stepsDefined": 67, "simulated": 15 },
+    "scoops": { "levels": 750, "chapters": 75, "families": 19, "parts": 24, "customers": 48, "simulated": 23 }
+  },
+  "totals": {
+    "levelsValidated": 1350,
+    "representativeLoopsPassed": 83,
+    "representativeLoopsRun": 83,
+    "focusedTestsPassed": 114,
+    "focusedTestsFailed": 0,
+    "fullTestsPassed": 617,
+    "fullTestsFailed": 0,
+    "productionModules": 179
+  },
+  "viewportsEmulated": ["568x320", "844x390", "1024x768", "1280x720"],
+  "physicalDevicesTested": false,
+  "runtime": {
+    "consoleErrors": 0,
+    "missingResources": 0,
+    "unhandledRejections": 0,
+    "fixtureWarnings": 1
+  },
+  "findings": [
+    {
+      "id": "S4-F01",
+      "severity": "P3",
+      "status": "FIXED AND VERIFIED",
+      "system": "Little Bakery",
+      "summary": "The selected level started correctly while the launch label stayed at Level 1; the label now follows the selected level."
+    }
+  ],
+  "repair": {
+    "productionFile": "src/scenes/BakeryScene.js",
+    "regressionTest": "tests/stage-04-repair.test.js",
+    "liveLevelsVerified": [150, 50],
+    "exitReentryVerified": true,
+    "saveImpact": "none",
+    "gameplayImpact": "none"
+  }
+}
