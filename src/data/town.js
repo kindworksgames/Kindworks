@@ -72,6 +72,27 @@ export const TOWN_REFERENCE_LAYOUT = Object.freeze({
       Object.freeze([4100, 2505]), Object.freeze([4100, 2800]), Object.freeze([3070, 2800]),
     ]),
   }),
+  pavement: Object.freeze({
+    houseWalkWidth: 34,
+    // Presentation-only route corrections transcribe the reference paths without
+    // changing the protected navigation/path data below.
+    visualPathOverrides: Object.freeze({
+      "commons-play": Object.freeze([
+        Object.freeze([1615, 890]), Object.freeze([1718, 882]),
+        Object.freeze([1738, 904]),
+        Object.freeze([2148, 1065]), Object.freeze([2185, 1065]),
+        Object.freeze([2180, 1225]), Object.freeze([2040, 1305]),
+        Object.freeze([1815, 1305]), Object.freeze([1718, 1218]),
+        Object.freeze([1650, 1130]),
+      ]),
+    }),
+    commercialAreas: Object.freeze([
+      Object.freeze({ id: "old-market-forecourt", x: 160, y: 830, width: 820, height: 410 }),
+      Object.freeze({ id: "high-street-forecourt", x: 2725, y: 555, width: 1290, height: 630 }),
+      Object.freeze({ id: "cinema-forecourt", x: 3815, y: 205, width: 285, height: 285 }),
+      Object.freeze({ id: "south-shore-cafe-forecourt", x: 3415, y: 2045, width: 290, height: 215, transition: "none" }),
+    ]),
+  }),
   woodland: Object.freeze({
     riverClearCenterX: 2555,
     riverClearHalfWidth: 190,

@@ -76,8 +76,8 @@ export class PhaserPrefabRenderer {
   createDisplayLayer(resolved, layer, { frame = null, tileArea = null } = {}) {
     if (!layer || ![VISUAL_ASSET_KINDS.IMAGE, VISUAL_ASSET_KINDS.SPRITESHEET, VISUAL_ASSET_KINDS.ATLAS].includes(layer.asset.kind)) return null;
     const key = layer.asset.runtime.textureKey || layer.asset.runtime.atlasKey;
-    const image = layer.asset.kind === VISUAL_ASSET_KINDS.IMAGE && tileArea
-      ? this.scene.add.tileSprite(0, resolved.groundContactAnchor?.y || 0, tileArea.width, tileArea.height, key)
+    const image = tileArea
+      ? this.scene.add.tileSprite(0, resolved.groundContactAnchor?.y || 0, tileArea.width, tileArea.height, key, frame ?? 0)
       : layer.asset.kind === VISUAL_ASSET_KINDS.IMAGE
       ? this.scene.add.image(0, resolved.groundContactAnchor?.y || 0, key)
       : this.scene.add.sprite(0, resolved.groundContactAnchor?.y || 0, key, frame ?? 0);

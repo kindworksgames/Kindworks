@@ -71,6 +71,66 @@ export const ASSET_LAB_CANDIDATE_INDEX = Object.freeze({
       },
       "reference": null,
       "referenceStatus": "not-assigned"
+    },
+    "terrain.town.slice.pavement": {
+      "schemaVersion": 1,
+      "semanticId": "terrain.town.slice.pavement",
+      "contractVersion": "1.0.0",
+      "contractSchemaVersion": 2,
+      "candidateSha256": "1cbc77da46624f987773f345c7cfd87c002d3ab64deab00790707052ab1c5c4e",
+      "approvalToken": "1cbc77da4662",
+      "sourcePath": "artwork/staging/phase-8a/town-pavement-tile/v1/town-pavement-tile.v1.png",
+      "sourceUrl": "/__kindworks-candidate/terrain.town.slice.pavement",
+      "kind": "spritesheet",
+      "status": "review",
+      "approvalStatus": "human-review-required",
+      "validationStatus": "valid",
+      "validationFindings": [],
+      "expectedRuntimeFile": "public/assets/runtime/phase-8a/town-pavement-tile.v1.png",
+      "technical": {
+        "format": "png",
+        "width": 256,
+        "height": 256,
+        "alpha": false,
+        "bitDepth": 8,
+        "colourMode": "RGB",
+        "opaqueBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 256,
+          "height": 256
+        },
+        "bytes": 58449,
+        "pixelArt": true,
+        "frameWidth": 64,
+        "frameHeight": 64,
+        "frameCount": 16,
+        "directions": []
+      },
+      "scenePlacements": [
+        {
+          "layoutId": "layout.phase-8a.town-block.house-6",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.terrain.pavement",
+          "position": {
+            "x": 640,
+            "y": 493
+          },
+          "worldOrigin": {
+            "x": 1880,
+            "y": 0
+          },
+          "gameplayGeometryLocked": true,
+          "repeat": "surface-autotile"
+        }
+      ],
+      "approval": null,
+      "visualOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "reference": null,
+      "referenceStatus": "not-assigned"
     }
   },
   "validation": {

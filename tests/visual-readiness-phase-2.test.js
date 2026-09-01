@@ -5,6 +5,7 @@ import { resolve } from "node:path";
 import { createHash } from "node:crypto";
 import { createVisualRegressionFixtureState } from "../src/qa/visualRegressionFixtures.js";
 import { VisualRegistry } from "../src/visual/VisualRegistry.js";
+import { PHASE_8B_APPROVED_ASSET_INDEX } from "../src/visual/generated/phase8bApprovedAssetIndex.js";
 import {
   KINDWORKS_VISUAL_MANIFEST,
   VISUAL_ASSET_IDS,
@@ -27,7 +28,9 @@ test("validates all registered current files and cross-definition references", a
   const result = await validateVisualManifestFiles(KINDWORKS_VISUAL_MANIFEST, fileExists);
   assert.equal(result.ok, true, JSON.stringify(result.errors, null, 2));
   assert.equal(KINDWORKS_VISUAL_MANIFEST.schemaVersion, 1);
-  assert.equal(KINDWORKS_VISUAL_MANIFEST.assets.filter((asset) => asset.source.kind === "file").length, 7);
+  const fileAssets = KINDWORKS_VISUAL_MANIFEST.assets.filter((asset) => asset.source.kind === "file");
+  assert.ok(fileAssets.length >= 7, "the original registered file set must remain intact");
+  assert.equal(fileAssets.filter((asset) => asset.source.owner === "Phase8BApprovedArtwork").length, PHASE_8B_APPROVED_ASSET_INDEX.assets.length);
   assert.equal(KINDWORKS_VISUAL_MANIFEST.animations.length, 4);
   assert.deepEqual(new Set(KINDWORKS_VISUAL_MANIFEST.scenePacks.map((pack) => pack.sceneId)), new Set(["BootScene", "FishingScene", "PlaygroundPowerwashScene", "TownScene"]));
 });

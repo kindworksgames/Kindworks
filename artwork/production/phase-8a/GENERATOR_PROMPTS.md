@@ -64,12 +64,12 @@ Return only town-grass-tile.v1.png plus provenance metadata; do not composite it
 ## 02 — terrain.town.slice.pavement
 
 - Family: `family.town-terrain.slice`
-- Purpose: pavement edge between the house lawn and north road
-- Output: `64×64` PNG, alpha=false; single untrimmed image
+- Purpose: complete modular pavement surface with centre, four grass edges, convex and concave corners, and natural grass transitions
+- Output: `256×256` PNG, alpha=false; 4×4; 16 frames; 64×64px each; order: centre, grass-edge-north, grass-edge-east, grass-edge-south, grass-edge-west, grass-outer-corner-north-east, grass-outer-corner-south-east, grass-outer-corner-south-west, grass-outer-corner-north-west, grass-inner-corner-north-east, grass-inner-corner-south-east, grass-inner-corner-south-west, grass-inner-corner-north-west, grass-only, isolated-paver-transition, worn-grass-transition
 - Logical display: `64×64`
 - Camera: top-down orthographic
 - Anchor: tile-top-left at `0, 0`
-- States: default
+- States: centre, grass-edge-north, grass-edge-east, grass-edge-south, grass-edge-west, grass-outer-corner-north-east, grass-outer-corner-south-east, grass-outer-corner-south-west, grass-outer-corner-north-west, grass-inner-corner-north-east, grass-inner-corner-south-east, grass-inner-corner-south-west, grass-inner-corner-north-west, grass-only, isolated-paver-transition, worn-grass-transition
 - Layers: main
 - Directions: none
 - Runtime filename: `public/assets/runtime/phase-8a/town-pavement-tile.v1.png`
@@ -79,11 +79,11 @@ Return only town-grass-tile.v1.png plus provenance metadata; do not composite it
 
 ### Generator prompt
 
-Create one production-ready KindWorks pixel-art asset for pavement edge between the house lawn and north road Warm pale Willowmere paving stones with a readable 32-unit rhythm and fully seamless edges. Use KindWorks Visual Style Bible v4. Exact output: 64×64px PNG, fully opaque, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.
+Create one production-ready KindWorks pixel-art asset for complete modular pavement surface with centre, four grass edges, convex and concave corners, and natural grass transitions A complete pavement surface sheet in the exact declared frame order: centre; grass edges north, east, south, west; four convex outer corners; four concave inner corners; grass-only; an isolated paver transition; and a worn grass transition. Use warm pale Willowmere paving stones with a readable 32-unit rhythm. Every edge and corner must assemble without seams. Transition pixels must use the approved town grass tile exactly, with a restrained one-to-three-pixel irregular grass-and-earth edge and no gutters between frames. Use KindWorks Visual Style Bible v4. Exact output: 256×256px PNG, fully opaque, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.
 
 ### Negative prompt / forbidden output
 
-provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; road markings, grass border, objects, baked characters, or perspective tilt
+provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; road markings, grid labels, frame dividers, gutters, objects, baked characters, perspective tilt, a different grass palette, or disconnected tile edges
 
 ### Delivery
 

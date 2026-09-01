@@ -68,7 +68,7 @@ import { houseExteriorDirtStage } from "../data/houseRescue.js";
 import { setSpriteAiLabelHint } from "../plugins/SpriteAiLabelPlugin.js";
 import { startLazyScene } from "./lazyScenes.js";
 import { TOWN_HOUSE_GEOMETRY, TOWN_LOGICAL_GEOMETRY, TOWN_SHOP_GEOMETRY } from "../data/townGeometry.js";
-import { preloadApprovedSceneVisuals, mountApprovedSceneVisuals } from "../visual/renderers/ApprovedSceneVisualRuntime.js";
+import { hasApprovedSceneBinding, preloadApprovedSceneVisuals, mountApprovedSceneVisuals } from "../visual/renderers/ApprovedSceneVisualRuntime.js";
 import { DENSE_TOUCH_RENDER_FPS, renderFrameTarget } from "../visual/ResponsiveFramePolicy.js";
 import { createTownApprovedSceneBindings } from "../presentation/TownApprovedSceneBindings.js";
 
@@ -631,61 +631,55 @@ export class TownScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.unbindInterface());
     this.updateStatus();
     this.time.delayedCall(420, () => this.restorationMilestoneController?.maybeOpen?.());
-    this.approvedSceneVisuals = mountApprovedSceneVisuals(this, { bindings: createTownApprovedSceneBindings(this) });
+    this.approvedSceneVisuals = mountApprovedSceneVisuals(this, {
+      bindings: createTownApprovedSceneBindings(this),
+      instanceFilter: (instance) => !["cover-town-ground", "surface-autotile"].includes(instance.binding?.repeat),
+    });
     this.approvedVisualRefreshElapsed = 0;
   }
 
   drawTown() {
+    const approvedGrassSurface = hasApprovedSceneBinding(this, (binding) => binding.mode === "repeat" && binding.repeat === "cover-town-ground");
+    const approvedPavementSurface = hasApprovedSceneBinding(this, (binding) => binding.mode === "repeat" && binding.repeat === "surface-autotile");
+    this.approvedGrassSurfaceActive = approvedGrassSurface;
+    this.approvedPavementSurfaceActive = approvedPavementSurface;
     this.add.rectangle(WORLD.width / 2, WORLD.height / 2, WORLD.width, WORLD.height, COLORS.grass).setDepth(0);
-
-    const terrain = this.add.graphics().setDepth(1);
-    terrain.fillStyle(COLORS.grassLight, 0.28);
-    for (const district of DISTRICTS) {
-      terrain.fillRoundedRect(district.x, district.y, district.width, district.height, 30);
-    }
-
-    const random = new Phaser.Math.RandomDataGenerator(["willowmere-town"]);
-    const cacheDecorativeVectors = window.innerWidth > 600 && window.innerWidth <= 1024;
-    const grassDetailTexture = "kindworks-town-grass-detail-4x-v1";
-    if (cacheDecorativeVectors && !this.textures.exists(grassDetailTexture)) {
-      const detail = this.make.graphics({ add: false });
-      detail.fillStyle(0xffffff, 1).fillCircle(32, 32, 24);
-      detail.generateTexture(grassDetailTexture, 64, 64);
-      detail.destroy();
-      this.textures.get(grassDetailTexture).setFilter(Phaser.Textures.FilterMode.NEAREST);
-    }
-    for (let index = 0; index < 260; index += 1) {
-      const x = random.between(30, WORLD.width - 30);
-      const y = random.between(30, WORLD.height - 30);
-      const radius = random.between(2, 6);
-      if (!cacheDecorativeVectors) {
-        terrain.fillStyle(index % 3 === 0 ? COLORS.grassDark : COLORS.grassLight, 0.18);
-        terrain.fillCircle(x, y, radius);
-        continue;
-      }
-      const detail = this.add.image(x, y, grassDetailTexture)
-        .setTint(index % 3 === 0 ? COLORS.grassDark : COLORS.grassLight)
-        .setAlpha(0.18)
-        .setScale(radius / 24)
-        .setDepth(1);
-      setSpriteAiLabelHint(detail, { id: `world.terrain.grass-detail-${index + 1}`, label: `Willowmere grass detail ${index + 1}`, kind: "terrain-detail" });
-    }
 
     this.drawReferenceWaterways();
     this.drawReferenceWoodland();
 
+    if (approvedPavementSurface) {
+      const pavementUnderlay = this.add.graphics().setDepth(8.5);
+      const drawRoundedRoute = (route, extraWidth) => {
+        const authoredPoints = TOWN_REFERENCE_LAYOUT.pavement.visualPathOverrides[route.id] || route.points;
+        const routePoints = points(authoredPoints);
+        const width = route.width + extraWidth;
+        pavementUnderlay.lineStyle(width, 0xe6d5ad, 1);
+        pavementUnderlay.strokePoints(routePoints, false, false);
+        for (const pointValue of routePoints) pavementUnderlay.fillStyle(0xe6d5ad, 1).fillCircle(pointValue.x, pointValue.y, width / 2);
+      };
+      ROADS.forEach((road) => drawRoundedRoute(road, 16));
+      PATHS.forEach((path) => drawRoundedRoute(path, 8));
+    }
+
     const roadLayer = this.add.graphics().setDepth(10);
+    if (approvedPavementSurface) roadLayer.setData("excludeFromStaticTownBackdrop", true);
     for (const road of ROADS) {
-      roadLayer.lineStyle(road.width + 16, COLORS.roadEdge, 1);
-      roadLayer.strokePoints(points(road.points), false, false);
+      if (!approvedPavementSurface) {
+        roadLayer.lineStyle(road.width + 16, COLORS.roadEdge, 1);
+        roadLayer.strokePoints(points(road.points), false, false);
+      }
       roadLayer.lineStyle(road.width, COLORS.road, 1);
       roadLayer.strokePoints(points(road.points), false, false);
+      for (const [x, y] of road.points) roadLayer.fillStyle(COLORS.road, 1).fillCircle(x, y, road.width / 2);
     }
-    for (const path of PATHS) {
-      roadLayer.lineStyle(path.width + 8, 0xbca57b, 0.55);
-      roadLayer.strokePoints(points(path.points), false, false);
-      roadLayer.lineStyle(path.width, COLORS.path, 1);
-      roadLayer.strokePoints(points(path.points), false, false);
+    if (!approvedPavementSurface) {
+      for (const path of PATHS) {
+        roadLayer.lineStyle(path.width + 8, 0xbca57b, 0.55);
+        roadLayer.strokePoints(points(path.points), false, false);
+        roadLayer.lineStyle(path.width, COLORS.path, 1);
+        roadLayer.strokePoints(points(path.points), false, false);
+      }
     }
 
     this.drawReferencePonds();
@@ -694,7 +688,15 @@ export class TownScene extends Phaser.Scene {
     this.drawBridges();
     this.drawParkDetails();
     this.drawReferenceBeachDetails();
+    this.approvedTownGroundVisuals = mountApprovedSceneVisuals(this, {
+      bindings: createTownApprovedSceneBindings(this),
+      instanceFilter: (instance) => instance.binding?.repeat === "cover-town-ground",
+    });
     this.cacheStaticTownBackdrop();
+    this.approvedTownPavementVisuals = mountApprovedSceneVisuals(this, {
+      bindings: createTownApprovedSceneBindings(this),
+      instanceFilter: (instance) => instance.binding?.repeat === "surface-autotile",
+    });
     HOUSES.forEach((house) => this.drawHouse(house));
     this.drawHouseRescueMarkers();
     SHOPS.forEach((shop) => this.drawShop(shop));
@@ -729,6 +731,7 @@ export class TownScene extends Phaser.Scene {
       && object.depth <= 30
       && object.type !== "Zone"
       && !object.input?.enabled
+      && object.getData?.("excludeFromStaticTownBackdrop") !== true
     ));
     if (!staticObjects.length) return;
 
@@ -1005,8 +1008,6 @@ export class TownScene extends Phaser.Scene {
 
   drawParkDetails() {
     const graphics = this.add.graphics().setDepth(20);
-    graphics.fillStyle(0xb7d98a, 0.7);
-    graphics.fillRoundedRect(1130, 745, 1220, 690, 80);
     const playground = TOWN_REFERENCE_LAYOUT.playground;
     graphics.fillStyle(0xb98c54, 0.45);
     graphics.fillRoundedRect(playground.x - 10, playground.y - 10, playground.width + 20, playground.height + 20, 58);
@@ -1149,8 +1150,6 @@ export class TownScene extends Phaser.Scene {
       layer.lineStyle(Math.max(2, 5 * Math.min(scaleX, scaleY)), outline, 0.92);
       layer.strokePoints(mapped, true);
     };
-    layer.fillStyle(0x5c864e, 0.5);
-    layer.fillRoundedRect(house.x - 36, house.y - 38, house.width + 72, house.height + 78, 18);
     const body = architecture.body;
     rect(body.x - 4, body.y - 4, body.w + 8, body.h + 8, COLORS.ink);
     rect(body.x, body.y, body.w, body.h, wallColor);
@@ -1637,9 +1636,6 @@ export class TownScene extends Phaser.Scene {
       const lawn = state.lawns[plot.id];
       const stage = lawnVisualStage(lawn.grassHeight);
       const yard = plot.yard || { x: plot.x - 92, y: plot.y - 52, width: 184, height: 104 };
-      const colors = [0x96cf78, 0x82bf66, 0x70ab58, 0x5f964d];
-      lawnGraphics.fillStyle(colors[stage], 0.92);
-      lawnGraphics.fillRoundedRect(yard.x + 7, yard.y + 7, yard.width - 14, yard.height - 14, 18);
       if (lawn.grassHeight > 12) {
         const tuftCount = Math.min(130, Math.round(10 + lawn.grassHeight * 1.15));
         lawnGraphics.lineStyle(2.2, lawn.grassHeight >= 70 ? 0x265626 : 0x356f2e, 0.82);
@@ -2994,6 +2990,8 @@ export class TownScene extends Phaser.Scene {
     this.approvedVisualRefreshElapsed += delta;
     if (this.approvedVisualRefreshElapsed >= 100) {
       this.approvedVisualRefreshElapsed = 0;
+      this.approvedTownGroundVisuals?.refresh?.();
+      this.approvedTownPavementVisuals?.refresh?.();
       this.approvedSceneVisuals?.refresh?.();
     }
     this.stateSyncElapsed += delta;

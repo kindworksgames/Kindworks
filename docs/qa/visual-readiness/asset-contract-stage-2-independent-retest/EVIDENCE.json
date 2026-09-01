@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "kindworks.asset-contract-stage2-independent-retest",
-  "generatedAt": "2026-08-30T19:48:41.138Z",
+  "generatedAt": "2026-09-01T13:58:03.005Z",
   "environment": {
     "platform": "darwin",
     "node": "v24.19.0"
@@ -28,8 +28,8 @@
       "category.vegetation": 3
     },
     "currentLeafOutputTypes": {
-      "single-image": 9,
-      "spritesheet": 14
+      "single-image": 8,
+      "spritesheet": 15
     }
   },
   "results": [

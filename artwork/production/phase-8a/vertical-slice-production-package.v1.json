@@ -284,16 +284,16 @@
       "version": "1.0.0",
       "familyId": "family.town-terrain.slice",
       "categoryContractId": "category.terrain",
-      "gameplayPurpose": "pavement edge between the house lawn and north road",
+      "gameplayPurpose": "complete modular pavement surface with centre, four grass edges, convex and concave corners, and natural grass transitions",
       "intendedScenes": [
         "TownScene"
       ],
       "output": {
-        "type": "single-image",
+        "type": "spritesheet",
         "format": "png",
         "canvas": {
-          "width": 64,
-          "height": 64
+          "width": 256,
+          "height": 256
         },
         "alpha": false,
         "colourMode": "RGB",
@@ -302,8 +302,53 @@
         "textureFiltering": "nearest",
         "smoothing": false,
         "trimFrames": false,
-        "spriteSheet": null,
-        "atlas": null
+        "atlas": null,
+        "spriteSheet": {
+          "frameWidth": 64,
+          "frameHeight": 64,
+          "columns": 4,
+          "rows": 4,
+          "padding": 0,
+          "spacing": 0,
+          "frameCount": 16,
+          "frameOrder": [
+            "centre",
+            "grass-edge-north",
+            "grass-edge-east",
+            "grass-edge-south",
+            "grass-edge-west",
+            "grass-outer-corner-north-east",
+            "grass-outer-corner-south-east",
+            "grass-outer-corner-south-west",
+            "grass-outer-corner-north-west",
+            "grass-inner-corner-north-east",
+            "grass-inner-corner-south-east",
+            "grass-inner-corner-south-west",
+            "grass-inner-corner-north-west",
+            "grass-only",
+            "isolated-paver-transition",
+            "worn-grass-transition"
+          ],
+          "actions": [
+            "centre",
+            "grass-edge-north",
+            "grass-edge-east",
+            "grass-edge-south",
+            "grass-edge-west",
+            "grass-outer-corner-north-east",
+            "grass-outer-corner-south-east",
+            "grass-outer-corner-south-west",
+            "grass-outer-corner-north-west",
+            "grass-inner-corner-north-east",
+            "grass-inner-corner-south-east",
+            "grass-inner-corner-south-west",
+            "grass-inner-corner-north-west",
+            "grass-only",
+            "isolated-paver-transition",
+            "worn-grass-transition"
+          ],
+          "directions": []
+        }
       },
       "camera": {
         "projection": "top-down orthographic",
@@ -341,19 +386,64 @@
       },
       "sockets": [],
       "states": [
-        "default"
+        "centre",
+        "grass-edge-north",
+        "grass-edge-east",
+        "grass-edge-south",
+        "grass-edge-west",
+        "grass-outer-corner-north-east",
+        "grass-outer-corner-south-east",
+        "grass-outer-corner-south-west",
+        "grass-outer-corner-north-west",
+        "grass-inner-corner-north-east",
+        "grass-inner-corner-south-east",
+        "grass-inner-corner-south-west",
+        "grass-inner-corner-north-west",
+        "grass-only",
+        "isolated-paver-transition",
+        "worn-grass-transition"
       ],
       "variants": [
-        "default"
+        "centre",
+        "grass-edge-north",
+        "grass-edge-east",
+        "grass-edge-south",
+        "grass-edge-west",
+        "grass-outer-corner-north-east",
+        "grass-outer-corner-south-east",
+        "grass-outer-corner-south-west",
+        "grass-outer-corner-north-west",
+        "grass-inner-corner-north-east",
+        "grass-inner-corner-south-east",
+        "grass-inner-corner-south-west",
+        "grass-inner-corner-north-west",
+        "grass-only",
+        "isolated-paver-transition",
+        "worn-grass-transition"
       ],
       "layers": [
         {
           "id": "main",
           "order": 0,
           "states": [
-            "default"
+            "centre",
+            "grass-edge-north",
+            "grass-edge-east",
+            "grass-edge-south",
+            "grass-edge-west",
+            "grass-outer-corner-north-east",
+            "grass-outer-corner-south-east",
+            "grass-outer-corner-south-west",
+            "grass-outer-corner-north-west",
+            "grass-inner-corner-north-east",
+            "grass-inner-corner-south-east",
+            "grass-inner-corner-south-west",
+            "grass-inner-corner-north-west",
+            "grass-only",
+            "isolated-paver-transition",
+            "worn-grass-transition"
           ],
-          "canvasAlignment": "full-canvas"
+          "canvasAlignment": "frame-grid"
         }
       ],
       "directions": [],
@@ -374,8 +464,8 @@
       "filenameStem": "town-pavement-tile",
       "promptPackage": {
         "providerNeutral": true,
-        "positivePrompt": "Create one production-ready KindWorks pixel-art asset for pavement edge between the house lawn and north road Warm pale Willowmere paving stones with a readable 32-unit rhythm and fully seamless edges. Use KindWorks Visual Style Bible v4. Exact output: 64×64px PNG, fully opaque, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.",
-        "negativePrompt": "provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; road markings, grass border, objects, baked characters, or perspective tilt",
+        "positivePrompt": "Create one production-ready KindWorks pixel-art asset for complete modular pavement surface with centre, four grass edges, convex and concave corners, and natural grass transitions A complete pavement surface sheet in the exact declared frame order: centre; grass edges north, east, south, west; four convex outer corners; four concave inner corners; grass-only; an isolated paver transition; and a worn grass transition. Use warm pale Willowmere paving stones with a readable 32-unit rhythm. Every edge and corner must assemble without seams. Transition pixels must use the approved town grass tile exactly, with a restrained one-to-three-pixel irregular grass-and-earth edge and no gutters between frames. Use KindWorks Visual Style Bible v4. Exact output: 256×256px PNG, fully opaque, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.",
+        "negativePrompt": "provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; road markings, grid labels, frame dividers, gutters, objects, baked characters, perspective tilt, a different grass palette, or disconnected tile edges",
         "deliveryInstruction": "Return only town-pavement-tile.v1.png plus provenance metadata; do not composite it into a screenshot or rename it."
       },
       "forbiddenOutput": [
@@ -384,7 +474,7 @@
         "automatic trimming, cropped canvas, changed frame order, or unequal frame alignment",
         "unrequested UI, characters, props, scenery, shadows, or background colour",
         "perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4",
-        "road markings, grass border, objects, baked characters, or perspective tilt"
+        "road markings, grid labels, frame dividers, gutters, objects, baked characters, perspective tilt, a different grass palette, or disconnected tile edges"
       ],
       "validation": {
         "checklist": [
@@ -400,25 +490,40 @@
         "requireAlpha": false,
         "requireUntrimmedFrames": true,
         "requireNearestNeighbour": true,
-        "requireFrameCount": 1,
+        "requireFrameCount": 16,
         "requireStateNames": [
-          "default"
+          "centre",
+          "grass-edge-north",
+          "grass-edge-east",
+          "grass-edge-south",
+          "grass-edge-west",
+          "grass-outer-corner-north-east",
+          "grass-outer-corner-south-east",
+          "grass-outer-corner-south-west",
+          "grass-outer-corner-north-west",
+          "grass-inner-corner-north-east",
+          "grass-inner-corner-south-east",
+          "grass-inner-corner-south-west",
+          "grass-inner-corner-north-west",
+          "grass-only",
+          "isolated-paver-transition",
+          "worn-grass-transition"
         ],
         "requireDirections": [],
         "maximumTransparentPadding": {
-          "top": 64,
-          "right": 64,
-          "bottom": 64,
-          "left": 64
+          "top": 256,
+          "right": 256,
+          "bottom": 256,
+          "left": 256
         },
         "maximumVisibleBounds": {
           "x": 0,
           "y": 0,
-          "width": 64,
-          "height": 64
+          "width": 256,
+          "height": 256
         },
         "gameplayGeometrySignature": "b1e3a260",
-        "maximumRuntimeBytes": 35000,
+        "maximumRuntimeBytes": 140000,
         "fallbackSemanticId": "system.fallback.production"
       },
       "accessibility": null,
@@ -439,7 +544,7 @@
             "y": 0
           },
           "gameplayGeometryLocked": true,
-          "repeat": "horizontal-strip"
+          "repeat": "surface-autotile"
         }
       ],
       "prefabId": "prefab.phase-8a.terrain.pavement",

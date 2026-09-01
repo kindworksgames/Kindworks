@@ -9,6 +9,15 @@
       "approvedAt": "2026-09-01T10:19:18.226Z",
       "masterPath": "artwork/masters/phase-8a/town-grass-tile/v1/town-grass-tile.v1.png",
       "runtimePath": "public/assets/runtime/phase-8a/town-grass-tile.v1.png"
+    },
+    {
+      "semanticId": "terrain.town.slice.pavement",
+      "contractVersion": "1.0.0",
+      "candidateSha256": "1cbc77da46624f987773f345c7cfd87c002d3ab64deab00790707052ab1c5c4e",
+      "reviewer": "youyoulu",
+      "approvedAt": "2026-09-01T11:59:24.957Z",
+      "masterPath": "artwork/masters/phase-8a/town-pavement-tile/v1/town-pavement-tile.v1.png",
+      "runtimePath": "public/assets/runtime/phase-8a/town-pavement-tile.v1.png"
     }
   ]
 }
