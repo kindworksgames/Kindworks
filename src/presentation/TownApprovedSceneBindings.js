@@ -15,7 +15,7 @@ function localWorldOrigin(instance) {
   };
 }
 
-function pavementSegment(instance, a, b, width, id) {
+function surfaceSegment(instance, a, b, width, id, frame = 0, depth = 9) {
   const origin = localWorldOrigin(instance);
   const dx = b.x - a.x;
   const dy = b.y - a.y;
@@ -27,12 +27,26 @@ function pavementSegment(instance, a, b, width, id) {
   const end = { x: b.x - unitX * trim, y: b.y - unitY * trim };
   return position((start.x + end.x) / 2 + origin.x, (start.y + end.y) / 2 + origin.y, {
     id,
-    frame: 0,
+    frame,
     tileArea: { width: Math.max(2, Math.ceil(Math.hypot(end.x - start.x, end.y - start.y))), height: width },
     origin: { x: 0.5, y: 0.5 },
     rotation: Math.atan2(dy, dx),
-    depth: 9,
+    depth,
   });
+}
+
+function townRoadPlacements(instance) {
+  const placements = [];
+  for (const road of ROADS) {
+    const roadPoints = road.points.map(([x, y]) => ({ x, y }));
+    // The matching rounded Graphics road beneath these strips owns joins.
+    // Do not stack square/rotated texture nodes here: overlapping asphalt
+    // pieces create visible star-shaped colour blocks at every control point.
+    for (let index = 0; index < roadPoints.length - 1; index += 1) {
+      placements.push(surfaceSegment(instance, roadPoints[index], roadPoints[index + 1], road.width, `${road.id}:road-segment-${index + 1}`, 0, 10.25));
+    }
+  }
+  return placements;
 }
 
 function pavementArea(instance, area, frame, depth, suffix = "centre") {
@@ -98,7 +112,7 @@ function townPavementPlacements(instance) {
     const authoredPoints = TOWN_REFERENCE_LAYOUT.pavement.visualPathOverrides[route.id] || route.points;
     const routePoints = authoredPoints.map(([x, y]) => ({ x, y }));
     for (let index = 0; index < routePoints.length - 1; index += 1) {
-      placements.push(pavementSegment(instance, routePoints[index], routePoints[index + 1], width, `${route.id}:segment-${index + 1}`));
+      placements.push(surfaceSegment(instance, routePoints[index], routePoints[index + 1], width, `${route.id}:segment-${index + 1}`));
     }
   }
   placements.push(...houseWalkPlacements(instance));
@@ -114,6 +128,7 @@ function repeat(instance, mode) {
     return [position(origin.x, origin.y, { tileArea: { width: WORLD.width, height: WORLD.height }, depth: 0 })];
   }
   if (mode === "surface-autotile") return townPavementPlacements(instance);
+  if (mode === "road-surface-autotile") return townRoadPlacements(instance);
   if (mode === "horizontal-strip") return Array.from({ length: 20 }, (_, index) => position(32 + index * 64, instance.position.y));
   if (mode === "vertical-banks") return Array.from({ length: 12 }, (_, index) => position(instance.position.x, 32 + index * 64, { frame: index % 2 }));
   if (mode === "yard-boundary") return [position(215, 155), position(343, 155), position(471, 155), position(215, 480), position(343, 480, { frame: 1 }), position(471, 480)];

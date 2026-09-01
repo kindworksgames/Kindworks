@@ -123,30 +123,30 @@ Return only town-pavement-tile.v1.png plus provenance metadata; do not composite
 ## 03 — terrain.town.slice.road
 
 - Family: `family.town-terrain.slice`
-- Purpose: north-road surface under the slice
-- Output: `64×64` PNG, alpha=false; single untrimmed image
+- Purpose: complete modular road surface with directional kerbs, rounded corners, and pavement transitions
+- Output: `256×256` PNG, alpha=false; 4×4; 16 frames; 64×64px each; order: surface-a, surface-b, surface-c, surface-d, kerb-north, kerb-east, kerb-south, kerb-west, rounded-corner-north-east, rounded-corner-south-east, rounded-corner-south-west, rounded-corner-north-west, pavement-transition-north, pavement-transition-east, pavement-transition-south, pavement-transition-west
 - Logical display: `64×64`
 - Camera: top-down orthographic
 - Anchor: tile-top-left at `0, 0`
-- States: default
+- States: surface-a, surface-b, surface-c, surface-d, kerb-north, kerb-east, kerb-south, kerb-west, rounded-corner-north-east, rounded-corner-south-east, rounded-corner-south-west, rounded-corner-north-west, pavement-transition-north, pavement-transition-east, pavement-transition-south, pavement-transition-west
 - Layers: main
 - Directions: none
-- Runtime filename: `public/assets/runtime/phase-8a/town-road-tile.v1.png`
+- Runtime filename: `public/assets/runtime/phase-8a/town-road-set.v1.png`
 - Prefab/state: `prefab.phase-8a.terrain.road` / `state.phase-8a.terrain.road`
 - Scene destination: `TownScene` → `layout.phase-8a.town-block.house-6` → `instance.phase-8a.town.terrain.road`
 - Fallback: labelled checker placeholder in Asset Lab; transparent safe fallback with recorded registry failure
 
 ### Generator prompt
 
-Create one production-ready KindWorks pixel-art asset for north-road surface under the slice Muted blue-grey village road surface, fine pixel aggregate, seamless, with no baked curb or markings. Use KindWorks Visual Style Bible v4. Exact output: 64×64px PNG, fully opaque, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.
+Create one production-ready KindWorks pixel-art asset for complete modular road surface with directional kerbs, rounded corners, and pavement transitions A complete modular road sheet in the exact declared frame order: four seamless blue-grey asphalt variants; straight kerbs north, east, south, west; rounded road corners north-east, south-east, south-west, north-west; and pavement transitions north, east, south, west. Match the approved grass and warm pale pavement exactly. Every connection must assemble without seams. Use KindWorks Visual Style Bible v4. Exact output: 256×256px PNG, fully opaque, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.
 
 ### Negative prompt / forbidden output
 
-provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; vehicles, curb, crossing, centre line, puddles, or debris
+provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; vehicles, road markings, crossings, grid labels, frame dividers, gutters, objects, baked characters, square corner protrusions, or disconnected tile edges
 
 ### Delivery
 
-Return only town-road-tile.v1.png plus provenance metadata; do not composite it into a screenshot or rename it.
+Return only town-road-set.v1.png plus provenance metadata; do not composite it into a screenshot or rename it.
 
 ### Geometry and sockets
 

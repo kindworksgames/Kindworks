@@ -101,6 +101,56 @@ export const PHASE_8B_APPROVED_ASSET_INDEX = Object.freeze({
         "runtimePath": "public/assets/runtime/phase-8a/town-pavement-tile.v1.png",
         "runtimeUrl": "/assets/runtime/phase-8a/town-pavement-tile.v1.png"
       }
+    },
+    {
+      "schemaVersion": 1,
+      "id": "terrain.town.slice.road",
+      "kind": "spritesheet",
+      "source": {
+        "kind": "file",
+        "file": "/assets/runtime/phase-8a/town-road-set.v1.png",
+        "format": "png",
+        "owner": "Phase8BApprovedArtwork"
+      },
+      "runtime": {
+        "renderTarget": "phaser",
+        "textureKey": "kw.phase8a.terrain.town.slice.road"
+      },
+      "technical": {
+        "pixelArt": true,
+        "alpha": false,
+        "width": 256,
+        "height": 256,
+        "nativePixelsPerLogicalUnit": 1,
+        "frameWidth": 64,
+        "frameHeight": 64,
+        "directions": []
+      },
+      "requiredness": "required",
+      "lifecycle": {
+        "scope": "scene",
+        "unload": "on-last-scene-release"
+      },
+      "status": "phase-8b-approved-runtime",
+      "productionContractId": "terrain.town.slice.road",
+      "cache": {
+        "version": "b4b12b00f93d",
+        "contentSha256": "b4b12b00f93d25a01936e20a35acaef730e53c14a55b480d75786d4420f7af17"
+      },
+      "validation": {
+        "maximumRuntimeBytes": 180000,
+        "maximumDimension": 4096
+      },
+      "provenance": {
+        "semanticId": "terrain.town.slice.road",
+        "contractVersion": "1.0.0",
+        "candidateSha256": "b4b12b00f93d25a01936e20a35acaef730e53c14a55b480d75786d4420f7af17",
+        "reviewer": "youyoulu",
+        "approvedAt": "2026-09-01T14:43:35.000Z",
+        "masterPath": "artwork/masters/phase-8a/town-road-set/v1/town-road-set.v1.png",
+        "runtimePath": "public/assets/runtime/phase-8a/town-road-set.v1.png",
+        "runtimeUrl": "/assets/runtime/phase-8a/town-road-set.v1.png"
+      }
     }
   ],
   "prefabs": [
@@ -217,6 +267,63 @@ export const PHASE_8B_APPROVED_ASSET_INDEX = Object.freeze({
         "touch": null
       },
       "productionContractId": "terrain.town.slice.pavement"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "prefab.phase-8a.terrain.road",
+      "family": "family.town-terrain.slice",
+      "variant": "phase-8a-premium-slice",
+      "renderer": "phaser",
+      "layers": [
+        {
+          "id": "main",
+          "assetId": "terrain.town.slice.road",
+          "role": "main",
+          "optional": false
+        }
+      ],
+      "scalePolicy": {
+        "mode": "fixed-logical-footprint",
+        "x": 1,
+        "y": 1,
+        "imageFit": "contain-within-visual-bounds"
+      },
+      "groundContactAnchor": {
+        "x": 0,
+        "y": 0
+      },
+      "origin": {
+        "x": 0,
+        "y": 0
+      },
+      "depthPolicy": {
+        "mode": "world-y",
+        "layerId": "ground-details",
+        "base": 20,
+        "divisor": 0
+      },
+      "shadowPolicy": {
+        "mode": "no-shadow",
+        "enabled": false
+      },
+      "animation": null,
+      "sockets": {},
+      "geometry": {
+        "schemaVersion": 1,
+        "visual": {
+          "schemaVersion": 1,
+          "kind": "rectangle",
+          "x": 0,
+          "y": 0,
+          "width": 64,
+          "height": 64
+        },
+        "collision": null,
+        "navigation": null,
+        "interaction": null,
+        "touch": null
+      },
+      "productionContractId": "terrain.town.slice.road"
     }
   ],
   "visualStates": [
@@ -352,6 +459,125 @@ export const PHASE_8B_APPROVED_ASSET_INDEX = Object.freeze({
           }
         }
       }
+    },
+    {
+      "schemaVersion": 1,
+      "id": "state.phase-8a.terrain.road",
+      "defaultState": "surface-a",
+      "states": {
+        "surface-a": {
+          "prefabId": "prefab.phase-8a.terrain.road",
+          "modifier": {
+            "frame": 0,
+            "placeholder": true
+          }
+        },
+        "surface-b": {
+          "prefabId": "prefab.phase-8a.terrain.road",
+          "modifier": {
+            "frame": 1,
+            "placeholder": true
+          }
+        },
+        "surface-c": {
+          "prefabId": "prefab.phase-8a.terrain.road",
+          "modifier": {
+            "frame": 2,
+            "placeholder": true
+          }
+        },
+        "surface-d": {
+          "prefabId": "prefab.phase-8a.terrain.road",
+          "modifier": {
+            "frame": 3,
+            "placeholder": true
+          }
+        },
+        "kerb-north": {
+          "prefabId": "prefab.phase-8a.terrain.road",
+          "modifier": {
+            "frame": 4,
+            "placeholder": true
+          }
+        },
+        "kerb-east": {
+          "prefabId": "prefab.phase-8a.terrain.road",
+          "modifier": {
+            "frame": 5,
+            "placeholder": true
+          }
+        },
+        "kerb-south": {
+          "prefabId": "prefab.phase-8a.terrain.road",
+          "modifier": {
+            "frame": 6,
+            "placeholder": true
+          }
+        },
+        "kerb-west": {
+          "prefabId": "prefab.phase-8a.terrain.road",
+          "modifier": {
+            "frame": 7,
+            "placeholder": true
+          }
+        },
+        "rounded-corner-north-east": {
+          "prefabId": "prefab.phase-8a.terrain.road",
+          "modifier": {
+            "frame": 8,
+            "placeholder": true
+          }
+        },
+        "rounded-corner-south-east": {
+          "prefabId": "prefab.phase-8a.terrain.road",
+          "modifier": {
+            "frame": 9,
+            "placeholder": true
+          }
+        },
+        "rounded-corner-south-west": {
+          "prefabId": "prefab.phase-8a.terrain.road",
+          "modifier": {
+            "frame": 10,
+            "placeholder": true
+          }
+        },
+        "rounded-corner-north-west": {
+          "prefabId": "prefab.phase-8a.terrain.road",
+          "modifier": {
+            "frame": 11,
+            "placeholder": true
+          }
+        },
+        "pavement-transition-north": {
+          "prefabId": "prefab.phase-8a.terrain.road",
+          "modifier": {
+            "frame": 12,
+            "placeholder": true
+          }
+        },
+        "pavement-transition-east": {
+          "prefabId": "prefab.phase-8a.terrain.road",
+          "modifier": {
+            "frame": 13,
+            "placeholder": true
+          }
+        },
+        "pavement-transition-south": {
+          "prefabId": "prefab.phase-8a.terrain.road",
+          "modifier": {
+            "frame": 14,
+            "placeholder": true
+          }
+        },
+        "pavement-transition-west": {
+          "prefabId": "prefab.phase-8a.terrain.road",
+          "modifier": {
+            "frame": 15,
+            "placeholder": true
+          }
+        }
+      }
     }
   ],
   "animations": [],
@@ -449,6 +675,53 @@ export const PHASE_8B_APPROVED_ASSET_INDEX = Object.freeze({
       "layoutId": "layout.phase-8a.town-block.house-6",
       "gameplayGeometryLocked": true,
       "activation": "phase-8b-approved"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "instance.phase-8a.town.terrain.road",
+      "sceneId": "TownScene",
+      "prefabId": "prefab.phase-8a.terrain.road",
+      "stateId": "state.phase-8a.terrain.road",
+      "position": {
+        "x": 640,
+        "y": 548
+      },
+      "scale": {
+        "x": 1,
+        "y": 1
+      },
+      "depth": 254.8,
+      "worldOrigin": {
+        "x": 1880,
+        "y": 0
+      },
+      "visualOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "binding": {
+        "mode": "repeat",
+        "repeat": "road-surface-autotile",
+        "dynamicPosition": null,
+        "dynamicFacing": null,
+        "visibleAfter": null,
+        "gameplayOwner": null,
+        "protectedWorldObjectId": null,
+        "protectedWorldPosition": null,
+        "protectedWorldYard": null,
+        "protectedWorldRiver": null,
+        "protectedWorldRoadId": null,
+        "protectedGate": null,
+        "npcIdentityBinding": null,
+        "speciesBinding": null,
+        "socketBinding": null,
+        "safeAreaBindings": null,
+        "minimumCssTouchTarget": null,
+        "presentationOnly": false
+      },
+      "layoutId": "layout.phase-8a.town-block.house-6",
+      "gameplayGeometryLocked": true,
+      "activation": "phase-8b-approved"
     }
   ],
   "scenePacks": [
@@ -458,7 +731,8 @@ export const PHASE_8B_APPROVED_ASSET_INDEX = Object.freeze({
       "sceneId": "TownScene",
       "assetIds": [
         "terrain.town.slice.grass",
-        "terrain.town.slice.pavement"
+        "terrain.town.slice.pavement",
+        "terrain.town.slice.road"
       ],
       "animationIds": [],
       "activation": "phase-8b-approved"

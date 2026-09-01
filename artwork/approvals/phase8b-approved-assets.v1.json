@@ -18,6 +18,15 @@
       "approvedAt": "2026-09-01T11:59:24.957Z",
       "masterPath": "artwork/masters/phase-8a/town-pavement-tile/v1/town-pavement-tile.v1.png",
       "runtimePath": "public/assets/runtime/phase-8a/town-pavement-tile.v1.png"
+    },
+    {
+      "semanticId": "terrain.town.slice.road",
+      "contractVersion": "1.0.0",
+      "candidateSha256": "b4b12b00f93d25a01936e20a35acaef730e53c14a55b480d75786d4420f7af17",
+      "reviewer": "youyoulu",
+      "approvedAt": "2026-09-01T14:43:35.000Z",
+      "masterPath": "artwork/masters/phase-8a/town-road-set/v1/town-road-set.v1.png",
+      "runtimePath": "public/assets/runtime/phase-8a/town-road-set.v1.png"
     }
   ]
 }

@@ -2687,16 +2687,16 @@ export const ASSET_LAB_PRODUCTION_INDEX = Object.freeze({
       "familyId": "family.town-terrain.slice",
       "productionStatus": "specified",
       "expectedFilenames": {
-        "staging": "artwork/staging/phase-8a/town-road-tile/v1/town-road-tile.v1.png",
-        "master": "artwork/masters/phase-8a/town-road-tile/v1/town-road-tile.v1.png",
-        "runtime": "public/assets/runtime/phase-8a/town-road-tile.v1.png"
+        "staging": "artwork/staging/phase-8a/town-road-set/v1/town-road-set.v1.png",
+        "master": "artwork/masters/phase-8a/town-road-set/v1/town-road-set.v1.png",
+        "runtime": "public/assets/runtime/phase-8a/town-road-set.v1.png"
       },
       "output": {
-        "type": "single-image",
+        "type": "spritesheet",
         "format": "png",
         "canvas": {
-          "width": 64,
-          "height": 64
+          "width": 256,
+          "height": 256
         },
         "alpha": false,
         "colourMode": "RGB",
@@ -2705,8 +2705,53 @@ export const ASSET_LAB_PRODUCTION_INDEX = Object.freeze({
         "textureFiltering": "nearest",
         "smoothing": false,
         "trimFrames": false,
-        "spriteSheet": null,
-        "atlas": null
+        "atlas": null,
+        "spriteSheet": {
+          "frameWidth": 64,
+          "frameHeight": 64,
+          "columns": 4,
+          "rows": 4,
+          "padding": 0,
+          "spacing": 0,
+          "frameCount": 16,
+          "frameOrder": [
+            "surface-a",
+            "surface-b",
+            "surface-c",
+            "surface-d",
+            "kerb-north",
+            "kerb-east",
+            "kerb-south",
+            "kerb-west",
+            "rounded-corner-north-east",
+            "rounded-corner-south-east",
+            "rounded-corner-south-west",
+            "rounded-corner-north-west",
+            "pavement-transition-north",
+            "pavement-transition-east",
+            "pavement-transition-south",
+            "pavement-transition-west"
+          ],
+          "actions": [
+            "surface-a",
+            "surface-b",
+            "surface-c",
+            "surface-d",
+            "kerb-north",
+            "kerb-east",
+            "kerb-south",
+            "kerb-west",
+            "rounded-corner-north-east",
+            "rounded-corner-south-east",
+            "rounded-corner-south-west",
+            "rounded-corner-north-west",
+            "pavement-transition-north",
+            "pavement-transition-east",
+            "pavement-transition-south",
+            "pavement-transition-west"
+          ],
+          "directions": []
+        }
       },
       "anchor": {
         "name": "tile-top-left",
@@ -2743,25 +2788,40 @@ export const ASSET_LAB_PRODUCTION_INDEX = Object.freeze({
         "requireAlpha": false,
         "requireUntrimmedFrames": true,
         "requireNearestNeighbour": true,
-        "requireFrameCount": 1,
+        "requireFrameCount": 16,
         "requireStateNames": [
-          "default"
+          "surface-a",
+          "surface-b",
+          "surface-c",
+          "surface-d",
+          "kerb-north",
+          "kerb-east",
+          "kerb-south",
+          "kerb-west",
+          "rounded-corner-north-east",
+          "rounded-corner-south-east",
+          "rounded-corner-south-west",
+          "rounded-corner-north-west",
+          "pavement-transition-north",
+          "pavement-transition-east",
+          "pavement-transition-south",
+          "pavement-transition-west"
         ],
         "requireDirections": [],
         "maximumTransparentPadding": {
-          "top": 64,
-          "right": 64,
-          "bottom": 64,
-          "left": 64
+          "top": 256,
+          "right": 256,
+          "bottom": 256,
+          "left": 256
         },
         "maximumVisibleBounds": {
           "x": 0,
           "y": 0,
-          "width": 64,
-          "height": 64
+          "width": 256,
+          "height": 256
         },
         "gameplayGeometrySignature": "b1e3a260",
-        "maximumRuntimeBytes": 30000,
+        "maximumRuntimeBytes": 180000,
         "fallbackSemanticId": "system.fallback.production"
       },
       "intendedScenes": [
@@ -5225,7 +5285,8 @@ export const ASSET_LAB_PRODUCTION_INDEX = Object.freeze({
       "/assets/powerwash/tool-standard.png",
       "/assets/powerwash/tool-wide.png",
       "/assets/runtime/phase-8a/town-grass-tile.v1.png",
-      "/assets/runtime/phase-8a/town-pavement-tile.v1.png"
+      "/assets/runtime/phase-8a/town-pavement-tile.v1.png",
+      "/assets/runtime/phase-8a/town-road-set.v1.png"
     ],
     "runtimeFiles": [
       "/assets/animals/reference-master-v44.png",
@@ -5241,6 +5302,7 @@ export const ASSET_LAB_PRODUCTION_INDEX = Object.freeze({
       "/assets/powerwash/tool-wide.png",
       "/assets/runtime/phase-8a/town-grass-tile.v1.png",
       "/assets/runtime/phase-8a/town-pavement-tile.v1.png",
+      "/assets/runtime/phase-8a/town-road-set.v1.png",
       "/assets/runtime/scene/fishing/fishing-reedbank-background.v1.webp"
     ]
   }

@@ -568,16 +568,16 @@
       "version": "1.0.0",
       "familyId": "family.town-terrain.slice",
       "categoryContractId": "category.terrain",
-      "gameplayPurpose": "north-road surface under the slice",
+      "gameplayPurpose": "complete modular road surface with directional kerbs, rounded corners, and pavement transitions",
       "intendedScenes": [
         "TownScene"
       ],
       "output": {
-        "type": "single-image",
+        "type": "spritesheet",
         "format": "png",
         "canvas": {
-          "width": 64,
-          "height": 64
+          "width": 256,
+          "height": 256
         },
         "alpha": false,
         "colourMode": "RGB",
@@ -586,8 +586,53 @@
         "textureFiltering": "nearest",
         "smoothing": false,
         "trimFrames": false,
-        "spriteSheet": null,
-        "atlas": null
+        "atlas": null,
+        "spriteSheet": {
+          "frameWidth": 64,
+          "frameHeight": 64,
+          "columns": 4,
+          "rows": 4,
+          "padding": 0,
+          "spacing": 0,
+          "frameCount": 16,
+          "frameOrder": [
+            "surface-a",
+            "surface-b",
+            "surface-c",
+            "surface-d",
+            "kerb-north",
+            "kerb-east",
+            "kerb-south",
+            "kerb-west",
+            "rounded-corner-north-east",
+            "rounded-corner-south-east",
+            "rounded-corner-south-west",
+            "rounded-corner-north-west",
+            "pavement-transition-north",
+            "pavement-transition-east",
+            "pavement-transition-south",
+            "pavement-transition-west"
+          ],
+          "actions": [
+            "surface-a",
+            "surface-b",
+            "surface-c",
+            "surface-d",
+            "kerb-north",
+            "kerb-east",
+            "kerb-south",
+            "kerb-west",
+            "rounded-corner-north-east",
+            "rounded-corner-south-east",
+            "rounded-corner-south-west",
+            "rounded-corner-north-west",
+            "pavement-transition-north",
+            "pavement-transition-east",
+            "pavement-transition-south",
+            "pavement-transition-west"
+          ],
+          "directions": []
+        }
       },
       "camera": {
         "projection": "top-down orthographic",
@@ -625,19 +670,64 @@
       },
       "sockets": [],
       "states": [
-        "default"
+        "surface-a",
+        "surface-b",
+        "surface-c",
+        "surface-d",
+        "kerb-north",
+        "kerb-east",
+        "kerb-south",
+        "kerb-west",
+        "rounded-corner-north-east",
+        "rounded-corner-south-east",
+        "rounded-corner-south-west",
+        "rounded-corner-north-west",
+        "pavement-transition-north",
+        "pavement-transition-east",
+        "pavement-transition-south",
+        "pavement-transition-west"
       ],
       "variants": [
-        "default"
+        "surface-a",
+        "surface-b",
+        "surface-c",
+        "surface-d",
+        "kerb-north",
+        "kerb-east",
+        "kerb-south",
+        "kerb-west",
+        "rounded-corner-north-east",
+        "rounded-corner-south-east",
+        "rounded-corner-south-west",
+        "rounded-corner-north-west",
+        "pavement-transition-north",
+        "pavement-transition-east",
+        "pavement-transition-south",
+        "pavement-transition-west"
       ],
       "layers": [
         {
           "id": "main",
           "order": 0,
           "states": [
-            "default"
+            "surface-a",
+            "surface-b",
+            "surface-c",
+            "surface-d",
+            "kerb-north",
+            "kerb-east",
+            "kerb-south",
+            "kerb-west",
+            "rounded-corner-north-east",
+            "rounded-corner-south-east",
+            "rounded-corner-south-west",
+            "rounded-corner-north-west",
+            "pavement-transition-north",
+            "pavement-transition-east",
+            "pavement-transition-south",
+            "pavement-transition-west"
           ],
-          "canvasAlignment": "full-canvas"
+          "canvasAlignment": "frame-grid"
         }
       ],
       "directions": [],
@@ -651,16 +741,16 @@
         "texture": "pixel-authored clusters; no photographic noise"
       },
       "expectedFilenames": {
-        "staging": "artwork/staging/phase-8a/town-road-tile/v1/town-road-tile.v1.png",
-        "master": "artwork/masters/phase-8a/town-road-tile/v1/town-road-tile.v1.png",
-        "runtime": "public/assets/runtime/phase-8a/town-road-tile.v1.png"
+        "staging": "artwork/staging/phase-8a/town-road-set/v1/town-road-set.v1.png",
+        "master": "artwork/masters/phase-8a/town-road-set/v1/town-road-set.v1.png",
+        "runtime": "public/assets/runtime/phase-8a/town-road-set.v1.png"
       },
-      "filenameStem": "town-road-tile",
+      "filenameStem": "town-road-set",
       "promptPackage": {
         "providerNeutral": true,
-        "positivePrompt": "Create one production-ready KindWorks pixel-art asset for north-road surface under the slice Muted blue-grey village road surface, fine pixel aggregate, seamless, with no baked curb or markings. Use KindWorks Visual Style Bible v4. Exact output: 64×64px PNG, fully opaque, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.",
-        "negativePrompt": "provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; vehicles, curb, crossing, centre line, puddles, or debris",
-        "deliveryInstruction": "Return only town-road-tile.v1.png plus provenance metadata; do not composite it into a screenshot or rename it."
+        "positivePrompt": "Create one production-ready KindWorks pixel-art asset for complete modular road surface with directional kerbs, rounded corners, and pavement transitions A complete modular road sheet in the exact declared frame order: four seamless blue-grey asphalt variants; straight kerbs north, east, south, west; rounded road corners north-east, south-east, south-west, north-west; and pavement transitions north, east, south, west. Match the approved grass and warm pale pavement exactly. Every connection must assemble without seams. Use KindWorks Visual Style Bible v4. Exact output: 256×256px PNG, fully opaque, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.",
+        "negativePrompt": "provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; vehicles, road markings, crossings, grid labels, frame dividers, gutters, objects, baked characters, square corner protrusions, or disconnected tile edges",
+        "deliveryInstruction": "Return only town-road-set.v1.png plus provenance metadata; do not composite it into a screenshot or rename it."
       },
       "forbiddenOutput": [
         "provider watermark, signature, logo, caption, or embedded text",
@@ -668,7 +758,7 @@
         "automatic trimming, cropped canvas, changed frame order, or unequal frame alignment",
         "unrequested UI, characters, props, scenery, shadows, or background colour",
         "perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4",
-        "vehicles, curb, crossing, centre line, puddles, or debris"
+        "vehicles, road markings, crossings, grid labels, frame dividers, gutters, objects, baked characters, square corner protrusions, or disconnected tile edges"
       ],
       "validation": {
         "checklist": [
@@ -684,25 +774,40 @@
         "requireAlpha": false,
         "requireUntrimmedFrames": true,
         "requireNearestNeighbour": true,
-        "requireFrameCount": 1,
+        "requireFrameCount": 16,
         "requireStateNames": [
-          "default"
+          "surface-a",
+          "surface-b",
+          "surface-c",
+          "surface-d",
+          "kerb-north",
+          "kerb-east",
+          "kerb-south",
+          "kerb-west",
+          "rounded-corner-north-east",
+          "rounded-corner-south-east",
+          "rounded-corner-south-west",
+          "rounded-corner-north-west",
+          "pavement-transition-north",
+          "pavement-transition-east",
+          "pavement-transition-south",
+          "pavement-transition-west"
         ],
         "requireDirections": [],
         "maximumTransparentPadding": {
-          "top": 64,
-          "right": 64,
-          "bottom": 64,
-          "left": 64
+          "top": 256,
+          "right": 256,
+          "bottom": 256,
+          "left": 256
         },
         "maximumVisibleBounds": {
           "x": 0,
           "y": 0,
-          "width": 64,
-          "height": 64
+          "width": 256,
+          "height": 256
         },
         "gameplayGeometrySignature": "b1e3a260",
-        "maximumRuntimeBytes": 30000,
+        "maximumRuntimeBytes": 180000,
         "fallbackSemanticId": "system.fallback.production"
       },
       "accessibility": null,
@@ -723,8 +828,7 @@
             "y": 0
           },
           "gameplayGeometryLocked": true,
-          "repeat": "horizontal-strip",
-          "protectedWorldRoadId": "north-road"
+          "repeat": "road-surface-autotile"
         }
       ],
       "prefabId": "prefab.phase-8a.terrain.road",

@@ -5,7 +5,7 @@ import test from "node:test";
 import { ApprovedSceneVisualRuntime } from "../src/visual/renderers/ApprovedSceneVisualRuntime.js";
 import { VISUAL_ASSET_KINDS } from "../src/visual/contracts.js";
 import { createTownApprovedSceneBindings } from "../src/presentation/TownApprovedSceneBindings.js";
-import { HOUSES, TOWN_REFERENCE_LAYOUT, WORLD } from "../src/data/town.js";
+import { HOUSES, ROADS, TOWN_REFERENCE_LAYOUT, WORLD } from "../src/data/town.js";
 
 function displayObject(key, frame = null) {
   const data = new Map();
@@ -151,6 +151,32 @@ test("approved pavement replaces every authored road verge and footpath without 
   assert.equal(mounted.objects[0].rotation, 0);
   mounted.shutdown[0]();
   assert.equal(mounted.objects[0].destroyed, true);
+});
+
+test("approved road artwork is confined to authored road strokes and never covers the map", () => {
+  const bindings = createTownApprovedSceneBindings({});
+  const worldOrigin = { x: 1880, y: 0 };
+  const placements = bindings.placementResolver(
+    { id: "instance.phase-8a.town.terrain.road", position: { x: 640, y: 548 }, worldOrigin },
+    { mode: "repeat", repeat: "road-surface-autotile" },
+  );
+  const expectedSegments = ROADS.reduce((count, road) => count + road.points.length - 1, 0);
+  assert.equal(placements.length, expectedSegments);
+  assert.ok(placements.every((placement) => placement.depth === 10.25));
+  assert.ok(
+    placements.every((placement) => placement.frame === 0),
+    "all road pieces must share one asphalt colour",
+  );
+  assert.ok(placements.every((placement) => placement.tileArea.width < WORLD.width && placement.tileArea.height <= 76));
+  assert.ok(placements.every((placement) => ROADS.some((road) => placement.id.startsWith(`${road.id}:road-`))));
+  assert.equal(placements.some((placement) => placement.id.startsWith("commons-")), false, "paths must remain independent from road artwork");
+
+  const northSegment = placements.find((placement) => placement.id === "north-road:road-segment-1");
+  assert.deepEqual(northSegment.position, { x: 325 - worldOrigin.x, y: 530 });
+  assert.deepEqual(northSegment.tileArea, { width: 314, height: 76 });
+  assert.equal(northSegment.rotation, 0);
+
+  assert.equal(placements.some((placement) => placement.id.includes(":road-node-")), false, "junction overlays must not darken the shared asphalt surface");
 });
 
 test("normal Town and Lawn scenes install the production bootstrap without slice-specific IDs", async () => {

@@ -633,7 +633,7 @@ export class TownScene extends Phaser.Scene {
     this.time.delayedCall(420, () => this.restorationMilestoneController?.maybeOpen?.());
     this.approvedSceneVisuals = mountApprovedSceneVisuals(this, {
       bindings: createTownApprovedSceneBindings(this),
-      instanceFilter: (instance) => !["cover-town-ground", "surface-autotile"].includes(instance.binding?.repeat),
+      instanceFilter: (instance) => !["cover-town-ground", "surface-autotile", "road-surface-autotile"].includes(instance.binding?.repeat),
     });
     this.approvedVisualRefreshElapsed = 0;
   }
@@ -641,8 +641,10 @@ export class TownScene extends Phaser.Scene {
   drawTown() {
     const approvedGrassSurface = hasApprovedSceneBinding(this, (binding) => binding.mode === "repeat" && binding.repeat === "cover-town-ground");
     const approvedPavementSurface = hasApprovedSceneBinding(this, (binding) => binding.mode === "repeat" && binding.repeat === "surface-autotile");
+    const approvedRoadSurface = hasApprovedSceneBinding(this, (binding) => binding.mode === "repeat" && binding.repeat === "road-surface-autotile");
     this.approvedGrassSurfaceActive = approvedGrassSurface;
     this.approvedPavementSurfaceActive = approvedPavementSurface;
+    this.approvedRoadSurfaceActive = approvedRoadSurface;
     this.add.rectangle(WORLD.width / 2, WORLD.height / 2, WORLD.width, WORLD.height, COLORS.grass).setDepth(0);
 
     this.drawReferenceWaterways();
@@ -658,6 +660,9 @@ export class TownScene extends Phaser.Scene {
         pavementUnderlay.strokePoints(routePoints, false, false);
         for (const pointValue of routePoints) pavementUnderlay.fillStyle(0xe6d5ad, 1).fillCircle(pointValue.x, pointValue.y, width / 2);
       };
+      // The exposed eight-pixel band on each side is the road kerb. The
+      // approved pavement tiles mounted above it provide the pixel-paver
+      // detail, while this rounded underlay closes bends without protrusions.
       ROADS.forEach((road) => drawRoundedRoute(road, 16));
       PATHS.forEach((path) => drawRoundedRoute(path, 8));
     }
@@ -696,6 +701,10 @@ export class TownScene extends Phaser.Scene {
     this.approvedTownPavementVisuals = mountApprovedSceneVisuals(this, {
       bindings: createTownApprovedSceneBindings(this),
       instanceFilter: (instance) => instance.binding?.repeat === "surface-autotile",
+    });
+    this.approvedTownRoadVisuals = mountApprovedSceneVisuals(this, {
+      bindings: createTownApprovedSceneBindings(this),
+      instanceFilter: (instance) => instance.binding?.repeat === "road-surface-autotile",
     });
     HOUSES.forEach((house) => this.drawHouse(house));
     this.drawHouseRescueMarkers();
@@ -2992,6 +3001,7 @@ export class TownScene extends Phaser.Scene {
       this.approvedVisualRefreshElapsed = 0;
       this.approvedTownGroundVisuals?.refresh?.();
       this.approvedTownPavementVisuals?.refresh?.();
+      this.approvedTownRoadVisuals?.refresh?.();
       this.approvedSceneVisuals?.refresh?.();
     }
     this.stateSyncElapsed += delta;

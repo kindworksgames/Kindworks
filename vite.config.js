@@ -53,6 +53,7 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes("/node_modules/phaser/")) return "phaser-engine";
+          if (id.endsWith("/src/visual/generated/phase8bApprovedAssetIndex.js")) return "approved-assets";
           if (id.includes("/src/visual/generated/") || id.includes("/src/visual/prefabs/")) return "visual-definitions";
           if (id.endsWith("/src/visual/layouts/sceneLayoutContracts.js")) return "scene-layout-contracts";
           if (id.endsWith("/src/visual/layouts/SceneLayoutRuntime.js")) return "scene-layout-runtime";

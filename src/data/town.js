@@ -4,7 +4,7 @@ export const COLORS = Object.freeze({
   grass: 0x8bc86f,
   grassLight: 0x9fd583,
   grassDark: 0x6eaa58,
-  road: 0x8a8d8b,
+  road: 0x535f6d,
   roadEdge: 0xcfd2c9,
   path: 0xd9c29a,
   water: 0x65b9ce,

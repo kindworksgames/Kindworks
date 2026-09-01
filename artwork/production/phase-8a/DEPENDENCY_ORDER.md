@@ -6,7 +6,7 @@ Foundational assets must be approved before dependent variants. A failed wave re
 
 - `terrain.town.slice.grass` → `public/assets/runtime/phase-8a/town-grass-tile.v1.png` (depends on: none)
 - `terrain.town.slice.pavement` → `public/assets/runtime/phase-8a/town-pavement-tile.v1.png` (depends on: `terrain.town.slice.grass`)
-- `terrain.town.slice.road` → `public/assets/runtime/phase-8a/town-road-tile.v1.png` (depends on: `terrain.town.slice.pavement`)
+- `terrain.town.slice.road` → `public/assets/runtime/phase-8a/town-road-set.v1.png` (depends on: `terrain.town.slice.pavement`)
 
 ## Wave 2 — river-and-world-footprints
 
