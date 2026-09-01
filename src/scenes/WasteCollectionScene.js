@@ -1,12 +1,15 @@
 import Phaser from "phaser";
 import {
   WASTE_RUBBISH_CATALOG,
+  WASTE_SLOT_CONFIG,
   WASTE_TOTAL_LEVELS,
   WASTE_WORLD,
   WasteCollectionEngine,
+  wasteCollectionTrayLimit,
   wasteLevelSummary,
 } from "../data/wasteCollection.js";
-import { scatterWasteCardLayout } from "../ui/WasteCardLayout.js";
+import { fitWasteBoardToViewport, fitWasteCardLayout } from "../ui/WasteCardLayout.js";
+import { wasteParkBackdropDataUrl } from "../ui/WasteParkBackdrop.js";
 
 const ROOM = Object.freeze({ width: 1280, height: 720 });
 
@@ -26,6 +29,10 @@ export class WasteCollectionScene extends Phaser.Scene {
     this.itemObjects = new Map();
     this.lastCampaignResult = null;
     this.hintTileId = null;
+    this.campaignInputLocked = false;
+    this.currentWasteLayout = null;
+    this.layoutFrame = null;
+    this.flightNodes = new Set();
   }
 
   create() {
@@ -48,24 +55,15 @@ export class WasteCollectionScene extends Phaser.Scene {
   }
 
   drawBackdrop() {
-    this.add.rectangle(ROOM.width / 2, ROOM.height / 2, ROOM.width, ROOM.height, 0x5b9649);
-    const art = this.add.graphics();
-    art.fillStyle(0x8bc86f, 0.62); art.fillRoundedRect(25, 25, 1230, 670, 60);
-    art.fillStyle(0xd9c29a, 1); art.fillRoundedRect(55, 310, 1170, 95, 28);
-    art.fillStyle(0x3e713f, 1);
-    for (const [x, y] of [[105, 95], [1130, 110], [150, 610], [1080, 600]]) art.fillCircle(x, y, 72);
-    art.fillStyle(0x765238, 1); art.fillRect(98, 120, 16, 80); art.fillRect(1122, 130, 16, 80);
-    for (let index = 0; index < 95; index += 1) {
-      art.fillStyle(index % 3 ? 0x9bd17a : 0x477a3f, 0.35);
-      art.fillCircle(35 + ((index * 137) % 1210), 35 + ((index * 83) % 650), 2 + (index % 3));
-    }
-    this.backdropTitle = this.add.text(ROOM.width / 2, 27, "WASTE COLLECTION · WILLOWMERE PARK TEAM", { color: "#fff6c9", fontFamily: "ui-monospace, monospace", fontSize: "17px", fontStyle: "bold", stroke: "#283d32", strokeThickness: 5 }).setOrigin(0.5);
+    this.add.rectangle(ROOM.width / 2, ROOM.height / 2, ROOM.width, ROOM.height, 0x13293d);
   }
 
   bindCampaignInterface() {
     this.campaignHud = document.querySelector("#waste-campaign-hud");
     this.exitButton = document.querySelector("#waste-campaign-exit");
     this.campaignMenu = document.querySelector(".waste-campaign-menu");
+    this.boardViewport = document.querySelector("#waste-board-viewport");
+    this.boardStage = document.querySelector("#waste-board-stage");
     this.boardElement = document.querySelector("#waste-board");
     this.trayElement = document.querySelector("#waste-tray");
     this.buttons = {
@@ -74,7 +72,7 @@ export class WasteCollectionScene extends Phaser.Scene {
     };
     const closeMenu = () => this.campaignMenu?.removeAttribute("open");
     this.onExit = () => { closeMenu(); this.requestExit(); };
-    this.onBoardClick = (event) => { const button = event.target.closest("[data-waste-tile]"); if (button && !button.disabled) this.selectCampaignTile(Number(button.dataset.wasteTile)); };
+    this.onBoardClick = (event) => { const button = event.target.closest("[data-waste-tile]"); if (button && !button.disabled && !this.campaignInputLocked) void this.selectCampaignTile(Number(button.dataset.wasteTile), button); };
     this.onHint = () => { closeMenu(); this.showHint(); };
     this.onRetry = () => { closeMenu(); this.restartCampaign(); };
     this.onQa = () => { closeMenu(); this.runCertifiedClear(); };
@@ -87,6 +85,10 @@ export class WasteCollectionScene extends Phaser.Scene {
     this.boardElement?.addEventListener("click", this.onBoardClick); this.buttons.hint?.addEventListener("click", this.onHint); this.buttons.retry?.addEventListener("click", this.onRetry); this.buttons.qa?.addEventListener("click", this.onQa);
     this.buttons.return?.addEventListener("click", this.onReturn);
     window.addEventListener("keydown", this.onKeyDown);
+    this.onViewportResize = () => this.scheduleBoardLayout();
+    this.boardResizeObserver = typeof ResizeObserver === "function" ? new ResizeObserver(this.onViewportResize) : null;
+    this.boardResizeObserver?.observe(this.boardViewport);
+    window.addEventListener("resize", this.onViewportResize);
   }
 
   startCampaignPresentation() {
@@ -124,41 +126,72 @@ export class WasteCollectionScene extends Phaser.Scene {
     return true;
   }
 
-  selectCampaignTile(tileId) {
-    if (!this.session || this.session.mode !== "campaign") return false;
+  async selectCampaignTile(tileId, sourceButton = null) {
+    if (!this.session || this.session.mode !== "campaign" || this.campaignInputLocked) return false;
+    this.campaignInputLocked = true;
+    this.boardElement?.setAttribute("aria-busy", "true");
     this.hintTileId = null;
+    const sourceRect = sourceButton?.getBoundingClientRect();
+    const sourceIcon = sourceButton?.querySelector("span")?.textContent || "";
+    sourceButton?.classList.add("picked");
     const result = this.cleanup.selectCampaignTile(this.session.id, tileId);
-    if (!result.ok) { this.setCampaignMessage(result.message, "error"); return false; }
-    if (result.code === "waste-campaign-completed") {
-      this.lastCampaignResult = result.result;
-      this.session = null;
-      this.showCampaignResult(result.result);
-      return true;
+    if (!result.ok) {
+      this.setCampaignMessage(result.message, "error");
+      this.campaignInputLocked = false;
+      this.boardElement?.removeAttribute("aria-busy");
+      sourceButton?.classList.remove("picked");
+      return false;
     }
-    this.session = this.cleanup.getActiveSession();
-    const rubbish = result.matchedTypeId === null ? result.tile.label : WASTE_RUBBISH_CATALOG[result.matchedTypeId].label;
-    if (result.code === "tray-full") this.setCampaignMessage("Tray full. Try another order.", "error");
-    else if (result.code === "triple-matched") this.setCampaignMessage(`${rubbish} matched.`, "success");
-    else this.setCampaignMessage(`${rubbish} added.`, "neutral");
-    this.renderCampaign();
-    return true;
+    try {
+      const completed = result.code === "waste-campaign-completed";
+      if (!completed) {
+        this.session = this.cleanup.getActiveSession();
+        const rubbish = result.matchedTypeId === null ? result.tile.label : WASTE_RUBBISH_CATALOG[result.matchedTypeId].label;
+        if (result.code === "tray-full") this.setCampaignMessage("Tray full. Try another order.", "error");
+        else if (result.code === "triple-matched") this.setCampaignMessage(`${rubbish} matched.`, "success");
+        else this.setCampaignMessage(`${rubbish} added.`, "neutral");
+        this.renderCampaign();
+      }
+      await this.animateCardToTray(sourceRect, sourceIcon, result.tile?.typeId ?? null);
+      if (result.matchedTypeId !== null && result.matchedTypeId !== undefined) await this.animateTrayMatch(result.matchedTypeId);
+      if (completed) {
+        this.lastCampaignResult = result.result;
+        this.session = null;
+        this.showCampaignResult(result.result);
+      }
+      return true;
+    } finally {
+      this.campaignInputLocked = false;
+      this.boardElement?.removeAttribute("aria-busy");
+    }
   }
 
   renderCampaign() {
-    setText("#waste-campaign-balance", `🪙 ${this.gameState.getSnapshot().economy.coins}`);
+    if (this.campaignHud) { this.campaignHud.scrollTop = 0; this.campaignHud.scrollLeft = 0; }
+    const gameSnapshot = this.gameState.getSnapshot();
+    const trayLimit = wasteCollectionTrayLimit(gameSnapshot);
+    setText("#waste-campaign-balance", `🪙 ${gameSnapshot.economy.coins}`);
     if (!this.session || this.session.mode !== "campaign") { this.updateDomState(); return; }
-    const engine = new WasteCollectionEngine(this.session.assignedLevel, this.session);
+    const engine = new WasteCollectionEngine(this.session.assignedLevel, this.session, { trayLimit });
     const state = engine.snapshot();
     const summary = wasteLevelSummary(this.session.assignedLevel);
     const exposed = new Set(state.exposedIds);
     setText("#waste-campaign-level", `Level ${summary.level} / ${WASTE_TOTAL_LEVELS}`);
-    setText("#waste-level-remaining", state.remaining); setText("#waste-level-tray-count", `${state.tray.length} / 5`);
+    setText("#waste-level-remaining", state.remaining); setText("#waste-level-tray-count", `${state.tray.length} / ${trayLimit}`);
     if (this.boardElement) {
       const fragment = document.createDocumentFragment();
       const remainingTiles = engine.tiles.filter((entry) => !entry.removed);
-      const fitted = scatterWasteCardLayout(remainingTiles, WASTE_WORLD);
+      const fitted = fitWasteCardLayout(remainingTiles, WASTE_WORLD);
+      this.currentWasteLayout = fitted;
       const cardLayout = new Map(fitted.cards.map((card) => [card.id, card]));
-      this.boardElement.style.setProperty("--waste-layout-scale", fitted.scale.toFixed(4));
+      this.boardElement.style.width = `${fitted.bounds.width}px`;
+      this.boardElement.style.height = `${fitted.bounds.height}px`;
+      this.boardElement.style.setProperty("--waste-park-art", `url("${wasteParkBackdropDataUrl()}")`);
+      this.boardElement.style.backgroundPosition = "0px 0px";
+      const cleanProgress = Math.max(0, Math.min(1, 1 - state.remaining / Math.max(1, state.total)));
+      this.boardElement.style.setProperty("--clean-progress", cleanProgress.toFixed(3));
+      this.boardElement.style.setProperty("--grime-opacity", Math.max(0.02, 0.98 - cleanProgress * 1.08).toFixed(3));
+      this.boardElement.style.setProperty("--clean-overlay-opacity", Math.min(0.92, 0.12 + cleanProgress * 0.8).toFixed(3));
       for (const tile of remainingTiles.sort((a, b) => a.layer - b.layer || a.id - b.id)) {
         const button = document.createElement("button");
         const layout = cardLayout.get(tile.id);
@@ -169,12 +202,16 @@ export class WasteCollectionScene extends Phaser.Scene {
         button.dataset.assetLabel = `KW-WASTE-CARD-${WASTE_RUBBISH_CATALOG[tile.typeId].key.toUpperCase().replaceAll("_", "-")}`;
         button.dataset.cardInstance = String(tile.id);
         button.dataset.exposed = String(isExposed);
+        button.dataset.authoredX = String(tile.x);
+        button.dataset.authoredY = String(tile.y);
+        button.dataset.authoredLayer = String(tile.layer);
+        button.dataset.authoredRotation = String(tile.rotation);
         button.disabled = !isExposed || this.session.status === "failed";
-        button.style.left = `${(layout.x / WASTE_WORLD.width) * 100}%`;
-        button.style.top = `${(layout.y / WASTE_WORLD.height) * 100}%`;
-        button.style.width = `${(layout.width / WASTE_WORLD.width) * 100}%`;
-        button.style.height = `${(layout.height / WASTE_WORLD.height) * 100}%`;
-        button.style.zIndex = String((isExposed ? 10000 : 10) + tile.layer * 150 + tile.id);
+        button.style.left = `${layout.x}px`;
+        button.style.top = `${layout.y}px`;
+        button.style.width = `${layout.width}px`;
+        button.style.height = `${layout.height}px`;
+        button.style.zIndex = String(20 + tile.layer);
         button.style.setProperty("--card-rotation", `${tile.rotation}deg`);
         button.title = tile.label;
         button.setAttribute("aria-label", isExposed ? `Select ${tile.label}` : `${tile.label}, blocked`);
@@ -183,16 +220,20 @@ export class WasteCollectionScene extends Phaser.Scene {
         button.append(hitArea, icon); fragment.appendChild(button);
       }
       this.boardElement.replaceChildren(fragment);
-      this.boardElement.setAttribute("aria-label", `Waste Collection Level ${summary.level}, ${state.remaining} of ${state.total} cards remaining, ${state.tray.length} of 5 tray slots filled`);
+      this.boardElement.setAttribute("aria-label", `Waste Collection Level ${summary.level}, ${state.remaining} of ${state.total} cards remaining, ${state.tray.length} of ${trayLimit} tray slots filled`);
+      this.scheduleBoardLayout();
     }
     if (this.trayElement) {
       const slots = [];
-      for (let index = 0; index < 5; index += 1) {
+      for (let index = 0; index < WASTE_SLOT_CONFIG.max; index += 1) {
         const typeId = state.tray[index];
         const item = typeId === undefined ? null : WASTE_RUBBISH_CATALOG[typeId];
-        slots.push(`<span class="waste-tray-slot${item ? " filled" : ""}" data-asset-label="KW-WASTE-TRAY-SLOT-${index + 1}" aria-label="${item ? item.label : `Empty tray slot ${index + 1}`}">${item ? `<i aria-hidden="true">${item.icon}</i>` : ""}</span>`);
+        const locked = index >= trayLimit;
+        slots.push(`<span class="waste-tray-slot${item ? " filled" : ""}${locked ? " capacity-locked" : ""}" data-slot-index="${index}"${item ? ` data-type-id="${typeId}"` : ""} data-asset-label="KW-WASTE-TRAY-SLOT-${index + 1}" aria-label="${locked ? `Tray slot ${index + 1}, unlock with another bin` : item ? item.label : `Empty tray slot ${index + 1}`}">${locked ? `<i aria-hidden="true">🔒</i>` : item ? `<i aria-hidden="true">${item.icon}</i>` : ""}</span>`);
       }
       this.trayElement.innerHTML = slots.join("");
+      this.trayElement.setAttribute("aria-label", `Collection tray, ${trayLimit} of ${WASTE_SLOT_CONFIG.max} slots unlocked`);
+      this.trayElement.style.setProperty("--waste-tray-limit", String(trayLimit));
     }
     if (this.buttons.hint) {
       this.buttons.hint.disabled = this.session.status === "failed";
@@ -206,12 +247,95 @@ export class WasteCollectionScene extends Phaser.Scene {
     this.updateDomState();
   }
 
+  scheduleBoardLayout() {
+    if (this.layoutFrame !== null) cancelAnimationFrame(this.layoutFrame);
+    this.layoutFrame = requestAnimationFrame(() => {
+      this.layoutFrame = null;
+      this.updateBoardLayout();
+    });
+  }
+
+  updateBoardLayout() {
+    if (!this.currentWasteLayout || !this.boardViewport || !this.boardStage || !this.boardElement) return;
+    const fitted = fitWasteBoardToViewport(
+      this.currentWasteLayout.bounds,
+      this.boardViewport.clientWidth,
+      this.boardViewport.clientHeight,
+    );
+    this.boardStage.style.width = `${fitted.width}px`;
+    this.boardStage.style.height = `${fitted.height}px`;
+    this.boardStage.style.aspectRatio = `${this.currentWasteLayout.bounds.width} / ${this.currentWasteLayout.bounds.height}`;
+    this.boardElement.style.transform = `scale(${fitted.scale})`;
+    this.boardElement.style.setProperty("--waste-layout-scale", fitted.scale.toFixed(4));
+  }
+
+  async animateCardToTray(sourceRect, icon, typeId = null) {
+    if (!sourceRect || !icon) return;
+    const matchingSlots = typeId === null ? [] : [...(this.trayElement?.querySelectorAll(`[data-type-id="${typeId}"]`) || [])];
+    const target = matchingSlots.at(-1) || [...(this.trayElement?.querySelectorAll(".waste-tray-slot:not(.capacity-locked)") || [])]
+      .find((slot) => !slot.classList.contains("filled")) || this.trayElement?.querySelector(".waste-tray-slot:not(.capacity-locked):last-child");
+    const targetRect = target?.getBoundingClientRect();
+    if (!targetRect) return;
+    const clone = document.createElement("span");
+    clone.className = "waste-card-flight";
+    clone.textContent = icon;
+    clone.setAttribute("aria-hidden", "true");
+    Object.assign(clone.style, { left: `${sourceRect.left}px`, top: `${sourceRect.top}px`, width: `${sourceRect.width}px`, height: `${sourceRect.height}px` });
+    document.body.appendChild(clone);
+    this.flightNodes.add(clone);
+    const destinationX = targetRect.left + (targetRect.width - sourceRect.width) / 2 - sourceRect.left;
+    const destinationY = targetRect.top + (targetRect.height - sourceRect.height) / 2 - sourceRect.top;
+    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+    try {
+      await clone.animate([
+        { transform: "translate(0, 0) scale(1)", opacity: 1 },
+        { transform: `translate(${destinationX}px, ${destinationY}px) scale(.48)`, opacity: 0.95 },
+      ], { duration: reduced ? 1 : 190, easing: "cubic-bezier(.2,.8,.25,1)", fill: "forwards" }).finished;
+    } catch { /* A scene shutdown can cancel a cosmetic animation safely. */ }
+    clone.remove();
+    this.flightNodes.delete(clone);
+  }
+
+  async animateTrayMatch(typeId) {
+    const item = WASTE_RUBBISH_CATALOG[typeId];
+    const trayRect = this.trayElement?.getBoundingClientRect();
+    if (!item || !trayRect) return;
+    const centreX = trayRect.left + trayRect.width / 2;
+    const centreY = trayRect.top + trayRect.height / 2;
+    const tokens = [-1, 0, 1].map((offset) => {
+      const token = document.createElement("span");
+      token.className = "waste-match-token";
+      token.textContent = item.icon;
+      token.setAttribute("aria-hidden", "true");
+      Object.assign(token.style, { left: `${centreX + offset * 50 - 18}px`, top: `${centreY - 18}px` });
+      document.body.appendChild(token);
+      this.flightNodes.add(token);
+      return token;
+    });
+    const burst = document.createElement("span");
+    burst.className = "waste-match-burst";
+    burst.textContent = "✦";
+    burst.setAttribute("aria-hidden", "true");
+    Object.assign(burst.style, { left: `${centreX - 24}px`, top: `${centreY - 24}px` });
+    document.body.appendChild(burst);
+    this.flightNodes.add(burst);
+    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+    try {
+      await Promise.all(tokens.map((token, index) => token.animate([
+        { transform: "translate(0, 0) scale(1)", opacity: 1 },
+        { transform: `translate(${(1 - index) * 50}px, 0) scale(.6)`, opacity: 0 },
+      ], { duration: reduced ? 1 : 210, easing: "ease-in", fill: "forwards" }).finished));
+    } catch { /* Cosmetic animation cancellation must not affect the saved move. */ }
+    for (const node of [...tokens, burst]) { node.remove(); this.flightNodes.delete(node); }
+  }
+
   showHint() {
     if (!this.session || this.session.mode !== "campaign" || this.session.status === "failed") return false;
-    const engine = new WasteCollectionEngine(this.session.assignedLevel, this.session);
+    const trayLimit = wasteCollectionTrayLimit(this.gameState.getSnapshot());
+    const engine = new WasteCollectionEngine(this.session.assignedLevel, this.session, { trayLimit });
     let choice = null;
     for (const tileId of engine.exposedIds()) {
-      const candidate = new WasteCollectionEngine(this.session.assignedLevel, this.session);
+      const candidate = new WasteCollectionEngine(this.session.assignedLevel, this.session, { trayLimit });
       const result = candidate.select(tileId);
       if (result.code === "triple-matched") { choice = tileId; break; }
       if (result.code !== "tray-full" && choice === null) choice = tileId;
@@ -360,6 +484,7 @@ export class WasteCollectionScene extends Phaser.Scene {
     game.dataset.wasteRemaining = String(active?.mode === "campaign" ? this.cleanup.getCampaignSessionState()?.remaining : this.job ? this.job.items.length - this.collected.size : 0);
     game.dataset.wasteCompleted = String(diagnostics?.wasteProgress?.completed || 0); game.dataset.wasteCatalogue = String(diagnostics?.totalLevels || 0);
     game.dataset.wasteCatalogueValid = String(Boolean(diagnostics?.catalogueValid));
+    game.dataset.wasteTrayLimit = String(wasteCollectionTrayLimit(this.gameState.getSnapshot()));
   }
 
   shutdownScene() {
@@ -367,6 +492,11 @@ export class WasteCollectionScene extends Phaser.Scene {
     this.boardElement?.removeEventListener("click", this.onBoardClick); this.buttons?.hint?.removeEventListener("click", this.onHint); this.buttons?.retry?.removeEventListener("click", this.onRetry); this.buttons?.qa?.removeEventListener("click", this.onQa);
     this.buttons?.return?.removeEventListener("click", this.onReturn);
     window.removeEventListener("keydown", this.onKeyDown);
+    window.removeEventListener("resize", this.onViewportResize);
+    this.boardResizeObserver?.disconnect();
+    if (this.layoutFrame !== null) cancelAnimationFrame(this.layoutFrame);
+    for (const node of this.flightNodes || []) node.remove();
+    this.flightNodes?.clear();
     const list = document.querySelector("#cleanup-item-list"); list?.removeEventListener("click", this.onTownItem);
     document.querySelector("#cleanup-finish")?.removeEventListener("click", this.onTownFinish); document.querySelector("#cleanup-exit")?.removeEventListener("click", this.onTownExit); document.querySelector("#cleanup-result-return")?.removeEventListener("click", this.onTownResult);
     this.campaignHud?.classList.add("hidden"); this.townHud?.classList.add("hidden"); document.querySelector("#cleanup-result")?.classList.add("hidden");

@@ -14,6 +14,97 @@
   --kw-control-shift: 2px;
 }
 
+/* Waste Collection HTML-authored board contract. Card geometry remains in the
+   original 1080×840 logical coordinate system; only the complete board crop is
+   scaled to the available landscape viewport. */
+@media (orientation: landscape) {
+  body[data-game-scene="WasteCollectionScene"] .waste-board-viewport {
+    display: grid !important;
+    place-items: center !important;
+    overflow: hidden !important;
+    background: #6a7454 !important;
+    box-shadow: inset 0 0 0 3px #283d32 !important;
+  }
+  body[data-game-scene="WasteCollectionScene"] .waste-board-viewport::before,
+  body[data-game-scene="WasteCollectionScene"] .waste-board-viewport::after {
+    display: none !important;
+    content: none !important;
+  }
+  body[data-game-scene="WasteCollectionScene"] .waste-board-stage {
+    position: relative !important;
+    z-index: 2 !important;
+    flex: none !important;
+    overflow: visible !important;
+  }
+  body[data-game-scene="WasteCollectionScene"] .waste-board {
+    position: absolute !important;
+    inset: auto !important;
+    top: 0 !important;
+    left: 0 !important;
+    overflow: visible !important;
+    background-color: #627f43 !important;
+    background-image: var(--waste-park-art) !important;
+    background-position: 0 0 !important;
+    background-repeat: no-repeat !important;
+    background-size: 1080px 840px !important;
+    box-shadow: 0 0 0 4px #273327 !important;
+    transform-origin: 0 0 !important;
+  }
+  body[data-game-scene="WasteCollectionScene"] .waste-card {
+    position: absolute !important;
+    display: grid !important;
+    place-items: center !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    opacity: 1 !important;
+    filter: none !important;
+    transform: rotate(var(--card-rotation)) !important;
+    transform-origin: center !important;
+  }
+  body[data-game-scene="WasteCollectionScene"] .waste-card.blocked {
+    opacity: .88 !important;
+    filter: brightness(.61) saturate(.7) !important;
+  }
+  body[data-game-scene="WasteCollectionScene"] .waste-card.picked {
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+  body[data-game-scene="WasteCollectionScene"] .waste-card span {
+    font-size: 44px !important;
+    transform: scale(.84) !important;
+  }
+  body[data-game-scene="WasteCollectionScene"] .waste-tray {
+    grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+    gap: clamp(3px, .5vw, 7px) !important;
+  }
+  body[data-game-scene="WasteCollectionScene"] .waste-tray-slot.capacity-locked {
+    opacity: .42 !important;
+    border-style: dashed !important;
+    filter: grayscale(1) !important;
+  }
+}
+
+.waste-card-flight,
+.waste-match-token,
+.waste-match-burst {
+  position: fixed;
+  z-index: 100000;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  font-family: "Apple Color Emoji", system-ui, sans-serif;
+}
+.waste-card-flight {
+  border: 3px solid #2d2b27;
+  border-radius: 7px;
+  background: linear-gradient(145deg, #fff0c8, #e7d29e);
+  box-shadow: 4px 6px 0 rgb(35 36 31 / 55%);
+  font-size: 36px;
+}
+.waste-match-token { width: 36px; height: 36px; font-size: 26px; }
+.waste-match-burst { width: 48px; height: 48px; color: #ffe36a; font-size: 42px; text-shadow: 0 0 10px #fff2aa; animation: wasteMatchBurst 210ms ease-out both; }
+@keyframes wasteMatchBurst { from { opacity: 1; transform: scale(.3); } to { opacity: 0; transform: scale(1.8); } }
+
 /* Phase 3 — House Rescue full-room fidelity recovery.
    The reference rooms are rebuilt from live DOM layers; no reference bitmap is used. */
 @media (orientation: landscape) {
@@ -7112,6 +7203,66 @@ body[data-modal-open="true"] .interaction-prompt { visibility: hidden; pointer-e
     max-height: 42px !important;
     padding: 8px 8px 8px min(36vw, 260px) !important;
   }
+}
+
+/* Final cascade guard for the HTML-authored Waste Collection board. */
+@media (orientation: landscape) {
+  body[data-game-scene="WasteCollectionScene"] .waste-board-viewport {
+    display: grid !important;
+    place-items: center !important;
+    overflow: hidden !important;
+    background: #6a7454 !important;
+    box-shadow: inset 0 0 0 3px #283d32 !important;
+  }
+  body[data-game-scene="WasteCollectionScene"] .waste-board-viewport::before,
+  body[data-game-scene="WasteCollectionScene"] .waste-board-viewport::after { display: none !important; content: none !important; }
+  body[data-game-scene="WasteCollectionScene"] .waste-board-stage { position: relative !important; z-index: 2 !important; flex: none !important; overflow: visible !important; }
+  body[data-game-scene="WasteCollectionScene"] .waste-board {
+    position: absolute !important;
+    inset: auto !important;
+    top: 0 !important;
+    left: 0 !important;
+    overflow: visible !important;
+    background: var(--waste-park-art) 0 0 / 1080px 840px no-repeat #627f43 !important;
+    box-shadow: 0 0 0 4px #273327 !important;
+    transform-origin: 0 0 !important;
+  }
+  body[data-game-scene="WasteCollectionScene"] .waste-card {
+    position: absolute !important;
+    display: grid !important;
+    place-items: center !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    opacity: 1 !important;
+    filter: none !important;
+    transform: rotate(var(--card-rotation)) !important;
+    transform-origin: center !important;
+  }
+  body[data-game-scene="WasteCollectionScene"] .waste-board::before,
+  body[data-game-scene="WasteCollectionScene"] .waste-board::after {
+    position: absolute !important;
+    z-index: 1 !important;
+    inset: 0 !important;
+    content: "" !important;
+    pointer-events: none !important;
+  }
+  body[data-game-scene="WasteCollectionScene"] .waste-board::before {
+    opacity: var(--grime-opacity, .98) !important;
+    background:
+      radial-gradient(85px 46px at 8% 30%, rgb(77 53 31 / 38%) 0 42%, transparent 47%),
+      radial-gradient(92px 55px at 94% 72%, rgb(79 54 31 / 36%) 0 41%, transparent 46%),
+      radial-gradient(70px 43px at 52% 64%, rgb(68 52 33 / 24%) 0 41%, transparent 47%),
+      repeating-linear-gradient(17deg, transparent 0 46px, rgb(73 57 37 / 5.5%) 47px 51px, transparent 52px 89px) !important;
+  }
+  body[data-game-scene="WasteCollectionScene"] .waste-board::after {
+    opacity: var(--clean-overlay-opacity, .12) !important;
+    background: linear-gradient(110deg, rgb(208 225 142 / 28%), transparent 42%, rgb(255 236 180 / 13%)) !important;
+  }
+  body[data-game-scene="WasteCollectionScene"] .waste-card.blocked { opacity: .88 !important; filter: brightness(.61) saturate(.7) !important; }
+  body[data-game-scene="WasteCollectionScene"] .waste-card.picked { opacity: 0 !important; pointer-events: none !important; }
+  body[data-game-scene="WasteCollectionScene"] .waste-card span { font-size: 44px !important; transform: scale(.84) !important; }
+  body[data-game-scene="WasteCollectionScene"] .waste-tray { grid-template-columns: repeat(7, minmax(0, 1fr)) !important; gap: clamp(3px, .5vw, 7px) !important; }
+  body[data-game-scene="WasteCollectionScene"] .waste-tray-slot.capacity-locked { opacity: .42 !important; border-style: dashed !important; filter: grayscale(1) !important; }
 }
 
 @media (orientation: landscape) and (max-width: 700px) {

@@ -12,6 +12,7 @@ import {
   WASTE_TRAY_LIMIT,
   WASTE_WORLD,
 } from "./wasteCollectionData.js";
+import { ITEM_CATALOG } from "./items.js";
 
 export {
   WASTE_BUILD_VERSION,
@@ -25,6 +26,21 @@ export {
   WASTE_TRAY_LIMIT,
   WASTE_WORLD,
 };
+
+export const WASTE_SLOT_CONFIG = Object.freeze({ base: WASTE_TRAY_LIMIT, max: 7, slotsPerOwnedBin: 1 });
+
+export function wasteCollectionTrayLimit(state) {
+  let purchasedBins = 0;
+  for (const item of Object.values(ITEM_CATALOG)) {
+    if (item.placeableType !== "bin" || item.qaOnly) continue;
+    purchasedBins += Math.max(0, Math.floor(Number(state?.inventory?.placeables?.[item.id]) || 0));
+  }
+  purchasedBins += (state?.townPlacement?.objects || []).filter((object) => {
+    const item = ITEM_CATALOG[object?.itemId];
+    return object?.type === "bin" && item?.placeableType === "bin" && !item.qaOnly;
+  }).length;
+  return Math.min(WASTE_SLOT_CONFIG.max, WASTE_SLOT_CONFIG.base + purchasedBins * WASTE_SLOT_CONFIG.slotsPerOwnedBin);
+}
 
 function clampLevel(value) {
   return Math.max(1, Math.min(WASTE_TOTAL_LEVELS, Math.floor(Number(value) || 1)));
@@ -89,8 +105,9 @@ export function wasteLevelSummary(levelValue) {
 }
 
 export class WasteCollectionEngine {
-  constructor(levelValue, saved = null) {
+  constructor(levelValue, saved = null, { trayLimit = WASTE_TRAY_LIMIT } = {}) {
     this.level = clampLevel(levelValue);
+    this.trayLimit = Math.max(WASTE_TRAY_LIMIT, Math.min(WASTE_SLOT_CONFIG.max, Math.floor(Number(trayLimit) || WASTE_TRAY_LIMIT)));
     this.tiles = decodeWasteLevel(this.level);
     const removed = new Set(Array.isArray(saved?.removedIds) ? saved.removedIds : []);
     for (const tile of this.tiles) tile.removed = removed.has(tile.id);
@@ -125,7 +142,7 @@ export class WasteCollectionEngine {
     }
     const remaining = this.tiles.filter((candidate) => !candidate.removed).length;
     if (remaining === 0) { this.ended = true; this.won = true; }
-    else if (this.tray.length >= WASTE_TRAY_LIMIT) { this.ended = true; this.won = false; }
+    else if (this.tray.length >= this.trayLimit) { this.ended = true; this.won = false; }
     return {
       ok: true,
       code: this.won ? "level-cleared" : this.ended ? "tray-full" : matchedTypeId === null ? "tile-collected" : "triple-matched",
@@ -143,6 +160,7 @@ export class WasteCollectionEngine {
       tray: [...this.tray],
       moves: this.moves,
       matches: this.matches,
+      trayLimit: this.trayLimit,
       remaining,
       total: this.tiles.length,
       percent: Math.round(((this.tiles.length - remaining) / this.tiles.length) * 100),

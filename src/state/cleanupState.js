@@ -1,5 +1,5 @@
 import { CLEANUP_JOBS, COMMONS_RUBBISH_JOB, TOTAL_CLEANUP_LEVELS } from "../data/cleanupJobs.js";
-import { WASTE_RUBBISH_CATALOG, wasteLevelSummary } from "../data/wasteCollection.js";
+import { WASTE_RUBBISH_CATALOG, WASTE_SLOT_CONFIG, wasteLevelSummary } from "../data/wasteCollection.js";
 
 export const CLEANUP_SCHEMA_VERSION = 2;
 export const CLEANUP_HISTORY_LIMIT = 100;
@@ -37,7 +37,7 @@ export function normalizeCleanupState(value) {
     if (next.activeSession.mode === "campaign") {
       const summary = wasteLevelSummary(next.activeSession.assignedLevel);
       next.activeSession.removedIds = [...new Set((Array.isArray(value.activeSession.removedIds) ? value.activeSession.removedIds : []).filter((id) => Number.isInteger(id) && id >= 0 && id < summary.tileCount))];
-      next.activeSession.tray = (Array.isArray(value.activeSession.tray) ? value.activeSession.tray : []).filter((typeId) => Number.isInteger(typeId) && WASTE_RUBBISH_CATALOG[typeId]).slice(0, 5);
+      next.activeSession.tray = (Array.isArray(value.activeSession.tray) ? value.activeSession.tray : []).filter((typeId) => Number.isInteger(typeId) && WASTE_RUBBISH_CATALOG[typeId]).slice(0, WASTE_SLOT_CONFIG.max);
       next.activeSession.moves = next.activeSession.removedIds.length;
       next.activeSession.matches = Math.max(0, Math.floor(Number(value.activeSession.matches) || 0));
       next.activeSession.status = value.activeSession.status === "failed" ? "failed" : "playing";
@@ -133,7 +133,7 @@ export function validateCleanupState(cleanup) {
         const tileCount = wasteLevelSummary(session.assignedLevel).tileCount;
         if (!["playing", "failed"].includes(session.status)) errors.push("Active Waste Collection campaign lifecycle is invalid.");
         if (!Array.isArray(session.removedIds) || new Set(session.removedIds).size !== session.removedIds.length || session.removedIds.some((id) => !Number.isInteger(id) || id < 0 || id >= tileCount)) errors.push("Active Waste Collection removed-card snapshot is invalid.");
-        if (!Array.isArray(session.tray) || session.tray.length > 5 || session.tray.some((typeId) => !Number.isInteger(typeId) || !WASTE_RUBBISH_CATALOG[typeId])) errors.push("Active Waste Collection tray is invalid.");
+        if (!Array.isArray(session.tray) || session.tray.length > WASTE_SLOT_CONFIG.max || session.tray.some((typeId) => !Number.isInteger(typeId) || !WASTE_RUBBISH_CATALOG[typeId])) errors.push("Active Waste Collection tray is invalid.");
         if (!Number.isInteger(session.moves) || session.moves !== session.removedIds.length || !Number.isInteger(session.matches) || session.matches < 0) errors.push("Active Waste Collection move record is invalid.");
       } else {
         const expectedIds = new Set(COMMONS_RUBBISH_JOB.items.map((item) => item.id));
