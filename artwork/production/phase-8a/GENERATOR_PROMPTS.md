@@ -5,9 +5,9 @@ Generated from `kindworks.phase-8a.premium-vertical-slice` revision 1. This is a
 ## 01 — terrain.town.slice.grass
 
 - Family: `family.town-terrain.slice`
-- Purpose: seamless grass foundation for the representative town block
-- Output: `64×64` PNG, alpha=false; single untrimmed image
-- Logical display: `64×64`
+- Purpose: large varied grass foundation for the representative town block
+- Output: `1254×1254` PNG, alpha=false; single untrimmed image
+- Logical display: `1254×1254`
 - Camera: top-down orthographic
 - Anchor: tile-top-left at `0, 0`
 - States: default
@@ -20,11 +20,11 @@ Generated from `kindworks.phase-8a.premium-vertical-slice` revision 1. This is a
 
 ### Generator prompt
 
-Create one production-ready KindWorks pixel-art asset for seamless grass foundation for the representative town block A quiet mid-green village lawn tile with restrained natural pixel variation; edges must tile seamlessly on all four sides. Use KindWorks Visual Style Bible v4. Exact output: 64×64px PNG, fully opaque, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.
+Create one production-ready KindWorks pixel-art asset for large varied grass foundation for the representative town block The approved bright spring-green village meadow texture with dense irregular grass blades, softly varied green patches, and sparse naturally scattered white, yellow, and red flowers. Use KindWorks Visual Style Bible v4. Exact output: 1254×1254px PNG, fully opaque, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.
 
 ### Negative prompt / forbidden output
 
-provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; flowers, paths, stones, objects, baked shadows, or visible seams
+provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; paths, stones, rocks, bushes, trees, large plants, objects, baked shadows, organised flower rows, or visible hard-edged panels
 
 ### Delivery
 
@@ -39,8 +39,8 @@ Return only town-grass-tile.v1.png plus provenance metadata; do not composite it
       "kind": "rectangle",
       "x": 0,
       "y": 0,
-      "width": 64,
-      "height": 64
+      "width": 1254,
+      "height": 1254
     },
     "collision": null,
     "navigation": null,

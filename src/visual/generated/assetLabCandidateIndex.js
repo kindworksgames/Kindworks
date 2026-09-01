@@ -9,8 +9,8 @@ export const ASSET_LAB_CANDIDATE_INDEX = Object.freeze({
       "semanticId": "terrain.town.slice.grass",
       "contractVersion": "1.0.0",
       "contractSchemaVersion": 2,
-      "candidateSha256": "4c9218bc129831278781a62cdd319272a25a403c3a404f9d62a1bf563584deed",
-      "approvalToken": "4c9218bc1298",
+      "candidateSha256": "4cdf7e30f85c9acf8a18469a00f8332fb4ce6f99d25803acdbbf7aa807de97d6",
+      "approvalToken": "4cdf7e30f85c",
       "sourcePath": "artwork/staging/phase-8a/town-grass-tile/v1/town-grass-tile.v1.png",
       "sourceUrl": "/__kindworks-candidate/terrain.town.slice.grass",
       "kind": "image",
@@ -21,18 +21,18 @@ export const ASSET_LAB_CANDIDATE_INDEX = Object.freeze({
       "expectedRuntimeFile": "public/assets/runtime/phase-8a/town-grass-tile.v1.png",
       "technical": {
         "format": "png",
-        "width": 64,
-        "height": 64,
+        "width": 1254,
+        "height": 1254,
         "alpha": false,
         "bitDepth": 8,
         "colourMode": "RGB",
         "opaqueBounds": {
           "x": 0,
           "y": 0,
-          "width": 64,
-          "height": 64
+          "width": 1254,
+          "height": 1254
         },
-        "bytes": 7039,
+        "bytes": 2825211,
         "pixelArt": true,
         "frameWidth": null,
         "frameHeight": null,
@@ -59,9 +59,9 @@ export const ASSET_LAB_CANDIDATE_INDEX = Object.freeze({
       "approval": {
         "semanticId": "terrain.town.slice.grass",
         "contractVersion": "1.0.0",
-        "candidateSha256": "4c9218bc129831278781a62cdd319272a25a403c3a404f9d62a1bf563584deed",
+        "candidateSha256": "4cdf7e30f85c9acf8a18469a00f8332fb4ce6f99d25803acdbbf7aa807de97d6",
         "reviewer": "youyoulu",
-        "approvedAt": "2026-09-01T10:19:18.226Z",
+        "approvedAt": "2026-09-01T21:08:00.000Z",
         "masterPath": "artwork/masters/phase-8a/town-grass-tile/v1/town-grass-tile.v1.png",
         "runtimePath": "public/assets/runtime/phase-8a/town-grass-tile.v1.png"
       },
@@ -82,8 +82,8 @@ export const ASSET_LAB_CANDIDATE_INDEX = Object.freeze({
       "sourcePath": "artwork/staging/phase-8a/town-pavement-tile/v1/town-pavement-tile.v1.png",
       "sourceUrl": "/__kindworks-candidate/terrain.town.slice.pavement",
       "kind": "spritesheet",
-      "status": "review",
-      "approvalStatus": "human-review-required",
+      "status": "approved",
+      "approvalStatus": "approved",
       "validationStatus": "valid",
       "validationFindings": [],
       "expectedRuntimeFile": "public/assets/runtime/phase-8a/town-pavement-tile.v1.png",
@@ -124,7 +124,83 @@ export const ASSET_LAB_CANDIDATE_INDEX = Object.freeze({
           "repeat": "surface-autotile"
         }
       ],
-      "approval": null,
+      "approval": {
+        "semanticId": "terrain.town.slice.pavement",
+        "contractVersion": "1.0.0",
+        "candidateSha256": "1cbc77da46624f987773f345c7cfd87c002d3ab64deab00790707052ab1c5c4e",
+        "reviewer": "youyoulu",
+        "approvedAt": "2026-09-01T11:59:24.957Z",
+        "masterPath": "artwork/masters/phase-8a/town-pavement-tile/v1/town-pavement-tile.v1.png",
+        "runtimePath": "public/assets/runtime/phase-8a/town-pavement-tile.v1.png"
+      },
+      "visualOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "reference": null,
+      "referenceStatus": "not-assigned"
+    },
+    "terrain.town.slice.road": {
+      "schemaVersion": 1,
+      "semanticId": "terrain.town.slice.road",
+      "contractVersion": "1.0.0",
+      "contractSchemaVersion": 2,
+      "candidateSha256": "b4b12b00f93d25a01936e20a35acaef730e53c14a55b480d75786d4420f7af17",
+      "approvalToken": "b4b12b00f93d",
+      "sourcePath": "artwork/staging/phase-8a/town-road-set/v1/town-road-set.v1.png",
+      "sourceUrl": "/__kindworks-candidate/terrain.town.slice.road",
+      "kind": "spritesheet",
+      "status": "approved",
+      "approvalStatus": "approved",
+      "validationStatus": "valid",
+      "validationFindings": [],
+      "expectedRuntimeFile": "public/assets/runtime/phase-8a/town-road-set.v1.png",
+      "technical": {
+        "format": "png",
+        "width": 256,
+        "height": 256,
+        "alpha": false,
+        "bitDepth": 8,
+        "colourMode": "RGB",
+        "opaqueBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 256,
+          "height": 256
+        },
+        "bytes": 41810,
+        "pixelArt": true,
+        "frameWidth": 64,
+        "frameHeight": 64,
+        "frameCount": 16,
+        "directions": []
+      },
+      "scenePlacements": [
+        {
+          "layoutId": "layout.phase-8a.town-block.house-6",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.terrain.road",
+          "position": {
+            "x": 640,
+            "y": 548
+          },
+          "worldOrigin": {
+            "x": 1880,
+            "y": 0
+          },
+          "gameplayGeometryLocked": true,
+          "repeat": "road-surface-autotile"
+        }
+      ],
+      "approval": {
+        "semanticId": "terrain.town.slice.road",
+        "contractVersion": "1.0.0",
+        "candidateSha256": "b4b12b00f93d25a01936e20a35acaef730e53c14a55b480d75786d4420f7af17",
+        "reviewer": "youyoulu",
+        "approvedAt": "2026-09-01T14:43:35.000Z",
+        "masterPath": "artwork/masters/phase-8a/town-road-set/v1/town-road-set.v1.png",
+        "runtimePath": "public/assets/runtime/phase-8a/town-road-set.v1.png"
+      },
       "visualOffset": {
         "x": 0,
         "y": 0

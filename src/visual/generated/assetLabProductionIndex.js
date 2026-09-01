@@ -2449,8 +2449,8 @@ export const ASSET_LAB_PRODUCTION_INDEX = Object.freeze({
         "type": "single-image",
         "format": "png",
         "canvas": {
-          "width": 64,
-          "height": 64
+          "width": 1254,
+          "height": 1254
         },
         "alpha": false,
         "colourMode": "RGB",
@@ -2475,8 +2475,8 @@ export const ASSET_LAB_PRODUCTION_INDEX = Object.freeze({
           "kind": "rectangle",
           "x": 0,
           "y": 0,
-          "width": 64,
-          "height": 64
+          "width": 1254,
+          "height": 1254
         },
         "collision": null,
         "navigation": null,
@@ -2503,19 +2503,19 @@ export const ASSET_LAB_PRODUCTION_INDEX = Object.freeze({
         ],
         "requireDirections": [],
         "maximumTransparentPadding": {
-          "top": 64,
-          "right": 64,
-          "bottom": 64,
-          "left": 64
+          "top": 1254,
+          "right": 1254,
+          "bottom": 1254,
+          "left": 1254
         },
         "maximumVisibleBounds": {
           "x": 0,
           "y": 0,
-          "width": 64,
-          "height": 64
+          "width": 1254,
+          "height": 1254
         },
         "gameplayGeometrySignature": "b1e3a260",
-        "maximumRuntimeBytes": 30000,
+        "maximumRuntimeBytes": 3000000,
         "fallbackSemanticId": "system.fallback.production"
       },
       "intendedScenes": [

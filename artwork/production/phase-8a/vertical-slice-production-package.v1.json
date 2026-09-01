@@ -23,7 +23,7 @@
       "categoryContractId": "category.terrain",
       "purpose": "Seamless, top-down Willowmere terrain surfaces.",
       "projection": "top-down orthographic",
-      "scaleRule": "64 logical-unit tile on an untrimmed 64px canvas",
+      "scaleRule": "Declared native tile canvas maps one-to-one to logical terrain units; terrain never controls gameplay geometry",
       "anchorRule": "top-left tile origin",
       "shadowRule": "no-shadow"
     },
@@ -107,7 +107,7 @@
       "version": "1.0.0",
       "familyId": "family.town-terrain.slice",
       "categoryContractId": "category.terrain",
-      "gameplayPurpose": "seamless grass foundation for the representative town block",
+      "gameplayPurpose": "large varied grass foundation for the representative town block",
       "intendedScenes": [
         "TownScene"
       ],
@@ -115,8 +115,8 @@
         "type": "single-image",
         "format": "png",
         "canvas": {
-          "width": 64,
-          "height": 64
+          "width": 1254,
+          "height": 1254
         },
         "alpha": false,
         "colourMode": "RGB",
@@ -136,8 +136,8 @@
       "masterScale": {
         "nativePixelsPerLogicalUnit": 1,
         "logicalDisplay": {
-          "width": 64,
-          "height": 64
+          "width": 1254,
+          "height": 1254
         },
         "scalePolicy": "fit-declared-logical-bounds-never-source-size"
       },
@@ -154,8 +154,8 @@
           "kind": "rectangle",
           "x": 0,
           "y": 0,
-          "width": 64,
-          "height": 64
+          "width": 1254,
+          "height": 1254
         },
         "collision": null,
         "navigation": null,
@@ -197,8 +197,8 @@
       "filenameStem": "town-grass-tile",
       "promptPackage": {
         "providerNeutral": true,
-        "positivePrompt": "Create one production-ready KindWorks pixel-art asset for seamless grass foundation for the representative town block A quiet mid-green village lawn tile with restrained natural pixel variation; edges must tile seamlessly on all four sides. Use KindWorks Visual Style Bible v4. Exact output: 64×64px PNG, fully opaque, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.",
-        "negativePrompt": "provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; flowers, paths, stones, objects, baked shadows, or visible seams",
+        "positivePrompt": "Create one production-ready KindWorks pixel-art asset for large varied grass foundation for the representative town block The approved bright spring-green village meadow texture with dense irregular grass blades, softly varied green patches, and sparse naturally scattered white, yellow, and red flowers. Use KindWorks Visual Style Bible v4. Exact output: 1254×1254px PNG, fully opaque, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.",
+        "negativePrompt": "provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; paths, stones, rocks, bushes, trees, large plants, objects, baked shadows, organised flower rows, or visible hard-edged panels",
         "deliveryInstruction": "Return only town-grass-tile.v1.png plus provenance metadata; do not composite it into a screenshot or rename it."
       },
       "forbiddenOutput": [
@@ -207,7 +207,7 @@
         "automatic trimming, cropped canvas, changed frame order, or unequal frame alignment",
         "unrequested UI, characters, props, scenery, shadows, or background colour",
         "perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4",
-        "flowers, paths, stones, objects, baked shadows, or visible seams"
+        "paths, stones, rocks, bushes, trees, large plants, objects, baked shadows, organised flower rows, or visible hard-edged panels"
       ],
       "validation": {
         "checklist": [
@@ -229,19 +229,19 @@
         ],
         "requireDirections": [],
         "maximumTransparentPadding": {
-          "top": 64,
-          "right": 64,
-          "bottom": 64,
-          "left": 64
+          "top": 1254,
+          "right": 1254,
+          "bottom": 1254,
+          "left": 1254
         },
         "maximumVisibleBounds": {
           "x": 0,
           "y": 0,
-          "width": 64,
-          "height": 64
+          "width": 1254,
+          "height": 1254
         },
         "gameplayGeometrySignature": "b1e3a260",
-        "maximumRuntimeBytes": 30000,
+        "maximumRuntimeBytes": 3000000,
         "fallbackSemanticId": "system.fallback.production"
       },
       "accessibility": null,

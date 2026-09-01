@@ -4,9 +4,9 @@
     {
       "semanticId": "terrain.town.slice.grass",
       "contractVersion": "1.0.0",
-      "candidateSha256": "4c9218bc129831278781a62cdd319272a25a403c3a404f9d62a1bf563584deed",
+      "candidateSha256": "4cdf7e30f85c9acf8a18469a00f8332fb4ce6f99d25803acdbbf7aa807de97d6",
       "reviewer": "youyoulu",
-      "approvedAt": "2026-09-01T10:19:18.226Z",
+      "approvedAt": "2026-09-01T21:08:00.000Z",
       "masterPath": "artwork/masters/phase-8a/town-grass-tile/v1/town-grass-tile.v1.png",
       "runtimePath": "public/assets/runtime/phase-8a/town-grass-tile.v1.png"
     },

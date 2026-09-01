@@ -19,8 +19,8 @@ export const PHASE_8B_APPROVED_ASSET_INDEX = Object.freeze({
       "technical": {
         "pixelArt": true,
         "alpha": false,
-        "width": 64,
-        "height": 64,
+        "width": 1254,
+        "height": 1254,
         "nativePixelsPerLogicalUnit": 1,
         "frameWidth": null,
         "frameHeight": null,
@@ -34,19 +34,19 @@ export const PHASE_8B_APPROVED_ASSET_INDEX = Object.freeze({
       "status": "phase-8b-approved-runtime",
       "productionContractId": "terrain.town.slice.grass",
       "cache": {
-        "version": "4c9218bc1298",
-        "contentSha256": "4c9218bc129831278781a62cdd319272a25a403c3a404f9d62a1bf563584deed"
+        "version": "4cdf7e30f85c",
+        "contentSha256": "4cdf7e30f85c9acf8a18469a00f8332fb4ce6f99d25803acdbbf7aa807de97d6"
       },
       "validation": {
-        "maximumRuntimeBytes": 30000,
+        "maximumRuntimeBytes": 3000000,
         "maximumDimension": 4096
       },
       "provenance": {
         "semanticId": "terrain.town.slice.grass",
         "contractVersion": "1.0.0",
-        "candidateSha256": "4c9218bc129831278781a62cdd319272a25a403c3a404f9d62a1bf563584deed",
+        "candidateSha256": "4cdf7e30f85c9acf8a18469a00f8332fb4ce6f99d25803acdbbf7aa807de97d6",
         "reviewer": "youyoulu",
-        "approvedAt": "2026-09-01T10:19:18.226Z",
+        "approvedAt": "2026-09-01T21:08:00.000Z",
         "masterPath": "artwork/masters/phase-8a/town-grass-tile/v1/town-grass-tile.v1.png",
         "runtimePath": "public/assets/runtime/phase-8a/town-grass-tile.v1.png",
         "runtimeUrl": "/assets/runtime/phase-8a/town-grass-tile.v1.png"
@@ -201,8 +201,8 @@ export const PHASE_8B_APPROVED_ASSET_INDEX = Object.freeze({
           "kind": "rectangle",
           "x": 0,
           "y": 0,
-          "width": 64,
-          "height": 64
+          "width": 1254,
+          "height": 1254
         },
         "collision": null,
         "navigation": null,

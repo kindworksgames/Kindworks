@@ -29,7 +29,7 @@ test("candidate intake validates real bytes rather than contract metadata alone"
     result = await validatePhase8BCandidate(asset, temporary, { requireFile: true });
     assert.equal(result.ok, false);
     assert.ok(result.errors.some(({ code }) => code === "candidate-dimension-mismatch"));
-    await sharp({ create: { width: 64, height: 64, channels: 3, background: "#55aa55" } }).png().toFile(file);
+    await sharp({ create: { width: asset.output.canvas.width, height: asset.output.canvas.height, channels: 3, background: "#55aa55" } }).png().toFile(file);
     result = await validatePhase8BCandidate(asset, temporary, { requireFile: true });
     assert.equal(result.ok, true, result.errors.map(({ code }) => code).join(", "));
     assert.equal(result.record.approvalStatus, "human-review-required");
