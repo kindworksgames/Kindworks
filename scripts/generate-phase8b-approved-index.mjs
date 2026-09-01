@@ -24,11 +24,14 @@ for (const approval of approvals.assets) {
 const approvedIds = new Set(Object.keys(approvalsById));
 const assets = PHASE_8A_RUNTIME_DEFINITIONS.assets.filter(({ id }) => approvedIds.has(id)).map((asset) => {
   const approval = approvalsById[asset.id];
+  const contract = PHASE_8A_VERTICAL_SLICE_PACKAGE.assets.find(({ semanticId }) => semanticId === asset.id);
+  if (!contract?.validation?.maximumRuntimeBytes) throw new Error(`${asset.id} is missing its approved runtime-byte budget.`);
   return Object.freeze({
     ...asset,
     kind: asset.technical?.frameWidth ? VISUAL_ASSET_KINDS.SPRITESHEET : VISUAL_ASSET_KINDS.IMAGE,
     source: Object.freeze({ kind: "file", file: approval.runtimeUrl, format: "png", owner: "Phase8BApprovedArtwork" }),
     cache: Object.freeze({ version: approval.candidateSha256.slice(0, 12), contentSha256: approval.candidateSha256 }),
+    validation: Object.freeze({ maximumRuntimeBytes: contract.validation.maximumRuntimeBytes, maximumDimension: 4096 }),
     status: "phase-8b-approved-runtime",
     provenance: approval,
   });

@@ -73,18 +73,21 @@ export class PhaserPrefabRenderer {
     return this.createDisplayLayer(resolved, layer);
   }
 
-  createDisplayLayer(resolved, layer, { frame = null } = {}) {
+  createDisplayLayer(resolved, layer, { frame = null, tileArea = null } = {}) {
     if (!layer || ![VISUAL_ASSET_KINDS.IMAGE, VISUAL_ASSET_KINDS.SPRITESHEET, VISUAL_ASSET_KINDS.ATLAS].includes(layer.asset.kind)) return null;
     const key = layer.asset.runtime.textureKey || layer.asset.runtime.atlasKey;
-    const image = layer.asset.kind === VISUAL_ASSET_KINDS.IMAGE
+    const image = layer.asset.kind === VISUAL_ASSET_KINDS.IMAGE && tileArea
+      ? this.scene.add.tileSprite(0, resolved.groundContactAnchor?.y || 0, tileArea.width, tileArea.height, key)
+      : layer.asset.kind === VISUAL_ASSET_KINDS.IMAGE
       ? this.scene.add.image(0, resolved.groundContactAnchor?.y || 0, key)
       : this.scene.add.sprite(0, resolved.groundContactAnchor?.y || 0, key, frame ?? 0);
     image.setOrigin(resolved.origin.x, resolved.origin.y);
     const metrics = resolvePrefabDisplayMetrics(resolved.prefab, layer.asset);
-    image.setDisplaySize(metrics.width, metrics.height);
-    image.setData?.("logicalDisplayWidth", metrics.width);
-    image.setData?.("logicalDisplayHeight", metrics.height);
+    if (!tileArea) image.setDisplaySize(metrics.width, metrics.height);
+    image.setData?.("logicalDisplayWidth", tileArea?.width ?? metrics.width);
+    image.setData?.("logicalDisplayHeight", tileArea?.height ?? metrics.height);
     image.setData?.("nativePixelsPerLogicalUnit", metrics.nativePixelsPerLogicalUnit);
+    image.setData?.("semanticTileArea", tileArea ? { width: tileArea.width, height: tileArea.height } : null);
     return image;
   }
 }

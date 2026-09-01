@@ -73,11 +73,14 @@ export class ApprovedSceneVisualRuntime {
     const objects = [];
     for (const layer of resolved.layers) {
       const frame = placement.frame ?? resolved.state?.modifier?.frame ?? null;
-      const object = this.renderer.createDisplayLayer(resolved, layer, { frame });
+      const object = this.renderer.createDisplayLayer(resolved, layer, { frame, tileArea: placement.tileArea || null });
       if (!object) continue;
       if (placement.displaySize) object.setDisplaySize?.(placement.displaySize.width, placement.displaySize.height);
       object.setPosition(position.x, position.y);
-      object.setDepth(this.renderer.depthFor(resolved, layer.role, position.y) + Number(layer.order || 0));
+      const depth = Number.isFinite(placement.depth)
+        ? placement.depth
+        : this.renderer.depthFor(resolved, layer.role, position.y) + Number(layer.order || 0);
+      object.setDepth(depth);
       object.setVisible(placement.visible !== false);
       object.disableInteractive?.();
       object.setData?.({

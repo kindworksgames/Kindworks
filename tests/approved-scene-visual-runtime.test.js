@@ -4,6 +4,8 @@ import test from "node:test";
 
 import { ApprovedSceneVisualRuntime } from "../src/visual/renderers/ApprovedSceneVisualRuntime.js";
 import { VISUAL_ASSET_KINDS } from "../src/visual/contracts.js";
+import { createTownApprovedSceneBindings } from "../src/presentation/TownApprovedSceneBindings.js";
+import { WORLD } from "../src/data/town.js";
 
 function displayObject(key, frame = null) {
   const data = new Map();
@@ -34,7 +36,11 @@ function harness({ textureKey = "approved.v1", binding = { mode: "static" }, pla
   };
   const scene = {
     scene: { key: "TownScene" }, registry: { get: () => registry },
-    add: { image(_x, _y, key) { const object = displayObject(key); objects.push(object); return object; }, sprite(_x, _y, key, frame) { const object = displayObject(key, frame); objects.push(object); return object; } },
+    add: {
+      image(_x, _y, key) { const object = displayObject(key); objects.push(object); return object; },
+      sprite(_x, _y, key, frame) { const object = displayObject(key, frame); objects.push(object); return object; },
+      tileSprite(_x, _y, width, height, key) { const object = displayObject(key); object.tileArea = { width, height }; objects.push(object); return object; },
+    },
     events: { once(name, callback) { if (name === "shutdown") shutdown.push(callback); } },
   };
   const runtime = new ApprovedSceneVisualRuntime(scene, { registry, bindings: { placementResolver } }).mount();
@@ -75,6 +81,26 @@ test("unbound non-static instances fail visibly rather than disappearing silentl
   const { objects, failures } = harness({ binding: { mode: "repeat" } });
   assert.equal(objects.length, 0);
   assert.equal(failures[0]?.code, "scene-instance-binding-required");
+});
+
+test("approved town grass uses one world-sized terrain tile below roads and rivers", () => {
+  const bindings = createTownApprovedSceneBindings({});
+  const [placement] = bindings.placementResolver(
+    { id: "instance.test.grass", position: { x: 0, y: 0 } },
+    { mode: "repeat", repeat: "cover-town-ground" },
+  );
+  assert.deepEqual(placement.position, { x: 0, y: 0 });
+  assert.deepEqual(placement.tileArea, { width: WORLD.width, height: WORLD.height });
+  assert.equal(placement.depth, 0);
+
+  const { objects } = harness({
+    binding: { mode: "repeat" },
+    placementResolver: () => placement,
+  });
+  assert.equal(objects.length, 1);
+  assert.deepEqual(objects[0].tileArea, { width: WORLD.width, height: WORLD.height });
+  assert.equal(objects[0].depth, 0);
+  assert.equal(objects[0].getData("semanticTileArea").width, WORLD.width);
 });
 
 test("normal Town and Lawn scenes install the production bootstrap without slice-specific IDs", async () => {

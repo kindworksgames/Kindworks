@@ -15,6 +15,7 @@ import {
   PHASE_8A_VERTICAL_SLICE_PACKAGE,
 } from "../src/visual/verticalSlice/phase8aVerticalSlicePackage.js";
 import { PHASE_8A_RUNTIME_DEFINITIONS } from "../src/visual/generated/phase8aVerticalSliceRuntime.js";
+import { PHASE_8B_APPROVED_ASSET_INDEX } from "../src/visual/generated/phase8bApprovedAssetIndex.js";
 import { validatePhase8APackage } from "../src/visual/verticalSlice/validatePhase8APackage.js";
 
 const root = resolve(import.meta.dirname, "..");
@@ -111,11 +112,15 @@ test("the selected town block and lawn transition use protected repository ident
   assert.equal(PHASE_8A_VERTICAL_SLICE_PACKAGE.transition.rewardContract.visualLayerMayMutateReward, false);
 });
 
-test("all placeholders, states, layers, geometry and animations resolve through shared factories", () => {
+test("all approved assets and remaining placeholders resolve through shared factories", () => {
   const registry = createVisualRegistry({ manifest: phase8aManifest(), reporter: { error() {} } });
   const renderer = new PhaserPrefabRenderer(null, registry);
+  const approvedIds = new Set(PHASE_8B_APPROVED_ASSET_INDEX.assets.map(({ id }) => id));
   for (const asset of PHASE_8A_VERTICAL_SLICE_PACKAGE.assets) {
-    assert.equal(registry.getAsset(asset.semanticId).source.owner, "Phase8AVerticalSlicePlaceholder");
+    assert.equal(
+      registry.getAsset(asset.semanticId).source.owner,
+      approvedIds.has(asset.semanticId) ? "Phase8BApprovedArtwork" : "Phase8AVerticalSlicePlaceholder",
+    );
     const stateMap = registry.getVisualState(asset.stateMapId);
     for (const stateName of asset.states) {
       const resolved = renderer.resolve(asset.prefabId, asset.stateMapId, stateName);

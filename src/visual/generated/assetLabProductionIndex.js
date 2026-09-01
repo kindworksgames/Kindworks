@@ -2,7 +2,7 @@
 export const ASSET_LAB_PRODUCTION_INDEX = Object.freeze({
   "schemaVersion": 1,
   "sourceRevision": {
-    "visualManifest": 2,
+    "visualManifest": 3,
     "categoryContracts": 2,
     "productionPlan": 1,
     "phase8aPackage": 2
@@ -5163,7 +5163,8 @@ export const ASSET_LAB_PRODUCTION_INDEX = Object.freeze({
       "/assets/powerwash/playground-reference-dirt.png",
       "/assets/powerwash/tool-precision.png",
       "/assets/powerwash/tool-standard.png",
-      "/assets/powerwash/tool-wide.png"
+      "/assets/powerwash/tool-wide.png",
+      "/assets/runtime/phase-8a/town-grass-tile.v1.png"
     ],
     "runtimeFiles": [
       "/assets/animals/reference-master-v44.png",
@@ -5177,6 +5178,7 @@ export const ASSET_LAB_PRODUCTION_INDEX = Object.freeze({
       "/assets/powerwash/tool-precision.png",
       "/assets/powerwash/tool-standard.png",
       "/assets/powerwash/tool-wide.png",
+      "/assets/runtime/phase-8a/town-grass-tile.v1.png",
       "/assets/runtime/scene/fishing/fishing-reedbank-background.v1.webp"
     ]
   }

@@ -252,15 +252,15 @@
           "sceneId": "TownScene",
           "instanceId": "instance.phase-8a.town.terrain.grass",
           "position": {
-            "x": 640,
-            "y": 360
+            "x": 0,
+            "y": 0
           },
           "worldOrigin": {
             "x": 1880,
             "y": 0
           },
           "gameplayGeometryLocked": true,
-          "repeat": "cover-canonical-block"
+          "repeat": "cover-town-ground"
         }
       ],
       "prefabId": "prefab.phase-8a.terrain.grass",

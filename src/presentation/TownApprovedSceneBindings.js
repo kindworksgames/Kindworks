@@ -1,4 +1,5 @@
 import { houseExteriorDirtStage } from "../data/houseRescue.js";
+import { WORLD } from "../data/town.js";
 
 const HOUSE_STATES = Object.freeze(["clean", "weathered", "job-ready", "job-ready"]);
 const LAWN_STATES = Object.freeze(["fresh-cut", "growing", "long", "job-ready"]);
@@ -6,11 +7,7 @@ const position = (x, y, extra = {}) => ({ position: { x, y }, visible: true, ...
 const lawnStage = (height) => height < 20 ? 0 : height < 45 ? 1 : height < 70 ? 2 : 3;
 
 function repeat(instance, mode) {
-  if (mode === "cover-canonical-block") {
-    const placements = [];
-    for (let y = 32; y < 720; y += 64) for (let x = 32; x < 1280; x += 64) placements.push(position(x, y));
-    return placements;
-  }
+  if (mode === "cover-town-ground") return [position(0, 0, { tileArea: { width: WORLD.width, height: WORLD.height }, depth: 0 })];
   if (mode === "horizontal-strip") return Array.from({ length: 20 }, (_, index) => position(32 + index * 64, instance.position.y));
   if (mode === "vertical-banks") return Array.from({ length: 12 }, (_, index) => position(instance.position.x, 32 + index * 64, { frame: index % 2 }));
   if (mode === "yard-boundary") return [position(215, 155), position(343, 155), position(471, 155), position(215, 480), position(343, 480, { frame: 1 }), position(471, 480)];

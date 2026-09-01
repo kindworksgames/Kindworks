@@ -3,7 +3,76 @@ export const ASSET_LAB_CANDIDATE_INDEX = Object.freeze({
   "schemaVersion": 1,
   "packageId": "kindworks.phase-8a.premium-vertical-slice",
   "packageRevision": 1,
-  "assets": {},
+  "assets": {
+    "terrain.town.slice.grass": {
+      "schemaVersion": 1,
+      "semanticId": "terrain.town.slice.grass",
+      "contractVersion": "1.0.0",
+      "contractSchemaVersion": 2,
+      "candidateSha256": "4c9218bc129831278781a62cdd319272a25a403c3a404f9d62a1bf563584deed",
+      "approvalToken": "4c9218bc1298",
+      "sourcePath": "artwork/staging/phase-8a/town-grass-tile/v1/town-grass-tile.v1.png",
+      "sourceUrl": "/__kindworks-candidate/terrain.town.slice.grass",
+      "kind": "image",
+      "status": "approved",
+      "approvalStatus": "approved",
+      "validationStatus": "valid",
+      "validationFindings": [],
+      "expectedRuntimeFile": "public/assets/runtime/phase-8a/town-grass-tile.v1.png",
+      "technical": {
+        "format": "png",
+        "width": 64,
+        "height": 64,
+        "alpha": false,
+        "bitDepth": 8,
+        "colourMode": "RGB",
+        "opaqueBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 64,
+          "height": 64
+        },
+        "bytes": 7039,
+        "pixelArt": true,
+        "frameWidth": null,
+        "frameHeight": null,
+        "frameCount": 1,
+        "directions": []
+      },
+      "scenePlacements": [
+        {
+          "layoutId": "layout.phase-8a.town-block.house-6",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.terrain.grass",
+          "position": {
+            "x": 0,
+            "y": 0
+          },
+          "worldOrigin": {
+            "x": 1880,
+            "y": 0
+          },
+          "gameplayGeometryLocked": true,
+          "repeat": "cover-town-ground"
+        }
+      ],
+      "approval": {
+        "semanticId": "terrain.town.slice.grass",
+        "contractVersion": "1.0.0",
+        "candidateSha256": "4c9218bc129831278781a62cdd319272a25a403c3a404f9d62a1bf563584deed",
+        "reviewer": "youyoulu",
+        "approvedAt": "2026-09-01T10:19:18.226Z",
+        "masterPath": "artwork/masters/phase-8a/town-grass-tile/v1/town-grass-tile.v1.png",
+        "runtimePath": "public/assets/runtime/phase-8a/town-grass-tile.v1.png"
+      },
+      "visualOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "reference": null,
+      "referenceStatus": "not-assigned"
+    }
+  },
   "validation": {
     "ok": true,
     "findings": []

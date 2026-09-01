@@ -8,6 +8,7 @@ import sharp from "sharp";
 import { KINDWORKS_VISUAL_MANIFEST } from "../src/visual/visualManifest.js";
 import { createPhase8AAssetLabManifest } from "../src/visual/dev/phase8aAssetLabManifest.js";
 import { createAssetLabCatalog } from "../src/visual/dev/assetLabCatalog.js";
+import { PHASE_8B_APPROVED_ASSET_INDEX } from "../src/visual/generated/phase8bApprovedAssetIndex.js";
 import { PHASE_8A_ASSET_IDS, PHASE_8A_VERTICAL_SLICE_PACKAGE } from "../src/visual/verticalSlice/phase8aVerticalSlicePackage.js";
 import { buildPhase8BCandidateIndex, validatePhase8BCandidate } from "../scripts/lib/phase8bCandidateWorkflow.mjs";
 
@@ -89,6 +90,29 @@ test("human approval feeds the normal semantic manifest without scene edits", as
   assert.match(generator, /runtime bytes do not match the human-approved digest/);
   assert.match(approval, /generate-phase8b-approved-index/);
   assert.doesNotMatch(manifest, /TownScene|LawnCareScene/);
+});
+
+test("approved runtime assets retain their production byte budgets", () => {
+  for (const asset of PHASE_8B_APPROVED_ASSET_INDEX.assets) {
+    const contract = PHASE_8A_VERTICAL_SLICE_PACKAGE.assets.find(({ semanticId }) => semanticId === asset.id);
+    assert.ok(contract, `${asset.id} must retain a Phase 8A contract`);
+    assert.equal(asset.validation.maximumRuntimeBytes, contract.validation.maximumRuntimeBytes);
+    assert.equal(asset.validation.maximumDimension, 4096);
+  }
+});
+
+test("Asset Lab placeholders do not duplicate approved runtime definitions", () => {
+  const manifest = createPhase8AAssetLabManifest(KINDWORKS_VISUAL_MANIFEST);
+  for (const section of ["assets", "prefabs", "sceneInstances", "visualStates", "animations", "scenePacks"]) {
+    const ids = manifest[section].map(({ id }) => id);
+    assert.equal(new Set(ids).size, ids.length, `${section} must retain unique semantic IDs`);
+  }
+  for (const approved of PHASE_8B_APPROVED_ASSET_INDEX.assets) {
+    assert.equal(manifest.assets.find(({ id }) => id === approved.id)?.source?.owner, "Phase8BApprovedArtwork");
+  }
+  const townPack = manifest.scenePacks.find(({ id }) => id === "pack.phase-8a.town-block");
+  assert.ok(townPack.assetIds.includes(PHASE_8A_ASSET_IDS.GRASS));
+  assert.ok(townPack.assetIds.includes(PHASE_8A_ASSET_IDS.HOUSE));
 });
 
 test("candidate references are explicit, validated, and development-only", async () => {
