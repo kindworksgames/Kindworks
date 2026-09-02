@@ -4,10 +4,30 @@ import { HOUSES, PATHS, ROADS, TOWN_REFERENCE_LAYOUT, WORLD } from "../data/town
 const HOUSE_STATES = Object.freeze(["clean", "weathered", "job-ready", "job-ready"]);
 const LAWN_STATES = Object.freeze(["fresh-cut", "growing", "long", "job-ready"]);
 const LAWN_WEED_STATES = Object.freeze(["none", "light", "job-ready", "heavy"]);
+const LAYERED_TREE_FAMILY = "family.layered-tree.slice";
 export const APPROVED_WORLD_LAWN_REPEAT_MODE = "seamless-lawn-tile-clipped-to-protected-yard-mask";
 const position = (x, y, extra = {}) => ({ position: { x, y }, visible: true, ...extra });
 const lawnStage = (height) => height < 20 ? 0 : height < 45 ? 1 : height < 70 ? 2 : 3;
 const lawnWeedStage = (pressure) => pressure < 18 ? 0 : pressure < 38 ? 1 : pressure < 55 ? 2 : 3;
+
+/**
+ * Keeps legacy decorative trees out from behind an approved layered tree.
+ * This is presentation-only: it reads semantic placement data and never
+ * changes town collision, navigation, interaction, or saved state.
+ */
+export function shouldRenderLegacyTownTree(scene, x, y, replacementRadius = 72) {
+  const registry = scene?.registry?.get?.("visualRegistry");
+  const instances = registry?.getSceneInstancesByScene?.("TownScene") || [];
+  const replaced = instances.some((instance) => {
+    if (instance.activation !== "phase-8b-approved") return false;
+    const prefab = registry.getPrefab?.(instance.prefabId);
+    if (prefab?.family !== LAYERED_TREE_FAMILY) return false;
+    const target = instance.binding?.protectedWorldPosition;
+    if (![target?.x, target?.y].every(Number.isFinite)) return false;
+    return Math.hypot(x - target.x, y - target.y) <= replacementRadius;
+  });
+  return !replaced;
+}
 
 function localWorldOrigin(instance) {
   const x = Number(instance.worldOrigin?.x || 0);
