@@ -6,7 +6,7 @@ import sharp from "sharp";
 import { ApprovedSceneVisualRuntime } from "../src/visual/renderers/ApprovedSceneVisualRuntime.js";
 import { PhaserPrefabRenderer } from "../src/visual/renderers/PhaserPrefabRenderer.js";
 import { VISUAL_ASSET_KINDS } from "../src/visual/contracts.js";
-import { APPROVED_WORLD_LAWN_REPEAT_MODE, createTownApprovedSceneBindings } from "../src/presentation/TownApprovedSceneBindings.js";
+import { APPROVED_WORLD_LAWN_REPEAT_MODE, createTownApprovedSceneBindings, shouldRenderLegacyTownTree } from "../src/presentation/TownApprovedSceneBindings.js";
 import { LAWN_PLOTS } from "../src/data/farming.js";
 import { HOUSES, ROADS, TOWN_REFERENCE_LAYOUT, WORLD } from "../src/data/town.js";
 import { PHASE_8A_ASSET_IDS, PHASE_8A_VERTICAL_SLICE_PACKAGE } from "../src/visual/verticalSlice/phase8aVerticalSlicePackage.js";
@@ -70,6 +70,27 @@ test("manifest-only texture replacement changes rendered artwork without changin
   assert.equal(second.objects[0].key, "approved.v2");
   assert.deepEqual(first.prefab.geometry, second.prefab.geometry);
   assert.deepEqual({ x: first.objects[0].x, y: first.objects[0].y }, { x: second.objects[0].x, y: second.objects[0].y });
+});
+
+test("an approved layered tree suppresses only nearby legacy presentation trees", () => {
+  const prefab = { id: "prefab.test.layered-tree", family: "family.layered-tree.slice" };
+  const instance = {
+    id: "instance.test.layered-tree",
+    sceneId: "TownScene",
+    prefabId: prefab.id,
+    activation: "phase-8b-approved",
+    binding: { protectedWorldPosition: { x: 2880, y: 250 } },
+  };
+  const registry = {
+    getSceneInstancesByScene: () => [instance],
+    getPrefab: () => prefab,
+  };
+  const scene = { registry: { get: (key) => key === "visualRegistry" ? registry : null } };
+
+  assert.equal(shouldRenderLegacyTownTree(scene, 2880, 250), false);
+  assert.equal(shouldRenderLegacyTownTree(scene, 2920, 250), false, "nearby duplicate placeholder is removed");
+  assert.equal(shouldRenderLegacyTownTree(scene, 3070, 220), true, "unrelated town trees remain");
+  assert.equal(shouldRenderLegacyTownTree({}, 2880, 250), true, "legacy art remains when no approved replacement is active");
 });
 
 test("dynamic bindings refresh presentation without writing gameplay geometry", () => {

@@ -251,6 +251,156 @@ export const PHASE_8B_APPROVED_ASSET_INDEX = Object.freeze({
         "runtimePath": "public/assets/runtime/phase-8a/town-lawn-growth-overlay.v4.png",
         "runtimeUrl": "/assets/runtime/phase-8a/town-lawn-growth-overlay.v4.png"
       }
+    },
+    {
+      "schemaVersion": 1,
+      "id": "prop.town.slice.large-oak.shadow",
+      "kind": "image",
+      "source": {
+        "kind": "file",
+        "file": "/assets/runtime/phase-8a/large-oak-shadow.v1.png",
+        "format": "png",
+        "owner": "Phase8BApprovedArtwork"
+      },
+      "runtime": {
+        "renderTarget": "phaser",
+        "textureKey": "kw.phase8a.prop.town.slice.large-oak.shadow"
+      },
+      "technical": {
+        "pixelArt": true,
+        "alpha": true,
+        "width": 128,
+        "height": 160,
+        "nativePixelsPerLogicalUnit": 1,
+        "frameWidth": null,
+        "frameHeight": null,
+        "directions": []
+      },
+      "requiredness": "required",
+      "lifecycle": {
+        "scope": "scene",
+        "unload": "on-last-scene-release"
+      },
+      "status": "phase-8b-approved-runtime",
+      "productionContractId": "prop.town.slice.large-oak.shadow",
+      "cache": {
+        "version": "570407602eb0",
+        "contentSha256": "570407602eb01a42816fa51d0d062fbd45b8c34d1d3b7677f6e9b655121960db"
+      },
+      "validation": {
+        "maximumRuntimeBytes": 60000,
+        "maximumDimension": 4096
+      },
+      "provenance": {
+        "semanticId": "prop.town.slice.large-oak.shadow",
+        "contractVersion": "1.0.0",
+        "candidateSha256": "570407602eb01a42816fa51d0d062fbd45b8c34d1d3b7677f6e9b655121960db",
+        "reviewer": "youyoulu",
+        "approvedAt": "2026-09-02T10:43:16.481Z",
+        "masterPath": "artwork/masters/phase-8a/large-oak-shadow/v1/large-oak-shadow.v1.png",
+        "runtimePath": "public/assets/runtime/phase-8a/large-oak-shadow.v1.png",
+        "runtimeUrl": "/assets/runtime/phase-8a/large-oak-shadow.v1.png"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "id": "prop.town.slice.large-oak.trunk",
+      "kind": "image",
+      "source": {
+        "kind": "file",
+        "file": "/assets/runtime/phase-8a/large-oak-trunk.v1.png",
+        "format": "png",
+        "owner": "Phase8BApprovedArtwork"
+      },
+      "runtime": {
+        "renderTarget": "phaser",
+        "textureKey": "kw.phase8a.prop.town.slice.large-oak.trunk"
+      },
+      "technical": {
+        "pixelArt": true,
+        "alpha": true,
+        "width": 128,
+        "height": 160,
+        "nativePixelsPerLogicalUnit": 1,
+        "frameWidth": null,
+        "frameHeight": null,
+        "directions": []
+      },
+      "requiredness": "required",
+      "lifecycle": {
+        "scope": "scene",
+        "unload": "on-last-scene-release"
+      },
+      "status": "phase-8b-approved-runtime",
+      "productionContractId": "prop.town.slice.large-oak.trunk",
+      "cache": {
+        "version": "a3f39fc6fa34",
+        "contentSha256": "a3f39fc6fa34d2bc3827fb758656757b123c32d1b6c07d7b4846600094719038"
+      },
+      "validation": {
+        "maximumRuntimeBytes": 90000,
+        "maximumDimension": 4096
+      },
+      "provenance": {
+        "semanticId": "prop.town.slice.large-oak.trunk",
+        "contractVersion": "1.0.0",
+        "candidateSha256": "a3f39fc6fa34d2bc3827fb758656757b123c32d1b6c07d7b4846600094719038",
+        "reviewer": "youyoulu",
+        "approvedAt": "2026-09-02T10:43:16.892Z",
+        "masterPath": "artwork/masters/phase-8a/large-oak-trunk/v1/large-oak-trunk.v1.png",
+        "runtimePath": "public/assets/runtime/phase-8a/large-oak-trunk.v1.png",
+        "runtimeUrl": "/assets/runtime/phase-8a/large-oak-trunk.v1.png"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "id": "prop.town.slice.large-oak.canopy",
+      "kind": "image",
+      "source": {
+        "kind": "file",
+        "file": "/assets/runtime/phase-8a/large-oak-canopy.v1.png",
+        "format": "png",
+        "owner": "Phase8BApprovedArtwork"
+      },
+      "runtime": {
+        "renderTarget": "phaser",
+        "textureKey": "kw.phase8a.prop.town.slice.large-oak.canopy"
+      },
+      "technical": {
+        "pixelArt": true,
+        "alpha": true,
+        "width": 128,
+        "height": 160,
+        "nativePixelsPerLogicalUnit": 1,
+        "frameWidth": null,
+        "frameHeight": null,
+        "directions": []
+      },
+      "requiredness": "required",
+      "lifecycle": {
+        "scope": "scene",
+        "unload": "on-last-scene-release"
+      },
+      "status": "phase-8b-approved-runtime",
+      "productionContractId": "prop.town.slice.large-oak.canopy",
+      "cache": {
+        "version": "aee9c0db57a0",
+        "contentSha256": "aee9c0db57a0355d8b9b9dac0618495659f2d893f969fac08994edd8021dc95e"
+      },
+      "validation": {
+        "maximumRuntimeBytes": 120000,
+        "maximumDimension": 4096
+      },
+      "provenance": {
+        "semanticId": "prop.town.slice.large-oak.canopy",
+        "contractVersion": "1.0.0",
+        "candidateSha256": "aee9c0db57a0355d8b9b9dac0618495659f2d893f969fac08994edd8021dc95e",
+        "reviewer": "youyoulu",
+        "approvedAt": "2026-09-02T10:43:17.369Z",
+        "masterPath": "artwork/masters/phase-8a/large-oak-canopy/v1/large-oak-canopy.v1.png",
+        "runtimePath": "public/assets/runtime/phase-8a/large-oak-canopy.v1.png",
+        "runtimeUrl": "/assets/runtime/phase-8a/large-oak-canopy.v1.png"
+      }
     }
   ],
   "prefabs": [
@@ -487,6 +637,109 @@ export const PHASE_8B_APPROVED_ASSET_INDEX = Object.freeze({
         "touch": null
       },
       "productionContractId": "terrain.town.lawn.striped-base"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "prefab.phase-8a.large-oak",
+      "family": "family.layered-tree.slice",
+      "variant": "phase-8a-premium-slice",
+      "renderer": "phaser",
+      "layers": [
+        {
+          "id": "shadow",
+          "assetId": "prop.town.slice.large-oak.shadow",
+          "role": "background",
+          "optional": false
+        },
+        {
+          "id": "trunk",
+          "assetId": "prop.town.slice.large-oak.trunk",
+          "role": "main",
+          "optional": false
+        },
+        {
+          "id": "foreground-canopy",
+          "assetId": "prop.town.slice.large-oak.canopy",
+          "role": "foreground",
+          "optional": false
+        }
+      ],
+      "scalePolicy": {
+        "mode": "fixed-logical-footprint",
+        "x": 1,
+        "y": 1,
+        "imageFit": "contain-within-visual-bounds"
+      },
+      "groundContactAnchor": {
+        "x": 0,
+        "y": 0
+      },
+      "origin": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "depthPolicy": {
+        "mode": "world-y",
+        "layerId": "ground-sorted",
+        "base": 200,
+        "divisor": 10
+      },
+      "shadowPolicy": {
+        "mode": "custom-authored-shadow",
+        "enabled": true
+      },
+      "animation": null,
+      "sockets": {
+        "ground": {
+          "x": 0,
+          "y": 0
+        },
+        "canopy": {
+          "x": 0,
+          "y": -62
+        }
+      },
+      "geometry": {
+        "schemaVersion": 1,
+        "visual": {
+          "schemaVersion": 1,
+          "kind": "rectangle",
+          "x": -43,
+          "y": -62,
+          "width": 87,
+          "height": 97
+        },
+        "collision": {
+          "schemaVersion": 1,
+          "kind": "circle",
+          "x": 0,
+          "y": 0,
+          "radius": 22
+        },
+        "navigation": {
+          "schemaVersion": 1,
+          "kind": "circle",
+          "x": 0,
+          "y": 0,
+          "radius": 50
+        },
+        "interaction": {
+          "schemaVersion": 1,
+          "kind": "circle",
+          "x": 0,
+          "y": 0,
+          "radius": 72
+        },
+        "touch": {
+          "schemaVersion": 1,
+          "kind": "rectangle",
+          "x": -44,
+          "y": -62,
+          "width": 88,
+          "height": 100
+        }
+      },
+      "productionContractId": "prop.town.slice.large-oak.trunk"
     }
   ],
   "visualStates": [
@@ -772,6 +1025,20 @@ export const PHASE_8B_APPROVED_ASSET_INDEX = Object.freeze({
           "prefabId": "prefab.phase-8a.world-lawn-growth",
           "modifier": {
             "frame": 3,
+            "placeholder": true
+          }
+        }
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "id": "state.phase-8a.large-oak",
+      "defaultState": "default",
+      "states": {
+        "default": {
+          "prefabId": "prefab.phase-8a.large-oak",
+          "modifier": {
+            "frame": 0,
             "placeholder": true
           }
         }
@@ -1930,6 +2197,57 @@ export const PHASE_8B_APPROVED_ASSET_INDEX = Object.freeze({
       "layoutId": "layout.phase-8a.town-lawns",
       "gameplayGeometryLocked": true,
       "activation": "phase-8b-approved"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "instance.phase-8a.town.large-oak",
+      "sceneId": "TownScene",
+      "prefabId": "prefab.phase-8a.large-oak",
+      "stateId": "state.phase-8a.large-oak",
+      "position": {
+        "x": 1000,
+        "y": 250
+      },
+      "scale": {
+        "x": 1,
+        "y": 1
+      },
+      "depth": 225,
+      "worldOrigin": {
+        "x": 1880,
+        "y": 0
+      },
+      "visualOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "binding": {
+        "mode": "static",
+        "repeat": null,
+        "dynamicPosition": null,
+        "dynamicFacing": null,
+        "visibleAfter": null,
+        "gameplayOwner": null,
+        "protectedWorldObjectId": null,
+        "protectedWorldPosition": {
+          "x": 2880,
+          "y": 250
+        },
+        "protectedWorldYard": null,
+        "protectedWorldRiver": null,
+        "protectedWorldRoadId": null,
+        "protectedGate": null,
+        "npcIdentityBinding": null,
+        "speciesBinding": null,
+        "socketBinding": null,
+        "safeAreaBindings": null,
+        "minimumCssTouchTarget": null,
+        "presentationOnly": false,
+        "visualLayerRole": null
+      },
+      "layoutId": "layout.phase-8a.town-block.house-6",
+      "gameplayGeometryLocked": true,
+      "activation": "phase-8b-approved"
     }
   ],
   "scenePacks": [
@@ -1942,7 +2260,10 @@ export const PHASE_8B_APPROVED_ASSET_INDEX = Object.freeze({
         "terrain.town.slice.pavement",
         "terrain.town.slice.road",
         "terrain.town.lawn.striped-base",
-        "terrain.town.lawn.growth-overlay"
+        "terrain.town.lawn.growth-overlay",
+        "prop.town.slice.large-oak.shadow",
+        "prop.town.slice.large-oak.trunk",
+        "prop.town.slice.large-oak.canopy"
       ],
       "animationIds": [],
       "activation": "phase-8b-approved"

@@ -5492,7 +5492,10 @@ export const ASSET_LAB_PRODUCTION_INDEX = Object.freeze({
       "/assets/runtime/phase-8a/town-pavement-tile.v1.png",
       "/assets/runtime/phase-8a/town-road-set.v1.png",
       "/assets/runtime/phase-8a/town-lawn-striped-base.v4.png",
-      "/assets/runtime/phase-8a/town-lawn-growth-overlay.v4.png"
+      "/assets/runtime/phase-8a/town-lawn-growth-overlay.v4.png",
+      "/assets/runtime/phase-8a/large-oak-shadow.v1.png",
+      "/assets/runtime/phase-8a/large-oak-trunk.v1.png",
+      "/assets/runtime/phase-8a/large-oak-canopy.v1.png"
     ],
     "runtimeFiles": [
       "/assets/animals/reference-master-v44.png",
@@ -5506,6 +5509,9 @@ export const ASSET_LAB_PRODUCTION_INDEX = Object.freeze({
       "/assets/powerwash/tool-precision.png",
       "/assets/powerwash/tool-standard.png",
       "/assets/powerwash/tool-wide.png",
+      "/assets/runtime/phase-8a/large-oak-canopy.v1.png",
+      "/assets/runtime/phase-8a/large-oak-shadow.v1.png",
+      "/assets/runtime/phase-8a/large-oak-trunk.v1.png",
       "/assets/runtime/phase-8a/town-grass-tile.v1.png",
       "/assets/runtime/phase-8a/town-lawn-growth-overlay.v4.png",
       "/assets/runtime/phase-8a/town-lawn-striped-base.v4.png",

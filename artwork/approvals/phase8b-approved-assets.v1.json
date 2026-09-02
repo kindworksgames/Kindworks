@@ -2,6 +2,33 @@
   "schemaVersion": 1,
   "assets": [
     {
+      "semanticId": "prop.town.slice.large-oak.canopy",
+      "contractVersion": "1.0.0",
+      "candidateSha256": "aee9c0db57a0355d8b9b9dac0618495659f2d893f969fac08994edd8021dc95e",
+      "reviewer": "youyoulu",
+      "approvedAt": "2026-09-02T10:43:17.369Z",
+      "masterPath": "artwork/masters/phase-8a/large-oak-canopy/v1/large-oak-canopy.v1.png",
+      "runtimePath": "public/assets/runtime/phase-8a/large-oak-canopy.v1.png"
+    },
+    {
+      "semanticId": "prop.town.slice.large-oak.shadow",
+      "contractVersion": "1.0.0",
+      "candidateSha256": "570407602eb01a42816fa51d0d062fbd45b8c34d1d3b7677f6e9b655121960db",
+      "reviewer": "youyoulu",
+      "approvedAt": "2026-09-02T10:43:16.481Z",
+      "masterPath": "artwork/masters/phase-8a/large-oak-shadow/v1/large-oak-shadow.v1.png",
+      "runtimePath": "public/assets/runtime/phase-8a/large-oak-shadow.v1.png"
+    },
+    {
+      "semanticId": "prop.town.slice.large-oak.trunk",
+      "contractVersion": "1.0.0",
+      "candidateSha256": "a3f39fc6fa34d2bc3827fb758656757b123c32d1b6c07d7b4846600094719038",
+      "reviewer": "youyoulu",
+      "approvedAt": "2026-09-02T10:43:16.892Z",
+      "masterPath": "artwork/masters/phase-8a/large-oak-trunk/v1/large-oak-trunk.v1.png",
+      "runtimePath": "public/assets/runtime/phase-8a/large-oak-trunk.v1.png"
+    },
+    {
       "semanticId": "terrain.town.lawn.growth-overlay",
       "contractVersion": "4.0.0",
       "candidateSha256": "3cb21f9ba2b566262518d95ed062420f3634bc06fb386073b95348105eede823",

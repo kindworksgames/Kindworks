@@ -71,7 +71,7 @@ import { startLazyScene } from "./lazyScenes.js";
 import { TOWN_HOUSE_GEOMETRY, TOWN_LOGICAL_GEOMETRY, TOWN_SHOP_GEOMETRY } from "../data/townGeometry.js";
 import { hasApprovedSceneBinding, preloadApprovedSceneVisuals, mountApprovedSceneVisuals } from "../visual/renderers/ApprovedSceneVisualRuntime.js";
 import { DENSE_TOUCH_RENDER_FPS, renderFrameTarget } from "../visual/ResponsiveFramePolicy.js";
-import { APPROVED_WORLD_LAWN_REPEAT_MODE, createTownApprovedSceneBindings } from "../presentation/TownApprovedSceneBindings.js";
+import { APPROVED_WORLD_LAWN_REPEAT_MODE, createTownApprovedSceneBindings, shouldRenderLegacyTownTree } from "../presentation/TownApprovedSceneBindings.js";
 import { createTownRiverWaterVisual } from "../presentation/TownRiverVisual.js";
 
 const PLAYER_RADIUS = 17;
@@ -913,6 +913,7 @@ export class TownScene extends Phaser.Scene {
     const trees = [];
     const addTree = (x, y, scale = 1) => {
       if (Math.abs(x - woodland.riverClearCenterX) < woodland.riverClearHalfWidth) return;
+      if (!shouldRenderLegacyTownTree(this, x, y)) return;
       trees.push([x, y, scale]);
     };
     for (let x = 35, index = 0; x < WORLD.width; x += 58, index += 1) {
@@ -1101,6 +1102,7 @@ export class TownScene extends Phaser.Scene {
       this.textures.get(parkTreeTexture).setFilter(Phaser.Textures.FilterMode.NEAREST);
     }
     for (const [index, [x, y]] of trees.entries()) {
+      if (!shouldRenderLegacyTownTree(this, x, y)) continue;
       if (!cacheDecorativeVectors) {
         graphics.fillStyle(COLORS.trunk, 1);
         graphics.fillRect(x - 8, y, 16, 30);
