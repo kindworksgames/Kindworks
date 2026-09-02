@@ -31,6 +31,16 @@ export const RIVER_PATH = Object.freeze([
   [2585, 2920],
 ]);
 
+// Presentation-only river centreline. The protected gameplay river above stays
+// unchanged while the approved artwork follows this more natural S-curve.
+export const RIVER_VISUAL_PATH = Object.freeze([
+  [2555, -120], [2535, 0], [2475, 120], [2450, 240], [2505, 360], [2575, 450], [2560, 530],
+  [2500, 620], [2425, 740], [2450, 850], [2525, 930], [2560, 1000],
+  [2640, 1100], [2690, 1210], [2660, 1320], [2600, 1430], [2560, 1545],
+  [2490, 1640], [2400, 1760], [2385, 1880], [2450, 1990], [2600, 2110],
+  [2670, 2220], [2620, 2350], [2500, 2440], [2470, 2570], [2510, 2700], [2555, 2800], [2555, 2920],
+]);
+
 // Code-native transcription of the approved Willowmere overhead reference.
 // These values describe authored visual regions; they are deliberately separate
 // from the protected house, shop, interaction and save identities below.
@@ -95,7 +105,7 @@ export const TOWN_REFERENCE_LAYOUT = Object.freeze({
   }),
   woodland: Object.freeze({
     riverClearCenterX: 2555,
-    riverClearHalfWidth: 190,
+    riverClearHalfWidth: 270,
     interiorTrees: Object.freeze([
       Object.freeze([520, 1190, 1]), Object.freeze([780, 1320, 0.95]), Object.freeze([350, 1430, 1.05]),
       Object.freeze([1160, 770, 0.94]), Object.freeze([1670, 760, 1.05]), Object.freeze([2210, 790, 1]),

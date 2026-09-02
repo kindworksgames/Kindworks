@@ -19,6 +19,7 @@ import {
   TOWN_REFERENCE_LAYOUT,
   RIVER_CLEAROUT,
   RIVER_PATH,
+  RIVER_VISUAL_PATH,
   ROADS,
   SHOPS,
   WORLD,
@@ -71,6 +72,7 @@ import { TOWN_HOUSE_GEOMETRY, TOWN_LOGICAL_GEOMETRY, TOWN_SHOP_GEOMETRY } from "
 import { hasApprovedSceneBinding, preloadApprovedSceneVisuals, mountApprovedSceneVisuals } from "../visual/renderers/ApprovedSceneVisualRuntime.js";
 import { DENSE_TOUCH_RENDER_FPS, renderFrameTarget } from "../visual/ResponsiveFramePolicy.js";
 import { APPROVED_WORLD_LAWN_REPEAT_MODE, createTownApprovedSceneBindings } from "../presentation/TownApprovedSceneBindings.js";
+import { createTownRiverWaterVisual } from "../presentation/TownRiverVisual.js";
 
 const PLAYER_RADIUS = 17;
 const WALK_SPEED = 270;
@@ -93,6 +95,17 @@ const SHOP_INTERACTION_IDS = Object.freeze({
 
 function points(values) {
   return values.map(([x, y]) => ({ x, y }));
+}
+
+function riverPointAtY(path, y) {
+  for (let index = 1; index < path.length; index += 1) {
+    const [ax, ay] = path[index - 1];
+    const [bx, by] = path[index];
+    if (y < Math.min(ay, by) || y > Math.max(ay, by)) continue;
+    const amount = by === ay ? 0 : (y - ay) / (by - ay);
+    return { x: ax + (bx - ax) * amount, y };
+  }
+  return { x: path.at(-1)?.[0] || 0, y };
 }
 
 function containsWithRadius(rect, x, y, radius = PLAYER_RADIUS) {
@@ -788,45 +801,53 @@ export class TownScene extends Phaser.Scene {
     const { river, beach } = TOWN_REFERENCE_LAYOUT;
     const banks = this.add.graphics().setDepth(4);
     banks.lineStyle(river.bankWidth + 30, 0x655e48, 0.28);
-    banks.strokePoints(points(RIVER_PATH), false, false);
+    banks.strokePoints(points(RIVER_VISUAL_PATH), false, false);
     banks.lineStyle(river.bankWidth, 0x9a8b68, 1);
-    banks.strokePoints(points(RIVER_PATH), false, false);
+    banks.strokePoints(points(RIVER_VISUAL_PATH), false, false);
 
     const water = this.add.graphics().setDepth(5);
     water.lineStyle(river.waterWidth + 22, COLORS.waterDark, 1);
-    water.strokePoints(points(RIVER_PATH), false, false);
-    water.lineStyle(river.waterWidth, COLORS.water, 1);
-    water.strokePoints(points(RIVER_PATH), false, false);
-    water.lineStyle(13, COLORS.waterLight, 0.46);
-    water.strokePoints(points(RIVER_PATH), false, false);
+    water.strokePoints(points(RIVER_VISUAL_PATH), false, false);
+    this.animatedRiverWater = createTownRiverWaterVisual(this, {
+      path: RIVER_VISUAL_PATH,
+      waterWidth: river.waterWidth,
+      depth: 5.5,
+      flowPixelsPerSecond: 18,
+    });
+    if (!this.animatedRiverWater) {
+      water.lineStyle(river.waterWidth, COLORS.water, 1);
+      water.strokePoints(points(RIVER_VISUAL_PATH), false, false);
+      water.lineStyle(13, COLORS.waterLight, 0.46);
+      water.strokePoints(points(RIVER_VISUAL_PATH), false, false);
+    }
 
     const rockLayer = this.add.graphics().setDepth(7);
     const bridgeY = BRIDGES.map((bridge) => bridge.y);
-    for (let y = 34, index = 0; y < WORLD.height - 24; y += 38, index += 1) {
+    for (let y = 32, index = 0; y < WORLD.height - 20; y += 42, index += 1) {
       if (bridgeY.some((crossing) => Math.abs(crossing - y) < 72)) continue;
-      const center = 2555 + Math.sin(y / 230) * 16;
+      const nearest = riverPointAtY(RIVER_VISUAL_PATH, y);
+      const center = nearest.x;
       for (const side of [-1, 1]) {
-        const jitter = (deterministicUnit("river-bank", index * 2 + (side > 0 ? 1 : 0)) - 0.5) * 14;
-        const radius = 10 + deterministicUnit("river-rock", index * 3 + (side > 0 ? 1 : 0)) * 12;
+        const serial = index * 2 + (side > 0 ? 1 : 0);
+        const jitter = (deterministicUnit("river-bank", serial) - 0.5) * 18;
+        const radius = 19 + deterministicUnit("river-rock", serial) * 17;
         const bankOffset = river.waterWidth / 2 + radius * 0.55 + 5;
-        rockLayer.fillStyle(index % 4 === 0 ? 0x706a57 : index % 3 === 0 ? 0x8d8269 : 0xa69a78, 1);
-        rockLayer.fillCircle(center + side * bankOffset + jitter, y, radius);
+        const rockX = center + side * bankOffset + jitter;
+        const vertices = Array.from({ length: 8 }, (_, vertexIndex) => {
+          const angle = vertexIndex / 8 * Math.PI * 2;
+          const variation = 0.82 + deterministicUnit(`river-rock-shape-${serial}`, vertexIndex) * 0.34;
+          return {
+            x: rockX + Math.cos(angle) * radius * 1.18 * variation,
+            y: y + Math.sin(angle) * radius * 0.78 * variation,
+          };
+        });
+        rockLayer.fillStyle(0x5f5648, 0.55);
+        rockLayer.fillPoints(vertices.map((pointValue) => ({ x: pointValue.x + 2, y: pointValue.y + 4 })), true);
+        rockLayer.fillStyle(index % 4 === 0 ? 0x817660 : index % 3 === 0 ? 0x9b8b6d : 0xb2a17e, 1);
+        rockLayer.fillPoints(vertices, true);
         rockLayer.fillStyle(0xc0b38d, 0.55);
-        rockLayer.fillCircle(center + side * bankOffset + jitter - radius * 0.24, y - radius * 0.28, radius * 0.42);
+        rockLayer.fillEllipse(rockX - radius * 0.22, y - radius * 0.23, radius * 0.85, radius * 0.42);
       }
-    }
-
-    const flow = this.add.graphics().setDepth(8);
-    flow.lineStyle(3, 0xd8f5f2, 0.48);
-    for (let y = 85, index = 0; y < WORLD.height; y += 82, index += 1) {
-      if (bridgeY.some((crossing) => Math.abs(crossing - y) < 64)) continue;
-      const center = 2555 + Math.sin(y / 230) * 16;
-      const offset = index % 2 ? -42 : 26;
-      flow.beginPath();
-      flow.moveTo(center + offset - 20, y - 18);
-      flow.lineTo(center + offset + 2, y);
-      flow.lineTo(center + offset - 14, y + 18);
-      flow.strokePath();
     }
 
     const sand = this.add.graphics().setDepth(4);

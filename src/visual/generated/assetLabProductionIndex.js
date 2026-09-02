@@ -5484,6 +5484,7 @@ export const ASSET_LAB_PRODUCTION_INDEX = Object.freeze({
       "/assets/runtime/scene/fishing/fishing-reedbank-background.v1.webp",
       "/assets/powerwash/playground-master.png",
       "/assets/powerwash/playground-reference-dirt.png",
+      "/assets/runtime/phase-8a/town-river-water-tile.v1.png",
       "/assets/powerwash/tool-precision.png",
       "/assets/powerwash/tool-standard.png",
       "/assets/powerwash/tool-wide.png",
@@ -5509,6 +5510,7 @@ export const ASSET_LAB_PRODUCTION_INDEX = Object.freeze({
       "/assets/runtime/phase-8a/town-lawn-growth-overlay.v4.png",
       "/assets/runtime/phase-8a/town-lawn-striped-base.v4.png",
       "/assets/runtime/phase-8a/town-pavement-tile.v1.png",
+      "/assets/runtime/phase-8a/town-river-water-tile.v1.png",
       "/assets/runtime/phase-8a/town-road-set.v1.png",
       "/assets/runtime/scene/fishing/fishing-reedbank-background.v1.webp"
     ]

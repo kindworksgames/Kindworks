@@ -20,7 +20,7 @@ const expectedPlaceholderCount = () => {
 
 test("production inventory is generated into one manifest-derived Asset Lab catalog", () => {
   const catalog = fullCatalog(), coverage = assetLabCoverage(catalog), facets = assetLabFacets(catalog);
-  assert.equal(coverage.assets, 39);
+  assert.equal(coverage.assets, 40);
   assert.equal(coverage.productionFamilies, 74);
   assert.equal(coverage.placeholders.length, expectedPlaceholderCount());
   assert.equal(new Set(ASSET_LAB_PRODUCTION_INDEX.familyRecords.map(({ id }) => id)).size, 74);
