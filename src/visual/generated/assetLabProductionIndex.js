@@ -1112,6 +1112,7 @@ export const ASSET_LAB_PRODUCTION_INDEX = Object.freeze({
       "readinessReason": "Leaf asset contracts and approved Phase 9 art-bible values are required before generation.",
       "strategies": [
         "sprite-sheets",
+        "layered-assets",
         "palette-state-variants"
       ],
       "scenes": [
@@ -1123,8 +1124,8 @@ export const ASSET_LAB_PRODUCTION_INDEX = Object.freeze({
         "terrain.grass-soil-tiles",
         "prop.fence-gate-tiles"
       ],
-      "scope": "20 lawns in fresh-cut, growing, long and job-ready states with north/south gate sockets",
-      "deduplicationRule": "One four-state lawn material maps onto authored yard geometry."
+      "scope": "19 active authored lawns across four protected yard geometry families; one striped cut base plus independent four-state grass-height and weed-pressure overlays; lawn 19 remains inactive/reserved",
+      "deduplicationRule": "One seamless striped cut base, one four-state growth material, and one four-state weed layer are clipped to protected authored yard geometry; fences, gates, paths and gameplay geometry remain separate."
     },
     {
       "id": "building.shopfront-module-system",
@@ -3106,22 +3107,118 @@ export const ASSET_LAB_PRODUCTION_INDEX = Object.freeze({
         "generatedArtworkPresent": false
       }
     },
-    "terrain.town.slice.lawn-house-6": {
-      "semanticId": "terrain.town.slice.lawn-house-6",
+    "terrain.town.lawn.striped-base": {
+      "semanticId": "terrain.town.lawn.striped-base",
       "categoryContractId": "category.terrain",
       "familyId": "family.world-lawn.slice",
       "productionStatus": "specified",
       "expectedFilenames": {
-        "staging": "artwork/staging/phase-8a/lawn-house-6-growth-states/v1/lawn-house-6-growth-states.v1.png",
-        "master": "artwork/masters/phase-8a/lawn-house-6-growth-states/v1/lawn-house-6-growth-states.v1.png",
-        "runtime": "public/assets/runtime/phase-8a/lawn-house-6-growth-states.v1.png"
+        "staging": "artwork/staging/phase-8a/town-lawn-striped-base/v4/town-lawn-striped-base.v4.png",
+        "master": "artwork/masters/phase-8a/town-lawn-striped-base/v4/town-lawn-striped-base.v4.png",
+        "runtime": "public/assets/runtime/phase-8a/town-lawn-striped-base.v4.png"
+      },
+      "output": {
+        "type": "single-image",
+        "format": "png",
+        "canvas": {
+          "width": 256,
+          "height": 256
+        },
+        "alpha": false,
+        "colourMode": "RGB",
+        "bitDepth": 8,
+        "pixelArt": true,
+        "textureFiltering": "nearest",
+        "smoothing": false,
+        "trimFrames": false,
+        "spriteSheet": null,
+        "atlas": null
+      },
+      "anchor": {
+        "name": "tile-top-left",
+        "normalized": {
+          "x": 0,
+          "y": 0
+        },
+        "groundContact": null
+      },
+      "geometry": {
+        "visual": {
+          "kind": "rectangle",
+          "x": 0,
+          "y": 0,
+          "width": 256,
+          "height": 256
+        },
+        "collision": null,
+        "navigation": null,
+        "interaction": null,
+        "touch": null
+      },
+      "validation": {
+        "checklist": [
+          "semantic ID is unique and matches the approved manifest entry",
+          "filename and file format exactly match the contract",
+          "canvas, frame grid, frame count, alpha mode, and untrimmed alignment are exact",
+          "nearest-neighbour sampling is preserved and no smoothing metadata is introduced",
+          "ground anchor, sockets, visual bounds, and gameplay geometry remain independently addressable",
+          "all required states, layers, directions, and animation frames are present",
+          "texture budget, scene-pack dependency, fallback, and orphan-reference checks pass"
+        ],
+        "requireExactDimensions": true,
+        "requireAlpha": false,
+        "requireUntrimmedFrames": true,
+        "requireNearestNeighbour": true,
+        "requireFrameCount": 1,
+        "requireStateNames": [
+          "fresh-cut",
+          "growing",
+          "long",
+          "job-ready"
+        ],
+        "requireDirections": [],
+        "maximumTransparentPadding": {
+          "top": 256,
+          "right": 256,
+          "bottom": 256,
+          "left": 256
+        },
+        "maximumVisibleBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 256,
+          "height": 256
+        },
+        "gameplayGeometrySignature": "b1e3a260",
+        "maximumRuntimeBytes": 250000,
+        "fallbackSemanticId": "system.fallback.production"
+      },
+      "intendedScenes": [
+        "TownScene"
+      ],
+      "provenance": {
+        "provider": "generator-neutral",
+        "specificationVersion": 2,
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "generatedArtworkPresent": false
+      }
+    },
+    "terrain.town.lawn.growth-overlay": {
+      "semanticId": "terrain.town.lawn.growth-overlay",
+      "categoryContractId": "category.terrain",
+      "familyId": "family.world-lawn.slice",
+      "productionStatus": "specified",
+      "expectedFilenames": {
+        "staging": "artwork/staging/phase-8a/town-lawn-growth-overlay/v4/town-lawn-growth-overlay.v4.png",
+        "master": "artwork/masters/phase-8a/town-lawn-growth-overlay/v4/town-lawn-growth-overlay.v4.png",
+        "runtime": "public/assets/runtime/phase-8a/town-lawn-growth-overlay.v4.png"
       },
       "output": {
         "type": "spritesheet",
         "format": "png",
         "canvas": {
-          "width": 1280,
-          "height": 352
+          "width": 1024,
+          "height": 256
         },
         "alpha": true,
         "colourMode": "RGBA",
@@ -3132,8 +3229,8 @@ export const ASSET_LAB_PRODUCTION_INDEX = Object.freeze({
         "trimFrames": false,
         "atlas": null,
         "spriteSheet": {
-          "frameWidth": 320,
-          "frameHeight": 352,
+          "frameWidth": 256,
+          "frameHeight": 256,
           "columns": 4,
           "rows": 1,
           "padding": 0,
@@ -3155,36 +3252,25 @@ export const ASSET_LAB_PRODUCTION_INDEX = Object.freeze({
         }
       },
       "anchor": {
-        "name": "yard-centre",
+        "name": "tile-top-left",
         "normalized": {
-          "x": 0.5,
-          "y": 0.5
+          "x": 0,
+          "y": 0
         },
         "groundContact": null
       },
       "geometry": {
         "visual": {
           "kind": "rectangle",
-          "x": -160,
-          "y": -176,
-          "width": 320,
-          "height": 352
+          "x": 0,
+          "y": 0,
+          "width": 256,
+          "height": 256
         },
         "collision": null,
         "navigation": null,
-        "interaction": {
-          "kind": "circle",
-          "x": 0,
-          "y": 95,
-          "radius": 105
-        },
-        "touch": {
-          "kind": "rectangle",
-          "x": -155,
-          "y": -170,
-          "width": 310,
-          "height": 340
-        }
+        "interaction": null,
+        "touch": null
       },
       "validation": {
         "checklist": [
@@ -3209,19 +3295,136 @@ export const ASSET_LAB_PRODUCTION_INDEX = Object.freeze({
         ],
         "requireDirections": [],
         "maximumTransparentPadding": {
-          "top": 352,
-          "right": 1280,
-          "bottom": 352,
-          "left": 1280
+          "top": 256,
+          "right": 1024,
+          "bottom": 256,
+          "left": 1024
         },
         "maximumVisibleBounds": {
           "x": 0,
           "y": 0,
-          "width": 1280,
-          "height": 352
+          "width": 1024,
+          "height": 256
         },
-        "gameplayGeometrySignature": "6c4e8cdc",
-        "maximumRuntimeBytes": 460000,
+        "gameplayGeometrySignature": "b1e3a260",
+        "maximumRuntimeBytes": 500000,
+        "fallbackSemanticId": "system.fallback.production"
+      },
+      "intendedScenes": [
+        "TownScene"
+      ],
+      "provenance": {
+        "provider": "generator-neutral",
+        "specificationVersion": 2,
+        "artBibleVersion": "KindWorks Visual Style Bible v4",
+        "generatedArtworkPresent": false
+      }
+    },
+    "terrain.town.lawn.weed-overlay": {
+      "semanticId": "terrain.town.lawn.weed-overlay",
+      "categoryContractId": "category.terrain",
+      "familyId": "family.world-lawn.slice",
+      "productionStatus": "specified",
+      "expectedFilenames": {
+        "staging": "artwork/staging/phase-8a/town-lawn-weed-overlay/v1/town-lawn-weed-overlay.v1.png",
+        "master": "artwork/masters/phase-8a/town-lawn-weed-overlay/v1/town-lawn-weed-overlay.v1.png",
+        "runtime": "public/assets/runtime/phase-8a/town-lawn-weed-overlay.v1.png"
+      },
+      "output": {
+        "type": "spritesheet",
+        "format": "png",
+        "canvas": {
+          "width": 256,
+          "height": 64
+        },
+        "alpha": true,
+        "colourMode": "RGBA",
+        "bitDepth": 8,
+        "pixelArt": true,
+        "textureFiltering": "nearest",
+        "smoothing": false,
+        "trimFrames": false,
+        "atlas": null,
+        "spriteSheet": {
+          "frameWidth": 64,
+          "frameHeight": 64,
+          "columns": 4,
+          "rows": 1,
+          "padding": 0,
+          "spacing": 0,
+          "frameCount": 4,
+          "frameOrder": [
+            "none",
+            "light",
+            "job-ready",
+            "heavy"
+          ],
+          "actions": [
+            "none",
+            "light",
+            "job-ready",
+            "heavy"
+          ],
+          "directions": []
+        }
+      },
+      "anchor": {
+        "name": "tile-top-left",
+        "normalized": {
+          "x": 0,
+          "y": 0
+        },
+        "groundContact": null
+      },
+      "geometry": {
+        "visual": {
+          "kind": "rectangle",
+          "x": 0,
+          "y": 0,
+          "width": 64,
+          "height": 64
+        },
+        "collision": null,
+        "navigation": null,
+        "interaction": null,
+        "touch": null
+      },
+      "validation": {
+        "checklist": [
+          "semantic ID is unique and matches the approved manifest entry",
+          "filename and file format exactly match the contract",
+          "canvas, frame grid, frame count, alpha mode, and untrimmed alignment are exact",
+          "nearest-neighbour sampling is preserved and no smoothing metadata is introduced",
+          "ground anchor, sockets, visual bounds, and gameplay geometry remain independently addressable",
+          "all required states, layers, directions, and animation frames are present",
+          "texture budget, scene-pack dependency, fallback, and orphan-reference checks pass"
+        ],
+        "requireExactDimensions": true,
+        "requireAlpha": true,
+        "requireUntrimmedFrames": true,
+        "requireNearestNeighbour": true,
+        "requireFrameCount": 4,
+        "requireStateNames": [
+          "none",
+          "light",
+          "job-ready",
+          "heavy"
+        ],
+        "requireDirections": [],
+        "maximumTransparentPadding": {
+          "top": 64,
+          "right": 256,
+          "bottom": 64,
+          "left": 256
+        },
+        "maximumVisibleBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 256,
+          "height": 64
+        },
+        "gameplayGeometrySignature": "b1e3a260",
+        "maximumRuntimeBytes": 110000,
         "fallbackSemanticId": "system.fallback.production"
       },
       "intendedScenes": [
@@ -5286,7 +5489,9 @@ export const ASSET_LAB_PRODUCTION_INDEX = Object.freeze({
       "/assets/powerwash/tool-wide.png",
       "/assets/runtime/phase-8a/town-grass-tile.v1.png",
       "/assets/runtime/phase-8a/town-pavement-tile.v1.png",
-      "/assets/runtime/phase-8a/town-road-set.v1.png"
+      "/assets/runtime/phase-8a/town-road-set.v1.png",
+      "/assets/runtime/phase-8a/town-lawn-striped-base.v4.png",
+      "/assets/runtime/phase-8a/town-lawn-growth-overlay.v4.png"
     ],
     "runtimeFiles": [
       "/assets/animals/reference-master-v44.png",
@@ -5301,6 +5506,8 @@ export const ASSET_LAB_PRODUCTION_INDEX = Object.freeze({
       "/assets/powerwash/tool-standard.png",
       "/assets/powerwash/tool-wide.png",
       "/assets/runtime/phase-8a/town-grass-tile.v1.png",
+      "/assets/runtime/phase-8a/town-lawn-growth-overlay.v4.png",
+      "/assets/runtime/phase-8a/town-lawn-striped-base.v4.png",
       "/assets/runtime/phase-8a/town-pavement-tile.v1.png",
       "/assets/runtime/phase-8a/town-road-set.v1.png",
       "/assets/runtime/scene/fishing/fishing-reedbank-background.v1.webp"

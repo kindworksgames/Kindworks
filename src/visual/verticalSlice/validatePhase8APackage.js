@@ -151,7 +151,7 @@ export function validatePhase8APackage({
   }
 
   const transition = packageDefinition?.transition;
-  if (transition?.interaction?.targetId !== "lawn-house-6" || transition?.rewardContract?.visualLayerMayMutateReward !== false || transition?.afterVisualState?.currentValue !== 5) errors.push(finding("invalid-protected-transition", "The lawn interaction/reward transition does not preserve the protected gameplay contract.", "transition"));
+  if (transition?.interaction?.targetId !== "lawn-house-6" || transition?.rewardContract?.visualLayerMayMutateReward !== false || transition?.afterVisualState?.growth?.currentValue !== 5 || transition?.afterVisualState?.weeds?.currentValue !== 3) errors.push(finding("invalid-protected-transition", "The lawn interaction/reward transition does not preserve the protected gameplay contract.", "transition"));
 
   if (visualManifest) {
     const manifestResult = validateVisualManifestStructure(visualManifest);

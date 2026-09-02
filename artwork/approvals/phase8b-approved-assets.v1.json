@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "assets": [
     {
+      "semanticId": "terrain.town.lawn.growth-overlay",
+      "contractVersion": "4.0.0",
+      "candidateSha256": "3cb21f9ba2b566262518d95ed062420f3634bc06fb386073b95348105eede823",
+      "reviewer": "codex-visual-qa",
+      "approvedAt": "2026-09-02T02:16:29.139Z",
+      "masterPath": "artwork/masters/phase-8a/town-lawn-growth-overlay/v4/town-lawn-growth-overlay.v4.png",
+      "runtimePath": "public/assets/runtime/phase-8a/town-lawn-growth-overlay.v4.png"
+    },
+    {
+      "semanticId": "terrain.town.lawn.striped-base",
+      "contractVersion": "4.0.0",
+      "candidateSha256": "ab71a0fe75330a04612c05a9bca0d25f56566fc23a4a5db817c73edf0ea92756",
+      "reviewer": "codex-visual-qa",
+      "approvedAt": "2026-09-02T01:14:08.692Z",
+      "masterPath": "artwork/masters/phase-8a/town-lawn-striped-base/v4/town-lawn-striped-base.v4.png",
+      "runtimePath": "public/assets/runtime/phase-8a/town-lawn-striped-base.v4.png"
+    },
+    {
       "semanticId": "terrain.town.slice.grass",
       "contractVersion": "1.0.0",
       "candidateSha256": "4cdf7e30f85c9acf8a18469a00f8332fb4ce6f99d25803acdbbf7aa807de97d6",

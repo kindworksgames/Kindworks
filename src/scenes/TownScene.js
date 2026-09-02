@@ -70,7 +70,7 @@ import { startLazyScene } from "./lazyScenes.js";
 import { TOWN_HOUSE_GEOMETRY, TOWN_LOGICAL_GEOMETRY, TOWN_SHOP_GEOMETRY } from "../data/townGeometry.js";
 import { hasApprovedSceneBinding, preloadApprovedSceneVisuals, mountApprovedSceneVisuals } from "../visual/renderers/ApprovedSceneVisualRuntime.js";
 import { DENSE_TOUCH_RENDER_FPS, renderFrameTarget } from "../visual/ResponsiveFramePolicy.js";
-import { createTownApprovedSceneBindings } from "../presentation/TownApprovedSceneBindings.js";
+import { APPROVED_WORLD_LAWN_REPEAT_MODE, createTownApprovedSceneBindings } from "../presentation/TownApprovedSceneBindings.js";
 
 const PLAYER_RADIUS = 17;
 const WALK_SPEED = 270;
@@ -1585,6 +1585,10 @@ export class TownScene extends Phaser.Scene {
     this.farmingLabels = [];
     const state = this.farming?.getSnapshot?.();
     if (!state) return;
+    const approvedLawnGrowthSurface = hasApprovedSceneBinding(this, (binding) => (
+      binding.repeat === APPROVED_WORLD_LAWN_REPEAT_MODE
+      && binding.visualLayerRole === "growth"
+    ));
     const graphics = this.add.graphics().setDepth(116);
     const lawnGraphics = this.add.graphics().setDepth(20);
     this.farmingVisuals = graphics;
@@ -1645,7 +1649,7 @@ export class TownScene extends Phaser.Scene {
       const lawn = state.lawns[plot.id];
       const stage = lawnVisualStage(lawn.grassHeight);
       const yard = plot.yard || { x: plot.x - 92, y: plot.y - 52, width: 184, height: 104 };
-      if (lawn.grassHeight > 12) {
+      if (!approvedLawnGrowthSurface && lawn.grassHeight > 12) {
         const tuftCount = Math.min(130, Math.round(10 + lawn.grassHeight * 1.15));
         lawnGraphics.lineStyle(2.2, lawn.grassHeight >= 70 ? 0x265626 : 0x356f2e, 0.82);
         for (let index = 0; index < tuftCount; index += 1) {

@@ -76,11 +76,15 @@ export class PhaserPrefabRenderer {
   createDisplayLayer(resolved, layer, { frame = null, tileArea = null } = {}) {
     if (!layer || ![VISUAL_ASSET_KINDS.IMAGE, VISUAL_ASSET_KINDS.SPRITESHEET, VISUAL_ASSET_KINDS.ATLAS].includes(layer.asset.kind)) return null;
     const key = layer.asset.runtime.textureKey || layer.asset.runtime.atlasKey;
+    // A shared state map may drive a layered prefab containing both a static
+    // base image and a stateful sheet. Static images always keep their sole
+    // frame; only sheets/atlases receive the selected visual-state frame.
+    const selectedFrame = layer.asset.kind === VISUAL_ASSET_KINDS.IMAGE ? undefined : frame ?? 0;
     const image = tileArea
-      ? this.scene.add.tileSprite(0, resolved.groundContactAnchor?.y || 0, tileArea.width, tileArea.height, key, frame ?? 0)
+      ? this.scene.add.tileSprite(0, resolved.groundContactAnchor?.y || 0, tileArea.width, tileArea.height, key, selectedFrame)
       : layer.asset.kind === VISUAL_ASSET_KINDS.IMAGE
       ? this.scene.add.image(0, resolved.groundContactAnchor?.y || 0, key)
-      : this.scene.add.sprite(0, resolved.groundContactAnchor?.y || 0, key, frame ?? 0);
+      : this.scene.add.sprite(0, resolved.groundContactAnchor?.y || 0, key, selectedFrame);
     image.setOrigin(resolved.origin.x, resolved.origin.y);
     const metrics = resolvePrefabDisplayMetrics(resolved.prefab, layer.asset);
     if (!tileArea) image.setDisplaySize(metrics.width, metrics.height);

@@ -1,3 +1,4 @@
+import { VISUAL_ASSET_KINDS } from "../contracts.js";
 import { PhaserPrefabRenderer } from "./PhaserPrefabRenderer.js";
 
 const sceneIdOf = (scene) => scene?.scene?.key || null;
@@ -121,7 +122,10 @@ export class ApprovedSceneVisualRuntime {
       if (stateName === record.stateName) continue;
       const resolved = this.renderer.resolve(record.instance.prefabId, record.instance.stateId, stateName);
       const frame = resolved.state?.modifier?.frame;
-      if (Number.isInteger(frame)) for (const object of record.objects) object.setFrame?.(frame);
+      if (Number.isInteger(frame)) for (const object of record.objects) {
+        const asset = this.registry.getAsset(object.getData?.("semanticAssetId"));
+        if (asset?.kind !== VISUAL_ASSET_KINDS.IMAGE) object.setFrame?.(frame);
+      }
       for (const object of record.objects) {
         const assetId = object.getData?.("semanticAssetId");
         const animation = this.registry.getAnimationsByAsset?.(assetId)

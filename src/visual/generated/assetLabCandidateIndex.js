@@ -2,7 +2,7 @@
 export const ASSET_LAB_CANDIDATE_INDEX = Object.freeze({
   "schemaVersion": 1,
   "packageId": "kindworks.phase-8a.premium-vertical-slice",
-  "packageRevision": 1,
+  "packageRevision": 3,
   "assets": {
     "terrain.town.slice.grass": {
       "schemaVersion": 1,
@@ -201,6 +201,1403 @@ export const ASSET_LAB_CANDIDATE_INDEX = Object.freeze({
         "masterPath": "artwork/masters/phase-8a/town-road-set/v1/town-road-set.v1.png",
         "runtimePath": "public/assets/runtime/phase-8a/town-road-set.v1.png"
       },
+      "visualOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "reference": null,
+      "referenceStatus": "not-assigned"
+    },
+    "terrain.town.lawn.striped-base": {
+      "schemaVersion": 1,
+      "semanticId": "terrain.town.lawn.striped-base",
+      "contractVersion": "4.0.0",
+      "contractSchemaVersion": 2,
+      "candidateSha256": "ab71a0fe75330a04612c05a9bca0d25f56566fc23a4a5db817c73edf0ea92756",
+      "approvalToken": "ab71a0fe7533",
+      "sourcePath": "artwork/staging/phase-8a/town-lawn-striped-base/v4/town-lawn-striped-base.v4.png",
+      "sourceUrl": "/__kindworks-candidate/terrain.town.lawn.striped-base",
+      "kind": "image",
+      "status": "approved",
+      "approvalStatus": "approved",
+      "validationStatus": "valid",
+      "validationFindings": [],
+      "expectedRuntimeFile": "public/assets/runtime/phase-8a/town-lawn-striped-base.v4.png",
+      "technical": {
+        "format": "png",
+        "width": 256,
+        "height": 256,
+        "alpha": false,
+        "bitDepth": 8,
+        "colourMode": "RGB",
+        "opaqueBounds": {
+          "x": 0,
+          "y": 0,
+          "width": 256,
+          "height": 256
+        },
+        "bytes": 66021,
+        "pixelArt": true,
+        "frameWidth": null,
+        "frameHeight": null,
+        "frameCount": 1,
+        "directions": []
+      },
+      "scenePlacements": [
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-1.growth",
+          "position": {
+            "x": 150,
+            "y": 150
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-1",
+          "protectedWorldYard": {
+            "x": 150,
+            "y": 150,
+            "width": 310,
+            "height": 340
+          },
+          "yardGeometryFamily": "310x340-south",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-1.yard",
+          "stateOwner": "farming.lawns.lawn-house-1.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-2.growth",
+          "position": {
+            "x": 540,
+            "y": 150
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-2",
+          "protectedWorldYard": {
+            "x": 540,
+            "y": 150,
+            "width": 310,
+            "height": 340
+          },
+          "yardGeometryFamily": "310x340-south",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-2.yard",
+          "stateOwner": "farming.lawns.lawn-house-2.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-3.growth",
+          "position": {
+            "x": 930,
+            "y": 150
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-3",
+          "protectedWorldYard": {
+            "x": 930,
+            "y": 150,
+            "width": 310,
+            "height": 340
+          },
+          "yardGeometryFamily": "310x340-south",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-3.yard",
+          "stateOwner": "farming.lawns.lawn-house-3.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-4.growth",
+          "position": {
+            "x": 1320,
+            "y": 150
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-4",
+          "protectedWorldYard": {
+            "x": 1320,
+            "y": 150,
+            "width": 310,
+            "height": 340
+          },
+          "yardGeometryFamily": "310x340-south",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-4.yard",
+          "stateOwner": "farming.lawns.lawn-house-4.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-5.growth",
+          "position": {
+            "x": 1710,
+            "y": 150
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-5",
+          "protectedWorldYard": {
+            "x": 1710,
+            "y": 150,
+            "width": 310,
+            "height": 340
+          },
+          "yardGeometryFamily": "310x340-south",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-5.yard",
+          "stateOwner": "farming.lawns.lawn-house-5.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-6.growth",
+          "position": {
+            "x": 2100,
+            "y": 150
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-6",
+          "protectedWorldYard": {
+            "x": 2100,
+            "y": 150,
+            "width": 310,
+            "height": 340
+          },
+          "yardGeometryFamily": "310x340-south",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-6.yard",
+          "stateOwner": "farming.lawns.lawn-house-6.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-7.growth",
+          "position": {
+            "x": 150,
+            "y": 1600
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-7",
+          "protectedWorldYard": {
+            "x": 150,
+            "y": 1600,
+            "width": 310,
+            "height": 410
+          },
+          "yardGeometryFamily": "310x410-north",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-7.yard",
+          "stateOwner": "farming.lawns.lawn-house-7.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-8.growth",
+          "position": {
+            "x": 540,
+            "y": 1600
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-8",
+          "protectedWorldYard": {
+            "x": 540,
+            "y": 1600,
+            "width": 310,
+            "height": 410
+          },
+          "yardGeometryFamily": "310x410-north",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-8.yard",
+          "stateOwner": "farming.lawns.lawn-house-8.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-9.growth",
+          "position": {
+            "x": 1710,
+            "y": 1600
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-9",
+          "protectedWorldYard": {
+            "x": 1710,
+            "y": 1600,
+            "width": 310,
+            "height": 410
+          },
+          "yardGeometryFamily": "310x410-north",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-9.yard",
+          "stateOwner": "farming.lawns.lawn-house-9.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-10.growth",
+          "position": {
+            "x": 2735,
+            "y": 1600
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-10",
+          "protectedWorldYard": {
+            "x": 2735,
+            "y": 1600,
+            "width": 300,
+            "height": 410
+          },
+          "yardGeometryFamily": "300x410-north",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-10.yard",
+          "stateOwner": "farming.lawns.lawn-house-10.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-11.growth",
+          "position": {
+            "x": 930,
+            "y": 1600
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-11",
+          "protectedWorldYard": {
+            "x": 930,
+            "y": 1600,
+            "width": 310,
+            "height": 410
+          },
+          "yardGeometryFamily": "310x410-north",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-11.yard",
+          "stateOwner": "farming.lawns.lawn-house-11.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-12.growth",
+          "position": {
+            "x": 1320,
+            "y": 1600
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-12",
+          "protectedWorldYard": {
+            "x": 1320,
+            "y": 1600,
+            "width": 310,
+            "height": 410
+          },
+          "yardGeometryFamily": "310x410-north",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-12.yard",
+          "stateOwner": "farming.lawns.lawn-house-12.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-13.growth",
+          "position": {
+            "x": 2735,
+            "y": 1230
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-13",
+          "protectedWorldYard": {
+            "x": 2735,
+            "y": 1230,
+            "width": 300,
+            "height": 290
+          },
+          "yardGeometryFamily": "300x290-south",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-13.yard",
+          "stateOwner": "farming.lawns.lawn-house-13.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-14.growth",
+          "position": {
+            "x": 3065,
+            "y": 1230
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-14",
+          "protectedWorldYard": {
+            "x": 3065,
+            "y": 1230,
+            "width": 300,
+            "height": 290
+          },
+          "yardGeometryFamily": "300x290-south",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-14.yard",
+          "stateOwner": "farming.lawns.lawn-house-14.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-15.growth",
+          "position": {
+            "x": 3395,
+            "y": 1230
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-15",
+          "protectedWorldYard": {
+            "x": 3395,
+            "y": 1230,
+            "width": 300,
+            "height": 290
+          },
+          "yardGeometryFamily": "300x290-south",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-15.yard",
+          "stateOwner": "farming.lawns.lawn-house-15.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-16.growth",
+          "position": {
+            "x": 3725,
+            "y": 1230
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-16",
+          "protectedWorldYard": {
+            "x": 3725,
+            "y": 1230,
+            "width": 300,
+            "height": 290
+          },
+          "yardGeometryFamily": "300x290-south",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-16.yard",
+          "stateOwner": "farming.lawns.lawn-house-16.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-17.growth",
+          "position": {
+            "x": 3065,
+            "y": 1600
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-17",
+          "protectedWorldYard": {
+            "x": 3065,
+            "y": 1600,
+            "width": 300,
+            "height": 410
+          },
+          "yardGeometryFamily": "300x410-north",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-17.yard",
+          "stateOwner": "farming.lawns.lawn-house-17.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-18.growth",
+          "position": {
+            "x": 3395,
+            "y": 1600
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-18",
+          "protectedWorldYard": {
+            "x": 3395,
+            "y": 1600,
+            "width": 300,
+            "height": 410
+          },
+          "yardGeometryFamily": "300x410-north",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-18.yard",
+          "stateOwner": "farming.lawns.lawn-house-18.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-20.growth",
+          "position": {
+            "x": 3725,
+            "y": 1600
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-20",
+          "protectedWorldYard": {
+            "x": 3725,
+            "y": 1600,
+            "width": 300,
+            "height": 410
+          },
+          "yardGeometryFamily": "300x410-north",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-20.yard",
+          "stateOwner": "farming.lawns.lawn-house-20.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        }
+      ],
+      "approval": {
+        "semanticId": "terrain.town.lawn.striped-base",
+        "contractVersion": "4.0.0",
+        "candidateSha256": "ab71a0fe75330a04612c05a9bca0d25f56566fc23a4a5db817c73edf0ea92756",
+        "reviewer": "codex-visual-qa",
+        "approvedAt": "2026-09-02T01:14:08.692Z",
+        "masterPath": "artwork/masters/phase-8a/town-lawn-striped-base/v4/town-lawn-striped-base.v4.png",
+        "runtimePath": "public/assets/runtime/phase-8a/town-lawn-striped-base.v4.png"
+      },
+      "visualOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "reference": null,
+      "referenceStatus": "not-assigned"
+    },
+    "terrain.town.lawn.growth-overlay": {
+      "schemaVersion": 1,
+      "semanticId": "terrain.town.lawn.growth-overlay",
+      "contractVersion": "4.0.0",
+      "contractSchemaVersion": 2,
+      "candidateSha256": "3cb21f9ba2b566262518d95ed062420f3634bc06fb386073b95348105eede823",
+      "approvalToken": "3cb21f9ba2b5",
+      "sourcePath": "artwork/staging/phase-8a/town-lawn-growth-overlay/v4/town-lawn-growth-overlay.v4.png",
+      "sourceUrl": "/__kindworks-candidate/terrain.town.lawn.growth-overlay",
+      "kind": "spritesheet",
+      "status": "review",
+      "approvalStatus": "human-review-required",
+      "validationStatus": "valid",
+      "validationFindings": [],
+      "expectedRuntimeFile": "public/assets/runtime/phase-8a/town-lawn-growth-overlay.v4.png",
+      "technical": {
+        "format": "png",
+        "width": 1024,
+        "height": 256,
+        "alpha": true,
+        "bitDepth": 8,
+        "colourMode": "RGBA",
+        "opaqueBounds": {
+          "x": 256,
+          "y": 0,
+          "width": 768,
+          "height": 256
+        },
+        "bytes": 163400,
+        "pixelArt": true,
+        "frameWidth": 256,
+        "frameHeight": 256,
+        "frameCount": 4,
+        "directions": []
+      },
+      "scenePlacements": [
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-1.growth",
+          "position": {
+            "x": 150,
+            "y": 150
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-1",
+          "protectedWorldYard": {
+            "x": 150,
+            "y": 150,
+            "width": 310,
+            "height": 340
+          },
+          "yardGeometryFamily": "310x340-south",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-1.yard",
+          "stateOwner": "farming.lawns.lawn-house-1.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-2.growth",
+          "position": {
+            "x": 540,
+            "y": 150
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-2",
+          "protectedWorldYard": {
+            "x": 540,
+            "y": 150,
+            "width": 310,
+            "height": 340
+          },
+          "yardGeometryFamily": "310x340-south",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-2.yard",
+          "stateOwner": "farming.lawns.lawn-house-2.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-3.growth",
+          "position": {
+            "x": 930,
+            "y": 150
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-3",
+          "protectedWorldYard": {
+            "x": 930,
+            "y": 150,
+            "width": 310,
+            "height": 340
+          },
+          "yardGeometryFamily": "310x340-south",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-3.yard",
+          "stateOwner": "farming.lawns.lawn-house-3.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-4.growth",
+          "position": {
+            "x": 1320,
+            "y": 150
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-4",
+          "protectedWorldYard": {
+            "x": 1320,
+            "y": 150,
+            "width": 310,
+            "height": 340
+          },
+          "yardGeometryFamily": "310x340-south",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-4.yard",
+          "stateOwner": "farming.lawns.lawn-house-4.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-5.growth",
+          "position": {
+            "x": 1710,
+            "y": 150
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-5",
+          "protectedWorldYard": {
+            "x": 1710,
+            "y": 150,
+            "width": 310,
+            "height": 340
+          },
+          "yardGeometryFamily": "310x340-south",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-5.yard",
+          "stateOwner": "farming.lawns.lawn-house-5.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-6.growth",
+          "position": {
+            "x": 2100,
+            "y": 150
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-6",
+          "protectedWorldYard": {
+            "x": 2100,
+            "y": 150,
+            "width": 310,
+            "height": 340
+          },
+          "yardGeometryFamily": "310x340-south",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-6.yard",
+          "stateOwner": "farming.lawns.lawn-house-6.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-7.growth",
+          "position": {
+            "x": 150,
+            "y": 1600
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-7",
+          "protectedWorldYard": {
+            "x": 150,
+            "y": 1600,
+            "width": 310,
+            "height": 410
+          },
+          "yardGeometryFamily": "310x410-north",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-7.yard",
+          "stateOwner": "farming.lawns.lawn-house-7.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-8.growth",
+          "position": {
+            "x": 540,
+            "y": 1600
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-8",
+          "protectedWorldYard": {
+            "x": 540,
+            "y": 1600,
+            "width": 310,
+            "height": 410
+          },
+          "yardGeometryFamily": "310x410-north",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-8.yard",
+          "stateOwner": "farming.lawns.lawn-house-8.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-9.growth",
+          "position": {
+            "x": 1710,
+            "y": 1600
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-9",
+          "protectedWorldYard": {
+            "x": 1710,
+            "y": 1600,
+            "width": 310,
+            "height": 410
+          },
+          "yardGeometryFamily": "310x410-north",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-9.yard",
+          "stateOwner": "farming.lawns.lawn-house-9.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-10.growth",
+          "position": {
+            "x": 2735,
+            "y": 1600
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-10",
+          "protectedWorldYard": {
+            "x": 2735,
+            "y": 1600,
+            "width": 300,
+            "height": 410
+          },
+          "yardGeometryFamily": "300x410-north",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-10.yard",
+          "stateOwner": "farming.lawns.lawn-house-10.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-11.growth",
+          "position": {
+            "x": 930,
+            "y": 1600
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-11",
+          "protectedWorldYard": {
+            "x": 930,
+            "y": 1600,
+            "width": 310,
+            "height": 410
+          },
+          "yardGeometryFamily": "310x410-north",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-11.yard",
+          "stateOwner": "farming.lawns.lawn-house-11.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-12.growth",
+          "position": {
+            "x": 1320,
+            "y": 1600
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-12",
+          "protectedWorldYard": {
+            "x": 1320,
+            "y": 1600,
+            "width": 310,
+            "height": 410
+          },
+          "yardGeometryFamily": "310x410-north",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-12.yard",
+          "stateOwner": "farming.lawns.lawn-house-12.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-13.growth",
+          "position": {
+            "x": 2735,
+            "y": 1230
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-13",
+          "protectedWorldYard": {
+            "x": 2735,
+            "y": 1230,
+            "width": 300,
+            "height": 290
+          },
+          "yardGeometryFamily": "300x290-south",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-13.yard",
+          "stateOwner": "farming.lawns.lawn-house-13.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-14.growth",
+          "position": {
+            "x": 3065,
+            "y": 1230
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-14",
+          "protectedWorldYard": {
+            "x": 3065,
+            "y": 1230,
+            "width": 300,
+            "height": 290
+          },
+          "yardGeometryFamily": "300x290-south",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-14.yard",
+          "stateOwner": "farming.lawns.lawn-house-14.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-15.growth",
+          "position": {
+            "x": 3395,
+            "y": 1230
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-15",
+          "protectedWorldYard": {
+            "x": 3395,
+            "y": 1230,
+            "width": 300,
+            "height": 290
+          },
+          "yardGeometryFamily": "300x290-south",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-15.yard",
+          "stateOwner": "farming.lawns.lawn-house-15.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-16.growth",
+          "position": {
+            "x": 3725,
+            "y": 1230
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-16",
+          "protectedWorldYard": {
+            "x": 3725,
+            "y": 1230,
+            "width": 300,
+            "height": 290
+          },
+          "yardGeometryFamily": "300x290-south",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-16.yard",
+          "stateOwner": "farming.lawns.lawn-house-16.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-17.growth",
+          "position": {
+            "x": 3065,
+            "y": 1600
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-17",
+          "protectedWorldYard": {
+            "x": 3065,
+            "y": 1600,
+            "width": 300,
+            "height": 410
+          },
+          "yardGeometryFamily": "300x410-north",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-17.yard",
+          "stateOwner": "farming.lawns.lawn-house-17.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-18.growth",
+          "position": {
+            "x": 3395,
+            "y": 1600
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-18",
+          "protectedWorldYard": {
+            "x": 3395,
+            "y": 1600,
+            "width": 300,
+            "height": 410
+          },
+          "yardGeometryFamily": "300x410-north",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-18.yard",
+          "stateOwner": "farming.lawns.lawn-house-18.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-20.growth",
+          "position": {
+            "x": 3725,
+            "y": 1600
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-20",
+          "protectedWorldYard": {
+            "x": 3725,
+            "y": 1600,
+            "width": 300,
+            "height": 410
+          },
+          "yardGeometryFamily": "300x410-north",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-20.yard",
+          "stateOwner": "farming.lawns.lawn-house-20.grassHeight via thresholds 20, 45, 70",
+          "visualLayerRole": "growth"
+        }
+      ],
+      "approval": null,
+      "visualOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "reference": null,
+      "referenceStatus": "not-assigned"
+    },
+    "terrain.town.lawn.weed-overlay": {
+      "schemaVersion": 1,
+      "semanticId": "terrain.town.lawn.weed-overlay",
+      "contractVersion": "1.0.0",
+      "contractSchemaVersion": 2,
+      "candidateSha256": "97418bcfcfbb8e443cfdce7adc6215229d420f6d64c1b9a347ed9e634944318b",
+      "approvalToken": "97418bcfcfbb",
+      "sourcePath": "artwork/staging/phase-8a/town-lawn-weed-overlay/v1/town-lawn-weed-overlay.v1.png",
+      "sourceUrl": "/__kindworks-candidate/terrain.town.lawn.weed-overlay",
+      "kind": "spritesheet",
+      "status": "review",
+      "approvalStatus": "human-review-required",
+      "validationStatus": "valid",
+      "validationFindings": [],
+      "expectedRuntimeFile": "public/assets/runtime/phase-8a/town-lawn-weed-overlay.v1.png",
+      "technical": {
+        "format": "png",
+        "width": 256,
+        "height": 64,
+        "alpha": true,
+        "bitDepth": 8,
+        "colourMode": "RGBA",
+        "opaqueBounds": {
+          "x": 68,
+          "y": 0,
+          "width": 187,
+          "height": 64
+        },
+        "bytes": 30439,
+        "pixelArt": true,
+        "frameWidth": 64,
+        "frameHeight": 64,
+        "frameCount": 4,
+        "directions": []
+      },
+      "scenePlacements": [
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-1.weeds",
+          "position": {
+            "x": 150,
+            "y": 150
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-1",
+          "protectedWorldYard": {
+            "x": 150,
+            "y": 150,
+            "width": 310,
+            "height": 340
+          },
+          "yardGeometryFamily": "310x340-south",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-1.yard",
+          "stateOwner": "farming.lawns.lawn-house-1.weedPressure via thresholds 18, 38, 55",
+          "visualLayerRole": "weeds"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-2.weeds",
+          "position": {
+            "x": 540,
+            "y": 150
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-2",
+          "protectedWorldYard": {
+            "x": 540,
+            "y": 150,
+            "width": 310,
+            "height": 340
+          },
+          "yardGeometryFamily": "310x340-south",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-2.yard",
+          "stateOwner": "farming.lawns.lawn-house-2.weedPressure via thresholds 18, 38, 55",
+          "visualLayerRole": "weeds"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-3.weeds",
+          "position": {
+            "x": 930,
+            "y": 150
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-3",
+          "protectedWorldYard": {
+            "x": 930,
+            "y": 150,
+            "width": 310,
+            "height": 340
+          },
+          "yardGeometryFamily": "310x340-south",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-3.yard",
+          "stateOwner": "farming.lawns.lawn-house-3.weedPressure via thresholds 18, 38, 55",
+          "visualLayerRole": "weeds"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-4.weeds",
+          "position": {
+            "x": 1320,
+            "y": 150
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-4",
+          "protectedWorldYard": {
+            "x": 1320,
+            "y": 150,
+            "width": 310,
+            "height": 340
+          },
+          "yardGeometryFamily": "310x340-south",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-4.yard",
+          "stateOwner": "farming.lawns.lawn-house-4.weedPressure via thresholds 18, 38, 55",
+          "visualLayerRole": "weeds"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-5.weeds",
+          "position": {
+            "x": 1710,
+            "y": 150
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-5",
+          "protectedWorldYard": {
+            "x": 1710,
+            "y": 150,
+            "width": 310,
+            "height": 340
+          },
+          "yardGeometryFamily": "310x340-south",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-5.yard",
+          "stateOwner": "farming.lawns.lawn-house-5.weedPressure via thresholds 18, 38, 55",
+          "visualLayerRole": "weeds"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-6.weeds",
+          "position": {
+            "x": 2100,
+            "y": 150
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-6",
+          "protectedWorldYard": {
+            "x": 2100,
+            "y": 150,
+            "width": 310,
+            "height": 340
+          },
+          "yardGeometryFamily": "310x340-south",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-6.yard",
+          "stateOwner": "farming.lawns.lawn-house-6.weedPressure via thresholds 18, 38, 55",
+          "visualLayerRole": "weeds"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-7.weeds",
+          "position": {
+            "x": 150,
+            "y": 1600
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-7",
+          "protectedWorldYard": {
+            "x": 150,
+            "y": 1600,
+            "width": 310,
+            "height": 410
+          },
+          "yardGeometryFamily": "310x410-north",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-7.yard",
+          "stateOwner": "farming.lawns.lawn-house-7.weedPressure via thresholds 18, 38, 55",
+          "visualLayerRole": "weeds"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-8.weeds",
+          "position": {
+            "x": 540,
+            "y": 1600
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-8",
+          "protectedWorldYard": {
+            "x": 540,
+            "y": 1600,
+            "width": 310,
+            "height": 410
+          },
+          "yardGeometryFamily": "310x410-north",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-8.yard",
+          "stateOwner": "farming.lawns.lawn-house-8.weedPressure via thresholds 18, 38, 55",
+          "visualLayerRole": "weeds"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-9.weeds",
+          "position": {
+            "x": 1710,
+            "y": 1600
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-9",
+          "protectedWorldYard": {
+            "x": 1710,
+            "y": 1600,
+            "width": 310,
+            "height": 410
+          },
+          "yardGeometryFamily": "310x410-north",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-9.yard",
+          "stateOwner": "farming.lawns.lawn-house-9.weedPressure via thresholds 18, 38, 55",
+          "visualLayerRole": "weeds"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-10.weeds",
+          "position": {
+            "x": 2735,
+            "y": 1600
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-10",
+          "protectedWorldYard": {
+            "x": 2735,
+            "y": 1600,
+            "width": 300,
+            "height": 410
+          },
+          "yardGeometryFamily": "300x410-north",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-10.yard",
+          "stateOwner": "farming.lawns.lawn-house-10.weedPressure via thresholds 18, 38, 55",
+          "visualLayerRole": "weeds"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-11.weeds",
+          "position": {
+            "x": 930,
+            "y": 1600
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-11",
+          "protectedWorldYard": {
+            "x": 930,
+            "y": 1600,
+            "width": 310,
+            "height": 410
+          },
+          "yardGeometryFamily": "310x410-north",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-11.yard",
+          "stateOwner": "farming.lawns.lawn-house-11.weedPressure via thresholds 18, 38, 55",
+          "visualLayerRole": "weeds"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-12.weeds",
+          "position": {
+            "x": 1320,
+            "y": 1600
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-12",
+          "protectedWorldYard": {
+            "x": 1320,
+            "y": 1600,
+            "width": 310,
+            "height": 410
+          },
+          "yardGeometryFamily": "310x410-north",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-12.yard",
+          "stateOwner": "farming.lawns.lawn-house-12.weedPressure via thresholds 18, 38, 55",
+          "visualLayerRole": "weeds"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-13.weeds",
+          "position": {
+            "x": 2735,
+            "y": 1230
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-13",
+          "protectedWorldYard": {
+            "x": 2735,
+            "y": 1230,
+            "width": 300,
+            "height": 290
+          },
+          "yardGeometryFamily": "300x290-south",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-13.yard",
+          "stateOwner": "farming.lawns.lawn-house-13.weedPressure via thresholds 18, 38, 55",
+          "visualLayerRole": "weeds"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-14.weeds",
+          "position": {
+            "x": 3065,
+            "y": 1230
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-14",
+          "protectedWorldYard": {
+            "x": 3065,
+            "y": 1230,
+            "width": 300,
+            "height": 290
+          },
+          "yardGeometryFamily": "300x290-south",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-14.yard",
+          "stateOwner": "farming.lawns.lawn-house-14.weedPressure via thresholds 18, 38, 55",
+          "visualLayerRole": "weeds"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-15.weeds",
+          "position": {
+            "x": 3395,
+            "y": 1230
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-15",
+          "protectedWorldYard": {
+            "x": 3395,
+            "y": 1230,
+            "width": 300,
+            "height": 290
+          },
+          "yardGeometryFamily": "300x290-south",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-15.yard",
+          "stateOwner": "farming.lawns.lawn-house-15.weedPressure via thresholds 18, 38, 55",
+          "visualLayerRole": "weeds"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-16.weeds",
+          "position": {
+            "x": 3725,
+            "y": 1230
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-16",
+          "protectedWorldYard": {
+            "x": 3725,
+            "y": 1230,
+            "width": 300,
+            "height": 290
+          },
+          "yardGeometryFamily": "300x290-south",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-16.yard",
+          "stateOwner": "farming.lawns.lawn-house-16.weedPressure via thresholds 18, 38, 55",
+          "visualLayerRole": "weeds"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-17.weeds",
+          "position": {
+            "x": 3065,
+            "y": 1600
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-17",
+          "protectedWorldYard": {
+            "x": 3065,
+            "y": 1600,
+            "width": 300,
+            "height": 410
+          },
+          "yardGeometryFamily": "300x410-north",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-17.yard",
+          "stateOwner": "farming.lawns.lawn-house-17.weedPressure via thresholds 18, 38, 55",
+          "visualLayerRole": "weeds"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-18.weeds",
+          "position": {
+            "x": 3395,
+            "y": 1600
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-18",
+          "protectedWorldYard": {
+            "x": 3395,
+            "y": 1600,
+            "width": 300,
+            "height": 410
+          },
+          "yardGeometryFamily": "300x410-north",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-18.yard",
+          "stateOwner": "farming.lawns.lawn-house-18.weedPressure via thresholds 18, 38, 55",
+          "visualLayerRole": "weeds"
+        },
+        {
+          "layoutId": "layout.phase-8a.town-lawns",
+          "sceneId": "TownScene",
+          "instanceId": "instance.phase-8a.town.lawn-house-20.weeds",
+          "position": {
+            "x": 3725,
+            "y": 1600
+          },
+          "gameplayGeometryLocked": true,
+          "protectedWorldObjectId": "lawn-house-20",
+          "protectedWorldYard": {
+            "x": 3725,
+            "y": 1600,
+            "width": 300,
+            "height": 410
+          },
+          "yardGeometryFamily": "300x410-north",
+          "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+          "clipRectOwner": "LAWN_PLOTS.lawn-house-20.yard",
+          "stateOwner": "farming.lawns.lawn-house-20.weedPressure via thresholds 18, 38, 55",
+          "visualLayerRole": "weeds"
+        }
+      ],
+      "approval": null,
       "visualOffset": {
         "x": 0,
         "y": 0

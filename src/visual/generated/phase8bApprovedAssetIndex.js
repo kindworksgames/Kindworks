@@ -151,6 +151,106 @@ export const PHASE_8B_APPROVED_ASSET_INDEX = Object.freeze({
         "runtimePath": "public/assets/runtime/phase-8a/town-road-set.v1.png",
         "runtimeUrl": "/assets/runtime/phase-8a/town-road-set.v1.png"
       }
+    },
+    {
+      "schemaVersion": 1,
+      "id": "terrain.town.lawn.striped-base",
+      "kind": "image",
+      "source": {
+        "kind": "file",
+        "file": "/assets/runtime/phase-8a/town-lawn-striped-base.v4.png",
+        "format": "png",
+        "owner": "Phase8BApprovedArtwork"
+      },
+      "runtime": {
+        "renderTarget": "phaser",
+        "textureKey": "kw.phase8a.terrain.town.lawn.striped-base"
+      },
+      "technical": {
+        "pixelArt": true,
+        "alpha": false,
+        "width": 256,
+        "height": 256,
+        "nativePixelsPerLogicalUnit": 1,
+        "frameWidth": null,
+        "frameHeight": null,
+        "directions": []
+      },
+      "requiredness": "required",
+      "lifecycle": {
+        "scope": "scene",
+        "unload": "on-last-scene-release"
+      },
+      "status": "phase-8b-approved-runtime",
+      "productionContractId": "terrain.town.lawn.striped-base",
+      "cache": {
+        "version": "ab71a0fe7533",
+        "contentSha256": "ab71a0fe75330a04612c05a9bca0d25f56566fc23a4a5db817c73edf0ea92756"
+      },
+      "validation": {
+        "maximumRuntimeBytes": 250000,
+        "maximumDimension": 4096
+      },
+      "provenance": {
+        "semanticId": "terrain.town.lawn.striped-base",
+        "contractVersion": "4.0.0",
+        "candidateSha256": "ab71a0fe75330a04612c05a9bca0d25f56566fc23a4a5db817c73edf0ea92756",
+        "reviewer": "codex-visual-qa",
+        "approvedAt": "2026-09-02T01:14:08.692Z",
+        "masterPath": "artwork/masters/phase-8a/town-lawn-striped-base/v4/town-lawn-striped-base.v4.png",
+        "runtimePath": "public/assets/runtime/phase-8a/town-lawn-striped-base.v4.png",
+        "runtimeUrl": "/assets/runtime/phase-8a/town-lawn-striped-base.v4.png"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "id": "terrain.town.lawn.growth-overlay",
+      "kind": "spritesheet",
+      "source": {
+        "kind": "file",
+        "file": "/assets/runtime/phase-8a/town-lawn-growth-overlay.v4.png",
+        "format": "png",
+        "owner": "Phase8BApprovedArtwork"
+      },
+      "runtime": {
+        "renderTarget": "phaser",
+        "textureKey": "kw.phase8a.terrain.town.lawn.growth-overlay"
+      },
+      "technical": {
+        "pixelArt": true,
+        "alpha": true,
+        "width": 1024,
+        "height": 256,
+        "nativePixelsPerLogicalUnit": 1,
+        "frameWidth": 256,
+        "frameHeight": 256,
+        "directions": []
+      },
+      "requiredness": "required",
+      "lifecycle": {
+        "scope": "scene",
+        "unload": "on-last-scene-release"
+      },
+      "status": "phase-8b-approved-runtime",
+      "productionContractId": "terrain.town.lawn.growth-overlay",
+      "cache": {
+        "version": "3cb21f9ba2b5",
+        "contentSha256": "3cb21f9ba2b566262518d95ed062420f3634bc06fb386073b95348105eede823"
+      },
+      "validation": {
+        "maximumRuntimeBytes": 500000,
+        "maximumDimension": 4096
+      },
+      "provenance": {
+        "semanticId": "terrain.town.lawn.growth-overlay",
+        "contractVersion": "4.0.0",
+        "candidateSha256": "3cb21f9ba2b566262518d95ed062420f3634bc06fb386073b95348105eede823",
+        "reviewer": "codex-visual-qa",
+        "approvedAt": "2026-09-02T02:16:29.139Z",
+        "masterPath": "artwork/masters/phase-8a/town-lawn-growth-overlay/v4/town-lawn-growth-overlay.v4.png",
+        "runtimePath": "public/assets/runtime/phase-8a/town-lawn-growth-overlay.v4.png",
+        "runtimeUrl": "/assets/runtime/phase-8a/town-lawn-growth-overlay.v4.png"
+      }
     }
   ],
   "prefabs": [
@@ -324,6 +424,69 @@ export const PHASE_8B_APPROVED_ASSET_INDEX = Object.freeze({
         "touch": null
       },
       "productionContractId": "terrain.town.slice.road"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "prefab.phase-8a.world-lawn-growth",
+      "family": "family.world-lawn.slice",
+      "variant": "phase-8a-premium-slice",
+      "renderer": "phaser",
+      "layers": [
+        {
+          "id": "background-base",
+          "assetId": "terrain.town.lawn.striped-base",
+          "role": "main",
+          "optional": false
+        },
+        {
+          "id": "growth-overlay",
+          "assetId": "terrain.town.lawn.growth-overlay",
+          "role": "main",
+          "optional": false
+        }
+      ],
+      "scalePolicy": {
+        "mode": "fixed-logical-footprint",
+        "x": 1,
+        "y": 1,
+        "imageFit": "contain-within-visual-bounds"
+      },
+      "groundContactAnchor": {
+        "x": 0,
+        "y": 0
+      },
+      "origin": {
+        "x": 0,
+        "y": 0
+      },
+      "depthPolicy": {
+        "mode": "world-y",
+        "layerId": "ground-sorted",
+        "base": 200,
+        "divisor": 10
+      },
+      "shadowPolicy": {
+        "mode": "no-shadow",
+        "enabled": false
+      },
+      "animation": null,
+      "sockets": {},
+      "geometry": {
+        "schemaVersion": 1,
+        "visual": {
+          "schemaVersion": 1,
+          "kind": "rectangle",
+          "x": 0,
+          "y": 0,
+          "width": 256,
+          "height": 256
+        },
+        "collision": null,
+        "navigation": null,
+        "interaction": null,
+        "touch": null
+      },
+      "productionContractId": "terrain.town.lawn.striped-base"
     }
   ],
   "visualStates": [
@@ -578,6 +741,41 @@ export const PHASE_8B_APPROVED_ASSET_INDEX = Object.freeze({
           }
         }
       }
+    },
+    {
+      "schemaVersion": 1,
+      "id": "state.phase-8a.world-lawn-growth",
+      "defaultState": "fresh-cut",
+      "states": {
+        "fresh-cut": {
+          "prefabId": "prefab.phase-8a.world-lawn-growth",
+          "modifier": {
+            "frame": 0,
+            "placeholder": true
+          }
+        },
+        "growing": {
+          "prefabId": "prefab.phase-8a.world-lawn-growth",
+          "modifier": {
+            "frame": 1,
+            "placeholder": true
+          }
+        },
+        "long": {
+          "prefabId": "prefab.phase-8a.world-lawn-growth",
+          "modifier": {
+            "frame": 2,
+            "placeholder": true
+          }
+        },
+        "job-ready": {
+          "prefabId": "prefab.phase-8a.world-lawn-growth",
+          "modifier": {
+            "frame": 3,
+            "placeholder": true
+          }
+        }
+      }
     }
   ],
   "animations": [],
@@ -623,7 +821,8 @@ export const PHASE_8B_APPROVED_ASSET_INDEX = Object.freeze({
         "socketBinding": null,
         "safeAreaBindings": null,
         "minimumCssTouchTarget": null,
-        "presentationOnly": false
+        "presentationOnly": false,
+        "visualLayerRole": null
       },
       "layoutId": "layout.phase-8a.town-block.house-6",
       "gameplayGeometryLocked": true,
@@ -670,7 +869,8 @@ export const PHASE_8B_APPROVED_ASSET_INDEX = Object.freeze({
         "socketBinding": null,
         "safeAreaBindings": null,
         "minimumCssTouchTarget": null,
-        "presentationOnly": false
+        "presentationOnly": false,
+        "visualLayerRole": null
       },
       "layoutId": "layout.phase-8a.town-block.house-6",
       "gameplayGeometryLocked": true,
@@ -717,9 +917,1017 @@ export const PHASE_8B_APPROVED_ASSET_INDEX = Object.freeze({
         "socketBinding": null,
         "safeAreaBindings": null,
         "minimumCssTouchTarget": null,
-        "presentationOnly": false
+        "presentationOnly": false,
+        "visualLayerRole": null
       },
       "layoutId": "layout.phase-8a.town-block.house-6",
+      "gameplayGeometryLocked": true,
+      "activation": "phase-8b-approved"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "instance.phase-8a.town.lawn-house-1.growth",
+      "sceneId": "TownScene",
+      "prefabId": "prefab.phase-8a.world-lawn-growth",
+      "stateId": "state.phase-8a.world-lawn-growth",
+      "position": {
+        "x": 150,
+        "y": 150
+      },
+      "scale": {
+        "x": 1,
+        "y": 1
+      },
+      "depth": 215,
+      "worldOrigin": {
+        "x": 0,
+        "y": 0
+      },
+      "visualOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "binding": {
+        "mode": "repeat",
+        "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+        "dynamicPosition": null,
+        "dynamicFacing": null,
+        "visibleAfter": null,
+        "gameplayOwner": null,
+        "protectedWorldObjectId": "lawn-house-1",
+        "protectedWorldPosition": null,
+        "protectedWorldYard": {
+          "x": 150,
+          "y": 150,
+          "width": 310,
+          "height": 340
+        },
+        "protectedWorldRiver": null,
+        "protectedWorldRoadId": null,
+        "protectedGate": null,
+        "npcIdentityBinding": null,
+        "speciesBinding": null,
+        "socketBinding": null,
+        "safeAreaBindings": null,
+        "minimumCssTouchTarget": null,
+        "presentationOnly": false,
+        "visualLayerRole": "growth"
+      },
+      "layoutId": "layout.phase-8a.town-lawns",
+      "gameplayGeometryLocked": true,
+      "activation": "phase-8b-approved"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "instance.phase-8a.town.lawn-house-2.growth",
+      "sceneId": "TownScene",
+      "prefabId": "prefab.phase-8a.world-lawn-growth",
+      "stateId": "state.phase-8a.world-lawn-growth",
+      "position": {
+        "x": 540,
+        "y": 150
+      },
+      "scale": {
+        "x": 1,
+        "y": 1
+      },
+      "depth": 215,
+      "worldOrigin": {
+        "x": 0,
+        "y": 0
+      },
+      "visualOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "binding": {
+        "mode": "repeat",
+        "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+        "dynamicPosition": null,
+        "dynamicFacing": null,
+        "visibleAfter": null,
+        "gameplayOwner": null,
+        "protectedWorldObjectId": "lawn-house-2",
+        "protectedWorldPosition": null,
+        "protectedWorldYard": {
+          "x": 540,
+          "y": 150,
+          "width": 310,
+          "height": 340
+        },
+        "protectedWorldRiver": null,
+        "protectedWorldRoadId": null,
+        "protectedGate": null,
+        "npcIdentityBinding": null,
+        "speciesBinding": null,
+        "socketBinding": null,
+        "safeAreaBindings": null,
+        "minimumCssTouchTarget": null,
+        "presentationOnly": false,
+        "visualLayerRole": "growth"
+      },
+      "layoutId": "layout.phase-8a.town-lawns",
+      "gameplayGeometryLocked": true,
+      "activation": "phase-8b-approved"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "instance.phase-8a.town.lawn-house-3.growth",
+      "sceneId": "TownScene",
+      "prefabId": "prefab.phase-8a.world-lawn-growth",
+      "stateId": "state.phase-8a.world-lawn-growth",
+      "position": {
+        "x": 930,
+        "y": 150
+      },
+      "scale": {
+        "x": 1,
+        "y": 1
+      },
+      "depth": 215,
+      "worldOrigin": {
+        "x": 0,
+        "y": 0
+      },
+      "visualOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "binding": {
+        "mode": "repeat",
+        "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+        "dynamicPosition": null,
+        "dynamicFacing": null,
+        "visibleAfter": null,
+        "gameplayOwner": null,
+        "protectedWorldObjectId": "lawn-house-3",
+        "protectedWorldPosition": null,
+        "protectedWorldYard": {
+          "x": 930,
+          "y": 150,
+          "width": 310,
+          "height": 340
+        },
+        "protectedWorldRiver": null,
+        "protectedWorldRoadId": null,
+        "protectedGate": null,
+        "npcIdentityBinding": null,
+        "speciesBinding": null,
+        "socketBinding": null,
+        "safeAreaBindings": null,
+        "minimumCssTouchTarget": null,
+        "presentationOnly": false,
+        "visualLayerRole": "growth"
+      },
+      "layoutId": "layout.phase-8a.town-lawns",
+      "gameplayGeometryLocked": true,
+      "activation": "phase-8b-approved"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "instance.phase-8a.town.lawn-house-4.growth",
+      "sceneId": "TownScene",
+      "prefabId": "prefab.phase-8a.world-lawn-growth",
+      "stateId": "state.phase-8a.world-lawn-growth",
+      "position": {
+        "x": 1320,
+        "y": 150
+      },
+      "scale": {
+        "x": 1,
+        "y": 1
+      },
+      "depth": 215,
+      "worldOrigin": {
+        "x": 0,
+        "y": 0
+      },
+      "visualOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "binding": {
+        "mode": "repeat",
+        "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+        "dynamicPosition": null,
+        "dynamicFacing": null,
+        "visibleAfter": null,
+        "gameplayOwner": null,
+        "protectedWorldObjectId": "lawn-house-4",
+        "protectedWorldPosition": null,
+        "protectedWorldYard": {
+          "x": 1320,
+          "y": 150,
+          "width": 310,
+          "height": 340
+        },
+        "protectedWorldRiver": null,
+        "protectedWorldRoadId": null,
+        "protectedGate": null,
+        "npcIdentityBinding": null,
+        "speciesBinding": null,
+        "socketBinding": null,
+        "safeAreaBindings": null,
+        "minimumCssTouchTarget": null,
+        "presentationOnly": false,
+        "visualLayerRole": "growth"
+      },
+      "layoutId": "layout.phase-8a.town-lawns",
+      "gameplayGeometryLocked": true,
+      "activation": "phase-8b-approved"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "instance.phase-8a.town.lawn-house-5.growth",
+      "sceneId": "TownScene",
+      "prefabId": "prefab.phase-8a.world-lawn-growth",
+      "stateId": "state.phase-8a.world-lawn-growth",
+      "position": {
+        "x": 1710,
+        "y": 150
+      },
+      "scale": {
+        "x": 1,
+        "y": 1
+      },
+      "depth": 215,
+      "worldOrigin": {
+        "x": 0,
+        "y": 0
+      },
+      "visualOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "binding": {
+        "mode": "repeat",
+        "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+        "dynamicPosition": null,
+        "dynamicFacing": null,
+        "visibleAfter": null,
+        "gameplayOwner": null,
+        "protectedWorldObjectId": "lawn-house-5",
+        "protectedWorldPosition": null,
+        "protectedWorldYard": {
+          "x": 1710,
+          "y": 150,
+          "width": 310,
+          "height": 340
+        },
+        "protectedWorldRiver": null,
+        "protectedWorldRoadId": null,
+        "protectedGate": null,
+        "npcIdentityBinding": null,
+        "speciesBinding": null,
+        "socketBinding": null,
+        "safeAreaBindings": null,
+        "minimumCssTouchTarget": null,
+        "presentationOnly": false,
+        "visualLayerRole": "growth"
+      },
+      "layoutId": "layout.phase-8a.town-lawns",
+      "gameplayGeometryLocked": true,
+      "activation": "phase-8b-approved"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "instance.phase-8a.town.lawn-house-6.growth",
+      "sceneId": "TownScene",
+      "prefabId": "prefab.phase-8a.world-lawn-growth",
+      "stateId": "state.phase-8a.world-lawn-growth",
+      "position": {
+        "x": 2100,
+        "y": 150
+      },
+      "scale": {
+        "x": 1,
+        "y": 1
+      },
+      "depth": 215,
+      "worldOrigin": {
+        "x": 0,
+        "y": 0
+      },
+      "visualOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "binding": {
+        "mode": "repeat",
+        "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+        "dynamicPosition": null,
+        "dynamicFacing": null,
+        "visibleAfter": null,
+        "gameplayOwner": null,
+        "protectedWorldObjectId": "lawn-house-6",
+        "protectedWorldPosition": null,
+        "protectedWorldYard": {
+          "x": 2100,
+          "y": 150,
+          "width": 310,
+          "height": 340
+        },
+        "protectedWorldRiver": null,
+        "protectedWorldRoadId": null,
+        "protectedGate": null,
+        "npcIdentityBinding": null,
+        "speciesBinding": null,
+        "socketBinding": null,
+        "safeAreaBindings": null,
+        "minimumCssTouchTarget": null,
+        "presentationOnly": false,
+        "visualLayerRole": "growth"
+      },
+      "layoutId": "layout.phase-8a.town-lawns",
+      "gameplayGeometryLocked": true,
+      "activation": "phase-8b-approved"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "instance.phase-8a.town.lawn-house-7.growth",
+      "sceneId": "TownScene",
+      "prefabId": "prefab.phase-8a.world-lawn-growth",
+      "stateId": "state.phase-8a.world-lawn-growth",
+      "position": {
+        "x": 150,
+        "y": 1600
+      },
+      "scale": {
+        "x": 1,
+        "y": 1
+      },
+      "depth": 360,
+      "worldOrigin": {
+        "x": 0,
+        "y": 0
+      },
+      "visualOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "binding": {
+        "mode": "repeat",
+        "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+        "dynamicPosition": null,
+        "dynamicFacing": null,
+        "visibleAfter": null,
+        "gameplayOwner": null,
+        "protectedWorldObjectId": "lawn-house-7",
+        "protectedWorldPosition": null,
+        "protectedWorldYard": {
+          "x": 150,
+          "y": 1600,
+          "width": 310,
+          "height": 410
+        },
+        "protectedWorldRiver": null,
+        "protectedWorldRoadId": null,
+        "protectedGate": null,
+        "npcIdentityBinding": null,
+        "speciesBinding": null,
+        "socketBinding": null,
+        "safeAreaBindings": null,
+        "minimumCssTouchTarget": null,
+        "presentationOnly": false,
+        "visualLayerRole": "growth"
+      },
+      "layoutId": "layout.phase-8a.town-lawns",
+      "gameplayGeometryLocked": true,
+      "activation": "phase-8b-approved"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "instance.phase-8a.town.lawn-house-8.growth",
+      "sceneId": "TownScene",
+      "prefabId": "prefab.phase-8a.world-lawn-growth",
+      "stateId": "state.phase-8a.world-lawn-growth",
+      "position": {
+        "x": 540,
+        "y": 1600
+      },
+      "scale": {
+        "x": 1,
+        "y": 1
+      },
+      "depth": 360,
+      "worldOrigin": {
+        "x": 0,
+        "y": 0
+      },
+      "visualOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "binding": {
+        "mode": "repeat",
+        "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+        "dynamicPosition": null,
+        "dynamicFacing": null,
+        "visibleAfter": null,
+        "gameplayOwner": null,
+        "protectedWorldObjectId": "lawn-house-8",
+        "protectedWorldPosition": null,
+        "protectedWorldYard": {
+          "x": 540,
+          "y": 1600,
+          "width": 310,
+          "height": 410
+        },
+        "protectedWorldRiver": null,
+        "protectedWorldRoadId": null,
+        "protectedGate": null,
+        "npcIdentityBinding": null,
+        "speciesBinding": null,
+        "socketBinding": null,
+        "safeAreaBindings": null,
+        "minimumCssTouchTarget": null,
+        "presentationOnly": false,
+        "visualLayerRole": "growth"
+      },
+      "layoutId": "layout.phase-8a.town-lawns",
+      "gameplayGeometryLocked": true,
+      "activation": "phase-8b-approved"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "instance.phase-8a.town.lawn-house-9.growth",
+      "sceneId": "TownScene",
+      "prefabId": "prefab.phase-8a.world-lawn-growth",
+      "stateId": "state.phase-8a.world-lawn-growth",
+      "position": {
+        "x": 1710,
+        "y": 1600
+      },
+      "scale": {
+        "x": 1,
+        "y": 1
+      },
+      "depth": 360,
+      "worldOrigin": {
+        "x": 0,
+        "y": 0
+      },
+      "visualOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "binding": {
+        "mode": "repeat",
+        "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+        "dynamicPosition": null,
+        "dynamicFacing": null,
+        "visibleAfter": null,
+        "gameplayOwner": null,
+        "protectedWorldObjectId": "lawn-house-9",
+        "protectedWorldPosition": null,
+        "protectedWorldYard": {
+          "x": 1710,
+          "y": 1600,
+          "width": 310,
+          "height": 410
+        },
+        "protectedWorldRiver": null,
+        "protectedWorldRoadId": null,
+        "protectedGate": null,
+        "npcIdentityBinding": null,
+        "speciesBinding": null,
+        "socketBinding": null,
+        "safeAreaBindings": null,
+        "minimumCssTouchTarget": null,
+        "presentationOnly": false,
+        "visualLayerRole": "growth"
+      },
+      "layoutId": "layout.phase-8a.town-lawns",
+      "gameplayGeometryLocked": true,
+      "activation": "phase-8b-approved"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "instance.phase-8a.town.lawn-house-10.growth",
+      "sceneId": "TownScene",
+      "prefabId": "prefab.phase-8a.world-lawn-growth",
+      "stateId": "state.phase-8a.world-lawn-growth",
+      "position": {
+        "x": 2735,
+        "y": 1600
+      },
+      "scale": {
+        "x": 1,
+        "y": 1
+      },
+      "depth": 360,
+      "worldOrigin": {
+        "x": 0,
+        "y": 0
+      },
+      "visualOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "binding": {
+        "mode": "repeat",
+        "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+        "dynamicPosition": null,
+        "dynamicFacing": null,
+        "visibleAfter": null,
+        "gameplayOwner": null,
+        "protectedWorldObjectId": "lawn-house-10",
+        "protectedWorldPosition": null,
+        "protectedWorldYard": {
+          "x": 2735,
+          "y": 1600,
+          "width": 300,
+          "height": 410
+        },
+        "protectedWorldRiver": null,
+        "protectedWorldRoadId": null,
+        "protectedGate": null,
+        "npcIdentityBinding": null,
+        "speciesBinding": null,
+        "socketBinding": null,
+        "safeAreaBindings": null,
+        "minimumCssTouchTarget": null,
+        "presentationOnly": false,
+        "visualLayerRole": "growth"
+      },
+      "layoutId": "layout.phase-8a.town-lawns",
+      "gameplayGeometryLocked": true,
+      "activation": "phase-8b-approved"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "instance.phase-8a.town.lawn-house-11.growth",
+      "sceneId": "TownScene",
+      "prefabId": "prefab.phase-8a.world-lawn-growth",
+      "stateId": "state.phase-8a.world-lawn-growth",
+      "position": {
+        "x": 930,
+        "y": 1600
+      },
+      "scale": {
+        "x": 1,
+        "y": 1
+      },
+      "depth": 360,
+      "worldOrigin": {
+        "x": 0,
+        "y": 0
+      },
+      "visualOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "binding": {
+        "mode": "repeat",
+        "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+        "dynamicPosition": null,
+        "dynamicFacing": null,
+        "visibleAfter": null,
+        "gameplayOwner": null,
+        "protectedWorldObjectId": "lawn-house-11",
+        "protectedWorldPosition": null,
+        "protectedWorldYard": {
+          "x": 930,
+          "y": 1600,
+          "width": 310,
+          "height": 410
+        },
+        "protectedWorldRiver": null,
+        "protectedWorldRoadId": null,
+        "protectedGate": null,
+        "npcIdentityBinding": null,
+        "speciesBinding": null,
+        "socketBinding": null,
+        "safeAreaBindings": null,
+        "minimumCssTouchTarget": null,
+        "presentationOnly": false,
+        "visualLayerRole": "growth"
+      },
+      "layoutId": "layout.phase-8a.town-lawns",
+      "gameplayGeometryLocked": true,
+      "activation": "phase-8b-approved"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "instance.phase-8a.town.lawn-house-12.growth",
+      "sceneId": "TownScene",
+      "prefabId": "prefab.phase-8a.world-lawn-growth",
+      "stateId": "state.phase-8a.world-lawn-growth",
+      "position": {
+        "x": 1320,
+        "y": 1600
+      },
+      "scale": {
+        "x": 1,
+        "y": 1
+      },
+      "depth": 360,
+      "worldOrigin": {
+        "x": 0,
+        "y": 0
+      },
+      "visualOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "binding": {
+        "mode": "repeat",
+        "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+        "dynamicPosition": null,
+        "dynamicFacing": null,
+        "visibleAfter": null,
+        "gameplayOwner": null,
+        "protectedWorldObjectId": "lawn-house-12",
+        "protectedWorldPosition": null,
+        "protectedWorldYard": {
+          "x": 1320,
+          "y": 1600,
+          "width": 310,
+          "height": 410
+        },
+        "protectedWorldRiver": null,
+        "protectedWorldRoadId": null,
+        "protectedGate": null,
+        "npcIdentityBinding": null,
+        "speciesBinding": null,
+        "socketBinding": null,
+        "safeAreaBindings": null,
+        "minimumCssTouchTarget": null,
+        "presentationOnly": false,
+        "visualLayerRole": "growth"
+      },
+      "layoutId": "layout.phase-8a.town-lawns",
+      "gameplayGeometryLocked": true,
+      "activation": "phase-8b-approved"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "instance.phase-8a.town.lawn-house-13.growth",
+      "sceneId": "TownScene",
+      "prefabId": "prefab.phase-8a.world-lawn-growth",
+      "stateId": "state.phase-8a.world-lawn-growth",
+      "position": {
+        "x": 2735,
+        "y": 1230
+      },
+      "scale": {
+        "x": 1,
+        "y": 1
+      },
+      "depth": 323,
+      "worldOrigin": {
+        "x": 0,
+        "y": 0
+      },
+      "visualOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "binding": {
+        "mode": "repeat",
+        "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+        "dynamicPosition": null,
+        "dynamicFacing": null,
+        "visibleAfter": null,
+        "gameplayOwner": null,
+        "protectedWorldObjectId": "lawn-house-13",
+        "protectedWorldPosition": null,
+        "protectedWorldYard": {
+          "x": 2735,
+          "y": 1230,
+          "width": 300,
+          "height": 290
+        },
+        "protectedWorldRiver": null,
+        "protectedWorldRoadId": null,
+        "protectedGate": null,
+        "npcIdentityBinding": null,
+        "speciesBinding": null,
+        "socketBinding": null,
+        "safeAreaBindings": null,
+        "minimumCssTouchTarget": null,
+        "presentationOnly": false,
+        "visualLayerRole": "growth"
+      },
+      "layoutId": "layout.phase-8a.town-lawns",
+      "gameplayGeometryLocked": true,
+      "activation": "phase-8b-approved"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "instance.phase-8a.town.lawn-house-14.growth",
+      "sceneId": "TownScene",
+      "prefabId": "prefab.phase-8a.world-lawn-growth",
+      "stateId": "state.phase-8a.world-lawn-growth",
+      "position": {
+        "x": 3065,
+        "y": 1230
+      },
+      "scale": {
+        "x": 1,
+        "y": 1
+      },
+      "depth": 323,
+      "worldOrigin": {
+        "x": 0,
+        "y": 0
+      },
+      "visualOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "binding": {
+        "mode": "repeat",
+        "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+        "dynamicPosition": null,
+        "dynamicFacing": null,
+        "visibleAfter": null,
+        "gameplayOwner": null,
+        "protectedWorldObjectId": "lawn-house-14",
+        "protectedWorldPosition": null,
+        "protectedWorldYard": {
+          "x": 3065,
+          "y": 1230,
+          "width": 300,
+          "height": 290
+        },
+        "protectedWorldRiver": null,
+        "protectedWorldRoadId": null,
+        "protectedGate": null,
+        "npcIdentityBinding": null,
+        "speciesBinding": null,
+        "socketBinding": null,
+        "safeAreaBindings": null,
+        "minimumCssTouchTarget": null,
+        "presentationOnly": false,
+        "visualLayerRole": "growth"
+      },
+      "layoutId": "layout.phase-8a.town-lawns",
+      "gameplayGeometryLocked": true,
+      "activation": "phase-8b-approved"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "instance.phase-8a.town.lawn-house-15.growth",
+      "sceneId": "TownScene",
+      "prefabId": "prefab.phase-8a.world-lawn-growth",
+      "stateId": "state.phase-8a.world-lawn-growth",
+      "position": {
+        "x": 3395,
+        "y": 1230
+      },
+      "scale": {
+        "x": 1,
+        "y": 1
+      },
+      "depth": 323,
+      "worldOrigin": {
+        "x": 0,
+        "y": 0
+      },
+      "visualOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "binding": {
+        "mode": "repeat",
+        "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+        "dynamicPosition": null,
+        "dynamicFacing": null,
+        "visibleAfter": null,
+        "gameplayOwner": null,
+        "protectedWorldObjectId": "lawn-house-15",
+        "protectedWorldPosition": null,
+        "protectedWorldYard": {
+          "x": 3395,
+          "y": 1230,
+          "width": 300,
+          "height": 290
+        },
+        "protectedWorldRiver": null,
+        "protectedWorldRoadId": null,
+        "protectedGate": null,
+        "npcIdentityBinding": null,
+        "speciesBinding": null,
+        "socketBinding": null,
+        "safeAreaBindings": null,
+        "minimumCssTouchTarget": null,
+        "presentationOnly": false,
+        "visualLayerRole": "growth"
+      },
+      "layoutId": "layout.phase-8a.town-lawns",
+      "gameplayGeometryLocked": true,
+      "activation": "phase-8b-approved"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "instance.phase-8a.town.lawn-house-16.growth",
+      "sceneId": "TownScene",
+      "prefabId": "prefab.phase-8a.world-lawn-growth",
+      "stateId": "state.phase-8a.world-lawn-growth",
+      "position": {
+        "x": 3725,
+        "y": 1230
+      },
+      "scale": {
+        "x": 1,
+        "y": 1
+      },
+      "depth": 323,
+      "worldOrigin": {
+        "x": 0,
+        "y": 0
+      },
+      "visualOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "binding": {
+        "mode": "repeat",
+        "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+        "dynamicPosition": null,
+        "dynamicFacing": null,
+        "visibleAfter": null,
+        "gameplayOwner": null,
+        "protectedWorldObjectId": "lawn-house-16",
+        "protectedWorldPosition": null,
+        "protectedWorldYard": {
+          "x": 3725,
+          "y": 1230,
+          "width": 300,
+          "height": 290
+        },
+        "protectedWorldRiver": null,
+        "protectedWorldRoadId": null,
+        "protectedGate": null,
+        "npcIdentityBinding": null,
+        "speciesBinding": null,
+        "socketBinding": null,
+        "safeAreaBindings": null,
+        "minimumCssTouchTarget": null,
+        "presentationOnly": false,
+        "visualLayerRole": "growth"
+      },
+      "layoutId": "layout.phase-8a.town-lawns",
+      "gameplayGeometryLocked": true,
+      "activation": "phase-8b-approved"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "instance.phase-8a.town.lawn-house-17.growth",
+      "sceneId": "TownScene",
+      "prefabId": "prefab.phase-8a.world-lawn-growth",
+      "stateId": "state.phase-8a.world-lawn-growth",
+      "position": {
+        "x": 3065,
+        "y": 1600
+      },
+      "scale": {
+        "x": 1,
+        "y": 1
+      },
+      "depth": 360,
+      "worldOrigin": {
+        "x": 0,
+        "y": 0
+      },
+      "visualOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "binding": {
+        "mode": "repeat",
+        "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+        "dynamicPosition": null,
+        "dynamicFacing": null,
+        "visibleAfter": null,
+        "gameplayOwner": null,
+        "protectedWorldObjectId": "lawn-house-17",
+        "protectedWorldPosition": null,
+        "protectedWorldYard": {
+          "x": 3065,
+          "y": 1600,
+          "width": 300,
+          "height": 410
+        },
+        "protectedWorldRiver": null,
+        "protectedWorldRoadId": null,
+        "protectedGate": null,
+        "npcIdentityBinding": null,
+        "speciesBinding": null,
+        "socketBinding": null,
+        "safeAreaBindings": null,
+        "minimumCssTouchTarget": null,
+        "presentationOnly": false,
+        "visualLayerRole": "growth"
+      },
+      "layoutId": "layout.phase-8a.town-lawns",
+      "gameplayGeometryLocked": true,
+      "activation": "phase-8b-approved"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "instance.phase-8a.town.lawn-house-18.growth",
+      "sceneId": "TownScene",
+      "prefabId": "prefab.phase-8a.world-lawn-growth",
+      "stateId": "state.phase-8a.world-lawn-growth",
+      "position": {
+        "x": 3395,
+        "y": 1600
+      },
+      "scale": {
+        "x": 1,
+        "y": 1
+      },
+      "depth": 360,
+      "worldOrigin": {
+        "x": 0,
+        "y": 0
+      },
+      "visualOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "binding": {
+        "mode": "repeat",
+        "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+        "dynamicPosition": null,
+        "dynamicFacing": null,
+        "visibleAfter": null,
+        "gameplayOwner": null,
+        "protectedWorldObjectId": "lawn-house-18",
+        "protectedWorldPosition": null,
+        "protectedWorldYard": {
+          "x": 3395,
+          "y": 1600,
+          "width": 300,
+          "height": 410
+        },
+        "protectedWorldRiver": null,
+        "protectedWorldRoadId": null,
+        "protectedGate": null,
+        "npcIdentityBinding": null,
+        "speciesBinding": null,
+        "socketBinding": null,
+        "safeAreaBindings": null,
+        "minimumCssTouchTarget": null,
+        "presentationOnly": false,
+        "visualLayerRole": "growth"
+      },
+      "layoutId": "layout.phase-8a.town-lawns",
+      "gameplayGeometryLocked": true,
+      "activation": "phase-8b-approved"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "instance.phase-8a.town.lawn-house-20.growth",
+      "sceneId": "TownScene",
+      "prefabId": "prefab.phase-8a.world-lawn-growth",
+      "stateId": "state.phase-8a.world-lawn-growth",
+      "position": {
+        "x": 3725,
+        "y": 1600
+      },
+      "scale": {
+        "x": 1,
+        "y": 1
+      },
+      "depth": 360,
+      "worldOrigin": {
+        "x": 0,
+        "y": 0
+      },
+      "visualOffset": {
+        "x": 0,
+        "y": 0
+      },
+      "binding": {
+        "mode": "repeat",
+        "repeat": "seamless-lawn-tile-clipped-to-protected-yard-mask",
+        "dynamicPosition": null,
+        "dynamicFacing": null,
+        "visibleAfter": null,
+        "gameplayOwner": null,
+        "protectedWorldObjectId": "lawn-house-20",
+        "protectedWorldPosition": null,
+        "protectedWorldYard": {
+          "x": 3725,
+          "y": 1600,
+          "width": 300,
+          "height": 410
+        },
+        "protectedWorldRiver": null,
+        "protectedWorldRoadId": null,
+        "protectedGate": null,
+        "npcIdentityBinding": null,
+        "speciesBinding": null,
+        "socketBinding": null,
+        "safeAreaBindings": null,
+        "minimumCssTouchTarget": null,
+        "presentationOnly": false,
+        "visualLayerRole": "growth"
+      },
+      "layoutId": "layout.phase-8a.town-lawns",
       "gameplayGeometryLocked": true,
       "activation": "phase-8b-approved"
     }
@@ -732,7 +1940,9 @@ export const PHASE_8B_APPROVED_ASSET_INDEX = Object.freeze({
       "assetIds": [
         "terrain.town.slice.grass",
         "terrain.town.slice.pavement",
-        "terrain.town.slice.road"
+        "terrain.town.slice.road",
+        "terrain.town.lawn.striped-base",
+        "terrain.town.lawn.growth-overlay"
       ],
       "animationIds": [],
       "activation": "phase-8b-approved"

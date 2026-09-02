@@ -3,8 +3,11 @@ import { HOUSES, PATHS, ROADS, TOWN_REFERENCE_LAYOUT, WORLD } from "../data/town
 
 const HOUSE_STATES = Object.freeze(["clean", "weathered", "job-ready", "job-ready"]);
 const LAWN_STATES = Object.freeze(["fresh-cut", "growing", "long", "job-ready"]);
+const LAWN_WEED_STATES = Object.freeze(["none", "light", "job-ready", "heavy"]);
+export const APPROVED_WORLD_LAWN_REPEAT_MODE = "seamless-lawn-tile-clipped-to-protected-yard-mask";
 const position = (x, y, extra = {}) => ({ position: { x, y }, visible: true, ...extra });
 const lawnStage = (height) => height < 20 ? 0 : height < 45 ? 1 : height < 70 ? 2 : 3;
+const lawnWeedStage = (pressure) => pressure < 18 ? 0 : pressure < 38 ? 1 : pressure < 55 ? 2 : 3;
 
 function localWorldOrigin(instance) {
   const x = Number(instance.worldOrigin?.x || 0);
@@ -122,13 +125,27 @@ function townPavementPlacements(instance) {
   return placements;
 }
 
-function repeat(instance, mode) {
+function repeat(instance, binding) {
+  const mode = binding.repeat;
   if (mode === "cover-town-ground") {
     const origin = localWorldOrigin(instance);
     return [position(origin.x, origin.y, { tileArea: { width: WORLD.width, height: WORLD.height }, depth: 0 })];
   }
   if (mode === "surface-autotile") return townPavementPlacements(instance);
   if (mode === "road-surface-autotile") return townRoadPlacements(instance);
+  if (mode === APPROVED_WORLD_LAWN_REPEAT_MODE) {
+    const yard = binding.protectedWorldYard;
+    if (![yard?.x, yard?.y, yard?.width, yard?.height].every(Number.isFinite) || yard.width <= 0 || yard.height <= 0) {
+      throw new Error(`${instance.id} requires a valid protectedWorldYard for ${APPROVED_WORLD_LAWN_REPEAT_MODE}.`);
+    }
+    const origin = localWorldOrigin(instance);
+    return [position(yard.x + yard.width / 2 + origin.x, yard.y + yard.height / 2 + origin.y, {
+      id: `${binding.protectedWorldObjectId || instance.id}:approved-lawn-surface`,
+      tileArea: { width: yard.width, height: yard.height },
+      origin: { x: 0.5, y: 0.5 },
+      depth: 19,
+    })];
+  }
   if (mode === "horizontal-strip") return Array.from({ length: 20 }, (_, index) => position(32 + index * 64, instance.position.y));
   if (mode === "vertical-banks") return Array.from({ length: 12 }, (_, index) => position(instance.position.x, 32 + index * 64, { frame: index % 2 }));
   if (mode === "yard-boundary") return [position(215, 155), position(343, 155), position(471, 155), position(215, 480), position(343, 480, { frame: 1 }), position(471, 480)];
@@ -139,7 +156,7 @@ function repeat(instance, mode) {
 export function createTownApprovedSceneBindings(scene) {
   return {
     placementResolver(instance, binding) {
-      if (binding.mode === "repeat") return repeat(instance, binding.repeat);
+      if (binding.mode === "repeat") return repeat(instance, binding);
       if (binding.mode === "dynamic" && instance.id.endsWith(".player")) {
         const actor = scene.customResident?.getSnapshot?.().controlling ? scene.customResidentCharacter : scene.player;
         return actor ? [position(actor.x - Number(instance.worldOrigin?.x || 0), actor.y - Number(instance.worldOrigin?.y || 0), { facing: actor.direction || "down", visible: actor.visible !== false })] : [];
@@ -157,14 +174,19 @@ export function createTownApprovedSceneBindings(scene) {
       return null;
     },
     stateResolver(instance, placement) {
+      const binding = instance.binding || {};
       if (placement?.stateName) return placement.stateName;
       if (instance.id.endsWith("house-6")) {
         const snapshot = scene.gameState?.getSnapshot?.();
         return HOUSE_STATES[houseExteriorDirtStage(snapshot?.houseRescue?.homes?.["house-6"], snapshot?.world?.day || 1)] || "clean";
       }
-      if (instance.id.endsWith("lawn-house-6")) {
-        const lawn = scene.gameState?.getSnapshot?.()?.farming?.lawns?.["lawn-house-6"];
+      if (binding.protectedWorldObjectId && binding.visualLayerRole === "growth") {
+        const lawn = scene.gameState?.getSnapshot?.()?.farming?.lawns?.[binding.protectedWorldObjectId];
         return LAWN_STATES[lawnStage(lawn?.grassHeight || 0)];
+      }
+      if (binding.protectedWorldObjectId && binding.visualLayerRole === "weeds") {
+        const lawn = scene.gameState?.getSnapshot?.()?.farming?.lawns?.[binding.protectedWorldObjectId];
+        return LAWN_WEED_STATES[lawnWeedStage(lawn?.weedPressure || 0)];
       }
       return null;
     },

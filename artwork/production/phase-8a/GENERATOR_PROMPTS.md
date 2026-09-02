@@ -1,6 +1,6 @@
 # KindWorks Phase 8A Generator-Ready Prompt Book
 
-Generated from `kindworks.phase-8a.premium-vertical-slice` revision 1. This is a production specification, not permission to mass-generate or integrate artwork. Generate and review one dependency wave at a time.
+Generated from `kindworks.phase-8a.premium-vertical-slice` revision 3. This is a production specification, not permission to mass-generate or integrate artwork. Generate and review one dependency wave at a time.
 
 ## 01 — terrain.town.slice.grass
 
@@ -354,33 +354,33 @@ Return only house-6-bay-cottage-states.v1.png plus provenance metadata; do not c
 - all required states, layers, directions, and animation frames are present
 - texture budget, scene-pack dependency, fallback, and orphan-reference checks pass
 
-## 06 — terrain.town.slice.lawn-house-6
+## 06 — terrain.town.lawn.striped-base
 
 - Family: `family.world-lawn.slice`
-- Purpose: the authored house-6 lawn in all four growth states
-- Output: `1280×352` PNG, alpha=true; 4×1; 4 frames; 320×352px each; order: fresh-cut, growing, long, job-ready
-- Logical display: `320×352`
+- Purpose: seamless striped freshly-cut lawn base shared by all 19 active house lawns
+- Output: `256×256` PNG, alpha=false; single untrimmed image
+- Logical display: `256×256`
 - Camera: top-down orthographic
-- Anchor: yard-centre at `0.5, 0.5`
+- Anchor: tile-top-left at `0, 0`
 - States: fresh-cut, growing, long, job-ready
-- Layers: main
+- Layers: background-base
 - Directions: none
-- Runtime filename: `public/assets/runtime/phase-8a/lawn-house-6-growth-states.v1.png`
-- Prefab/state: `prefab.phase-8a.lawn-house-6` / `state.phase-8a.lawn-house-6`
-- Scene destination: `TownScene` → `layout.phase-8a.town-block.house-6` → `instance.phase-8a.town.lawn-house-6`
+- Runtime filename: `public/assets/runtime/phase-8a/town-lawn-striped-base.v4.png`
+- Prefab/state: `prefab.phase-8a.world-lawn-growth` / `state.phase-8a.world-lawn-growth`
+- Scene destination: `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-1.growth`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-2.growth`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-3.growth`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-4.growth`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-5.growth`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-6.growth`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-7.growth`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-8.growth`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-9.growth`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-10.growth`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-11.growth`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-12.growth`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-13.growth`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-14.growth`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-15.growth`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-16.growth`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-17.growth`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-18.growth`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-20.growth`
 - Fallback: labelled checker placeholder in Asset Lab; transparent safe fallback with recorded registry failure
 
 ### Generator prompt
 
-Create one production-ready KindWorks pixel-art asset for the authored house-6 lawn in all four growth states Four horizontally aligned versions of the exact same 310×340 house yard: freshly cut below 20 grass height, growing 20–44, long 45–69, and overgrown job-ready at 70+. Preserve every boundary and gate opening; only grass height, density, weeds, and small flowers change. Use KindWorks Visual Style Bible v4. Exact output: 1280×352px PNG, transparent alpha, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.
+Create one production-ready KindWorks pixel-art asset for seamless striped freshly-cut lawn base shared by all 19 active house lawns One seamless, fully opaque freshly-cut lawn tile colour-matched to the approved town grass, with four broad, near-tone-on-tone alternating mowing stripes. Preserve natural grass detail at real game scale; stripe luminance variation must remain subtle enough that the lawn blends into the surrounding town ground. It must repeat on every edge and remain visible beneath every transparent growth state. Use KindWorks Visual Style Bible v4. Exact output: 256×256px PNG, fully opaque, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.
 
 ### Negative prompt / forbidden output
 
-provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; house, road, mower, person, text, status badge, moved yard boundary, or changed gate position
+provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; harsh, narrow, dark, or neon stripes, tall grass, weeds, bare dirt, flowers, house, fence, gate, path, road, mower, person, text, status badge, transparency, yard boundary, or non-tileable edge
 
 ### Delivery
 
-Return only lawn-house-6-growth-states.v1.png plus provenance metadata; do not composite it into a screenshot or rename it.
+Return only town-lawn-striped-base.v1.png plus provenance metadata; do not composite it into a screenshot or rename it.
 
 ### Geometry and sockets
 
@@ -389,43 +389,17 @@ Return only lawn-house-6-growth-states.v1.png plus provenance metadata; do not c
   "geometry": {
     "visual": {
       "kind": "rectangle",
-      "x": -160,
-      "y": -176,
-      "width": 320,
-      "height": 352
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256
     },
     "collision": null,
     "navigation": null,
-    "interaction": {
-      "kind": "circle",
-      "x": 0,
-      "y": 95,
-      "radius": 105
-    },
-    "touch": {
-      "kind": "rectangle",
-      "x": -155,
-      "y": -170,
-      "width": 310,
-      "height": 340
-    }
+    "interaction": null,
+    "touch": null
   },
-  "sockets": [
-    {
-      "id": "job-entry",
-      "logical": {
-        "x": 0,
-        "y": 95
-      }
-    },
-    {
-      "id": "gate-south",
-      "logical": {
-        "x": 0,
-        "y": 170
-      }
-    }
-  ]
+  "sockets": []
 }
 ```
 
@@ -439,7 +413,125 @@ Return only lawn-house-6-growth-states.v1.png plus provenance metadata; do not c
 - all required states, layers, directions, and animation frames are present
 - texture budget, scene-pack dependency, fallback, and orphan-reference checks pass
 
-## 07 — prop.town.slice.large-oak.shadow
+## 07 — terrain.town.lawn.growth-overlay
+
+- Family: `family.world-lawn.slice`
+- Purpose: seamless transparent grass-height overlays shared by all 19 active house lawns
+- Output: `1024×256` PNG, alpha=true; 4×1; 4 frames; 256×256px each; order: fresh-cut, growing, long, job-ready
+- Logical display: `256×256`
+- Camera: top-down orthographic
+- Anchor: tile-top-left at `0, 0`
+- States: fresh-cut, growing, long, job-ready
+- Layers: growth-overlay
+- Directions: none
+- Runtime filename: `public/assets/runtime/phase-8a/town-lawn-growth-overlay.v4.png`
+- Prefab/state: `prefab.phase-8a.world-lawn-growth` / `state.phase-8a.world-lawn-growth`
+- Scene destination: `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-1.growth`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-2.growth`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-3.growth`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-4.growth`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-5.growth`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-6.growth`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-7.growth`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-8.growth`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-9.growth`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-10.growth`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-11.growth`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-12.growth`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-13.growth`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-14.growth`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-15.growth`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-16.growth`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-17.growth`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-18.growth`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-20.growth`
+- Fallback: labelled checker placeholder in Asset Lab; transparent safe fallback with recorded registry failure
+
+### Generator prompt
+
+Create one production-ready KindWorks pixel-art asset for seamless transparent grass-height overlays shared by all 19 active house lawns Four seamless transparent grass-growth overlays in exact order: fresh-cut for grassHeight 0–19 is fully transparent; growing for 20–44 adds sparse short grass in irregular clumps; long for 45–69 adds denser medium-to-tall grass with uneven open gaps; and job-ready for 70–100 is severely overgrown with dense, tangled tall grass and weeds. Every 256×256 frame must use an organic random distribution with no rows, columns, crop pattern, or stripe-like repetition. The striped lawn base must remain visible beneath the alpha overlay. The frames are reusable material overlays, not pictures of a particular house or yard. Use KindWorks Visual Style Bible v4. Exact output: 1024×256px PNG, transparent alpha, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.
+
+### Negative prompt / forbidden output
+
+provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; opaque background, checkerboard background, rows, columns, crop pattern, harsh bands, house, fence, gate, path, road, mower, person, text, status badge, yard boundary, or non-tileable edge
+
+### Delivery
+
+Return only town-lawn-growth-overlay.v1.png plus provenance metadata; do not composite it into a screenshot or rename it.
+
+### Geometry and sockets
+
+```json
+{
+  "geometry": {
+    "visual": {
+      "kind": "rectangle",
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 256
+    },
+    "collision": null,
+    "navigation": null,
+    "interaction": null,
+    "touch": null
+  },
+  "sockets": []
+}
+```
+
+### Automated validation
+
+- semantic ID is unique and matches the approved manifest entry
+- filename and file format exactly match the contract
+- canvas, frame grid, frame count, alpha mode, and untrimmed alignment are exact
+- nearest-neighbour sampling is preserved and no smoothing metadata is introduced
+- ground anchor, sockets, visual bounds, and gameplay geometry remain independently addressable
+- all required states, layers, directions, and animation frames are present
+- texture budget, scene-pack dependency, fallback, and orphan-reference checks pass
+
+## 08 — terrain.town.lawn.weed-overlay
+
+- Family: `family.world-lawn.slice`
+- Purpose: independent weed-pressure overlays shared by all 19 active house lawns
+- Output: `256×64` PNG, alpha=true; 4×1; 4 frames; 64×64px each; order: none, light, job-ready, heavy
+- Logical display: `64×64`
+- Camera: top-down orthographic
+- Anchor: tile-top-left at `0, 0`
+- States: none, light, job-ready, heavy
+- Layers: main
+- Directions: none
+- Runtime filename: `public/assets/runtime/phase-8a/town-lawn-weed-overlay.v1.png`
+- Prefab/state: `prefab.phase-8a.world-lawn-weeds` / `state.phase-8a.world-lawn-weeds`
+- Scene destination: `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-1.weeds`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-2.weeds`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-3.weeds`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-4.weeds`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-5.weeds`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-6.weeds`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-7.weeds`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-8.weeds`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-9.weeds`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-10.weeds`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-11.weeds`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-12.weeds`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-13.weeds`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-14.weeds`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-15.weeds`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-16.weeds`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-17.weeds`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-18.weeds`; `TownScene` → `layout.phase-8a.town-lawns` → `instance.phase-8a.town.lawn-house-20.weeds`
+- Fallback: labelled checker placeholder in Asset Lab; transparent safe fallback with recorded registry failure
+
+### Generator prompt
+
+Create one production-ready KindWorks pixel-art asset for independent weed-pressure overlays shared by all 19 active house lawns Four seamless transparent weed overlays in exact order: none for weedPressure 0–17 (fully transparent), light for 18–37, job-ready for 38–54, and heavy for 55–100. Keep weed positions and tile-edge continuity aligned across visible frames while increasing density and changing to the approved heavier weed colour at 55. Only job-ready and heavy may include sparse small yellow weed flowers, matching current gameplay presentation. Use KindWorks Visual Style Bible v4. Exact output: 256×64px PNG, transparent alpha, untrimmed, nearest-neighbour pixel art. Preserve the declared camera, scale, anchor, state alignment, frame order, and empty padding. No presentation mockup.
+
+### Negative prompt / forbidden output
+
+provider watermark, signature, logo, caption, or embedded text; photorealism, vector-soft edges, antialiasing, blur, or resampling noise; automatic trimming, cropped canvas, changed frame order, or unequal frame alignment; unrequested UI, characters, props, scenery, shadows, or background colour; perspective, scale, palette, outline, or lighting that conflicts with the KindWorks Visual Style Bible v4; grass ground colour, general meadow flowers, house, fence, gate, path, road, mower, person, text, status badge, opaque background, yard boundary, or non-tileable edge
+
+### Delivery
+
+Return only town-lawn-weed-overlay.v1.png plus provenance metadata; do not composite it into a screenshot or rename it.
+
+### Geometry and sockets
+
+```json
+{
+  "geometry": {
+    "visual": {
+      "kind": "rectangle",
+      "x": 0,
+      "y": 0,
+      "width": 64,
+      "height": 64
+    },
+    "collision": null,
+    "navigation": null,
+    "interaction": null,
+    "touch": null
+  },
+  "sockets": []
+}
+```
+
+### Automated validation
+
+- semantic ID is unique and matches the approved manifest entry
+- filename and file format exactly match the contract
+- canvas, frame grid, frame count, alpha mode, and untrimmed alignment are exact
+- nearest-neighbour sampling is preserved and no smoothing metadata is introduced
+- ground anchor, sockets, visual bounds, and gameplay geometry remain independently addressable
+- all required states, layers, directions, and animation frames are present
+- texture budget, scene-pack dependency, fallback, and orphan-reference checks pass
+
+## 09 — prop.town.slice.large-oak.shadow
 
 - Family: `family.layered-tree.slice`
 - Purpose: separate ground shadow for the large occluding oak
@@ -498,7 +590,7 @@ Return only large-oak-shadow.v1.png plus provenance metadata; do not composite i
 - all required states, layers, directions, and animation frames are present
 - texture budget, scene-pack dependency, fallback, and orphan-reference checks pass
 
-## 08 — prop.town.slice.large-oak.trunk
+## 10 — prop.town.slice.large-oak.trunk
 
 - Family: `family.layered-tree.slice`
 - Purpose: large-oak trunk and lower body used for collision and Y-sort
@@ -593,7 +685,7 @@ Return only large-oak-trunk.v1.png plus provenance metadata; do not composite it
 - all required states, layers, directions, and animation frames are present
 - texture budget, scene-pack dependency, fallback, and orphan-reference checks pass
 
-## 09 — prop.town.slice.large-oak.canopy
+## 11 — prop.town.slice.large-oak.canopy
 
 - Family: `family.layered-tree.slice`
 - Purpose: foreground canopy that correctly occludes residents behind the large oak
@@ -652,7 +744,7 @@ Return only large-oak-canopy.v1.png plus provenance metadata; do not composite i
 - all required states, layers, directions, and animation frames are present
 - texture budget, scene-pack dependency, fallback, and orphan-reference checks pass
 
-## 10 — prop.town.slice.public-bin
+## 12 — prop.town.slice.public-bin
 
 - Family: `family.small-town-prop.slice`
 - Purpose: compact public bin for the town block
@@ -740,7 +832,7 @@ Return only public-bin-states.v1.png plus provenance metadata; do not composite 
 - all required states, layers, directions, and animation frames are present
 - texture budget, scene-pack dependency, fallback, and orphan-reference checks pass
 
-## 11 — prop.town.slice.white-fence
+## 13 — prop.town.slice.white-fence
 
 - Family: `family.small-town-prop.slice`
 - Purpose: house-6 white picket fence segment with gate socket
@@ -833,7 +925,7 @@ Return only white-fence-segment.v1.png plus provenance metadata; do not composit
 - all required states, layers, directions, and animation frames are present
 - texture budget, scene-pack dependency, fallback, and orphan-reference checks pass
 
-## 12 — prop.town.slice.rubbish-can
+## 14 — prop.town.slice.rubbish-can
 
 - Family: `family.small-town-prop.slice`
 - Purpose: one collectable rubbish item near the public bin
@@ -903,7 +995,7 @@ Return only rubbish-crushed-can.v1.png plus provenance metadata; do not composit
 - all required states, layers, directions, and animation frames are present
 - texture budget, scene-pack dependency, fallback, and orphan-reference checks pass
 
-## 13 — prop.town.slice.flower-planter
+## 15 — prop.town.slice.flower-planter
 
 - Family: `family.small-town-prop.slice`
 - Purpose: small flower planter decoration beside house-6
@@ -983,7 +1075,7 @@ Return only flower-planter.v1.png plus provenance metadata; do not composite it 
 - all required states, layers, directions, and animation frames are present
 - texture budget, scene-pack dependency, fallback, and orphan-reference checks pass
 
-## 14 — character.player.slice.resident
+## 16 — character.player.slice.resident
 
 - Family: `family.resident-character.slice`
 - Purpose: controllable player resident for the premium slice
@@ -1085,7 +1177,7 @@ Return only player-resident-walk.v1.png plus provenance metadata; do not composi
 - all required states, layers, directions, and animation frames are present
 - texture budget, scene-pack dependency, fallback, and orphan-reference checks pass
 
-## 15 — character.npc.slice.resident-a
+## 17 — character.npc.slice.resident-a
 
 - Family: `family.resident-character.slice`
 - Purpose: one independently moving town NPC
@@ -1180,7 +1272,7 @@ Return only npc-resident-a-walk.v1.png plus provenance metadata; do not composit
 - all required states, layers, directions, and animation frames are present
 - texture budget, scene-pack dependency, fallback, and orphan-reference checks pass
 
-## 16 — character.animal.slice.dog
+## 18 — character.animal.slice.dog
 
 - Family: `family.animal-character.slice`
 - Purpose: one roaming and follow-capable dog
@@ -1275,7 +1367,7 @@ Return only animal-dog-walk.v1.png plus provenance metadata; do not composite it
 - all required states, layers, directions, and animation frames are present
 - texture budget, scene-pack dependency, fallback, and orphan-reference checks pass
 
-## 17 — ui.town.slice.lawn-interaction
+## 19 — ui.town.slice.lawn-interaction
 
 - Family: `family.feedback-ui.slice`
 - Purpose: contextual lawn-job interaction prompt
@@ -1340,7 +1432,7 @@ Return only lawn-interaction-prompt.v1.png plus provenance metadata; do not comp
 - all required states, layers, directions, and animation frames are present
 - texture budget, scene-pack dependency, fallback, and orphan-reference checks pass
 
-## 18 — ui.town.slice.coin-reward-burst
+## 20 — ui.town.slice.coin-reward-burst
 
 - Family: `family.feedback-ui.slice`
 - Purpose: short saved-reward confirmation after the lawn state transition
@@ -1399,7 +1491,7 @@ Return only coin-reward-burst.v1.png plus provenance metadata; do not composite 
 - all required states, layers, directions, and animation frames are present
 - texture budget, scene-pack dependency, fallback, and orphan-reference checks pass
 
-## 19 — minigame.lawn.slice.board-tiles
+## 21 — minigame.lawn.slice.board-tiles
 
 - Family: `family.lawn-minigame.slice`
 - Purpose: full-screen Lawn Care board surface states
@@ -1470,7 +1562,7 @@ Return only lawn-care-board-tiles.v1.png plus provenance metadata; do not compos
 - all required states, layers, directions, and animation frames are present
 - texture budget, scene-pack dependency, fallback, and orphan-reference checks pass
 
-## 20 — minigame.lawn.slice.weed-tiles
+## 22 — minigame.lawn.slice.weed-tiles
 
 - Family: `family.lawn-minigame.slice`
 - Purpose: three readable Lawn Care weed types
@@ -1529,7 +1621,7 @@ Return only lawn-care-weed-tiles.v1.png plus provenance metadata; do not composi
 - all required states, layers, directions, and animation frames are present
 - texture budget, scene-pack dependency, fallback, and orphan-reference checks pass
 
-## 21 — minigame.lawn.slice.mower
+## 23 — minigame.lawn.slice.mower
 
 - Family: `family.lawn-minigame.slice`
 - Purpose: directional mower token for the Lawn Care board
@@ -1606,7 +1698,7 @@ Return only lawn-care-mower.v1.png plus provenance metadata; do not composite it
 - all required states, layers, directions, and animation frames are present
 - texture budget, scene-pack dependency, fallback, and orphan-reference checks pass
 
-## 22 — ui.lawn.slice.controls
+## 24 — ui.lawn.slice.controls
 
 - Family: `family.lawn-minigame.slice`
 - Purpose: only the exit, undo, and hint icons required by the representative screen
