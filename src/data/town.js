@@ -4,7 +4,7 @@ export const COLORS = Object.freeze({
   grass: 0x8bc86f,
   grassLight: 0x9fd583,
   grassDark: 0x6eaa58,
-  road: 0x8a8d8b,
+  road: 0x535f6d,
   roadEdge: 0xcfd2c9,
   path: 0xd9c29a,
   water: 0x65b9ce,
@@ -29,6 +29,16 @@ export const RIVER_PATH = Object.freeze([
   [2572, 2160],
   [2580, 2460],
   [2585, 2920],
+]);
+
+// Presentation-only river centreline. The protected gameplay river above stays
+// unchanged while the approved artwork follows this more natural S-curve.
+export const RIVER_VISUAL_PATH = Object.freeze([
+  [2555, -120], [2535, 0], [2475, 120], [2450, 240], [2505, 360], [2575, 450], [2560, 530],
+  [2500, 620], [2425, 740], [2450, 850], [2525, 930], [2560, 1000],
+  [2640, 1100], [2690, 1210], [2660, 1320], [2600, 1430], [2560, 1545],
+  [2490, 1640], [2400, 1760], [2385, 1880], [2450, 1990], [2600, 2110],
+  [2670, 2220], [2620, 2350], [2500, 2440], [2470, 2570], [2510, 2700], [2555, 2800], [2555, 2920],
 ]);
 
 // Code-native transcription of the approved Willowmere overhead reference.
@@ -72,9 +82,30 @@ export const TOWN_REFERENCE_LAYOUT = Object.freeze({
       Object.freeze([4100, 2505]), Object.freeze([4100, 2800]), Object.freeze([3070, 2800]),
     ]),
   }),
+  pavement: Object.freeze({
+    houseWalkWidth: 34,
+    // Presentation-only route corrections transcribe the reference paths without
+    // changing the protected navigation/path data below.
+    visualPathOverrides: Object.freeze({
+      "commons-play": Object.freeze([
+        Object.freeze([1615, 890]), Object.freeze([1718, 882]),
+        Object.freeze([1738, 904]),
+        Object.freeze([2148, 1065]), Object.freeze([2185, 1065]),
+        Object.freeze([2180, 1225]), Object.freeze([2040, 1305]),
+        Object.freeze([1815, 1305]), Object.freeze([1718, 1218]),
+        Object.freeze([1650, 1130]),
+      ]),
+    }),
+    commercialAreas: Object.freeze([
+      Object.freeze({ id: "old-market-forecourt", x: 160, y: 830, width: 820, height: 410 }),
+      Object.freeze({ id: "high-street-forecourt", x: 2725, y: 555, width: 1290, height: 630 }),
+      Object.freeze({ id: "cinema-forecourt", x: 3815, y: 205, width: 285, height: 285 }),
+      Object.freeze({ id: "south-shore-cafe-forecourt", x: 3415, y: 2045, width: 290, height: 215, transition: "none" }),
+    ]),
+  }),
   woodland: Object.freeze({
     riverClearCenterX: 2555,
-    riverClearHalfWidth: 190,
+    riverClearHalfWidth: 270,
     interiorTrees: Object.freeze([
       Object.freeze([520, 1190, 1]), Object.freeze([780, 1320, 0.95]), Object.freeze([350, 1430, 1.05]),
       Object.freeze([1160, 770, 0.94]), Object.freeze([1670, 760, 1.05]), Object.freeze([2210, 790, 1]),

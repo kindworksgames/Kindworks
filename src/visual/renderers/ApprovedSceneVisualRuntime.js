@@ -1,3 +1,4 @@
+import { VISUAL_ASSET_KINDS } from "../contracts.js";
 import { PhaserPrefabRenderer } from "./PhaserPrefabRenderer.js";
 
 const sceneIdOf = (scene) => scene?.scene?.key || null;
@@ -9,11 +10,12 @@ const point = (value) => ({ x: Number(value?.x || 0), y: Number(value?.y || 0) }
  * created, moved, or written here.
  */
 export class ApprovedSceneVisualRuntime {
-  constructor(scene, { registry = scene?.registry?.get?.("visualRegistry"), bindings = {} } = {}) {
+  constructor(scene, { registry = scene?.registry?.get?.("visualRegistry"), bindings = {}, instanceFilter = null } = {}) {
     if (!registry) throw new Error("ApprovedSceneVisualRuntime requires the visual registry.");
     this.scene = scene;
     this.registry = registry;
     this.bindings = bindings;
+    this.instanceFilter = instanceFilter;
     this.renderer = new PhaserPrefabRenderer(scene, registry);
     this.records = new Map();
     this.disposed = false;
@@ -28,6 +30,7 @@ export class ApprovedSceneVisualRuntime {
     this.registry.createSceneAnimations(this.scene, sceneId);
     for (const instance of this.registry.getSceneInstancesByScene(sceneId)) {
       if (instance.activation !== "phase-8b-approved") continue;
+      if (this.instanceFilter && !this.instanceFilter(instance)) continue;
       try {
         const placements = this.resolvePlacements(instance);
         if (!placements?.length) continue;
@@ -73,11 +76,16 @@ export class ApprovedSceneVisualRuntime {
     const objects = [];
     for (const layer of resolved.layers) {
       const frame = placement.frame ?? resolved.state?.modifier?.frame ?? null;
-      const object = this.renderer.createDisplayLayer(resolved, layer, { frame });
+      const object = this.renderer.createDisplayLayer(resolved, layer, { frame, tileArea: placement.tileArea || null });
       if (!object) continue;
+      if (placement.origin) object.setOrigin?.(placement.origin.x, placement.origin.y);
       if (placement.displaySize) object.setDisplaySize?.(placement.displaySize.width, placement.displaySize.height);
       object.setPosition(position.x, position.y);
-      object.setDepth(this.renderer.depthFor(resolved, layer.role, position.y) + Number(layer.order || 0));
+      if (Number.isFinite(placement.rotation)) object.setRotation?.(placement.rotation);
+      const depth = Number.isFinite(placement.depth)
+        ? placement.depth
+        : this.renderer.depthFor(resolved, layer.role, position.y) + Number(layer.order || 0);
+      object.setDepth(depth);
       object.setVisible(placement.visible !== false);
       object.disableInteractive?.();
       object.setData?.({
@@ -114,7 +122,10 @@ export class ApprovedSceneVisualRuntime {
       if (stateName === record.stateName) continue;
       const resolved = this.renderer.resolve(record.instance.prefabId, record.instance.stateId, stateName);
       const frame = resolved.state?.modifier?.frame;
-      if (Number.isInteger(frame)) for (const object of record.objects) object.setFrame?.(frame);
+      if (Number.isInteger(frame)) for (const object of record.objects) {
+        const asset = this.registry.getAsset(object.getData?.("semanticAssetId"));
+        if (asset?.kind !== VISUAL_ASSET_KINDS.IMAGE) object.setFrame?.(frame);
+      }
       for (const object of record.objects) {
         const assetId = object.getData?.("semanticAssetId");
         const animation = this.registry.getAnimationsByAsset?.(assetId)
@@ -127,7 +138,9 @@ export class ApprovedSceneVisualRuntime {
 
   shutdown() {
     if (this.disposed) return;
-    for (const record of this.records.values()) for (const object of record.objects) object.destroy?.();
+    for (const record of this.records.values()) {
+      for (const object of record.objects) object.destroy?.();
+    }
     this.records.clear();
     this.disposed = true;
   }
@@ -135,3 +148,11 @@ export class ApprovedSceneVisualRuntime {
 
 export function preloadApprovedSceneVisuals(scene) { return ApprovedSceneVisualRuntime.preload(scene); }
 export function mountApprovedSceneVisuals(scene, options) { return new ApprovedSceneVisualRuntime(scene, options).mount(); }
+
+export function hasApprovedSceneBinding(scene, predicate) {
+  const registry = scene?.registry?.get?.("visualRegistry");
+  const sceneId = sceneIdOf(scene);
+  if (!registry || !sceneId || typeof predicate !== "function") return false;
+  return registry.getSceneInstancesByScene(sceneId)
+    .some((instance) => instance.activation === "phase-8b-approved" && predicate(instance.binding || {}, instance));
+}

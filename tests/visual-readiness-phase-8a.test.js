@@ -13,8 +13,11 @@ import { createPhase8AAssetLabManifest } from "../src/visual/dev/phase8aAssetLab
 import {
   PHASE_8A_ASSET_IDS,
   PHASE_8A_VERTICAL_SLICE_PACKAGE,
+  WORLD_LAWN_GROWTH_STATES,
+  WORLD_LAWN_WEED_STATES,
 } from "../src/visual/verticalSlice/phase8aVerticalSlicePackage.js";
 import { PHASE_8A_RUNTIME_DEFINITIONS } from "../src/visual/generated/phase8aVerticalSliceRuntime.js";
+import { PHASE_8B_APPROVED_ASSET_INDEX } from "../src/visual/generated/phase8bApprovedAssetIndex.js";
 import { validatePhase8APackage } from "../src/visual/verticalSlice/validatePhase8APackage.js";
 
 const root = resolve(import.meta.dirname, "..");
@@ -25,7 +28,7 @@ const phase8aManifest = () => createPhase8AAssetLabManifest(KINDWORKS_VISUAL_MAN
 test("Phase 8A production package is complete and centrally registered", () => {
   const result = validatePhase8APackage({ visualManifest: phase8aManifest() });
   assert.equal(result.ok, true, result.errors.map(({ code, message }) => `${code}: ${message}`).join("\n"));
-  assert.deepEqual(result.counts, { families: 9, assets: 22, prefabs: 20, states: 20, animations: 13, placements: 22, waves: 6 });
+  assert.deepEqual(result.counts, { families: 9, assets: 24, prefabs: 21, states: 21, animations: 13, placements: 59, waves: 6 });
   assert.equal(PHASE_8A_VERTICAL_SLICE_PACKAGE.integration.massGenerationPermitted, false);
   assert.equal(PHASE_8A_VERTICAL_SLICE_PACKAGE.status, "production-package-ready-no-artwork-generated");
 });
@@ -107,15 +110,62 @@ test("the selected town block and lawn transition use protected repository ident
   assert.equal(TOWN_REFERENCE_LAYOUT.river.waterWidth, 188);
   assert.equal(TOWN_REFERENCE_LAYOUT.river.bankWidth, 226);
   assert.equal(PHASE_8A_VERTICAL_SLICE_PACKAGE.transition.interaction.targetId, lawn.id);
-  assert.equal(PHASE_8A_VERTICAL_SLICE_PACKAGE.transition.afterVisualState.currentValue, LAWN_CONFIG.freshlyCutHeight);
+  assert.equal(PHASE_8A_VERTICAL_SLICE_PACKAGE.transition.afterVisualState.growth.currentValue, LAWN_CONFIG.freshlyCutHeight);
+  assert.equal(PHASE_8A_VERTICAL_SLICE_PACKAGE.transition.afterVisualState.weeds.currentValue, LAWN_CONFIG.freshlyWeededPressure);
   assert.equal(PHASE_8A_VERTICAL_SLICE_PACKAGE.transition.rewardContract.visualLayerMayMutateReward, false);
 });
 
-test("all placeholders, states, layers, geometry and animations resolve through shared factories", () => {
+test("world lawn art separates growth from weeds and covers every active authored yard", () => {
+  const base = PHASE_8A_VERTICAL_SLICE_PACKAGE.assets.find(({ semanticId }) => semanticId === PHASE_8A_ASSET_IDS.LAWN_BASE);
+  const growth = PHASE_8A_VERTICAL_SLICE_PACKAGE.assets.find(({ semanticId }) => semanticId === PHASE_8A_ASSET_IDS.LAWN);
+  const weeds = PHASE_8A_VERTICAL_SLICE_PACKAGE.assets.find(({ semanticId }) => semanticId === PHASE_8A_ASSET_IDS.WORLD_LAWN_WEEDS);
+  const active = LAWN_PLOTS.filter(({ active }) => active);
+  const activeIds = active.map(({ id }) => id).sort();
+
+  assert.equal(base.output.type, "single-image");
+  assert.deepEqual(base.output.canvas, { width: 256, height: 256 });
+  assert.equal(base.output.alpha, false);
+  assert.deepEqual(base.states, WORLD_LAWN_GROWTH_STATES);
+  assert.equal(base.prefabId, growth.prefabId);
+  assert.equal(base.stateMapId, growth.stateMapId);
+  assert.deepEqual(base.layers.map(({ id }) => id), ["background-base"]);
+  assert.deepEqual(growth.layers.map(({ id }) => id), ["growth-overlay"]);
+  assert.deepEqual(growth.states, WORLD_LAWN_GROWTH_STATES);
+  assert.deepEqual(weeds.states, WORLD_LAWN_WEED_STATES);
+  assert.deepEqual(growth.output.spriteSheet.frameOrder, WORLD_LAWN_GROWTH_STATES);
+  assert.deepEqual(weeds.output.spriteSheet.frameOrder, WORLD_LAWN_WEED_STATES);
+  assert.equal(growth.output.spriteSheet.frameWidth, 256);
+  assert.equal(growth.output.spriteSheet.frameHeight, 256);
+  assert.equal(weeds.output.spriteSheet.frameWidth, 64);
+  assert.equal(weeds.output.spriteSheet.frameHeight, 64);
+  assert.equal(growth.geometry.collision, null);
+  assert.equal(growth.geometry.navigation, null);
+  assert.equal(growth.geometry.interaction, null);
+  assert.equal(growth.geometry.touch, null);
+  assert.equal(weeds.geometry.collision, null);
+  assert.equal(weeds.geometry.navigation, null);
+  assert.equal(weeds.geometry.interaction, null);
+  assert.equal(weeds.geometry.touch, null);
+  assert.deepEqual(base.scenePlacement.map(({ protectedWorldObjectId }) => protectedWorldObjectId).sort(), activeIds);
+  assert.deepEqual(growth.scenePlacement.map(({ protectedWorldObjectId }) => protectedWorldObjectId).sort(), activeIds);
+  assert.deepEqual(weeds.scenePlacement.map(({ protectedWorldObjectId }) => protectedWorldObjectId).sort(), activeIds);
+  assert.equal(new Set(growth.scenePlacement.map(({ yardGeometryFamily }) => yardGeometryFamily)).size, 4);
+  assert.ok(growth.forbiddenOutput.some((rule) => rule.includes("opaque background")));
+  assert.match(growth.promptPackage.positivePrompt, /severely overgrown/);
+  assert.match(weeds.promptPackage.positivePrompt, /weedPressure 0–17/);
+  assert.equal(LAWN_CONFIG.jobGrassThreshold, 70);
+  assert.equal(LAWN_CONFIG.jobWeedThreshold, 38);
+});
+
+test("all approved assets and remaining placeholders resolve through shared factories", () => {
   const registry = createVisualRegistry({ manifest: phase8aManifest(), reporter: { error() {} } });
   const renderer = new PhaserPrefabRenderer(null, registry);
+  const approvedIds = new Set(PHASE_8B_APPROVED_ASSET_INDEX.assets.map(({ id }) => id));
   for (const asset of PHASE_8A_VERTICAL_SLICE_PACKAGE.assets) {
-    assert.equal(registry.getAsset(asset.semanticId).source.owner, "Phase8AVerticalSlicePlaceholder");
+    assert.equal(
+      registry.getAsset(asset.semanticId).source.owner,
+      approvedIds.has(asset.semanticId) ? "Phase8BApprovedArtwork" : "Phase8AVerticalSlicePlaceholder",
+    );
     const stateMap = registry.getVisualState(asset.stateMapId);
     for (const stateName of asset.states) {
       const resolved = renderer.resolve(asset.prefabId, asset.stateMapId, stateName);

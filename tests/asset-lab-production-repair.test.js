@@ -8,16 +8,21 @@ import { KINDWORKS_VISUAL_MANIFEST } from "../src/visual/visualManifest.js";
 import { createPhase8AAssetLabManifest } from "../src/visual/dev/phase8aAssetLabManifest.js";
 import { ASSET_LAB_PRODUCTION_INDEX } from "../src/visual/generated/assetLabProductionIndex.js";
 import { assetLabCoverage, assetLabFacets, createAssetLabCatalog, filterAssetLabCatalog } from "../src/visual/dev/assetLabCatalog.js";
+import { PHASE_8A_VERTICAL_SLICE_PACKAGE } from "../src/visual/verticalSlice/phase8aVerticalSlicePackage.js";
 
 const root = resolve(import.meta.dirname, "..");
 const source = (path) => readFile(resolve(root, path), "utf8");
 const fullCatalog = () => createAssetLabCatalog(createPhase8AAssetLabManifest(KINDWORKS_VISUAL_MANIFEST), { productionIndex: ASSET_LAB_PRODUCTION_INDEX });
+const expectedPlaceholderCount = () => {
+  const approvedIds = new Set(KINDWORKS_VISUAL_MANIFEST.assets.map(({ id }) => id));
+  return PHASE_8A_VERTICAL_SLICE_PACKAGE.assets.filter(({ semanticId }) => !approvedIds.has(semanticId)).length;
+};
 
 test("production inventory is generated into one manifest-derived Asset Lab catalog", () => {
   const catalog = fullCatalog(), coverage = assetLabCoverage(catalog), facets = assetLabFacets(catalog);
-  assert.equal(coverage.assets, 37);
+  assert.equal(coverage.assets, 40);
   assert.equal(coverage.productionFamilies, 74);
-  assert.equal(coverage.placeholders.length, 22);
+  assert.equal(coverage.placeholders.length, expectedPlaceholderCount());
   assert.equal(new Set(ASSET_LAB_PRODUCTION_INDEX.familyRecords.map(({ id }) => id)).size, 74);
   for (const contract of ASSET_LAB_PRODUCTION_INDEX.categoryContracts) assert.ok(facets.categories.includes(contract.id.replace(/^category\./, "")), contract.id);
   for (const sceneId of Object.keys(ASSET_LAB_PRODUCTION_INDEX.sceneDependencies)) assert.ok(facets.scenes.includes(sceneId), sceneId);
@@ -25,7 +30,7 @@ test("production inventory is generated into one manifest-derived Asset Lab cata
 
 test("fallback placeholders can never report valid or approved", () => {
   const placeholders = fullCatalog().filter(({ validationStatus }) => validationStatus === "placeholder");
-  assert.equal(placeholders.length, 22);
+  assert.equal(placeholders.length, expectedPlaceholderCount());
   for (const entry of placeholders) {
     assert.equal(entry.approvalStatus, "not-generated");
     assert.ok(entry.validationFindings.some(({ code }) => code === "placeholder-runtime-art-missing"));
@@ -36,7 +41,7 @@ test("fallback placeholders can never report valid or approved", () => {
 test("dedicated production filters and usage lookup are authoritative", () => {
   const catalog = fullCatalog(), facets = assetLabFacets(catalog);
   for (const key of ["states", "directions", "animations", "approvals", "validations"]) assert.ok(facets[key].length > 0, key);
-  assert.ok(filterAssetLabCatalog(catalog, { validation: "placeholder" }).length === 22);
+  assert.equal(filterAssetLabCatalog(catalog, { validation: "placeholder" }).length, expectedPlaceholderCount());
   assert.ok(filterAssetLabCatalog(catalog, { approval: "not-ready" }).length >= 74);
   assert.ok(filterAssetLabCatalog(catalog, { state: "full" }).some(({ id }) => id === "prop.town-bin.public"));
   assert.ok(filterAssetLabCatalog(catalog, { direction: "down" }).some(({ id }) => id === "character.resident.generated-frames"));

@@ -19,6 +19,7 @@ import {
   TOWN_REFERENCE_LAYOUT,
   RIVER_CLEAROUT,
   RIVER_PATH,
+  RIVER_VISUAL_PATH,
   ROADS,
   SHOPS,
   WORLD,
@@ -68,9 +69,10 @@ import { houseExteriorDirtStage } from "../data/houseRescue.js";
 import { setSpriteAiLabelHint } from "../plugins/SpriteAiLabelPlugin.js";
 import { startLazyScene } from "./lazyScenes.js";
 import { TOWN_HOUSE_GEOMETRY, TOWN_LOGICAL_GEOMETRY, TOWN_SHOP_GEOMETRY } from "../data/townGeometry.js";
-import { preloadApprovedSceneVisuals, mountApprovedSceneVisuals } from "../visual/renderers/ApprovedSceneVisualRuntime.js";
+import { hasApprovedSceneBinding, preloadApprovedSceneVisuals, mountApprovedSceneVisuals } from "../visual/renderers/ApprovedSceneVisualRuntime.js";
 import { DENSE_TOUCH_RENDER_FPS, renderFrameTarget } from "../visual/ResponsiveFramePolicy.js";
-import { createTownApprovedSceneBindings } from "../presentation/TownApprovedSceneBindings.js";
+import { APPROVED_WORLD_LAWN_REPEAT_MODE, createTownApprovedSceneBindings } from "../presentation/TownApprovedSceneBindings.js";
+import { createTownRiverWaterVisual } from "../presentation/TownRiverVisual.js";
 
 const PLAYER_RADIUS = 17;
 const WALK_SPEED = 270;
@@ -93,6 +95,17 @@ const SHOP_INTERACTION_IDS = Object.freeze({
 
 function points(values) {
   return values.map(([x, y]) => ({ x, y }));
+}
+
+function riverPointAtY(path, y) {
+  for (let index = 1; index < path.length; index += 1) {
+    const [ax, ay] = path[index - 1];
+    const [bx, by] = path[index];
+    if (y < Math.min(ay, by) || y > Math.max(ay, by)) continue;
+    const amount = by === ay ? 0 : (y - ay) / (by - ay);
+    return { x: ax + (bx - ax) * amount, y };
+  }
+  return { x: path.at(-1)?.[0] || 0, y };
 }
 
 function containsWithRadius(rect, x, y, radius = PLAYER_RADIUS) {
@@ -631,61 +644,60 @@ export class TownScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.unbindInterface());
     this.updateStatus();
     this.time.delayedCall(420, () => this.restorationMilestoneController?.maybeOpen?.());
-    this.approvedSceneVisuals = mountApprovedSceneVisuals(this, { bindings: createTownApprovedSceneBindings(this) });
+    this.approvedSceneVisuals = mountApprovedSceneVisuals(this, {
+      bindings: createTownApprovedSceneBindings(this),
+      instanceFilter: (instance) => !["cover-town-ground", "surface-autotile", "road-surface-autotile"].includes(instance.binding?.repeat),
+    });
     this.approvedVisualRefreshElapsed = 0;
   }
 
   drawTown() {
+    const approvedGrassSurface = hasApprovedSceneBinding(this, (binding) => binding.mode === "repeat" && binding.repeat === "cover-town-ground");
+    const approvedPavementSurface = hasApprovedSceneBinding(this, (binding) => binding.mode === "repeat" && binding.repeat === "surface-autotile");
+    const approvedRoadSurface = hasApprovedSceneBinding(this, (binding) => binding.mode === "repeat" && binding.repeat === "road-surface-autotile");
+    this.approvedGrassSurfaceActive = approvedGrassSurface;
+    this.approvedPavementSurfaceActive = approvedPavementSurface;
+    this.approvedRoadSurfaceActive = approvedRoadSurface;
     this.add.rectangle(WORLD.width / 2, WORLD.height / 2, WORLD.width, WORLD.height, COLORS.grass).setDepth(0);
-
-    const terrain = this.add.graphics().setDepth(1);
-    terrain.fillStyle(COLORS.grassLight, 0.28);
-    for (const district of DISTRICTS) {
-      terrain.fillRoundedRect(district.x, district.y, district.width, district.height, 30);
-    }
-
-    const random = new Phaser.Math.RandomDataGenerator(["willowmere-town"]);
-    const cacheDecorativeVectors = window.innerWidth > 600 && window.innerWidth <= 1024;
-    const grassDetailTexture = "kindworks-town-grass-detail-4x-v1";
-    if (cacheDecorativeVectors && !this.textures.exists(grassDetailTexture)) {
-      const detail = this.make.graphics({ add: false });
-      detail.fillStyle(0xffffff, 1).fillCircle(32, 32, 24);
-      detail.generateTexture(grassDetailTexture, 64, 64);
-      detail.destroy();
-      this.textures.get(grassDetailTexture).setFilter(Phaser.Textures.FilterMode.NEAREST);
-    }
-    for (let index = 0; index < 260; index += 1) {
-      const x = random.between(30, WORLD.width - 30);
-      const y = random.between(30, WORLD.height - 30);
-      const radius = random.between(2, 6);
-      if (!cacheDecorativeVectors) {
-        terrain.fillStyle(index % 3 === 0 ? COLORS.grassDark : COLORS.grassLight, 0.18);
-        terrain.fillCircle(x, y, radius);
-        continue;
-      }
-      const detail = this.add.image(x, y, grassDetailTexture)
-        .setTint(index % 3 === 0 ? COLORS.grassDark : COLORS.grassLight)
-        .setAlpha(0.18)
-        .setScale(radius / 24)
-        .setDepth(1);
-      setSpriteAiLabelHint(detail, { id: `world.terrain.grass-detail-${index + 1}`, label: `Willowmere grass detail ${index + 1}`, kind: "terrain-detail" });
-    }
 
     this.drawReferenceWaterways();
     this.drawReferenceWoodland();
 
+    if (approvedPavementSurface) {
+      const pavementUnderlay = this.add.graphics().setDepth(8.5);
+      const drawRoundedRoute = (route, extraWidth) => {
+        const authoredPoints = TOWN_REFERENCE_LAYOUT.pavement.visualPathOverrides[route.id] || route.points;
+        const routePoints = points(authoredPoints);
+        const width = route.width + extraWidth;
+        pavementUnderlay.lineStyle(width, 0xe6d5ad, 1);
+        pavementUnderlay.strokePoints(routePoints, false, false);
+        for (const pointValue of routePoints) pavementUnderlay.fillStyle(0xe6d5ad, 1).fillCircle(pointValue.x, pointValue.y, width / 2);
+      };
+      // The exposed eight-pixel band on each side is the road kerb. The
+      // approved pavement tiles mounted above it provide the pixel-paver
+      // detail, while this rounded underlay closes bends without protrusions.
+      ROADS.forEach((road) => drawRoundedRoute(road, 16));
+      PATHS.forEach((path) => drawRoundedRoute(path, 8));
+    }
+
     const roadLayer = this.add.graphics().setDepth(10);
+    if (approvedPavementSurface) roadLayer.setData("excludeFromStaticTownBackdrop", true);
     for (const road of ROADS) {
-      roadLayer.lineStyle(road.width + 16, COLORS.roadEdge, 1);
-      roadLayer.strokePoints(points(road.points), false, false);
+      if (!approvedPavementSurface) {
+        roadLayer.lineStyle(road.width + 16, COLORS.roadEdge, 1);
+        roadLayer.strokePoints(points(road.points), false, false);
+      }
       roadLayer.lineStyle(road.width, COLORS.road, 1);
       roadLayer.strokePoints(points(road.points), false, false);
+      for (const [x, y] of road.points) roadLayer.fillStyle(COLORS.road, 1).fillCircle(x, y, road.width / 2);
     }
-    for (const path of PATHS) {
-      roadLayer.lineStyle(path.width + 8, 0xbca57b, 0.55);
-      roadLayer.strokePoints(points(path.points), false, false);
-      roadLayer.lineStyle(path.width, COLORS.path, 1);
-      roadLayer.strokePoints(points(path.points), false, false);
+    if (!approvedPavementSurface) {
+      for (const path of PATHS) {
+        roadLayer.lineStyle(path.width + 8, 0xbca57b, 0.55);
+        roadLayer.strokePoints(points(path.points), false, false);
+        roadLayer.lineStyle(path.width, COLORS.path, 1);
+        roadLayer.strokePoints(points(path.points), false, false);
+      }
     }
 
     this.drawReferencePonds();
@@ -694,7 +706,19 @@ export class TownScene extends Phaser.Scene {
     this.drawBridges();
     this.drawParkDetails();
     this.drawReferenceBeachDetails();
+    this.approvedTownGroundVisuals = mountApprovedSceneVisuals(this, {
+      bindings: createTownApprovedSceneBindings(this),
+      instanceFilter: (instance) => instance.binding?.repeat === "cover-town-ground",
+    });
     this.cacheStaticTownBackdrop();
+    this.approvedTownPavementVisuals = mountApprovedSceneVisuals(this, {
+      bindings: createTownApprovedSceneBindings(this),
+      instanceFilter: (instance) => instance.binding?.repeat === "surface-autotile",
+    });
+    this.approvedTownRoadVisuals = mountApprovedSceneVisuals(this, {
+      bindings: createTownApprovedSceneBindings(this),
+      instanceFilter: (instance) => instance.binding?.repeat === "road-surface-autotile",
+    });
     HOUSES.forEach((house) => this.drawHouse(house));
     this.drawHouseRescueMarkers();
     SHOPS.forEach((shop) => this.drawShop(shop));
@@ -729,6 +753,7 @@ export class TownScene extends Phaser.Scene {
       && object.depth <= 30
       && object.type !== "Zone"
       && !object.input?.enabled
+      && object.getData?.("excludeFromStaticTownBackdrop") !== true
     ));
     if (!staticObjects.length) return;
 
@@ -776,45 +801,53 @@ export class TownScene extends Phaser.Scene {
     const { river, beach } = TOWN_REFERENCE_LAYOUT;
     const banks = this.add.graphics().setDepth(4);
     banks.lineStyle(river.bankWidth + 30, 0x655e48, 0.28);
-    banks.strokePoints(points(RIVER_PATH), false, false);
+    banks.strokePoints(points(RIVER_VISUAL_PATH), false, false);
     banks.lineStyle(river.bankWidth, 0x9a8b68, 1);
-    banks.strokePoints(points(RIVER_PATH), false, false);
+    banks.strokePoints(points(RIVER_VISUAL_PATH), false, false);
 
     const water = this.add.graphics().setDepth(5);
     water.lineStyle(river.waterWidth + 22, COLORS.waterDark, 1);
-    water.strokePoints(points(RIVER_PATH), false, false);
-    water.lineStyle(river.waterWidth, COLORS.water, 1);
-    water.strokePoints(points(RIVER_PATH), false, false);
-    water.lineStyle(13, COLORS.waterLight, 0.46);
-    water.strokePoints(points(RIVER_PATH), false, false);
+    water.strokePoints(points(RIVER_VISUAL_PATH), false, false);
+    this.animatedRiverWater = createTownRiverWaterVisual(this, {
+      path: RIVER_VISUAL_PATH,
+      waterWidth: river.waterWidth,
+      depth: 5.5,
+      flowPixelsPerSecond: 18,
+    });
+    if (!this.animatedRiverWater) {
+      water.lineStyle(river.waterWidth, COLORS.water, 1);
+      water.strokePoints(points(RIVER_VISUAL_PATH), false, false);
+      water.lineStyle(13, COLORS.waterLight, 0.46);
+      water.strokePoints(points(RIVER_VISUAL_PATH), false, false);
+    }
 
     const rockLayer = this.add.graphics().setDepth(7);
     const bridgeY = BRIDGES.map((bridge) => bridge.y);
-    for (let y = 34, index = 0; y < WORLD.height - 24; y += 38, index += 1) {
+    for (let y = 32, index = 0; y < WORLD.height - 20; y += 42, index += 1) {
       if (bridgeY.some((crossing) => Math.abs(crossing - y) < 72)) continue;
-      const center = 2555 + Math.sin(y / 230) * 16;
+      const nearest = riverPointAtY(RIVER_VISUAL_PATH, y);
+      const center = nearest.x;
       for (const side of [-1, 1]) {
-        const jitter = (deterministicUnit("river-bank", index * 2 + (side > 0 ? 1 : 0)) - 0.5) * 14;
-        const radius = 10 + deterministicUnit("river-rock", index * 3 + (side > 0 ? 1 : 0)) * 12;
+        const serial = index * 2 + (side > 0 ? 1 : 0);
+        const jitter = (deterministicUnit("river-bank", serial) - 0.5) * 18;
+        const radius = 19 + deterministicUnit("river-rock", serial) * 17;
         const bankOffset = river.waterWidth / 2 + radius * 0.55 + 5;
-        rockLayer.fillStyle(index % 4 === 0 ? 0x706a57 : index % 3 === 0 ? 0x8d8269 : 0xa69a78, 1);
-        rockLayer.fillCircle(center + side * bankOffset + jitter, y, radius);
+        const rockX = center + side * bankOffset + jitter;
+        const vertices = Array.from({ length: 8 }, (_, vertexIndex) => {
+          const angle = vertexIndex / 8 * Math.PI * 2;
+          const variation = 0.82 + deterministicUnit(`river-rock-shape-${serial}`, vertexIndex) * 0.34;
+          return {
+            x: rockX + Math.cos(angle) * radius * 1.18 * variation,
+            y: y + Math.sin(angle) * radius * 0.78 * variation,
+          };
+        });
+        rockLayer.fillStyle(0x5f5648, 0.55);
+        rockLayer.fillPoints(vertices.map((pointValue) => ({ x: pointValue.x + 2, y: pointValue.y + 4 })), true);
+        rockLayer.fillStyle(index % 4 === 0 ? 0x817660 : index % 3 === 0 ? 0x9b8b6d : 0xb2a17e, 1);
+        rockLayer.fillPoints(vertices, true);
         rockLayer.fillStyle(0xc0b38d, 0.55);
-        rockLayer.fillCircle(center + side * bankOffset + jitter - radius * 0.24, y - radius * 0.28, radius * 0.42);
+        rockLayer.fillEllipse(rockX - radius * 0.22, y - radius * 0.23, radius * 0.85, radius * 0.42);
       }
-    }
-
-    const flow = this.add.graphics().setDepth(8);
-    flow.lineStyle(3, 0xd8f5f2, 0.48);
-    for (let y = 85, index = 0; y < WORLD.height; y += 82, index += 1) {
-      if (bridgeY.some((crossing) => Math.abs(crossing - y) < 64)) continue;
-      const center = 2555 + Math.sin(y / 230) * 16;
-      const offset = index % 2 ? -42 : 26;
-      flow.beginPath();
-      flow.moveTo(center + offset - 20, y - 18);
-      flow.lineTo(center + offset + 2, y);
-      flow.lineTo(center + offset - 14, y + 18);
-      flow.strokePath();
     }
 
     const sand = this.add.graphics().setDepth(4);
@@ -1005,8 +1038,6 @@ export class TownScene extends Phaser.Scene {
 
   drawParkDetails() {
     const graphics = this.add.graphics().setDepth(20);
-    graphics.fillStyle(0xb7d98a, 0.7);
-    graphics.fillRoundedRect(1130, 745, 1220, 690, 80);
     const playground = TOWN_REFERENCE_LAYOUT.playground;
     graphics.fillStyle(0xb98c54, 0.45);
     graphics.fillRoundedRect(playground.x - 10, playground.y - 10, playground.width + 20, playground.height + 20, 58);
@@ -1149,8 +1180,6 @@ export class TownScene extends Phaser.Scene {
       layer.lineStyle(Math.max(2, 5 * Math.min(scaleX, scaleY)), outline, 0.92);
       layer.strokePoints(mapped, true);
     };
-    layer.fillStyle(0x5c864e, 0.5);
-    layer.fillRoundedRect(house.x - 36, house.y - 38, house.width + 72, house.height + 78, 18);
     const body = architecture.body;
     rect(body.x - 4, body.y - 4, body.w + 8, body.h + 8, COLORS.ink);
     rect(body.x, body.y, body.w, body.h, wallColor);
@@ -1577,6 +1606,10 @@ export class TownScene extends Phaser.Scene {
     this.farmingLabels = [];
     const state = this.farming?.getSnapshot?.();
     if (!state) return;
+    const approvedLawnGrowthSurface = hasApprovedSceneBinding(this, (binding) => (
+      binding.repeat === APPROVED_WORLD_LAWN_REPEAT_MODE
+      && binding.visualLayerRole === "growth"
+    ));
     const graphics = this.add.graphics().setDepth(116);
     const lawnGraphics = this.add.graphics().setDepth(20);
     this.farmingVisuals = graphics;
@@ -1637,10 +1670,7 @@ export class TownScene extends Phaser.Scene {
       const lawn = state.lawns[plot.id];
       const stage = lawnVisualStage(lawn.grassHeight);
       const yard = plot.yard || { x: plot.x - 92, y: plot.y - 52, width: 184, height: 104 };
-      const colors = [0x96cf78, 0x82bf66, 0x70ab58, 0x5f964d];
-      lawnGraphics.fillStyle(colors[stage], 0.92);
-      lawnGraphics.fillRoundedRect(yard.x + 7, yard.y + 7, yard.width - 14, yard.height - 14, 18);
-      if (lawn.grassHeight > 12) {
+      if (!approvedLawnGrowthSurface && lawn.grassHeight > 12) {
         const tuftCount = Math.min(130, Math.round(10 + lawn.grassHeight * 1.15));
         lawnGraphics.lineStyle(2.2, lawn.grassHeight >= 70 ? 0x265626 : 0x356f2e, 0.82);
         for (let index = 0; index < tuftCount; index += 1) {
@@ -2994,6 +3024,9 @@ export class TownScene extends Phaser.Scene {
     this.approvedVisualRefreshElapsed += delta;
     if (this.approvedVisualRefreshElapsed >= 100) {
       this.approvedVisualRefreshElapsed = 0;
+      this.approvedTownGroundVisuals?.refresh?.();
+      this.approvedTownPavementVisuals?.refresh?.();
+      this.approvedTownRoadVisuals?.refresh?.();
       this.approvedSceneVisuals?.refresh?.();
     }
     this.stateSyncElapsed += delta;

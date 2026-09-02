@@ -96,7 +96,7 @@ All coherent-whole exceptions are explicitly justified in the machine plan. Live
 - Five modular architecture kits serve all 19 houses.
 - Shared clean, weathered, job-ready, upgraded, and occupation layers remain state-aligned.
 - The personal home uses six upgrade levels through compatible kit pieces.
-- All 20 lawns use one four-state lawn family: tidy, growing, overgrown, and job-ready.
+- All 19 active authored lawns use one reusable four-state grass-height overlay plus an independent four-state weed-pressure overlay, clipped across four protected yard geometry families. Lawn 19 remains inactive/reserved in the source data.
 
 ### 5. Shops and landmarks — 5 families
 

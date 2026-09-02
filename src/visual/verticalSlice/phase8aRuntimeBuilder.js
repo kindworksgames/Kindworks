@@ -109,6 +109,7 @@ export function buildPhase8ARuntimeDefinitions(input) {
         safeAreaBindings: placement.safeAreaBindings || null,
         minimumCssTouchTarget: placement.minimumCssTouchTarget || null,
         presentationOnly: placement.presentationOnly === true,
+        visualLayerRole: placement.visualLayerRole || null,
       }),
       layoutId: placement.layoutId, gameplayGeometryLocked: true, activation: "prepared-not-active-until-phase-8b",
     }));

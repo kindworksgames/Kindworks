@@ -1,9 +1,12 @@
 import { SHADOW_POLICY_IDS } from "../scale/scaleSystem.js";
+import { LAWN_CONFIG, LAWN_PLOTS } from "../../data/farming.js";
+import { WORLD } from "../../data/town.js";
 
 export const PHASE_8A_PACKAGE_SCHEMA_VERSION = 2;
 export const PHASE_8A_PACKAGE_ID = "kindworks.phase-8a.premium-vertical-slice";
 export const PHASE_8A_TOWN_LAYOUT_ID = "layout.phase-8a.town-block.house-6";
 export const PHASE_8A_LAWN_LAYOUT_ID = "layout.phase-8a.lawn-care.representative";
+export const PHASE_8A_WORLD_LAWNS_LAYOUT_ID = "layout.phase-8a.town-lawns";
 
 const ART_BIBLE = "KindWorks Visual Style Bible v4";
 const TOWN_SCENE = "TownScene";
@@ -41,9 +44,9 @@ const COMMON_CHECKS = freeze([
 ]);
 
 const FAMILY_CONTRACTS = freeze([
-  freeze({ id: "family.town-terrain.slice", categoryContractId: "category.terrain", purpose: "Seamless, top-down Willowmere terrain surfaces.", projection: "top-down orthographic", scaleRule: "64 logical-unit tile on an untrimmed 64px canvas", anchorRule: "top-left tile origin", shadowRule: SHADOW_POLICY_IDS.NONE }),
+  freeze({ id: "family.town-terrain.slice", categoryContractId: "category.terrain", purpose: "Seamless, top-down Willowmere terrain surfaces.", projection: "top-down orthographic", scaleRule: "Declared native tile canvas maps one-to-one to logical terrain units; terrain never controls gameplay geometry", anchorRule: "top-left tile origin", shadowRule: SHADOW_POLICY_IDS.NONE }),
   freeze({ id: "family.house-exterior.slice", categoryContractId: "category.building", purpose: "State-aligned cottage exterior with protected door and footprint.", projection: "three-quarter top-down town exterior", scaleRule: "256×192 logical canvas; visible cottage remains aligned across states", anchorRule: "ground contact at canvas (128,176)", shadowRule: SHADOW_POLICY_IDS.CUSTOM }),
-  freeze({ id: "family.world-lawn.slice", categoryContractId: "category.terrain", purpose: "Four state-aligned lawn surfaces for the authored house-6 yard.", projection: "top-down orthographic", scaleRule: "320×352 canvas mapped to the protected 310×340 yard", anchorRule: "canvas centre", shadowRule: SHADOW_POLICY_IDS.NONE }),
+  freeze({ id: "family.world-lawn.slice", categoryContractId: "category.terrain", purpose: "Reusable, independently state-driven grass-growth and weed-pressure overlays for every active house lawn.", projection: "top-down orthographic", scaleRule: "256×256 seamless lawn tiles repeat inside the protected authored yard mask; artwork never defines yard size, gate, interaction, collision, or navigation", anchorRule: "top-left tile origin clipped to protected yard geometry", shadowRule: SHADOW_POLICY_IDS.NONE }),
   freeze({ id: "family.layered-tree.slice", categoryContractId: "category.vegetation", purpose: "Occluding tree split into shadow, trunk/body, and foreground canopy.", projection: "three-quarter top-down town prop", scaleRule: "128×160 aligned canvases; 87×97 logical visual target", anchorRule: "ground contact at canvas (64,144)", shadowRule: SHADOW_POLICY_IDS.CUSTOM }),
   freeze({ id: "family.small-town-prop.slice", categoryContractId: "category.prop", purpose: "Compact, ground-anchored town props with independent interaction footprints.", projection: "three-quarter top-down town prop", scaleRule: "declared logical footprint, never inferred from PNG dimensions", anchorRule: "bottom-centre ground contact", shadowRule: SHADOW_POLICY_IDS.CUSTOM }),
   freeze({ id: "family.resident-character.slice", categoryContractId: "category.character", purpose: "Player and NPC directional walk sheets sharing one stable frame grid.", projection: "three-quarter top-down resident", scaleRule: "64×64 frame; character displays at 40×54 logical units", anchorRule: "ground contact at frame (32,56)", shadowRule: SHADOW_POLICY_IDS.SHARED }),
@@ -66,14 +69,14 @@ const outputSheet = (frameWidth, frameHeight, columns, rows, frameOrder, alpha =
   spriteSheet: freeze({ frameWidth, frameHeight, columns, rows, padding: 0, spacing: 0, frameCount: columns * rows, frameOrder: freeze(frameOrder), actions: freeze([]), directions: freeze([]) }),
 });
 
-const runtimeFilename = (slug) => `public/assets/runtime/phase-8a/${slug}.v1.png`;
-const stagedFilename = (slug) => `artwork/staging/phase-8a/${slug}/v1/${slug}.v1.png`;
-const masterFilename = (slug) => `artwork/masters/phase-8a/${slug}/v1/${slug}.v1.png`;
+const runtimeFilename = (slug, revision = 1) => `public/assets/runtime/phase-8a/${slug}.v${revision}.png`;
+const stagedFilename = (slug, revision = 1) => `artwork/staging/phase-8a/${slug}/v${revision}/${slug}.v${revision}.png`;
+const masterFilename = (slug, revision = 1) => `artwork/masters/phase-8a/${slug}/v${revision}/${slug}.v${revision}.png`;
 
 function makeAsset({
   semanticId, slug, familyId, purpose, scenes, output, perspective, logicalDisplay, anchor,
   geometry, states = ["default"], layers = ["main"], directions = [], animations = [], sockets = [],
-  prompt, forbidden = [], dependencies = [], placements, prefabId, stateMapId, maximumRuntimeBytes = 350000,
+  prompt, forbidden = [], dependencies = [], placements, prefabId, stateMapId, maximumRuntimeBytes = 350000, assetRevision = 1,
 }) {
   const negative = [...COMMON_FORBIDDEN, ...forbidden];
   const categoryContractId = ({
@@ -103,7 +106,7 @@ function makeAsset({
   return freeze({
     schemaVersion: PHASE_8A_PACKAGE_SCHEMA_VERSION,
     semanticId,
-    version: "1.0.0",
+    version: `${assetRevision}.0.0`,
     familyId,
     categoryContractId,
     gameplayPurpose: purpose,
@@ -120,7 +123,7 @@ function makeAsset({
     directions: freeze(directions),
     animations: freeze(normalizedAnimations),
     artRules: freeze({ artBibleVersion: ART_BIBLE, palette: "Willowmere natural greens, river blues, warm timber, cream highlights", outline: "consistent dark pixel outline with crisp pixel clusters", lighting: "soft daylight from upper-left", shadow: "follow the family shadow contract", texture: "pixel-authored clusters; no photographic noise" }),
-    expectedFilenames: freeze({ staging: stagedFilename(slug), master: masterFilename(slug), runtime: runtimeFilename(slug) }),
+    expectedFilenames: freeze({ staging: stagedFilename(slug, assetRevision), master: masterFilename(slug, assetRevision), runtime: runtimeFilename(slug, assetRevision) }),
     filenameStem: slug,
     promptPackage: freeze({
       providerNeutral: true,
@@ -166,7 +169,7 @@ const lawnPlacement = (instanceId, x, y, extra = {}) => freeze({ layoutId: PHASE
 
 export const PHASE_8A_ASSET_IDS = freeze({
   GRASS: "terrain.town.slice.grass", PAVEMENT: "terrain.town.slice.pavement", ROAD: "terrain.town.slice.road", RIVER_EDGE: "terrain.town.slice.river-edge",
-  HOUSE: "building.town.slice.house-6-bay-cottage", LAWN: "terrain.town.slice.lawn-house-6",
+  HOUSE: "building.town.slice.house-6-bay-cottage", LAWN_BASE: "terrain.town.lawn.striped-base", LAWN: "terrain.town.lawn.growth-overlay", WORLD_LAWN_WEEDS: "terrain.town.lawn.weed-overlay",
   TREE_SHADOW: "prop.town.slice.large-oak.shadow", TREE_TRUNK: "prop.town.slice.large-oak.trunk", TREE_CANOPY: "prop.town.slice.large-oak.canopy",
   BIN: "prop.town.slice.public-bin", FENCE: "prop.town.slice.white-fence", RUBBISH: "prop.town.slice.rubbish-can", DECORATION: "prop.town.slice.flower-planter",
   PLAYER: "character.player.slice.resident", NPC: "character.npc.slice.resident-a", ANIMAL: "character.animal.slice.dog",
@@ -175,17 +178,72 @@ export const PHASE_8A_ASSET_IDS = freeze({
 });
 
 const characterFrameOrder = freeze(["down-0", "down-1", "down-2", "down-3", "left-0", "left-1", "left-2", "left-3", "right-0", "right-1", "right-2", "right-3", "up-0", "up-1", "up-2", "up-3"]);
+const pavementFrameOrder = freeze([
+  "centre",
+  "grass-edge-north",
+  "grass-edge-east",
+  "grass-edge-south",
+  "grass-edge-west",
+  "grass-outer-corner-north-east",
+  "grass-outer-corner-south-east",
+  "grass-outer-corner-south-west",
+  "grass-outer-corner-north-west",
+  "grass-inner-corner-north-east",
+  "grass-inner-corner-south-east",
+  "grass-inner-corner-south-west",
+  "grass-inner-corner-north-west",
+  "grass-only",
+  "isolated-paver-transition",
+  "worn-grass-transition",
+]);
+const roadFrameOrder = freeze([
+  "surface-a",
+  "surface-b",
+  "surface-c",
+  "surface-d",
+  "kerb-north",
+  "kerb-east",
+  "kerb-south",
+  "kerb-west",
+  "rounded-corner-north-east",
+  "rounded-corner-south-east",
+  "rounded-corner-south-west",
+  "rounded-corner-north-west",
+  "pavement-transition-north",
+  "pavement-transition-east",
+  "pavement-transition-south",
+  "pavement-transition-west",
+]);
 const fourDirections = freeze(["down", "left", "right", "up"]);
+export const WORLD_LAWN_GROWTH_STATES = freeze(["fresh-cut", "growing", "long", "job-ready"]);
+export const WORLD_LAWN_WEED_STATES = freeze(["none", "light", "job-ready", "heavy"]);
+const activeLawnPlots = freeze(LAWN_PLOTS.filter(({ active, yard }) => active && yard));
+const worldLawnPlacement = (plot, layerRole, stateOwner) => freeze({
+  layoutId: PHASE_8A_WORLD_LAWNS_LAYOUT_ID,
+  sceneId: TOWN_SCENE,
+  instanceId: `instance.phase-8a.town.${plot.id}.${layerRole}`,
+  position: point(plot.yard.x, plot.yard.y),
+  gameplayGeometryLocked: true,
+  protectedWorldObjectId: plot.id,
+  protectedWorldYard: freeze({ ...plot.yard }),
+  yardGeometryFamily: `${plot.yard.width}x${plot.yard.height}-${plot.gate}`,
+  repeat: "seamless-lawn-tile-clipped-to-protected-yard-mask",
+  clipRectOwner: `LAWN_PLOTS.${plot.id}.yard`,
+  stateOwner,
+  visualLayerRole: layerRole,
+});
 const residentAnimations = fourDirections.map((direction, row) => freeze({ id: `walk-${direction}`, action: "walk", direction, frames: freeze([0, 1, 2, 3].map((column) => row * 4 + column)), frameRate: 9, repeat: -1 }));
 const dogAnimations = fourDirections.map((direction, row) => freeze({ id: `walk-${direction}`, action: "walk", direction, frames: freeze([0, 1, 2, 3].map((column) => row * 4 + column)), frameRate: 8, repeat: -1 }));
 
 const assets = freeze([
-  makeAsset({ semanticId: PHASE_8A_ASSET_IDS.GRASS, slug: "town-grass-tile", familyId: "family.town-terrain.slice", purpose: "seamless grass foundation for the representative town block", scenes: [TOWN_SCENE], output: outputImage(64, 64, false), perspective: "top-down orthographic", logicalDisplay: { width: 64, height: 64 }, anchor: { name: "tile-top-left", normalized: point(0, 0), groundContact: null }, geometry: { visual: rect(0, 0, 64, 64), collision: null, navigation: null, interaction: null, touch: null }, prompt: "A quiet mid-green village lawn tile with restrained natural pixel variation; edges must tile seamlessly on all four sides.", forbidden: ["flowers, paths, stones, objects, baked shadows, or visible seams"], placements: [townPlacement("instance.phase-8a.town.terrain.grass", 640, 360, { repeat: "cover-canonical-block" })], prefabId: "prefab.phase-8a.terrain.grass", stateMapId: "state.phase-8a.terrain.grass", maximumRuntimeBytes: 30000 }),
-  makeAsset({ semanticId: PHASE_8A_ASSET_IDS.PAVEMENT, slug: "town-pavement-tile", familyId: "family.town-terrain.slice", purpose: "pavement edge between the house lawn and north road", scenes: [TOWN_SCENE], output: outputImage(64, 64, false), perspective: "top-down orthographic", logicalDisplay: { width: 64, height: 64 }, anchor: { name: "tile-top-left", normalized: point(0, 0), groundContact: null }, geometry: { visual: rect(0, 0, 64, 64), collision: null, navigation: null, interaction: null, touch: null }, prompt: "Warm pale Willowmere paving stones with a readable 32-unit rhythm and fully seamless edges.", forbidden: ["road markings, grass border, objects, baked characters, or perspective tilt"], dependencies: [PHASE_8A_ASSET_IDS.GRASS], placements: [townPlacement("instance.phase-8a.town.terrain.pavement", 640, 493, { repeat: "horizontal-strip" })], prefabId: "prefab.phase-8a.terrain.pavement", stateMapId: "state.phase-8a.terrain.pavement", maximumRuntimeBytes: 35000 }),
-  makeAsset({ semanticId: PHASE_8A_ASSET_IDS.ROAD, slug: "town-road-tile", familyId: "family.town-terrain.slice", purpose: "north-road surface under the slice", scenes: [TOWN_SCENE], output: outputImage(64, 64, false), perspective: "top-down orthographic", logicalDisplay: { width: 64, height: 64 }, anchor: { name: "tile-top-left", normalized: point(0, 0), groundContact: null }, geometry: { visual: rect(0, 0, 64, 64), collision: null, navigation: null, interaction: null, touch: null }, prompt: "Muted blue-grey village road surface, fine pixel aggregate, seamless, with no baked curb or markings.", forbidden: ["vehicles, curb, crossing, centre line, puddles, or debris"], dependencies: [PHASE_8A_ASSET_IDS.PAVEMENT], placements: [townPlacement("instance.phase-8a.town.terrain.road", 640, 548, { repeat: "horizontal-strip", protectedWorldRoadId: "north-road" })], prefabId: "prefab.phase-8a.terrain.road", stateMapId: "state.phase-8a.terrain.road", maximumRuntimeBytes: 30000 }),
+  makeAsset({ semanticId: PHASE_8A_ASSET_IDS.GRASS, slug: "town-grass-tile", familyId: "family.town-terrain.slice", purpose: "large varied grass foundation for the representative town block", scenes: [TOWN_SCENE], output: outputImage(1254, 1254, false), perspective: "top-down orthographic", logicalDisplay: { width: 1254, height: 1254 }, anchor: { name: "tile-top-left", normalized: point(0, 0), groundContact: null }, geometry: { visual: rect(0, 0, 1254, 1254), collision: null, navigation: null, interaction: null, touch: null }, prompt: "The approved bright spring-green village meadow texture with dense irregular grass blades, softly varied green patches, and sparse naturally scattered white, yellow, and red flowers.", forbidden: ["paths, stones, rocks, bushes, trees, large plants, objects, baked shadows, organised flower rows, or visible hard-edged panels"], placements: [townPlacement("instance.phase-8a.town.terrain.grass", 0, 0, { repeat: "cover-town-ground" })], prefabId: "prefab.phase-8a.terrain.grass", stateMapId: "state.phase-8a.terrain.grass", maximumRuntimeBytes: 3000000 }),
+  makeAsset({ semanticId: PHASE_8A_ASSET_IDS.PAVEMENT, slug: "town-pavement-tile", familyId: "family.town-terrain.slice", purpose: "complete modular pavement surface with centre, four grass edges, convex and concave corners, and natural grass transitions", scenes: [TOWN_SCENE], output: outputSheet(64, 64, 4, 4, pavementFrameOrder, false), perspective: "top-down orthographic", logicalDisplay: { width: 64, height: 64 }, anchor: { name: "tile-top-left", normalized: point(0, 0), groundContact: null }, geometry: { visual: rect(0, 0, 64, 64), collision: null, navigation: null, interaction: null, touch: null }, states: pavementFrameOrder, prompt: "A complete pavement surface sheet in the exact declared frame order: centre; grass edges north, east, south, west; four convex outer corners; four concave inner corners; grass-only; an isolated paver transition; and a worn grass transition. Use warm pale Willowmere paving stones with a readable 32-unit rhythm. Every edge and corner must assemble without seams. Transition pixels must use the approved town grass tile exactly, with a restrained one-to-three-pixel irregular grass-and-earth edge and no gutters between frames.", forbidden: ["road markings, grid labels, frame dividers, gutters, objects, baked characters, perspective tilt, a different grass palette, or disconnected tile edges"], dependencies: [PHASE_8A_ASSET_IDS.GRASS], placements: [townPlacement("instance.phase-8a.town.terrain.pavement", 640, 493, { repeat: "surface-autotile" })], prefabId: "prefab.phase-8a.terrain.pavement", stateMapId: "state.phase-8a.terrain.pavement", maximumRuntimeBytes: 140000 }),
+  makeAsset({ semanticId: PHASE_8A_ASSET_IDS.ROAD, slug: "town-road-set", familyId: "family.town-terrain.slice", purpose: "complete modular road surface with directional kerbs, rounded corners, and pavement transitions", scenes: [TOWN_SCENE], output: outputSheet(64, 64, 4, 4, roadFrameOrder, false), perspective: "top-down orthographic", logicalDisplay: { width: 64, height: 64 }, anchor: { name: "tile-top-left", normalized: point(0, 0), groundContact: null }, geometry: { visual: rect(0, 0, 64, 64), collision: null, navigation: null, interaction: null, touch: null }, states: roadFrameOrder, prompt: "A complete modular road sheet in the exact declared frame order: four seamless blue-grey asphalt variants; straight kerbs north, east, south, west; rounded road corners north-east, south-east, south-west, north-west; and pavement transitions north, east, south, west. Match the approved grass and warm pale pavement exactly. Every connection must assemble without seams.", forbidden: ["vehicles, road markings, crossings, grid labels, frame dividers, gutters, objects, baked characters, square corner protrusions, or disconnected tile edges"], dependencies: [PHASE_8A_ASSET_IDS.PAVEMENT], placements: [townPlacement("instance.phase-8a.town.terrain.road", 640, 548, { repeat: "road-surface-autotile" })], prefabId: "prefab.phase-8a.terrain.road", stateMapId: "state.phase-8a.terrain.road", maximumRuntimeBytes: 180000 }),
   makeAsset({ semanticId: PHASE_8A_ASSET_IDS.RIVER_EDGE, slug: "town-river-edge-sheet", familyId: "family.town-terrain.slice", purpose: "tree-free Willow River banks and water edge beside the block", scenes: [TOWN_SCENE], output: outputSheet(128, 64, 4, 1, ["west-straight", "east-straight", "west-transition", "east-transition"], true), perspective: "top-down orthographic", logicalDisplay: { width: 128, height: 64 }, anchor: { name: "tile-top-left", normalized: point(0, 0), groundContact: null }, geometry: { visual: rect(0, 0, 128, 64), collision: rect(20, 0, 88, 64), navigation: rect(20, 0, 88, 64), interaction: null, touch: null }, states: ["west-straight", "east-straight", "west-transition", "east-transition"], prompt: "Four horizontal frames in the exact order specified: west straight bank, east straight bank, west transition, east transition. Blue flowing water meets a narrow stone-and-earth bank; stones remain on land at the water edge, never floating in the river.", forbidden: ["trees, bridge, floating rocks, boats, characters, mirrored labels, or water wider than the declared protected geometry"], dependencies: [PHASE_8A_ASSET_IDS.GRASS], placements: [townPlacement("instance.phase-8a.town.terrain.river-edge", 670, 360, { repeat: "vertical-banks", protectedWorldRiver: { centreX: 2555, waterWidth: 188, bankWidth: 226 } })], prefabId: "prefab.phase-8a.terrain.river-edge", stateMapId: "state.phase-8a.terrain.river-edge", maximumRuntimeBytes: 120000 }),
   makeAsset({ semanticId: PHASE_8A_ASSET_IDS.HOUSE, slug: "house-6-bay-cottage-states", familyId: "family.house-exterior.slice", purpose: "house-6 bay-cottage exterior with clean, dirty, job-ready, and upgraded visual states", scenes: [TOWN_SCENE], output: outputSheet(256, 192, 4, 1, ["clean", "weathered", "job-ready", "upgraded"], true), perspective: "three-quarter top-down town exterior", logicalDisplay: { width: 256, height: 192 }, anchor: { name: "front-door-ground", normalized: point(0.5, 0.916667), groundContact: point(0, 0) }, geometry: { visual: rect(-128, -176, 256, 192), collision: rect(-97.5, -115, 195, 110), navigation: rect(-103, -120, 206, 120), interaction: circle(0, -7, 92), touch: rect(-110, -130, 220, 145) }, states: ["clean", "weathered", "job-ready", "upgraded"], sockets: [{ id: "door", logical: point(0, -6) }, { id: "approach", logical: point(0, 25) }, { id: "roof-status", logical: point(0, -150) }], prompt: "One bay cottage kept pixel-perfect in the same position across four horizontal frames: cared-for clean, time-weathered, visibly job-ready but still habitable, and tasteful upgraded. The front door socket and building footprint cannot move between frames.", forbidden: ["interior cutaway, people, lawn, fence, separate environment background, moved door, frame-to-frame silhouette drift, or destructive damage"], dependencies: [PHASE_8A_ASSET_IDS.GRASS, PHASE_8A_ASSET_IDS.PAVEMENT], placements: [townPlacement("instance.phase-8a.town.house-6", 278, 391, { protectedWorldObjectId: "house-6", protectedWorldPosition: point(2158, 391) })], prefabId: "prefab.phase-8a.house-6", stateMapId: "state.phase-8a.house-6", maximumRuntimeBytes: 360000 }),
-  makeAsset({ semanticId: PHASE_8A_ASSET_IDS.LAWN, slug: "lawn-house-6-growth-states", familyId: "family.world-lawn.slice", purpose: "the authored house-6 lawn in all four growth states", scenes: [TOWN_SCENE], output: outputSheet(320, 352, 4, 1, ["fresh-cut", "growing", "long", "job-ready"], true), perspective: "top-down orthographic", logicalDisplay: { width: 320, height: 352 }, anchor: { name: "yard-centre", normalized: point(0.5, 0.5), groundContact: null }, geometry: { visual: rect(-160, -176, 320, 352), collision: null, navigation: null, interaction: circle(0, 95, 105), touch: rect(-155, -170, 310, 340) }, states: ["fresh-cut", "growing", "long", "job-ready"], sockets: [{ id: "job-entry", logical: point(0, 95) }, { id: "gate-south", logical: point(0, 170) }], prompt: "Four horizontally aligned versions of the exact same 310×340 house yard: freshly cut below 20 grass height, growing 20–44, long 45–69, and overgrown job-ready at 70+. Preserve every boundary and gate opening; only grass height, density, weeds, and small flowers change.", forbidden: ["house, road, mower, person, text, status badge, moved yard boundary, or changed gate position"], dependencies: [PHASE_8A_ASSET_IDS.GRASS], placements: [townPlacement("instance.phase-8a.town.lawn-house-6", 375, 320, { protectedWorldObjectId: "lawn-house-6", protectedWorldYard: { x: 2100, y: 150, width: 310, height: 340 } })], prefabId: "prefab.phase-8a.lawn-house-6", stateMapId: "state.phase-8a.lawn-house-6", maximumRuntimeBytes: 460000 }),
+  makeAsset({ semanticId: PHASE_8A_ASSET_IDS.LAWN_BASE, slug: "town-lawn-striped-base", familyId: "family.world-lawn.slice", purpose: "seamless striped freshly-cut lawn base shared by all 19 active house lawns", scenes: [TOWN_SCENE], output: outputImage(256, 256, false), perspective: "top-down orthographic", logicalDisplay: { width: 256, height: 256 }, anchor: { name: "tile-top-left", normalized: point(0, 0), groundContact: null }, geometry: { visual: rect(0, 0, 256, 256), collision: null, navigation: null, interaction: null, touch: null }, states: WORLD_LAWN_GROWTH_STATES, layers: ["background-base"], prompt: "One seamless, fully opaque freshly-cut lawn tile colour-matched to the approved town grass, with four broad, near-tone-on-tone alternating mowing stripes. Preserve natural grass detail at real game scale; stripe luminance variation must remain subtle enough that the lawn blends into the surrounding town ground. It must repeat on every edge and remain visible beneath every transparent growth state.", forbidden: ["harsh, narrow, dark, or neon stripes, tall grass, weeds, bare dirt, flowers, house, fence, gate, path, road, mower, person, text, status badge, transparency, yard boundary, or non-tileable edge"], dependencies: [PHASE_8A_ASSET_IDS.GRASS], placements: activeLawnPlots.map((plot) => worldLawnPlacement(plot, "growth", `farming.lawns.${plot.id}.grassHeight via thresholds 20, 45, 70`)), prefabId: "prefab.phase-8a.world-lawn-growth", stateMapId: "state.phase-8a.world-lawn-growth", maximumRuntimeBytes: 250000, assetRevision: 4 }),
+  makeAsset({ semanticId: PHASE_8A_ASSET_IDS.LAWN, slug: "town-lawn-growth-overlay", familyId: "family.world-lawn.slice", purpose: "seamless transparent grass-height overlays shared by all 19 active house lawns", scenes: [TOWN_SCENE], output: outputSheet(256, 256, 4, 1, WORLD_LAWN_GROWTH_STATES, true), perspective: "top-down orthographic", logicalDisplay: { width: 256, height: 256 }, anchor: { name: "tile-top-left", normalized: point(0, 0), groundContact: null }, geometry: { visual: rect(0, 0, 256, 256), collision: null, navigation: null, interaction: null, touch: null }, states: WORLD_LAWN_GROWTH_STATES, layers: ["growth-overlay"], prompt: `Four seamless transparent grass-growth overlays in exact order: fresh-cut for grassHeight 0–19 is fully transparent; growing for 20–44 adds sparse short grass in irregular clumps; long for 45–69 adds denser medium-to-tall grass with uneven open gaps; and job-ready for 70–100 is severely overgrown with dense, tangled tall grass and weeds. Every 256×256 frame must use an organic random distribution with no rows, columns, crop pattern, or stripe-like repetition. The striped lawn base must remain visible beneath the alpha overlay. The frames are reusable material overlays, not pictures of a particular house or yard.`, forbidden: ["opaque background, checkerboard background, rows, columns, crop pattern, harsh bands, house, fence, gate, path, road, mower, person, text, status badge, yard boundary, or non-tileable edge"], dependencies: [PHASE_8A_ASSET_IDS.LAWN_BASE], placements: activeLawnPlots.map((plot) => worldLawnPlacement(plot, "growth", `farming.lawns.${plot.id}.grassHeight via thresholds 20, 45, 70`)), prefabId: "prefab.phase-8a.world-lawn-growth", stateMapId: "state.phase-8a.world-lawn-growth", maximumRuntimeBytes: 500000, assetRevision: 4 }),
+  makeAsset({ semanticId: PHASE_8A_ASSET_IDS.WORLD_LAWN_WEEDS, slug: "town-lawn-weed-overlay", familyId: "family.world-lawn.slice", purpose: "independent weed-pressure overlays shared by all 19 active house lawns", scenes: [TOWN_SCENE], output: outputSheet(64, 64, 4, 1, WORLD_LAWN_WEED_STATES, true), perspective: "top-down orthographic", logicalDisplay: { width: 64, height: 64 }, anchor: { name: "tile-top-left", normalized: point(0, 0), groundContact: null }, geometry: { visual: rect(0, 0, 64, 64), collision: null, navigation: null, interaction: null, touch: null }, states: WORLD_LAWN_WEED_STATES, prompt: `Four seamless transparent weed overlays in exact order: none for weedPressure 0–17 (fully transparent), light for 18–37, job-ready for 38–54, and heavy for 55–100. Keep weed positions and tile-edge continuity aligned across visible frames while increasing density and changing to the approved heavier weed colour at 55. Only job-ready and heavy may include sparse small yellow weed flowers, matching current gameplay presentation.`, forbidden: ["grass ground colour, general meadow flowers, house, fence, gate, path, road, mower, person, text, status badge, opaque background, yard boundary, or non-tileable edge"], dependencies: [PHASE_8A_ASSET_IDS.LAWN], placements: activeLawnPlots.map((plot) => worldLawnPlacement(plot, "weeds", `farming.lawns.${plot.id}.weedPressure via thresholds 18, 38, 55`)), prefabId: "prefab.phase-8a.world-lawn-weeds", stateMapId: "state.phase-8a.world-lawn-weeds", maximumRuntimeBytes: 110000 }),
   makeAsset({ semanticId: PHASE_8A_ASSET_IDS.TREE_SHADOW, slug: "large-oak-shadow", familyId: "family.layered-tree.slice", purpose: "separate ground shadow for the large occluding oak", scenes: [TOWN_SCENE], output: outputImage(128, 160, true), perspective: "three-quarter top-down town prop", logicalDisplay: { width: 128, height: 160 }, anchor: { name: "tree-ground", normalized: point(0.5, 0.9), groundContact: point(0, 0) }, geometry: { visual: rect(-64, -144, 128, 160), collision: null, navigation: null, interaction: null, touch: null }, layers: ["shadow"], prompt: "Only the soft pixel-art ground shadow of a large oak, aligned to ground contact (64,144); all other pixels fully transparent.", forbidden: ["trunk, foliage, grass, opaque background, hard black ellipse, or shifted anchor"], dependencies: [PHASE_8A_ASSET_IDS.GRASS], placements: [townPlacement("instance.phase-8a.town.large-oak", 1000, 250, { layerRole: "shadow", protectedWorldPosition: point(2880, 250) })], prefabId: "prefab.phase-8a.large-oak", stateMapId: "state.phase-8a.large-oak", maximumRuntimeBytes: 60000 }),
   makeAsset({ semanticId: PHASE_8A_ASSET_IDS.TREE_TRUNK, slug: "large-oak-trunk", familyId: "family.layered-tree.slice", purpose: "large-oak trunk and lower body used for collision and Y-sort", scenes: [TOWN_SCENE], output: outputImage(128, 160, true), perspective: "three-quarter top-down town prop", logicalDisplay: { width: 128, height: 160 }, anchor: { name: "tree-ground", normalized: point(0.5, 0.9), groundContact: point(0, 0) }, geometry: { visual: rect(-43, -62, 87, 97), collision: circle(0, 0, 22), navigation: circle(0, 0, 50), interaction: circle(0, 0, 72), touch: rect(-44, -62, 88, 100) }, layers: ["trunk"], sockets: [{ id: "ground", logical: point(0, 0) }, { id: "canopy", logical: point(0, -62) }], prompt: "Only the oak trunk, roots, and low branches needed below the canopy; align with the shared 128×160 tree canvas and ground contact (64,144).", forbidden: ["full canopy, ground shadow, fruit, sign, character, or opaque background"], dependencies: [PHASE_8A_ASSET_IDS.TREE_SHADOW], placements: [townPlacement("instance.phase-8a.town.large-oak", 1000, 250, { layerRole: "main", protectedWorldPosition: point(2880, 250) })], prefabId: "prefab.phase-8a.large-oak", stateMapId: "state.phase-8a.large-oak", maximumRuntimeBytes: 90000 }),
   makeAsset({ semanticId: PHASE_8A_ASSET_IDS.TREE_CANOPY, slug: "large-oak-canopy", familyId: "family.layered-tree.slice", purpose: "foreground canopy that correctly occludes residents behind the large oak", scenes: [TOWN_SCENE], output: outputImage(128, 160, true), perspective: "three-quarter top-down town prop", logicalDisplay: { width: 128, height: 160 }, anchor: { name: "tree-ground", normalized: point(0.5, 0.9), groundContact: point(0, 0) }, geometry: { visual: rect(-64, -144, 128, 160), collision: null, navigation: null, interaction: null, touch: null }, layers: ["foreground-canopy"], prompt: "Only a lush rounded large-oak canopy, aligned with the shared tree canvas. Lower canopy pixels must naturally pass in front of a resident walking behind the trunk while leaving the ground-contact region transparent.", forbidden: ["trunk, roots, ground shadow, background, rectangular foliage mass, or missing lower occlusion fringe"], dependencies: [PHASE_8A_ASSET_IDS.TREE_TRUNK], placements: [townPlacement("instance.phase-8a.town.large-oak", 1000, 250, { layerRole: "foreground", protectedWorldPosition: point(2880, 250) })], prefabId: "prefab.phase-8a.large-oak", stateMapId: "state.phase-8a.large-oak", maximumRuntimeBytes: 120000 }),
@@ -209,7 +267,7 @@ const byId = new Map(assets.map((asset) => [asset.semanticId, asset]));
 export const PHASE_8A_VERTICAL_SLICE_PACKAGE = freeze({
   schemaVersion: PHASE_8A_PACKAGE_SCHEMA_VERSION,
   id: PHASE_8A_PACKAGE_ID,
-  revision: 1,
+  revision: 3,
   status: "production-package-ready-no-artwork-generated",
   artBibleVersion: ART_BIBLE,
   scope: freeze({ townWorldOrigin: point(1880, 0), townCanonicalSize: freeze({ width: 1280, height: 720 }), representativeHouseId: "house-6", representativeLawnId: "lawn-house-6", representativeLawnLevel: 1 }),
@@ -218,19 +276,20 @@ export const PHASE_8A_VERTICAL_SLICE_PACKAGE = freeze({
   layouts: freeze([
     freeze({ id: PHASE_8A_TOWN_LAYOUT_ID, sceneId: TOWN_SCENE, canonicalSize: freeze({ width: 1280, height: 720 }), worldOrigin: point(1880, 0), sourceOfTruth: "src/data/town.js house-6, north-road, RIVER_PATH, TOWN_REFERENCE_LAYOUT", activation: "prepared-not-active-until-phase-8b" }),
     freeze({ id: PHASE_8A_LAWN_LAYOUT_ID, sceneId: LAWN_SCENE, canonicalSize: freeze({ width: 1280, height: 720 }), sourceOfTruth: "src/scenes/LawnCareScene.js and src/data/lawnCare.js", activation: "prepared-not-active-until-phase-8b" }),
+    freeze({ id: PHASE_8A_WORLD_LAWNS_LAYOUT_ID, sceneId: TOWN_SCENE, canonicalSize: freeze({ width: WORLD.width, height: WORLD.height }), worldOrigin: point(0, 0), sourceOfTruth: "src/data/farming.js LAWN_PLOTS; visual layers clip to yard without owning gameplay geometry", activation: "contract-ready-not-active-until-approved-art-integration" }),
   ]),
   transition: freeze({
     id: "transition.phase-8a.lawn-house-6.complete",
     interaction: freeze({ sceneId: TOWN_SCENE, targetId: "lawn-house-6", entryOwner: "TownScene.startLawnCare", radius: 105 }),
     activity: freeze({ sceneId: LAWN_SCENE, gameplayOwner: "LawnCareEngine", completionOwner: "LawnCareService.applyResult", minimumRewardPercentOwner: "MIN_LAWN_REWARD_PERCENT" }),
-    beforeVisualState: freeze({ stateMapId: "state.phase-8a.lawn-house-6", state: "job-ready", grassHeightRange: freeze({ minimum: 70, maximum: 100 }) }),
-    afterVisualState: freeze({ stateMapId: "state.phase-8a.lawn-house-6", state: "fresh-cut", grassHeightOwner: "LAWN_CONFIG.freshlyCutHeight", currentValue: 5 }),
+    beforeVisualState: freeze({ growth: freeze({ stateMapId: "state.phase-8a.world-lawn-growth", state: "job-ready", grassHeightRange: freeze({ minimum: LAWN_CONFIG.jobGrassThreshold, maximum: 100 }) }), weeds: freeze({ stateMapId: "state.phase-8a.world-lawn-weeds", stateOwner: "farming.lawns[lawn-house-6].weedPressure" }) }),
+    afterVisualState: freeze({ growth: freeze({ stateMapId: "state.phase-8a.world-lawn-growth", state: "fresh-cut", grassHeightOwner: "LAWN_CONFIG.freshlyCutHeight", currentValue: LAWN_CONFIG.freshlyCutHeight }), weeds: freeze({ stateMapId: "state.phase-8a.world-lawn-weeds", state: "none", weedPressureOwner: "LAWN_CONFIG.freshlyWeededPressure", currentValue: LAWN_CONFIG.freshlyWeededPressure }) }),
     rewardContract: freeze({ owner: "LawnCareService.applyResult/calculateLawnReward", delivery: "existing economy ledger only", duplicateProtection: "lawnCare.processedSessionIds", visualLayerMayMutateReward: false }),
     saveContract: freeze({ preservedFields: ["farming.lawns.lawn-house-6", "lawnCare", "economy.coins", "economy.ledger"], visualDefinitionsPersisted: false }),
   }),
   dependencyOrder: freeze([
     freeze({ wave: 1, name: "foundation-and-calibration", assetIds: freeze([PHASE_8A_ASSET_IDS.GRASS, PHASE_8A_ASSET_IDS.PAVEMENT, PHASE_8A_ASSET_IDS.ROAD]) }),
-    freeze({ wave: 2, name: "river-and-world-footprints", assetIds: freeze([PHASE_8A_ASSET_IDS.RIVER_EDGE, PHASE_8A_ASSET_IDS.LAWN, PHASE_8A_ASSET_IDS.HOUSE]) }),
+    freeze({ wave: 2, name: "river-and-world-footprints", assetIds: freeze([PHASE_8A_ASSET_IDS.RIVER_EDGE, PHASE_8A_ASSET_IDS.LAWN_BASE, PHASE_8A_ASSET_IDS.LAWN, PHASE_8A_ASSET_IDS.WORLD_LAWN_WEEDS, PHASE_8A_ASSET_IDS.HOUSE]) }),
     freeze({ wave: 3, name: "occlusion-and-props", assetIds: freeze([PHASE_8A_ASSET_IDS.TREE_SHADOW, PHASE_8A_ASSET_IDS.TREE_TRUNK, PHASE_8A_ASSET_IDS.TREE_CANOPY, PHASE_8A_ASSET_IDS.FENCE, PHASE_8A_ASSET_IDS.BIN, PHASE_8A_ASSET_IDS.RUBBISH, PHASE_8A_ASSET_IDS.DECORATION]) }),
     freeze({ wave: 4, name: "characters-and-animal", assetIds: freeze([PHASE_8A_ASSET_IDS.PLAYER, PHASE_8A_ASSET_IDS.NPC, PHASE_8A_ASSET_IDS.ANIMAL]) }),
     freeze({ wave: 5, name: "interaction-and-reward", assetIds: freeze([PHASE_8A_ASSET_IDS.INTERACTION, PHASE_8A_ASSET_IDS.REWARD]) }),

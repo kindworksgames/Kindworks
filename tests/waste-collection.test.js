@@ -8,16 +8,18 @@ import {
   WASTE_SOURCE_SHA256,
   WASTE_TOTAL_LEVELS,
   WASTE_TRAY_LIMIT,
+  WASTE_SLOT_CONFIG,
   WasteCollectionEngine,
   validateWasteCatalogue,
   verifyWasteSolution,
+  wasteCollectionTrayLimit,
   wasteLevelSummary,
   wasteTileExposed,
 } from "../src/data/wasteCollection.js";
 import { COMMONS_RUBBISH_JOB } from "../src/data/cleanupJobs.js";
 import { createFreshGameState, GameStateService, upgradeGameState, validateGameState } from "../src/state/GameState.js";
 import { SaveRepository } from "../src/state/SaveRepository.js";
-import { projectLegacyCleanup } from "../src/state/cleanupState.js";
+import { createFreshCleanupState, normalizeCleanupState, projectLegacyCleanup, validateCleanupState } from "../src/state/cleanupState.js";
 import { CleanupJobService } from "../src/systems/CleanupJobService.js";
 import { MemoryStorage } from "./helpers/MemoryStorage.js";
 
@@ -57,6 +59,34 @@ test("the engine only exposes uncovered cards and clears sorted triples automati
   assert.equal(engine.moves, 3);
   assert.equal(engine.matches, 1);
   assert.equal(engine.tray.length, 0);
+});
+
+test("owned and placed production bins expand the campaign tray from five to seven slots", () => {
+  const state = createFreshGameState({ now: 0 });
+  assert.deepEqual(WASTE_SLOT_CONFIG, { base: 5, max: 7, slotsPerOwnedBin: 1 });
+  assert.equal(wasteCollectionTrayLimit(state), 5);
+  state.inventory.placeables["small-town-bin"] = 1;
+  assert.equal(wasteCollectionTrayLimit(state), 6);
+  state.townPlacement.objects.push({ id: "placed-park-bin", itemId: "park-bin", type: "bin", x: 100, y: 100 });
+  assert.equal(wasteCollectionTrayLimit(state), 7);
+  state.inventory.placeables["commercial-bin"] = 99;
+  state.inventory.placeables["__qa-town-bin"] = 99;
+  assert.equal(wasteCollectionTrayLimit(state), 7);
+});
+
+test("the engine and save contract accept a legitimate seven-slot tray without changing old saves", () => {
+  const engine = new WasteCollectionEngine(1, { tray: [0, 1, 2, 3, 4, 5], removedIds: [], moves: 0, matches: 0 }, { trayLimit: 7 });
+  assert.equal(engine.snapshot().trayLimit, 7);
+  assert.equal(engine.snapshot().ended, false);
+  const cleanup = createFreshCleanupState();
+  cleanup.activeSession = {
+    id: "cleanup-000001", mode: "campaign", targetId: COMMONS_RUBBISH_JOB.id, jobId: COMMONS_RUBBISH_JOB.jobId, jobType: "waste",
+    assignedLevel: 1, returnPosition: { x: 100, y: 100 }, returnFacing: "down", startedAt: new Date(0).toISOString(),
+    removedIds: [0, 1, 2, 3, 4, 5], tray: [0, 1, 2, 3, 4, 5], moves: 6, matches: 0, status: "playing",
+  };
+  const normalized = normalizeCleanupState(cleanup);
+  assert.equal(normalized.activeSession.tray.length, 6);
+  assert.equal(validateCleanupState(normalized).ok, true);
 });
 
 test("a selected campaign level persists exact card, tray, and return state", () => {

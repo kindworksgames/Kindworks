@@ -5,6 +5,7 @@ import {
   WasteCollectionEngine,
   validateWasteCatalogue,
   verifyWasteSolution,
+  wasteCollectionTrayLimit,
   wasteLevelSummary,
 } from "../data/wasteCollection.js";
 import {
@@ -157,7 +158,8 @@ export class CleanupJobService {
   }
 
   getCampaignSessionState() {
-    const active = this.getActiveSession();
+    const state = this.gameState.getSnapshot();
+    const active = state.progress.cleanup.activeSession;
     if (!active || active.mode !== "campaign") return null;
     return new WasteCollectionEngine(active.assignedLevel, {
       removedIds: active.removedIds,
@@ -166,7 +168,7 @@ export class CleanupJobService {
       matches: active.matches,
       ended: active.status === "failed",
       won: false,
-    }).snapshot();
+    }, { trayLimit: wasteCollectionTrayLimit(state) }).snapshot();
   }
 
   applyCampaignWin(state, session, engine) {
@@ -240,10 +242,10 @@ export class CleanupJobService {
       const session = state.progress.cleanup.activeSession;
       if (!session || session.id !== sessionId || session.mode !== "campaign") return { ok: false, code: "unknown-session", message: "That Waste Collection campaign is no longer active." };
       if (session.status === "failed") return { ok: false, code: "attempt-ended", message: "The tray is full. Retry this level to continue." };
-      const engine = new WasteCollectionEngine(session.assignedLevel, session);
+      const engine = new WasteCollectionEngine(session.assignedLevel, session, { trayLimit: wasteCollectionTrayLimit(state) });
       const selected = engine.select(tileId);
       if (!selected.ok) return selected;
-      if (engine.won) return this.applyCampaignWin(state, session, engine);
+      if (engine.won) return { ...this.applyCampaignWin(state, session, engine), tile: selected.tile, matchedTypeId: selected.matchedTypeId };
       const snapshot = engine.snapshot();
       session.removedIds = snapshot.removedIds;
       session.tray = snapshot.tray;
@@ -415,7 +417,7 @@ export class CleanupJobService {
         jobType: session.jobType,
         assignedLevel: session.assignedLevel,
         status: "cancelled",
-        percent: session.mode === "campaign" ? new WasteCollectionEngine(session.assignedLevel, session).snapshot().percent : 0,
+        percent: session.mode === "campaign" ? new WasteCollectionEngine(session.assignedLevel, session, { trayLimit: wasteCollectionTrayLimit(state) }).snapshot().percent : 0,
         stars: 0,
         rewardCoins: 0,
         endedAt,

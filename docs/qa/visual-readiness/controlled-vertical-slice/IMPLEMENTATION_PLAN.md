@@ -99,7 +99,8 @@ The package contains 22 deliverables. Nineteen reuse the certified Phase 8A cont
 | 3 | `terrain.town.slice.road` | 64×64 opaque PNG | Seamless road tile; 64×64 logical; markings remain modular |
 | 4 | `terrain.town.slice.river-edge` | 512×64 RGBA sheet; 4×1 frames of 128×64 | `west-straight`, `east-straight`, `west-transition`, `east-transition`; no rocks or trees inside the water channel; explicit bank navigation geometry remains independent |
 | 5 | `building.town.slice.house-6-bay-cottage` | 1024×192 RGBA sheet; 4×1 frames of 256×192 | `clean`, `weathered`, `job-ready`, `upgraded`; identical door, anchor, footprint, and frame alignment in every state |
-| 6 | `terrain.town.slice.lawn-house-6` | 1280×352 RGBA sheet; 4×1 frames of 320×352 | `fresh-cut`, `growing`, `long`, `job-ready`; same boundary, gate clearance, anchor, and transparent padding in all states |
+| 6a | `terrain.town.lawn.growth-overlay` | 256×64 RGBA sheet; 4×1 frames of 64×64 | Seamless transparent `fresh-cut`, `growing`, `long`, `job-ready` grass-height overlays; no weeds, flowers, yard boundary, fence, gate, or path baked in; tiled and clipped to the authored yard mask |
+| 6b | `terrain.town.lawn.weed-overlay` | 256×64 RGBA sheet; 4×1 frames of 64×64 | Independent seamless transparent `none`, `light`, `job-ready`, `heavy` weed-pressure overlays; only the latter two may contain sparse yellow weed flowers |
 | 7 | `prop.town.slice.large-oak.shadow` | 128×160 RGBA PNG | Custom ground shadow only; no gameplay geometry |
 | 8 | `prop.town.slice.large-oak.trunk` | 128×160 RGBA PNG | Trunk/body layer; visual 87×97 logical; collision radius 22; navigation radius 50; ground anchor shared with canopy |
 | 9 | `prop.town.slice.large-oak.canopy` | 128×160 RGBA PNG | Foreground canopy only; no collision/input; must occlude moving residents without changing their physics |

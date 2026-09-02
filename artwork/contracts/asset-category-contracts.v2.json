@@ -895,6 +895,7 @@
       "categoryContractId": "category.terrain",
       "strategies": [
         "sprite-sheets",
+        "layered-assets",
         "palette-state-variants"
       ],
       "scenes": [

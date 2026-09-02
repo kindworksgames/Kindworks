@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "kindworks.asset-contract-stage2-independent-retest",
-  "generatedAt": "2026-08-30T19:48:41.138Z",
+  "generatedAt": "2026-09-02T00:40:58.572Z",
   "environment": {
     "platform": "darwin",
     "node": "v24.19.0"
@@ -16,20 +16,20 @@
     "outputTypesExercised": 8,
     "executableErrorCodes": 134,
     "executableErrorCodesCovered": 134,
-    "currentLeafContracts": 23,
+    "currentLeafContracts": 25,
     "currentLeafCategories": {
       "category.animal": 1,
       "category.building": 1,
       "category.character": 2,
       "category.minigame": 5,
       "category.prop": 4,
-      "category.terrain": 5,
+      "category.terrain": 7,
       "category.ui": 2,
       "category.vegetation": 3
     },
     "currentLeafOutputTypes": {
-      "single-image": 9,
-      "spritesheet": 14
+      "single-image": 8,
+      "spritesheet": 17
     }
   },
   "results": [

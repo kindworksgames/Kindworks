@@ -30,6 +30,7 @@ export const VISUAL_ASSET_IDS = Object.freeze({
   POWERWASH_TOOL_PRECISION: "minigame.powerwash.tool.precision",
   POWERWASH_TOOL_STANDARD: "minigame.powerwash.tool.standard",
   POWERWASH_TOOL_WIDE: "minigame.powerwash.tool.wide",
+  TOWN_RIVER_WATER_TILE: "terrain.town.river.water-tile",
   DEVELOPMENT_FALLBACK: "system.fallback.development",
   PRODUCTION_FALLBACK: "system.fallback.production",
 });
@@ -118,6 +119,22 @@ const assets = Object.freeze([
     technical: technical({ width: 1536, height: 1024, dimensionSensitive: true, functionalMask: true }),
     ...filePolicy("5db4c213d34d1e435f74f03a49590f766e172f01d8ac97703dc090ded7d36736", { requiredness: VISUAL_ASSET_REQUIREDNESS.GAMEPLAY_CRITICAL, maximumRuntimeBytes: 2_500_000 }),
     status: "legacy-registered",
+  }),
+  definition({
+    id: VISUAL_ASSET_IDS.TOWN_RIVER_WATER_TILE,
+    kind: VISUAL_ASSET_KINDS.IMAGE,
+    source: source("/assets/runtime/phase-8a/town-river-water-tile.v1.png", "png"),
+    runtime: Object.freeze({ renderTarget: VISUAL_RENDER_TARGETS.PHASER, textureKey: "kw.terrain.town.river.water-tile" }),
+    technical: technical({ width: 1254, height: 1254, alpha: false, nativePixelsPerLogicalUnit: 1 }),
+    ...filePolicy("2b65053ca85ca46cfa7ed82a877a3389cf1cb29edad096af05be338b9956f7c3", { scope: VISUAL_CACHE_SCOPES.SCENE, maximumRuntimeBytes: 3_000_000 }),
+    status: "human-approved-runtime",
+    productionContractId: "terrain.river-water-tiles",
+    provenance: Object.freeze({
+      reviewer: "youyoulu",
+      approvedAt: "2026-09-01",
+      masterPath: "artwork/masters/phase-8a/town-river-water/v1/town-river-water-tile.v1.png",
+      referencePath: "artwork/masters/phase-8a/town-river-reference/v1/town-river-curved-reference.v1.png",
+    }),
   }),
   ...[
     [VISUAL_ASSET_IDS.POWERWASH_TOOL_PRECISION, "precision", 80, 101, "d9e75832314fee928b606021986d0d24bf903f51f6d43d6e3beefb083cb16f61"],
@@ -217,6 +234,7 @@ const BASE_KINDWORKS_VISUAL_MANIFEST = Object.freeze({
     definition({ id: "pack.scene.boot", sceneId: "BootScene", assetIds: Object.freeze([VISUAL_ASSET_IDS.ANIMAL_REFERENCE_SHEET, VISUAL_ASSET_IDS.RESIDENT_GENERATED_FRAMES]), animationIds: Object.freeze(Object.values(VISUAL_ANIMATION_IDS)) }),
     definition({ id: fishingRuntimePack.id, sceneId: fishingRuntimePack.sceneIds[0], assetIds: Object.freeze(fishingRuntimePack.assetIds), animationIds: Object.freeze([]) }),
     definition({ id: "pack.scene.powerwash", sceneId: "PlaygroundPowerwashScene", assetIds: Object.freeze([VISUAL_ASSET_IDS.POWERWASH_PLAYGROUND_MASTER, VISUAL_ASSET_IDS.POWERWASH_PLAYGROUND_DIRT, VISUAL_ASSET_IDS.POWERWASH_TOOL_PRECISION, VISUAL_ASSET_IDS.POWERWASH_TOOL_STANDARD, VISUAL_ASSET_IDS.POWERWASH_TOOL_WIDE]), animationIds: Object.freeze([]) }),
+    definition({ id: "pack.scene.town.river", sceneId: "TownScene", assetIds: Object.freeze([VISUAL_ASSET_IDS.TOWN_RIVER_WATER_TILE]), animationIds: Object.freeze([]) }),
     TOWN_BIN_SCENE_PACK,
   ]),
   legacyCompatibility: Object.freeze({
